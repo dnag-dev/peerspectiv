@@ -4,7 +4,7 @@ const isDemoMode = !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === 'pk_test_placeholder' ||
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === '';
 
-const E2E_TEST_BYPASS = process.env.E2E_AUTH_BYPASS === '1';
+const E2E_TEST_BYPASS = process.env.NEXT_PUBLIC_DEMO_MODE === '1';
 
 const PUBLIC_PATHS = [
   /^\/login/,
