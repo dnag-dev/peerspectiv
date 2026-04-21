@@ -47,7 +47,7 @@ export async function sendReviewerAssignment(params: {
   portalUrl: string;
 }) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: 'Peerspectiv <reviews@peerspectiv.com>',
       to: params.reviewerEmail,
       subject: `New Peer Review Assignment — ${params.specialty} | Due ${params.dueDate}`,
