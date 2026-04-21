@@ -1,6 +1,10 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+function getResend(): Resend {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY || 'placeholder');
+  return _resend;
+}
 
 /**
  * Generic email helper. Falls back to console log if RESEND_API_KEY is missing.
@@ -22,7 +26,7 @@ export async function sendEmail(params: {
   }
 
   try {
-    const res = await resend.emails.send({
+    const res = await getResend().emails.send({
       from,
       to: params.to,
       subject: params.subject,
