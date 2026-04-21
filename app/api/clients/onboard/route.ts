@@ -3,7 +3,7 @@ export const maxDuration = 60;
 import { NextRequest, NextResponse } from "next/server";
 import { anthropic, AI_MODEL } from "@/lib/ai/anthropic";
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+
 const pdfParse = require("pdf-parse");
 
 const MAX_CHARS = 80_000;

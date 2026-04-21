@@ -54,7 +54,9 @@ export async function GET(request: NextRequest) {
       encounter_date: string | null;
       status: string;
       updated_at: string;
+      provider: { first_name: string; last_name: string } | null;
       providers: { first_name: string; last_name: string } | null;
+      reviewer: { full_name: string } | null;
       reviewers: { full_name: string } | null;
       review_results: Array<{
         overall_score: number | null;
@@ -67,10 +69,10 @@ export async function GET(request: NextRequest) {
       const deficiencies = result?.deficiencies;
       return {
         id: c.id,
-        provider_name: (c.provider || c.providers)
-          ? `${(c.provider || c.providers).first_name} ${(c.provider || c.providers).last_name}`
+        provider_name: (c.provider ?? c.providers)
+          ? `${(c.provider ?? c.providers)!.first_name} ${(c.provider ?? c.providers)!.last_name}`
           : "Unassigned",
-        reviewer_name: (c.reviewer || c.reviewers)?.full_name ?? "Unassigned",
+        reviewer_name: (c.reviewer ?? c.reviewers)?.full_name ?? "Unassigned",
         encounter_date: c.encounter_date,
         overall_score: result?.overall_score ?? null,
         deficiencies_count: Array.isArray(deficiencies) ? deficiencies.length : 0,

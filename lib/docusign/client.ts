@@ -34,7 +34,7 @@ export async function createAndSendEnvelope(
   }
 
   // Deferred import — only loaded when real DocuSign creds are configured.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  
   const docusign: any = eval("require")('docusign-esign');
 
   const apiClient = new docusign.ApiClient();
