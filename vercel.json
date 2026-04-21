@@ -1,30 +1,10 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/flag-past-due",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/data-retention",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/cycle-reminders",
-      "schedule": "0 8 * * 1"
-    }
-  ],
   "functions": {
-    "app/api/cases/[id]/analyze/route.ts": {
-      "maxDuration": 60
-    },
-    "app/api/command/route.ts": {
-      "maxDuration": 30
-    },
-    "app/api/assign/suggest/route.ts": {
-      "maxDuration": 30
-    },
-    "app/api/upload/chart/route.ts": {
-      "maxDuration": 60
-    }
+    "app/api/cases/[id]/analyze/route.ts": { "maxDuration": 60 },
+    "app/api/ash/route.ts": { "maxDuration": 45 },
+    "app/api/assign/suggest/route.ts": { "maxDuration": 30 },
+    "app/api/upload/chart/route.ts": { "maxDuration": 60 },
+    "app/api/reports/generate/route.ts": { "maxDuration": 45 },
+    "app/api/clients/onboard/route.ts": { "maxDuration": 60 }
   }
 }
