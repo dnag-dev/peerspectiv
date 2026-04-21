@@ -1,0 +1,83 @@
+import {
+  getDemoCompany,
+  getComplianceScore,
+  getReviewsThisQuarter,
+  getAvgTurnaroundDays,
+  getDocumentationRiskRate,
+  getRepeatDeficiencyCount,
+  getSpecialtyCompliance,
+  getRiskDistribution,
+  getNeedsAttention,
+  getProviderPerformance,
+} from "@/lib/portal/queries";
+import { supabaseAdmin } from "@/lib/supabase/server";
+import { DashboardView } from "./DashboardView";
+
+export const dynamic = "force-dynamic";
+
+export default async function ClientDashboardPage() {
+  const company = await getDemoCompany();
+  const companyId = company.id;
+
+  const [
+    compliance,
+    reviewsThisQuarter,
+    avgTurnaround,
+    riskRate,
+    repeatCount,
+    specialty,
+    risk,
+    needs,
+    providersPerf,
+  ] = await Promise.all([
+    getComplianceScore(companyId),
+    getReviewsThisQuarter(companyId),
+    getAvgTurnaroundDays(companyId),
+    getDocumentationRiskRate(companyId),
+    getRepeatDeficiencyCount(companyId),
+    getSpecialtyCompliance(companyId),
+    getRiskDistribution(companyId),
+    getNeedsAttention(companyId),
+    getProviderPerformance(companyId),
+  ]);
+
+  // Fetch projected completion from latest active batch
+  const { data: activeBatch } = await supabaseAdmin
+    .from('batches')
+    .select('projected_completion')
+    .eq('company_id', companyId)
+    .not('projected_completion', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  const projectedCompletion = activeBatch?.projected_completion ?? null;
+
+  return (
+    <DashboardView
+      companyName={company.name}
+      projectedCompletion={projectedCompletion}
+      compliance={compliance}
+      reviewsThisQuarter={reviewsThisQuarter}
+      avgTurnaround={avgTurnaround}
+      riskRate={riskRate}
+      repeatCount={repeatCount}
+      specialty={specialty}
+      risk={risk}
+      needs={{
+        pastDue: needs.pastDue.map((c) => ({
+          id: c.id,
+          name: c.chartFileName ?? "Case",
+          due: c.dueDate ? new Date(c.dueDate as any).toISOString() : null,
+        })),
+        lowProviders: needs.lowProviders,
+        openActions: needs.openActions.map((a) => ({
+          id: a.id,
+          title: a.title,
+          dueDate: a.dueDate ? new Date(a.dueDate as any).toISOString() : null,
+        })),
+      }}
+      providers={providersPerf}
+    />
+  );
+}

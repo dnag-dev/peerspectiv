@@ -1,0 +1,106 @@
+=== 3. Acupuncture Peer Review Example Template.docx ===
+Acupuncture Peer Review Example Template
+
+  Was
+ there a documented chief complaint and/or reason for visit?
+Y / N / NA
+
+  Was
+ a relevant history obtained (including symptom duration, severity, modifying factors)?
+Y / N / NA
+
+  Was
+there
+ documentation of an appropriate Traditional Chinese Medicine (TCM) assessment (e.g., tongue, pulse, meridian assessment) when applicable?
+Y / N / NA
+
+  Was
+ an appropriate diagnosis documented (biomedical and/or TCM diagnosis)?
+Y / N / NA
+
+  Was
+ the treatment plan clearly documented, including acupuncture points selected?
+Y / N / NA
+
+  Was
+ the number of needles used and/or needle technique documented?
+Y / N / NA
+
+  Was
+ the duration of needle retention documented?
+Y / N / NA
+
+  If
+ adjunct therapies were used (e.g., cupping, moxibustion, electroacupuncture), were they documented appropriately?
+Y / N / NA
+
+  Was
+ informed consent documented for acupuncture treatment?
+Y / N / NA
+
+  Was
+there
+ documentation of patient tolerance and/or response to treatment?
+Y / N / NA
+
+  Were
+ any adverse events or complications addressed and documented appropriately?
+Y / N / NA
+
+  Was
+there
+ evidence of appropriate infection control practices documented (e.g., clean needle technique)?
+Y / N / NA
+
+  Was
+ a follow-up plan or recommended frequency of treatment documented?
+Y / N / NA
+
+  Was
+ the documentation completed in a timely manner according to policy?
+Y / N / NA
+
+  Overall
+, did the encounter meet the standard of care for acupuncture practice within this setting?
+Y / N / NA
+
+=== 3. Chiropractor #2.docx ===
+Chiropractic Peer Review
+Response Options: ☐ Yes ☐ No ☐ N/A
+1. Was the reason for the chiropractic visit clearly documented?    ☐ Yes ☐ No ☐ N/A
+2. Was a relevant medical and musculoskeletal history obtained?    ☐ Yes ☐ No ☐ N/A
+3. Was a focused physical and spinal examination performed and documented?    ☐ Yes ☐ No ☐ N/A
+4. Were neurological findings assessed and documented when appropriate?    ☐ Yes ☐ No ☐ N/A
+5. Were diagnoses supported by examination findings?    ☐ Yes ☐ No ☐ N/A
+6. Were diagnostic imaging or tests ordered appropriately, if applicable?    ☐ Yes ☐ No ☐ N/A
+7. Was the treatment plan appropriate and individualized?    ☐ Yes ☐ No ☐ N/A
+8. Were chiropractic manipulative treatments within scope and standard practice?    ☐ Yes ☐ No ☐ N/A
+9. Was informed consent for treatment documented?    ☐ Yes ☐ No ☐ N/A
+10. Were contraindications or precautions identified and addressed?    ☐ Yes ☐ No ☐ N/A
+11. Was patient education or self-care instruction provided?    ☐ Yes ☐ No ☐ N/A
+12. Were treatment frequency and duration appropriate?    ☐ Yes ☐ No ☐ N/A
+13. Were referrals made when conditions were outside chiropractic scope?    ☐ Yes ☐ No ☐ N/A
+14. Was documentation complete and timely?    ☐ Yes ☐ No ☐ N/A
+15. Was care consistent with the standard of care for chiropractic services?    ☐ Yes ☐ No ☐ N/A
+
+=== 3. Podiatry #2.docx ===
+Podiatry Peer Review
+Response Options: ☐ Yes ☐ No ☐ N/A
+1. Was the reason for visit clearly documented?    ☐ Yes ☐ No ☐ N/A
+2. Was relevant medical and foot history obtained?    ☐ Yes ☐ No ☐ N/A
+3. Was a focused lower extremity exam documented?    ☐ Yes ☐ No ☐ N/A
+4. Were vascular and neurologic assessments documented when appropriate?    ☐ Yes ☐ No ☐ N/A
+5. Were diagnoses supported by findings?    ☐ Yes ☐ No ☐ N/A
+6. Were diagnostic tests ordered appropriately?    ☐ Yes ☐ No ☐ N/A
+7. Was the treatment plan appropriate?    ☐ Yes ☐ No ☐ N/A
+8. Were procedures within scope and standard practice?    ☐ Yes ☐ No ☐ N/A
+9. Were medications prescribed appropriately, if applicable?    ☐ Yes ☐ No ☐ N/A
+10. Was patient education provided?    ☐ Yes ☐ No ☐ N/A
+11. Were diabetic foot care standards followed when applicable?    ☐ Yes ☐ No ☐ N/A
+12. Were referrals made appropriately?    ☐ Yes ☐ No ☐ N/A
+13. Were follow-up instructions clear?    ☐ Yes ☐ No ☐ N/A
+14. Was documentation complete and timely?    ☐ Yes ☐ No ☐ N/A
+15. 
+Was care
+ consistent with podiatry standards of care?    ☐ Yes ☐ No ☐ N/A
+

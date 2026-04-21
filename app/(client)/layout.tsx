@@ -1,0 +1,71 @@
+import { db } from "@/lib/db";
+import { companies, reviewResults, reviewCases } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import { AshChat } from "@/components/ash/AshChat";
+import { ClientPortalShell } from "@/components/layout/ClientPortalShell";
+
+export const dynamic = "force-dynamic";
+
+async function getCompany() {
+  // Demo mode: default to Hunter Health
+  const rows = await db
+    .select()
+    .from(companies)
+    .where(eq(companies.name, "Hunter Health"))
+    .limit(1);
+
+  if (rows.length > 0) return rows[0];
+
+  // Fallback: any company
+  const any = await db.select().from(companies).limit(1);
+  return any[0] ?? { id: "demo", name: "Hunter Health" };
+}
+
+async function computeComplianceScore(companyId: string): Promise<number> {
+  try {
+    const rows = await db
+      .select({
+        score: reviewResults.overallScore,
+      })
+      .from(reviewResults)
+      .innerJoin(reviewCases, eq(reviewCases.id, reviewResults.caseId))
+      .where(eq(reviewCases.companyId, companyId));
+
+    if (rows.length === 0) return 0;
+    const scores = rows.map((r) => r.score ?? 0).filter((s) => s > 0);
+    if (scores.length === 0) return 0;
+    return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+  } catch {
+    return 0;
+  }
+}
+
+export default async function ClientLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const company = await getCompany();
+  const complianceScore = await computeComplianceScore(company.id);
+
+  return (
+    <ClientPortalShell companyName={company.name}>
+      {children}
+      <AshChat
+        portal="client"
+        context={{
+          companyName: company.name,
+          complianceScore,
+          currentQuarter: "Q1 2026",
+        }}
+        initialGreeting={`Hi — ${company.name} is at ${complianceScore}% compliance this quarter. What would you like to explore?`}
+        suggestedPrompts={[
+          "Show providers at risk",
+          "What are our top deficiencies?",
+          "Export board report",
+          "Open corrective actions",
+        ]}
+      />
+    </ClientPortalShell>
+  );
+}

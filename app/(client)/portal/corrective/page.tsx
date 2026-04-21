@@ -1,0 +1,38 @@
+import { db } from "@/lib/db";
+import { correctiveActions } from "@/lib/db/schema";
+import { eq, desc } from "drizzle-orm";
+import { getDemoCompany } from "@/lib/portal/queries";
+import { CorrectiveList } from "./CorrectiveList";
+
+export const dynamic = "force-dynamic";
+
+export default async function CorrectivePage() {
+  const company = await getDemoCompany();
+  const rows = await db
+    .select()
+    .from(correctiveActions)
+    .where(eq(correctiveActions.companyId, company.id))
+    .orderBy(desc(correctiveActions.createdAt));
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-white">Corrective Actions</h1>
+        <p className="text-sm text-gray-400">
+          Track and manage corrective action items
+        </p>
+      </div>
+      <CorrectiveList
+        actions={rows.map((a) => ({
+          id: a.id,
+          title: a.title,
+          description: a.description ?? "",
+          status: a.status ?? "open",
+          progress: a.progressPct ?? 0,
+          dueDate: a.dueDate ? new Date(a.dueDate as any).toISOString() : null,
+          assignedTo: a.assignedTo ?? null,
+        }))}
+      />
+    </div>
+  );
+}
