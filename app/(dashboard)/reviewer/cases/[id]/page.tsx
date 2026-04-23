@@ -11,6 +11,7 @@ import {
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { ReviewForm } from "@/components/reviewer/ReviewForm";
+import { ChartViewerButton } from "@/components/reviewer/ChartViewerButton";
 import { auth } from "@clerk/nextjs/server";
 
 export const dynamic = "force-dynamic";
@@ -237,9 +238,8 @@ export default async function ReviewerCasePage({
   // 6) Reviewer id
   const reviewerId = reviewCase.reviewerId ?? (await resolveReviewerId()) ?? "";
 
-  const chartViewUrl = reviewCase.chartFilePath
-    ? `/api/cases/${caseId}/chart`
-    : null;
+  // chartFilePath is a public Vercel Blob URL — use it directly (no proxy route needed).
+  const chartViewUrl = reviewCase.chartFilePath || null;
 
   return (
     <div className="min-h-screen bg-[#0B1829] text-white">
@@ -344,33 +344,8 @@ export default async function ReviewerCasePage({
           </div>
 
           {/* View Chart Button */}
-          {chartViewUrl || reviewCase.chartFilePath ? (
-            <a
-              href={chartViewUrl || reviewCase.chartFilePath!}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
-            >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              View Chart
-            </a>
+          {chartViewUrl ? (
+            <ChartViewerButton url={chartViewUrl} />
           ) : (
             <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-center text-xs text-white/40">
               No chart file available
