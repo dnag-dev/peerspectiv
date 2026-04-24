@@ -11,6 +11,10 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get("start_date");
     const endDate = searchParams.get("end_date");
 
+    // NOTE: alias syntax must be `<alias>:<table>(...)` — the project's
+    // Supabase-compat layer interprets the segment after the colon as a
+    // TABLE NAME, not an FK column. Writing `providers:provider_id(...)`
+    // made it try to join a non-existent table and silently returned 0 rows.
     let query = supabaseAdmin
       .from("review_cases")
       .select(
@@ -19,9 +23,9 @@ export async function GET(request: NextRequest) {
         encounter_date,
         status,
         updated_at,
-        providers:provider_id (first_name, last_name),
-        reviewers:reviewer_id (full_name),
-        review_results (overall_score, deficiencies)
+        provider:providers(first_name, last_name),
+        reviewer:reviewers(full_name),
+        review_results(overall_score, deficiencies)
       `
       )
       .not("reviewer_id", "is", null)
