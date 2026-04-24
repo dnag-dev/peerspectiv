@@ -72,14 +72,17 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#0F2044' }}>
       <div className="text-center w-full max-w-md">
-        <div className="flex justify-center mb-2">
-          <Image
-            src="/peerspectiv-logo.png"
-            alt="Peerspectiv"
-            width={280}
-            height={92}
-            priority
-          />
+        <div className="flex justify-center mb-4">
+          <div className="rounded-lg bg-white px-6 py-4 shadow-lg">
+            <Image
+              src="/peerspectiv-logo.png"
+              alt="Peerspectiv"
+              width={320}
+              height={65}
+              priority
+              className="block h-auto w-[320px]"
+            />
+          </div>
         </div>
         <p className="text-gray-300 mb-8 text-lg">AI-Powered Medical Peer Review Platform</p>
 

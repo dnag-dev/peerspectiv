@@ -71,14 +71,17 @@ export function ClientSidebar({
       className="flex h-full w-64 flex-shrink-0 flex-col"
       style={{ backgroundColor: "#0F2040" }}
     >
-      <div className="flex h-16 items-center justify-between px-6">
-        <Image
-          src="/peerspectiv-logo.png"
-          alt="Peerspectiv"
-          width={140}
-          height={46}
-          priority
-        />
+      <div className="flex h-20 items-center justify-between px-5">
+        <div className="rounded-md bg-white px-3 py-2 shadow-sm">
+          <Image
+            src="/peerspectiv-logo.png"
+            alt="Peerspectiv"
+            width={180}
+            height={37}
+            priority
+            className="block h-auto w-[180px]"
+          />
+        </div>
         <button
           className="lg:hidden text-white"
           onClick={() => setMobileOpen(false)}

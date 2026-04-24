@@ -78,14 +78,17 @@ export function Sidebar() {
         `}
       >
         {/* Wordmark */}
-        <div className="flex h-16 items-center px-6">
-          <Image
-            src="/peerspectiv-logo.png"
-            alt="Peerspectiv"
-            width={140}
-            height={46}
-            priority
-          />
+        <div className="flex h-20 items-center px-5">
+          <div className="rounded-md bg-white px-3 py-2 shadow-sm">
+            <Image
+              src="/peerspectiv-logo.png"
+              alt="Peerspectiv"
+              width={180}
+              height={37}
+              priority
+              className="block h-auto w-[180px]"
+            />
+          </div>
         </div>
 
         {/* Navigation */}
