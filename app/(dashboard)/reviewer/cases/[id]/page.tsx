@@ -315,9 +315,9 @@ export default async function ReviewerCasePage({
   const caseRefShort = caseId.slice(0, 8);
 
   return (
-    <div className="min-h-screen bg-[#0B1829] text-white">
-      <div className="mx-auto flex max-w-[1800px] flex-col gap-4 p-4 lg:p-6">
-        {/* ─── Full-width Case Context Header ─── */}
+    <div className="flex h-[calc(100vh-64px)] flex-col bg-[#0B1829] text-white">
+      {/* ─── Full-width Case Context Header ─── */}
+      <div className="flex-shrink-0 px-4 pt-4 lg:px-6 lg:pt-6">
         <div className="rounded-xl border border-white/10 bg-[#0F2040] px-5 py-4">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <div>
@@ -382,11 +382,12 @@ export default async function ReviewerCasePage({
             </div>
           </div>
         </div>
+      </div>
 
-        {/* ─── Three-column layout ─── */}
-        <div className="flex flex-col gap-4 lg:flex-row">
-        {/* ─── Left Panel ─── */}
-        <aside className="w-full flex-shrink-0 space-y-4 lg:w-[280px]">
+      {/* ─── Three-column grid layout (desktop) ─── */}
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 p-4 lg:grid-cols-[260px_minmax(0,1fr)_440px] lg:p-6">
+        {/* ─── Left Panel: Ash intelligence ─── */}
+        <aside className="space-y-4 overflow-y-auto pr-1">
           {/* Chart Summary Card */}
           <div
             data-testid="chart-summary"
@@ -447,19 +448,17 @@ export default async function ReviewerCasePage({
             )}
           </div>
 
-          {/* View Chart Button */}
-          {chartViewUrl ? (
-            <ChartViewerButton url={chartViewUrl} />
-          ) : (
-            <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-center text-xs text-white/40">
-              No chart file available
+          {/* Mobile-only fallback: on lg screens the inline PDF makes this redundant */}
+          {chartViewUrl && (
+            <div className="lg:hidden">
+              <ChartViewerButton url={chartViewUrl} />
             </div>
           )}
         </aside>
 
         {/* ─── Center Panel: Inline PDF viewer ─── */}
-        <section className="flex min-w-0 flex-1 flex-col lg:max-w-[45%]">
-          <div className="mb-2 flex items-center justify-between">
+        <section className="flex min-h-0 min-w-0 flex-col">
+          <div className="mb-2 flex flex-shrink-0 items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-white/70">
               Medical Chart
             </h2>
@@ -473,17 +472,17 @@ export default async function ReviewerCasePage({
             <iframe
               src={chartViewUrl}
               title="Medical Chart"
-              className="h-[calc(100vh-220px)] min-h-[600px] w-full rounded-xl border border-white/10 bg-white"
+              className="h-full min-h-[500px] w-full flex-1 rounded-xl border border-white/10 bg-white"
             />
           ) : (
-            <div className="flex h-[600px] items-center justify-center rounded-xl border border-white/10 bg-white/5 text-sm text-white/40">
-              No chart file available
+            <div className="flex h-full min-h-[500px] flex-1 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-sm text-white/40">
+              No chart file — open from admin batch page to upload
             </div>
           )}
         </section>
 
-        {/* ─── Right Panel ─── */}
-        <main className="min-w-0 flex-1 lg:max-w-[35%]">
+        {/* ─── Right Panel: Review form ─── */}
+        <main className="min-h-0 min-w-0 overflow-y-auto pl-1">
           {existingResult ? (
             <div className="space-y-4">
               <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-6 text-center">
@@ -555,7 +554,6 @@ export default async function ReviewerCasePage({
             />
           )}
         </main>
-        </div>
       </div>
     </div>
   );
