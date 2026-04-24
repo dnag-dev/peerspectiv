@@ -85,8 +85,26 @@ export const reviewers = pgTable('reviewers', {
   unavailableFrom: date('unavailable_from'),
   unavailableUntil: date('unavailable_until'),
   unavailableReason: text('unavailable_reason'),
+  rateType: text('rate_type').default('per_minute'),
+  rateAmount: numeric('rate_amount', { precision: 10, scale: 2 }).default('1.00'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
+});
+
+export const reviewerPayouts = pgTable('reviewer_payouts', {
+  id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+  reviewerId: uuid('reviewer_id').notNull().references(() => reviewers.id, { onDelete: 'cascade' }),
+  periodStart: date('period_start').notNull(),
+  periodEnd: date('period_end').notNull(),
+  unitType: text('unit_type').notNull(),
+  units: numeric('units', { precision: 12, scale: 2 }).notNull().default('0'),
+  rateAmount: numeric('rate_amount', { precision: 10, scale: 2 }).notNull(),
+  amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+  status: text('status').notNull().default('pending'),
+  notes: text('notes'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
+  approvedAt: timestamp('approved_at', { withTimezone: true }),
+  paidAt: timestamp('paid_at', { withTimezone: true }),
 });
 
 export const reviewersRelations = relations(reviewers, ({ many }) => ({

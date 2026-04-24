@@ -26,6 +26,7 @@ const adminNavItems = [
   { label: "Batches", href: "/batches", icon: FolderOpen },
   { label: "Assign", href: "/assign", icon: UserCheck },
   { label: "Reviewers", href: "/reviewers", icon: ClipboardCheck },
+  { label: "Payouts", href: "/payouts", icon: DollarSign },
   { label: "Reports", href: "/reports", icon: BarChart3 },
   { label: "Command Center", href: "/command", icon: Terminal },
 ];
