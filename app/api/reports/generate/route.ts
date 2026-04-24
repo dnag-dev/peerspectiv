@@ -152,8 +152,9 @@ Produce the JSON array now.`;
         return NextResponse.json({ report: { narrative } });
       } catch (err) {
         console.error('[generate] QAPI generation failed:', err);
+        const message = err instanceof Error ? err.message : String(err);
         return NextResponse.json(
-          { error: 'QAPI report generation failed' },
+          { error: `QAPI report generation failed: ${message}` },
           { status: 500 }
         );
       }

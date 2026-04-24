@@ -32,8 +32,8 @@ export async function generateQAPIReport(
     FROM review_results rr
     INNER JOIN review_cases rc ON rc.id = rr.case_id
     WHERE rc.company_id = ${companyId}
-      AND rr.submitted_at >= ${startDate}
-      AND rr.submitted_at < (${endDate}::date + INTERVAL '1 day')
+      AND rr.submitted_at::date >= ${startDate}::date
+      AND rr.submitted_at::date <= ${endDate}::date
   `);
   const companyResults = (((resultRows as any).rows ?? resultRows) as Row[]).map((r) => ({
     ...r,
