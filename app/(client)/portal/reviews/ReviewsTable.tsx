@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { X } from "lucide-react";
 
 interface Row {
   id: string;
@@ -11,6 +12,8 @@ interface Row {
   assignedAt: string | null;
   dueDate: string | null;
   createdAt: string | null;
+  submittedAt: string | null;
+  deficiencies: string[];
 }
 
 function quarterOf(iso: string | null) {
@@ -18,6 +21,12 @@ function quarterOf(iso: string | null) {
   const d = new Date(iso);
   const q = Math.floor(d.getMonth() / 3) + 1;
   return `Q${q} ${d.getFullYear()}`;
+}
+
+function monthKeyOf(iso: string | null) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}`;
 }
 
 function statusColor(s: string) {
@@ -34,10 +43,20 @@ function statusColor(s: string) {
   }
 }
 
-export function ReviewsTable({ rows }: { rows: Row[] }) {
+export function ReviewsTable({
+  rows,
+  initialMonth = null,
+  initialCriterion = null,
+}: {
+  rows: Row[];
+  initialMonth?: string | null;
+  initialCriterion?: string | null;
+}) {
   const [status, setStatus] = useState<string>("all");
   const [specialty, setSpecialty] = useState<string>("all");
   const [quarter, setQuarter] = useState<string>("all");
+  const [month, setMonth] = useState<string | null>(initialMonth);
+  const [criterion, setCriterion] = useState<string | null>(initialCriterion);
 
   const specialties = useMemo(
     () => Array.from(new Set(rows.map((r) => r.specialty).filter(Boolean))),
@@ -53,11 +72,63 @@ export function ReviewsTable({ rows }: { rows: Row[] }) {
     if (status !== "all" && r.status !== status) return false;
     if (specialty !== "all" && r.specialty !== specialty) return false;
     if (quarter !== "all" && quarterOf(r.createdAt) !== quarter) return false;
+    if (month) {
+      // Month drill comes from Trends (compliance bar) — match the month of submission.
+      if (monthKeyOf(r.submittedAt) !== month) return false;
+    }
+    if (criterion) {
+      const needle = criterion.toLowerCase();
+      const hit = r.deficiencies.some((d) => d.toLowerCase().includes(needle));
+      if (!hit) return false;
+    }
     return true;
   });
 
+  const monthLabel = month
+    ? new Date(`${month}-01T00:00:00`).toLocaleDateString(undefined, {
+        month: "short",
+        year: "numeric",
+      })
+    : null;
+
   return (
     <div className="space-y-4">
+      {(month || criterion) && (
+        <div
+          className="flex flex-wrap items-center gap-2 rounded-lg p-3"
+          style={{ backgroundColor: "#1A3050", border: "1px solid #5EEAD4" }}
+        >
+          <span className="text-xs uppercase tracking-wider text-teal-300">
+            Drilled down from Trends
+          </span>
+          {month && (
+            <button
+              onClick={() => setMonth(null)}
+              className="flex items-center gap-1 rounded-full bg-teal-500/20 px-2.5 py-1 text-xs text-teal-200 hover:bg-teal-500/30"
+            >
+              Month: {monthLabel} <X className="h-3 w-3" />
+            </button>
+          )}
+          {criterion && (
+            <button
+              onClick={() => setCriterion(null)}
+              className="flex items-center gap-1 rounded-full bg-teal-500/20 px-2.5 py-1 text-xs text-teal-200 hover:bg-teal-500/30"
+            >
+              Criterion: {criterion} <X className="h-3 w-3" />
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setMonth(null);
+              setCriterion(null);
+            }}
+            className="ml-auto text-xs text-gray-400 hover:text-white"
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+
       <div
         className="flex flex-wrap gap-3 rounded-lg p-4"
         style={{ backgroundColor: "#1A3050" }}

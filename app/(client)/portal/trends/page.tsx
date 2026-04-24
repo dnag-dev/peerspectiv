@@ -39,6 +39,7 @@ export default async function TrendsPage() {
     if (m) m.scores.push(r.score);
   }
   const monthly = months.map((m) => ({
+    key: m.key,
     label: m.label,
     avg:
       m.scores.length > 0
@@ -47,17 +48,30 @@ export default async function TrendsPage() {
     count: m.scores.length,
   }));
 
-  // Top missed criteria
+  // Top missed criteria — flatten {note, category, criterion, description} shapes
+  // into a human label; never leak JSON into the UI.
   const defCount = new Map<string, number>();
+  const labelize = (item: any): string | null => {
+    if (!item) return null;
+    if (typeof item === "string") return item;
+    if (typeof item === "object") {
+      return (
+        item.criterion ??
+        item.note ??
+        item.description ??
+        item.label ??
+        item.name ??
+        null
+      );
+    }
+    return null;
+  };
   for (const r of rows) {
     const d = r.deficiencies as any;
     if (Array.isArray(d)) {
       for (const item of d) {
-        const key =
-          typeof item === "string"
-            ? item
-            : item?.criterion ?? item?.description ?? JSON.stringify(item);
-        defCount.set(key, (defCount.get(key) ?? 0) + 1);
+        const key = labelize(item);
+        if (key) defCount.set(key, (defCount.get(key) ?? 0) + 1);
       }
     } else if (d && typeof d === "object") {
       for (const [k, v] of Object.entries(d)) {
