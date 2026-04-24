@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import Link from "next/link";
 import { Download, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,8 @@ import type { Company } from "@/types";
 
 interface AssignmentRow {
   id: string;
+  provider_id: string | null;
+  reviewer_id: string | null;
   provider_name: string;
   reviewer_name: string;
   encounter_date: string | null;
@@ -36,6 +39,14 @@ interface AssignmentRow {
   deficiencies_count: number;
   completed_date: string | null;
   status: string;
+}
+
+function ytdStart(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-01-01`;
+}
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 interface Props {
@@ -79,8 +90,10 @@ export function AssignmentResultsTab({ companies }: Props) {
   // (matches the "All companies" SelectItem) and treat it as no-filter.
   const [companyId, setCompanyId] = useState<string>("all");
   const [providerSearch, setProviderSearch] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // Default to year-to-date so the tab shows data on first load instead of
+  // a blank Search-first state.
+  const [startDate, setStartDate] = useState(ytdStart());
+  const [endDate, setEndDate] = useState(todayIso());
   const [results, setResults] = useState<AssignmentRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -105,6 +118,14 @@ export function AssignmentResultsTab({ companies }: Props) {
       setLoading(false);
     }
   }, [companyId, providerSearch, startDate, endDate]);
+
+  // Auto-load YTD on first mount so the tab has data out of the gate.
+  const didInitialLoad = useRef(false);
+  useEffect(() => {
+    if (didInitialLoad.current) return;
+    didInitialLoad.current = true;
+    fetchResults();
+  }, [fetchResults]);
 
   const exportPdf = useCallback(async () => {
     if (results.length === 0) return;
@@ -240,6 +261,7 @@ export function AssignmentResultsTab({ companies }: Props) {
                     <TableHead className="text-right">Deficiencies</TableHead>
                     <TableHead>Completed Date</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -248,7 +270,18 @@ export function AssignmentResultsTab({ companies }: Props) {
                       <TableCell className="font-medium">
                         {row.provider_name}
                       </TableCell>
-                      <TableCell>{row.reviewer_name}</TableCell>
+                      <TableCell>
+                        {row.reviewer_id ? (
+                          <Link
+                            href={`/reviewers/${row.reviewer_id}`}
+                            className="text-brand-navy hover:underline"
+                          >
+                            {row.reviewer_name}
+                          </Link>
+                        ) : (
+                          row.reviewer_name
+                        )}
+                      </TableCell>
                       <TableCell>{formatDate(row.encounter_date)}</TableCell>
                       <TableCell className="text-right">
                         {row.overall_score != null
@@ -263,6 +296,14 @@ export function AssignmentResultsTab({ companies }: Props) {
                         <Badge variant={statusVariant(row.status)}>
                           {row.status.replace(/_/g, " ")}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          href={`/cases/${row.id}`}
+                          className="text-sm text-brand-navy hover:underline"
+                        >
+                          Open →
+                        </Link>
                       </TableCell>
                     </TableRow>
                   ))}

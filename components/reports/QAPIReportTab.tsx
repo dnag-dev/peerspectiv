@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { FileText, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -33,17 +33,25 @@ interface QAPIReport {
 /* ------------------------------------------------------------------ */
 
 const QUARTERS = [
+  { value: "YTD", label: "Year to Date" },
   { value: "Q1", label: "Q1 (Jan - Mar)" },
   { value: "Q2", label: "Q2 (Apr - Jun)" },
   { value: "Q3", label: "Q3 (Jul - Sep)" },
   { value: "Q4", label: "Q4 (Oct - Dec)" },
 ] as const;
 
-const QUARTER_DATES: Record<string, { start: string; end: string }> = {
-  Q1: { start: "-01-01", end: "-03-31" },
-  Q2: { start: "-04-01", end: "-06-30" },
-  Q3: { start: "-07-01", end: "-09-30" },
-  Q4: { start: "-10-01", end: "-12-31" },
+const QUARTER_DATES: Record<string, { start: string; end: (y: string) => string }> = {
+  Q1: { start: "-01-01", end: () => "-03-31" },
+  Q2: { start: "-04-01", end: () => "-06-30" },
+  Q3: { start: "-07-01", end: () => "-09-30" },
+  Q4: { start: "-10-01", end: () => "-12-31" },
+  YTD: {
+    start: "-01-01",
+    end: () => {
+      const d = new Date();
+      return `-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    },
+  },
 };
 
 function yearOptions(): string[] {
@@ -57,8 +65,12 @@ function yearOptions(): string[] {
 
 export function QAPIReportTab({ companies }: Props) {
   // Radix Select disallows empty-string values; use undefined until picked.
-  const [companyId, setCompanyId] = useState<string | undefined>(undefined);
-  const [quarter, setQuarter] = useState<string | undefined>(undefined);
+  // Preselect the first company + YTD so the tab has sensible defaults
+  // and the user only needs to hit Generate (or we auto-run it once).
+  const [companyId, setCompanyId] = useState<string | undefined>(
+    companies[0]?.id
+  );
+  const [quarter, setQuarter] = useState<string | undefined>("YTD");
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<QAPIReport | null>(null);
@@ -75,7 +87,7 @@ export function QAPIReportTab({ companies }: Props) {
     try {
       const dates = QUARTER_DATES[quarter!];
       const start_date = `${year}${dates.start}`;
-      const end_date = `${year}${dates.end}`;
+      const end_date = `${year}${dates.end(year)}`;
 
       const res = await fetch("/api/reports/generate", {
         method: "POST",
@@ -94,7 +106,7 @@ export function QAPIReportTab({ companies }: Props) {
       setReport({
         narrative: json.report.narrative,
         company_name: company?.name ?? "Unknown",
-        period: `${quarter} ${year}`,
+        period: quarter === "YTD" ? `YTD ${year}` : `${quarter} ${year}`,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate report");
@@ -102,6 +114,16 @@ export function QAPIReportTab({ companies }: Props) {
       setLoading(false);
     }
   }, [canGenerate, companyId, quarter, year, companies]);
+
+  // Auto-generate once on mount when defaults are set (first company + YTD).
+  // QAPI hits Claude so we guard against double-fire.
+  const didAutoGenerate = useRef(false);
+  useEffect(() => {
+    if (didAutoGenerate.current) return;
+    if (!canGenerate) return;
+    didAutoGenerate.current = true;
+    generate();
+  }, [canGenerate, generate]);
 
   const downloadPdf = useCallback(async () => {
     if (!report) return;

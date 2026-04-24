@@ -23,6 +23,8 @@ export async function GET(request: NextRequest) {
         encounter_date,
         status,
         updated_at,
+        provider_id,
+        reviewer_id,
         provider:providers(first_name, last_name),
         reviewer:reviewers(full_name),
         review_results(overall_score, deficiencies)
@@ -58,6 +60,8 @@ export async function GET(request: NextRequest) {
       encounter_date: string | null;
       status: string;
       updated_at: string;
+      provider_id: string | null;
+      reviewer_id: string | null;
       provider: { first_name: string; last_name: string } | null;
       providers: { first_name: string; last_name: string } | null;
       reviewer: { full_name: string } | null;
@@ -73,6 +77,8 @@ export async function GET(request: NextRequest) {
       const deficiencies = result?.deficiencies;
       return {
         id: c.id,
+        provider_id: c.provider_id,
+        reviewer_id: c.reviewer_id,
         provider_name: (c.provider ?? c.providers)
           ? `${(c.provider ?? c.providers)!.first_name} ${(c.provider ?? c.providers)!.last_name}`
           : "Unassigned",

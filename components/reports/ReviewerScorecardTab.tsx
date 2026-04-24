@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import Link from "next/link";
 import { ArrowUpDown, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -244,7 +245,14 @@ export function ReviewerScorecardTab() {
           <TableBody>
             {sorted.map((r) => (
               <TableRow key={r.id}>
-                <TableCell className="font-medium">{r.full_name}</TableCell>
+                <TableCell className="font-medium">
+                  <Link
+                    href={`/reviewers/${r.id}`}
+                    className="text-brand-navy hover:underline"
+                  >
+                    {r.full_name}
+                  </Link>
+                </TableCell>
                 <TableCell>{r.specialty}</TableCell>
                 <TableCell className="text-right">
                   {r.total_reviews_completed}
