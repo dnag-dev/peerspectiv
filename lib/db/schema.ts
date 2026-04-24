@@ -109,6 +109,8 @@ export const batches = pgTable('batches', {
   createdBy: uuid('created_by'),
   notes: text('notes'),
   projectedCompletion: timestamp('projected_completion', { withTimezone: true }),
+  specialty: text('specialty'),
+  companyFormId: uuid('company_form_id'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
 });
 
@@ -138,6 +140,7 @@ export const reviewCases = pgTable('review_cases', {
   aiAnalysisStatus: text('ai_analysis_status').default('pending'),
   aiProcessedAt: timestamp('ai_processed_at', { withTimezone: true }),
   specialtyRequired: text('specialty_required'),
+  companyFormId: uuid('company_form_id'),
   priority: text('priority').default('normal'),
   notes: text('notes'),
   batchPeriod: text('batch_period'),

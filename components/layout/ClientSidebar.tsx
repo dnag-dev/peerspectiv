@@ -15,6 +15,7 @@ import {
   Wrench,
   Download,
   Heart,
+  UploadCloud,
   Menu,
   X,
   User,
@@ -34,6 +35,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/portal", icon: LayoutDashboard, group: "Overview" },
+  { label: "Submit Records", href: "/portal/submit", icon: UploadCloud, group: "Overview" },
   { label: "All Reviews", href: "/portal/reviews", icon: ClipboardList, group: "Reviews" },
   { label: "In Progress", href: "/portal/inprogress", icon: Clock, group: "Reviews", dimFor: ["cmo"] },
   { label: "Overdue", href: "/portal/overdue", icon: AlertTriangle, group: "Reviews", dimFor: ["cmo"] },

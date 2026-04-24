@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Layers } from "lucide-react";
 import type { Batch } from "@/types";
+import { NewBatchModal, type BatchWizardCompany, type BatchWizardForm, type BatchWizardProvider } from "@/components/batches/NewBatchModal";
 
 export const dynamic = 'force-dynamic';
 
@@ -61,16 +62,51 @@ function formatDate(dateStr: string) {
   });
 }
 
+async function getWizardData(): Promise<{
+  companies: BatchWizardCompany[];
+  providers: BatchWizardProvider[];
+  forms: BatchWizardForm[];
+}> {
+  const [companiesRes, providersRes, formsRes] = await Promise.all([
+    supabaseAdmin
+      .from("companies")
+      .select("id, name")
+      .order("name", { ascending: true }),
+    supabaseAdmin
+      .from("providers")
+      .select("id, company_id, first_name, last_name, specialty"),
+    supabaseAdmin
+      .from("company_forms")
+      .select("id, company_id, specialty, form_name, is_active")
+      .eq("is_active", true),
+  ]);
+  return {
+    companies: (companiesRes.data ?? []) as BatchWizardCompany[],
+    providers: (providersRes.data ?? []) as BatchWizardProvider[],
+    forms: (formsRes.data ?? []) as BatchWizardForm[],
+  };
+}
+
 export default async function BatchesPage() {
-  const batches = await getBatches();
+  const [batches, wizardData] = await Promise.all([
+    getBatches(),
+    getWizardData(),
+  ]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Batches</h1>
-        <p className="text-muted-foreground">
-          View and manage uploaded case batches.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Batches</h1>
+          <p className="text-muted-foreground">
+            View and manage uploaded case batches.
+          </p>
+        </div>
+        <NewBatchModal
+          companies={wizardData.companies}
+          providers={wizardData.providers}
+          forms={wizardData.forms}
+        />
       </div>
 
       <Card>

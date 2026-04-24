@@ -65,8 +65,41 @@ async function resolveReviewerId(): Promise<string | null> {
 }
 
 async function loadFormFields(
-  specialty: string | null
+  specialty: string | null,
+  companyFormId: string | null
 ): Promise<FormField[]> {
+  // Prefer the company-approved form (company_forms.form_fields jsonb)
+  if (companyFormId) {
+    try {
+      const rows = await query<{ form_fields: unknown }>(
+        `SELECT form_fields FROM company_forms WHERE id = $1 LIMIT 1`,
+        [companyFormId]
+      );
+      const fields = rows[0]?.form_fields;
+      if (Array.isArray(fields) && fields.length > 0) {
+        return (fields as Array<{
+          field_key: string;
+          field_label: string;
+          field_type: string;
+          is_required?: boolean;
+          display_order?: number;
+        }>).map((r, idx) => ({
+          id: `${companyFormId}-${idx}`,
+          fieldKey: r.field_key,
+          fieldLabel: r.field_label,
+          fieldType: (["yes_no", "rating", "text"].includes(r.field_type)
+            ? r.field_type
+            : "text") as FormField["fieldType"],
+          isRequired: !!r.is_required,
+          displayOrder: r.display_order ?? idx,
+        }));
+      }
+    } catch {
+      // fall through to legacy lookup
+    }
+  }
+
+  // Legacy fallback: global form_fields table filtered by specialty
   try {
     const rows = await query<{
       id: string;
@@ -93,7 +126,6 @@ async function loadFormFields(
       displayOrder: r.display_order ?? 0,
     }));
   } catch {
-    // Table may not exist yet — return empty array, page will derive from AI criteria
     return [];
   }
 }
@@ -172,7 +204,11 @@ export default async function ReviewerCasePage({
 
   // 4) Form fields — specialty filter
   const specialty = providerRow?.specialty ?? reviewCase.specialtyRequired ?? null;
-  let formFields = await loadFormFields(specialty);
+  const companyFormId =
+    (reviewCase as unknown as { companyFormId?: string | null }).companyFormId ??
+    (batchRow as unknown as { companyFormId?: string | null })?.companyFormId ??
+    null;
+  let formFields = await loadFormFields(specialty, companyFormId);
 
   // Fallback: derive form fields from AI criteria_scores if form_fields table empty
   if (formFields.length === 0 && Array.isArray(analysisRow?.criteriaScores)) {
