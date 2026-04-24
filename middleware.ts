@@ -37,6 +37,20 @@ function readDemoUser(request: NextRequest): { role: string } | null {
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Temporary site-access gate (pre-login password wall).
+  // Applies to every path except the gate page itself, static assets, and
+  // health/webhook endpoints that must stay reachable.
+  const isGateExempt =
+    pathname === '/gate' ||
+    pathname.startsWith('/api/health') ||
+    pathname.startsWith('/api/webhooks') ||
+    pathname.startsWith('/_next') ||
+    pathname === '/favicon.ico' ||
+    pathname === '/peerspectiv-logo.png';
+  if (!isGateExempt && !request.cookies.get('site_gate')) {
+    return NextResponse.redirect(new URL('/gate', request.url));
+  }
+
   // Demo / E2E bypass mode: gate by demo_user cookie
   if (isDemoMode || E2E_TEST_BYPASS) {
     if (isPublic(pathname)) return NextResponse.next();
