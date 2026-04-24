@@ -11,8 +11,7 @@ import {
   reviewResults,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { ReviewForm } from "@/components/reviewer/ReviewForm";
-import { ChartViewerButton } from "@/components/reviewer/ChartViewerButton";
+import { ReviewerCaseSplit } from "@/components/reviewer/ReviewerCaseSplit";
 import { auth } from "@clerk/nextjs/server";
 
 export const dynamic = "force-dynamic";
@@ -384,176 +383,27 @@ export default async function ReviewerCasePage({
         </div>
       </div>
 
-      {/* ─── Three-column grid layout (desktop) ─── */}
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 p-4 lg:grid-cols-[260px_minmax(0,1fr)_440px] lg:p-6">
-        {/* ─── Left Panel: Ash intelligence ─── */}
-        <aside className="space-y-4 overflow-y-auto pr-1">
-          {/* Chart Summary Card */}
-          <div
-            data-testid="chart-summary"
-            className="rounded-xl border border-white/10 bg-[#0F2040] p-5"
-          >
-            <div className="mb-3 flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#7C3AED] to-[#A78BFA] text-xs font-bold text-white">
-                A
-              </span>
-              <h2 className="text-sm font-semibold text-white">
-                Chart Summary — Ash
-              </h2>
-            </div>
-            <p className="text-sm leading-relaxed text-white/70">
-              {analysisRow?.chartSummary ?? "AI analysis pending..."}
-            </p>
-          </div>
-
-          {/* Risk Flags Card */}
-          <div className="rounded-xl border border-white/10 bg-[#0F2040] p-5">
-            <h2 className="mb-3 text-sm font-semibold text-white">
-              Risk Flags
-            </h2>
-            {riskFlags.length === 0 ? (
-              <p className="text-xs text-white/40">No risk flags identified.</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {riskFlags.map((flag, i) => {
-                  const sev = flag.severity;
-                  const classes =
-                    sev === "high"
-                      ? "bg-red-500/15 border-red-500/40 text-red-300"
-                      : sev === "medium"
-                        ? "bg-amber-500/15 border-amber-500/40 text-amber-300"
-                        : "bg-blue-500/15 border-blue-500/40 text-blue-300";
-                  return (
-                    <span
-                      key={i}
-                      data-testid="risk-flag"
-                      data-severity={sev}
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${classes}`}
-                      title={flag.description}
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${
-                          sev === "high"
-                            ? "bg-red-400"
-                            : sev === "medium"
-                              ? "bg-amber-400"
-                              : "bg-blue-400"
-                        }`}
-                      />
-                      {flag.label}
-                    </span>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Mobile-only fallback: on lg screens the inline PDF makes this redundant */}
-          {chartViewUrl && (
-            <div className="lg:hidden">
-              <ChartViewerButton url={chartViewUrl} />
-            </div>
-          )}
-        </aside>
-
-        {/* ─── Center Panel: Inline PDF viewer ─── */}
-        <section className="flex min-h-0 min-w-0 flex-col">
-          <div className="mb-2 flex flex-shrink-0 items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-white/70">
-              Medical Chart
-            </h2>
-            {reviewCase.chartFileName && (
-              <span className="truncate text-xs text-white/40">
-                {reviewCase.chartFileName}
-              </span>
-            )}
-          </div>
-          {chartViewUrl ? (
-            <iframe
-              src={chartViewUrl}
-              title="Medical Chart"
-              className="h-full min-h-[500px] w-full flex-1 rounded-xl border border-white/10 bg-white"
-            />
-          ) : (
-            <div className="flex h-full min-h-[500px] flex-1 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-sm text-white/40">
-              No chart file — open from admin batch page to upload
-            </div>
-          )}
-        </section>
-
-        {/* ─── Right Panel: Review form ─── */}
-        <main className="min-h-0 min-w-0 overflow-y-auto pl-1">
-          {existingResult ? (
-            <div className="space-y-4">
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-6 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20">
-                  <svg
-                    className="h-6 w-6 text-emerald-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2.5}
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4.5 12.75l6 6 9-13.5"
-                    />
-                  </svg>
-                </div>
-                <h2 className="text-lg font-semibold text-white">
-                  Review Submitted
-                </h2>
-                <p className="mt-1 text-xs text-white/60">
-                  {existingResult.submittedAt
-                    ? `Submitted ${new Date(existingResult.submittedAt).toLocaleString()}`
-                    : "This case has already been reviewed."}
-                </p>
-              </div>
-
-              {(existingResult.overallScore != null ||
-                existingResult.narrativeFinal) && (
-                <div className="rounded-xl border border-white/10 bg-[#0F2040] p-5">
-                  {existingResult.overallScore != null && (
-                    <div className="mb-3">
-                      <div className="text-[10px] uppercase tracking-wide text-white/40">
-                        Overall Score
-                      </div>
-                      <div className="mt-1 text-2xl font-semibold text-white">
-                        {existingResult.overallScore}
-                        <span className="ml-1 text-sm text-white/40">/ 100</span>
-                      </div>
-                    </div>
-                  )}
-                  {existingResult.narrativeFinal && (
-                    <div>
-                      <div className="text-[10px] uppercase tracking-wide text-white/40">
-                        Reviewer Narrative
-                      </div>
-                      <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-white/80">
-                        {existingResult.narrativeFinal}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <a
-                href="/reviewer/portal"
-                className="block rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-center text-sm font-medium text-white/80 transition-colors hover:bg-white/10"
-              >
-                Back to My Queue
-              </a>
-            </div>
-          ) : (
-            <ReviewForm
-              caseId={caseId}
-              reviewerId={reviewerId}
-              formFields={formFields}
-              aiPrefills={aiPrefills}
-            />
-          )}
-        </main>
+      {/* ─── Resizable split: [Ash|Chart tabs] · [Review form] ─── */}
+      <div className="flex min-h-0 flex-1 p-4 lg:p-6">
+        <ReviewerCaseSplit
+          chartViewUrl={chartViewUrl}
+          chartFileName={reviewCase.chartFileName ?? null}
+          chartSummary={analysisRow?.chartSummary ?? null}
+          riskFlags={riskFlags}
+          caseId={caseId}
+          reviewerId={reviewerId}
+          formFields={formFields}
+          aiPrefills={aiPrefills}
+          existingResult={
+            existingResult
+              ? {
+                  submittedAt: existingResult.submittedAt,
+                  overallScore: existingResult.overallScore,
+                  narrativeFinal: existingResult.narrativeFinal,
+                }
+              : null
+          }
+        />
       </div>
     </div>
   );
