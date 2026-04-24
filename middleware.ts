@@ -8,6 +8,7 @@ const E2E_TEST_BYPASS = process.env.NEXT_PUBLIC_DEMO_MODE === '1';
 
 const PUBLIC_PATHS = [
   /^\/login/,
+  /^\/gate/,
   /^\/api\/health/,
   /^\/api\/cron/,
   /^\/api\/demo/,
