@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Upload, Check, ChevronRight, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FormBuilderModal } from "@/components/forms/FormBuilderModal";
 
 export type BatchWizardCompany = { id: string; name: string };
 export type BatchWizardProvider = {
@@ -21,6 +22,7 @@ export type BatchWizardForm = {
   is_active: boolean;
 };
 
+// Valid FQHC specialties only — keep in sync with scripts/fix-specialty-seed.mjs
 const CORE_SPECIALTIES = [
   "Family Medicine",
   "Internal Medicine",
@@ -28,10 +30,6 @@ const CORE_SPECIALTIES = [
   "OB/GYN",
   "Behavioral Health",
   "Dental",
-  "Cardiology",
-  "Acupuncture",
-  "Chiropractic",
-  "Podiatry",
 ];
 
 /** Parse filename to guess {providerLast, specialty} — best-effort. */
@@ -46,6 +44,7 @@ function parseFilename(name: string): { lastName: string | null; specialty: stri
     hiv: "Internal Medicine",
     mental: "Behavioral Health",
     behavioral: "Behavioral Health",
+    psych: "Behavioral Health",
     pediatrics: "Pediatrics",
     pediatric: "Pediatrics",
     peds: "Pediatrics",
@@ -53,12 +52,6 @@ function parseFilename(name: string): { lastName: string | null; specialty: stri
     fm: "Family Medicine",
     internal: "Internal Medicine",
     im: "Internal Medicine",
-    cardiology: "Cardiology",
-    cardio: "Cardiology",
-    chiropractic: "Chiropractic",
-    chiro: "Chiropractic",
-    acupuncture: "Acupuncture",
-    podiatry: "Podiatry",
     dental: "Dental",
   };
 
@@ -114,20 +107,23 @@ export function NewBatchModal({
   const [rows, setRows] = useState<Row[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [formBuilderOpen, setFormBuilderOpen] = useState(false);
+  const [localForms, setLocalForms] = useState<BatchWizardForm[]>([]);
+  const allForms = useMemo(() => [...forms, ...localForms], [forms, localForms]);
 
   const companyProviders = useMemo(
     () => providers.filter((p) => p.company_id === companyId),
     [providers, companyId]
   );
   const specialtyForms = useMemo(
-    () => forms.filter((f) => f.company_id === companyId && f.specialty === specialty),
-    [forms, companyId, specialty]
+    () => allForms.filter((f) => f.company_id === companyId && f.specialty === specialty),
+    [allForms, companyId, specialty]
   );
-  // Specialties that have BOTH at least one provider at this company AND an approved form
+  // Specialties with an approved form for this client
   const availableSpecialties = useMemo(() => {
-    const hasForm = new Set(forms.filter((f) => f.company_id === companyId).map((f) => f.specialty));
+    const hasForm = new Set(allForms.filter((f) => f.company_id === companyId).map((f) => f.specialty));
     return CORE_SPECIALTIES.filter((s) => hasForm.has(s));
-  }, [forms, companyId]);
+  }, [allForms, companyId]);
 
   function reset() {
     setStep(1);
@@ -192,7 +188,7 @@ export function NewBatchModal({
           batch_name: batchName,
           company_id: companyId,
           specialty,
-          company_form_id: companyFormId,
+          company_form_id: effectiveFormId,
           cases: rows.map((r) => ({
             provider_id: r.providerId,
             specialty_required: specialty,
@@ -259,9 +255,32 @@ export function NewBatchModal({
     }
   }
 
+  // Auto-attach: if the chosen (company, specialty) has exactly one approved form,
+  // stamp it silently and skip the manual form-picker step.
+  const autoAttachedFormId = specialtyForms.length === 1 ? specialtyForms[0].id : "";
+  const effectiveFormId = companyFormId || autoAttachedFormId;
+  const skipFormStep = specialtyForms.length === 1;
+
+  function goNext() {
+    if (step === 2 && skipFormStep) {
+      if (!companyFormId) setCompanyFormId(autoAttachedFormId);
+      setStep(4);
+      return;
+    }
+    setStep(step + 1);
+  }
+  function goBack() {
+    if (step === 4 && skipFormStep) {
+      setStep(2);
+      return;
+    }
+    if (step > 1) setStep(step - 1);
+    else handleClose();
+  }
+
   const canNext1 = !!companyId;
   const canNext2 = !!specialty && availableSpecialties.includes(specialty);
-  const canNext3 = !!companyFormId;
+  const canNext3 = !!effectiveFormId;
   const canNext4 = rows.length > 0 && !!batchName.trim();
 
   return (
@@ -339,6 +358,15 @@ export function NewBatchModal({
                     All charts in this batch must be the same specialty. Only specialties with
                     an approved form for this client are shown.
                   </p>
+                  {specialty && skipFormStep && (
+                    <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                      <Check className="mr-1 inline h-3 w-3" />
+                      <strong>
+                        {specialtyForms[0].form_name}
+                      </strong>{" "}
+                      will be auto-attached (only approved form for this client + specialty).
+                    </p>
+                  )}
                   <div className="grid grid-cols-2 gap-2 pt-2">
                     {availableSpecialties.map((s) => (
                       <button
@@ -397,6 +425,14 @@ export function NewBatchModal({
                         {companyFormId === f.id && <Check className="h-4 w-4 text-blue-600" />}
                       </button>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => setFormBuilderOpen(true)}
+                      className="flex w-full items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-left text-sm text-gray-600 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add new form for this client
+                    </button>
                   </div>
                 </div>
               )}
@@ -501,7 +537,12 @@ export function NewBatchModal({
                     <div className="flex justify-between">
                       <dt className="text-gray-500">Form</dt>
                       <dd className="font-medium text-gray-900">
-                        {forms.find((f) => f.id === companyFormId)?.form_name}
+                        {allForms.find((f) => f.id === effectiveFormId)?.form_name}
+                        {skipFormStep && (
+                          <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+                            AUTO
+                          </span>
+                        )}
                       </dd>
                     </div>
                     <div className="flex justify-between">
@@ -567,7 +608,7 @@ export function NewBatchModal({
             <div className="flex items-center justify-between gap-3 border-t bg-gray-50 px-5 py-3">
               <Button
                 variant="ghost"
-                onClick={() => (step > 1 ? setStep(step - 1) : handleClose())}
+                onClick={goBack}
                 disabled={submitting}
               >
                 {step > 1 ? "Back" : "Cancel"}
@@ -575,7 +616,7 @@ export function NewBatchModal({
 
               {step < 5 ? (
                 <Button
-                  onClick={() => setStep(step + 1)}
+                  onClick={goNext}
                   disabled={
                     (step === 1 && !canNext1) ||
                     (step === 2 && !canNext2) ||
@@ -595,6 +636,27 @@ export function NewBatchModal({
             </div>
           </div>
         </div>
+      )}
+
+      {companyId && (
+        <FormBuilderModal
+          open={formBuilderOpen}
+          onOpenChange={setFormBuilderOpen}
+          companyId={companyId}
+          defaultSpecialty={specialty || undefined}
+          onCreated={(form) => {
+            const next: BatchWizardForm = {
+              id: form.id,
+              company_id: companyId,
+              specialty: form.specialty,
+              form_name: form.form_name,
+              is_active: true,
+            };
+            setLocalForms((prev) => [...prev, next]);
+            if (!specialty) setSpecialty(form.specialty);
+            setCompanyFormId(form.id);
+          }}
+        />
       )}
     </>
   );

@@ -64,10 +64,11 @@ const LAST_NAMES = [
   'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson',
   'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson',
 ];
+// Valid FQHC specialties only (per Viji). Do not add Cardiology/Acupuncture/
+// Chiropractic/Podiatry/Optometry — they're not typical FQHC scopes.
 const SPECIALTIES = [
   'Family Medicine', 'Pediatrics', 'Internal Medicine', 'OB/GYN',
-  'Behavioral Health', 'Dental', 'Cardiology', 'Acupuncture',
-  'Chiropractic', 'Podiatry',
+  'Behavioral Health', 'Dental',
 ];
 const pick = (arr, i) => arr[i % arr.length];
 

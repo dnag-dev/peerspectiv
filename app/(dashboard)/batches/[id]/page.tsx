@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CaseStatusBadge, AIStatusBadge } from "@/components/batches/CaseStatusBadge";
 import { BatchActions } from "@/components/batches/BatchActions";
 import { PDFUploader } from "@/components/batches/PDFUploader";
+import { BatchFormSection } from "@/components/batches/BatchFormSection";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, FileStack, Calendar, Building2, Hash } from "lucide-react";
 import type { Batch, ReviewCase, Provider, Reviewer } from "@/types";
@@ -27,6 +28,7 @@ interface CaseWithRelations extends Omit<ReviewCase, 'provider' | 'reviewer'> {
 
 interface BatchDetail extends Batch {
   company_name: string | null;
+  attached_form: { id: string; form_name: string; specialty: string } | null;
   cases: CaseWithRelations[];
 }
 
@@ -60,7 +62,7 @@ function formatDate(dateStr: string | null) {
 async function getBatchDetail(id: string): Promise<BatchDetail | null> {
   const { data: batch, error: batchError } = await supabaseAdmin
     .from("batches")
-    .select("*, companies(name)")
+    .select("*, companies(name), company_forms(id, form_name, specialty)")
     .eq("id", id)
     .single();
 
@@ -81,11 +83,18 @@ async function getBatchDetail(id: string): Promise<BatchDetail | null> {
     reviewers: undefined,
   }));
 
+  const formRel = (batch.company_form || batch.company_forms) as
+    | { id: string; form_name: string; specialty: string }
+    | null;
+
   return {
     ...batch,
     company_name: ((batch.company || batch.companies) as { name: string } | null)?.name ?? null,
+    attached_form: formRel ?? null,
     company: undefined,
     companies: undefined,
+    company_form: undefined,
+    company_forms: undefined,
     cases: mappedCases,
   };
 }
@@ -165,6 +174,21 @@ export default async function BatchDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Attached form */}
+      {batch.company_id && (batch as unknown as { specialty?: string }).specialty && (
+        <BatchFormSection
+          batchId={batch.id}
+          companyId={batch.company_id}
+          specialty={(batch as unknown as { specialty: string }).specialty}
+          currentFormId={
+            batch.attached_form?.id ??
+            (batch as unknown as { company_form_id?: string | null }).company_form_id ??
+            null
+          }
+          currentFormName={batch.attached_form?.form_name ?? null}
+        />
+      )}
 
       {/* Cases Table */}
       <Card>

@@ -9,19 +9,12 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { ReviewerCard } from "@/components/assign/ReviewerCard";
+import { ReviewerPickerModal } from "@/components/assign/ReviewerPickerModal";
+import { ConfirmApproveModal } from "@/components/assign/ConfirmApproveModal";
 import {
   CheckCircle2,
-  ChevronDown,
   Loader2,
   RefreshCw,
   Stethoscope,
@@ -68,6 +61,8 @@ export function AssignmentQueue({
   const [reassigningIds, setReassigningIds] = useState<Set<string>>(
     new Set()
   );
+  const [pickerOpenForCase, setPickerOpenForCase] = useState<string | null>(null);
+  const [confirmOpenForCase, setConfirmOpenForCase] = useState<string | null>(null);
 
   async function handleApproveAll() {
     setApprovingAll(true);
@@ -88,13 +83,16 @@ export function AssignmentQueue({
     }
   }
 
-  async function handleApproveSingle(caseId: string) {
+  async function handleApproveSingle(caseId: string, formId?: string | null) {
     setApprovingIds((prev) => new Set(prev).add(caseId));
     try {
       const res = await fetch("/api/assign/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ case_id: caseId }),
+        body: JSON.stringify({
+          case_id: caseId,
+          ...(formId ? { company_form_id: formId } : {}),
+        }),
       });
       if (!res.ok) throw new Error("Failed to approve");
       startTransition(() => {
@@ -167,37 +165,50 @@ export function AssignmentQueue({
 
           // Parse confidence from notes JSON or use default
           let confidence = 85;
-          let rationale = "Specialty match";
+          let rationale: string | null = null;
           if (c.notes) {
             try {
               const parsed = JSON.parse(c.notes);
               if (parsed.confidence) confidence = parsed.confidence;
               if (parsed.rationale) rationale = parsed.rationale;
             } catch {
-              // notes is plain text rationale
               rationale = c.notes;
             }
           }
+          // If the AI returned a thin rationale (e.g. "Specialty match"), expand it
+          // with concrete reviewer stats so Ashton can trust the pick at a glance.
+          const neededSpecialty = c.specialty_required || c.provider.specialty || "—";
+          const activeCases = c.reviewer.active_cases_count ?? 0;
+          const totalReviews = c.reviewer.total_reviews_completed ?? 0;
+          const isThinRationale =
+            !rationale || rationale.trim().toLowerCase() === "specialty match";
+          const displayRationale = isThinRationale
+            ? `Dr. ${c.reviewer.full_name} matches ${neededSpecialty}, has ${activeCases} active case${activeCases === 1 ? "" : "s"}${
+                activeCases === 0 ? " (lowest available)" : ""
+              }, ${totalReviews} total reviews completed.`
+            : rationale!;
 
           const alts = alternateReviewers[c.id] || [];
 
           return (
             <Card key={c.id} className="overflow-hidden">
               <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <Stethoscope className="h-4 w-4 text-muted-foreground" />
+                      <Building2 className="h-4 w-4 shrink-0 text-blue-600" />
+                      <span className="truncate text-base font-semibold">
+                        {c.company.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Stethoscope className="h-4 w-4 shrink-0 text-muted-foreground" />
                       <span className="text-sm font-semibold">
                         {c.provider.first_name} {c.provider.last_name}
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        {c.provider.specialty}
+                      <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                        {neededSpecialty}
                       </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Building2 className="h-3 w-3" />
-                      {c.company.name}
                     </div>
                   </div>
                   <ConfidenceBadge confidence={confidence} />
@@ -213,7 +224,7 @@ export function AssignmentQueue({
                   <ReviewerCard
                     reviewer={c.reviewer}
                     confidence={confidence}
-                    rationale={rationale}
+                    rationale={displayRationale}
                     compact={false}
                   />
                 </div>
@@ -223,64 +234,41 @@ export function AssignmentQueue({
                   <Badge variant="ai" className="mt-0.5 shrink-0">
                     AI
                   </Badge>
-                  <p className="text-xs text-muted-foreground">{rationale}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {displayRationale}
+                  </p>
                 </div>
               </CardContent>
 
               <CardFooter className="flex items-center justify-between border-t bg-muted/20 px-6 py-3">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isBusy || alts.length === 0}
-                    >
-                      {isReassigning ? (
-                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                      ) : (
-                        <RefreshCw className="mr-2 h-3 w-3" />
-                      )}
-                      Reassign
-                      <ChevronDown className="ml-1 h-3 w-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-72">
-                    <DropdownMenuLabel>
-                      Specialty-matched reviewers
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {alts.length === 0 ? (
-                      <DropdownMenuItem disabled>
-                        No alternative reviewers available
-                      </DropdownMenuItem>
-                    ) : (
-                      alts.map((alt) => (
-                        <DropdownMenuItem
-                          key={alt.id}
-                          onClick={() => handleReassign(c.id, alt.id)}
-                        >
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">
-                              {alt.full_name}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {alt.specialty}
-                              {alt.board_certification
-                                ? ` - ${alt.board_certification}`
-                                : ""}
-                              {" | "}
-                              {alt.active_cases_count} active
-                            </span>
-                          </div>
-                        </DropdownMenuItem>
-                      ))
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isBusy}
+                  onClick={() => setPickerOpenForCase(c.id)}
+                >
+                  {isReassigning ? (
+                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                  ) : (
+                    <RefreshCw className="mr-2 h-3 w-3" />
+                  )}
+                  Reassign
+                </Button>
+
+                <ReviewerPickerModal
+                  open={pickerOpenForCase === c.id}
+                  onOpenChange={(open) =>
+                    setPickerOpenForCase(open ? c.id : null)
+                  }
+                  specialty={neededSpecialty === "—" ? null : neededSpecialty}
+                  currentReviewerId={c.reviewer.id}
+                  onPick={(newReviewerId) => handleReassign(c.id, newReviewerId)}
+                  title="Reassign reviewer"
+                />
 
                 <Button
                   size="sm"
-                  onClick={() => handleApproveSingle(c.id)}
+                  onClick={() => setConfirmOpenForCase(c.id)}
                   disabled={isBusy}
                 >
                   {isApproving ? (
@@ -290,6 +278,21 @@ export function AssignmentQueue({
                   )}
                   Approve
                 </Button>
+
+                <ConfirmApproveModal
+                  open={confirmOpenForCase === c.id}
+                  onOpenChange={(open) =>
+                    setConfirmOpenForCase(open ? c.id : null)
+                  }
+                  reviewerName={c.reviewer.full_name}
+                  companyId={c.company.id}
+                  specialty={neededSpecialty === "—" ? null : neededSpecialty}
+                  defaultFormId={
+                    (c as unknown as { company_form_id?: string | null })
+                      .company_form_id ?? null
+                  }
+                  onConfirm={(formId) => handleApproveSingle(c.id, formId)}
+                />
               </CardFooter>
             </Card>
           );

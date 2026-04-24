@@ -8,10 +8,12 @@ import { calculateProjectedCompletion } from '@/lib/utils/completion';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { case_id, batch_id, approve_all } = body as {
+    const { case_id, batch_id, approve_all, reassign_to, company_form_id } = body as {
       case_id?: string;
       batch_id?: string;
       approve_all?: boolean;
+      reassign_to?: string;
+      company_form_id?: string;
     };
 
     if (!case_id && !(batch_id && approve_all)) {
@@ -19,6 +21,21 @@ export async function POST(request: NextRequest) {
         { error: 'Provide case_id for single approval, or batch_id with approve_all: true', code: 'VALIDATION_ERROR' },
         { status: 400 }
       );
+    }
+
+    // Optional reassign: swap reviewer_id before approval. Used by manual reviewer picker.
+    if (case_id && reassign_to) {
+      await supabaseAdmin
+        .from('review_cases')
+        .update({ reviewer_id: reassign_to, updated_at: new Date().toISOString() })
+        .eq('id', case_id);
+    }
+    // Optional form override: record which company-approved form applies.
+    if (case_id && company_form_id) {
+      await supabaseAdmin
+        .from('review_cases')
+        .update({ company_form_id, updated_at: new Date().toISOString() })
+        .eq('id', case_id);
     }
 
     if (approve_all && batch_id) {

@@ -65,6 +65,28 @@ export function ClientSubmitWizard({
     [providers, specialty]
   );
 
+  // Auto-attach: if exactly one approved form exists for this specialty,
+  // stamp it silently and skip the form-picker step.
+  const autoAttachedFormId = specialtyForms.length === 1 ? specialtyForms[0].id : "";
+  const effectiveFormId = formId || autoAttachedFormId;
+  const skipFormStep = specialtyForms.length === 1;
+
+  function goNext() {
+    if (step === 1 && skipFormStep) {
+      if (!formId) setFormId(autoAttachedFormId);
+      setStep(3);
+      return;
+    }
+    setStep(step + 1);
+  }
+  function goBack() {
+    if (step === 3 && skipFormStep) {
+      setStep(1);
+      return;
+    }
+    if (step > 1) setStep(step - 1);
+  }
+
   function handleFiles(files: FileList | null) {
     if (!files) return;
     const pdfs = Array.from(files).filter((f) =>
@@ -108,7 +130,7 @@ export function ClientSubmitWizard({
           batch_name: batchName,
           company_id: company.id,
           specialty,
-          company_form_id: formId,
+          company_form_id: effectiveFormId,
           status: "pending_admin_review",
           submitted_by: company.name,
           cases: rows.map((r) => ({
@@ -249,6 +271,13 @@ export function ClientSubmitWizard({
               No approved forms on file. Contact Peerspectiv to set up specialty forms.
             </p>
           )}
+          {specialty && skipFormStep && (
+            <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-200">
+              <Check className="mr-1 inline h-3 w-3" />
+              <strong>{specialtyForms[0].form_name}</strong> will be auto-attached
+              — it&rsquo;s your only approved form for {specialty}.
+            </p>
+          )}
         </div>
       )}
 
@@ -376,7 +405,12 @@ export function ClientSubmitWizard({
             <div className="flex justify-between">
               <dt className="text-white/50">Form</dt>
               <dd className="font-medium text-white">
-                {forms.find((f) => f.id === formId)?.form_name}
+                {forms.find((f) => f.id === effectiveFormId)?.form_name}
+                {skipFormStep && (
+                  <span className="ml-2 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-medium text-emerald-300">
+                    AUTO
+                  </span>
+                )}
               </dd>
             </div>
             <div className="flex justify-between">
@@ -446,7 +480,7 @@ export function ClientSubmitWizard({
       <div className="flex items-center justify-between gap-3 pt-2">
         <button
           className={btnGhost}
-          onClick={() => (step > 1 ? setStep(step - 1) : null)}
+          onClick={goBack}
           disabled={submitting || step === 1}
         >
           Back
@@ -454,10 +488,10 @@ export function ClientSubmitWizard({
 
         {step < 4 ? (
           <button
-            onClick={() => setStep(step + 1)}
+            onClick={goNext}
             disabled={
               (step === 1 && !specialty) ||
-              (step === 2 && !formId) ||
+              (step === 2 && !effectiveFormId) ||
               (step === 3 && (!batchName.trim() || rows.length === 0))
             }
             className={`${btnDark} inline-flex items-center gap-1`}
