@@ -9,12 +9,73 @@ export async function PATCH(
 ) {
   try {
     const body = await request.json();
-    const { rate_type, rate_amount } = body as {
+    const {
+      rate_type,
+      rate_amount,
+      full_name,
+      email,
+      specialty,
+      board_certification,
+      status,
+    } = body as {
       rate_type?: 'per_minute' | 'per_report' | 'per_hour';
       rate_amount?: number | string;
+      full_name?: string;
+      email?: string;
+      specialty?: string;
+      board_certification?: string | null;
+      status?: string;
     };
 
     const update: Record<string, unknown> = {};
+
+    if (full_name != null) {
+      const v = full_name.trim();
+      if (!v) {
+        return NextResponse.json(
+          { error: 'full_name cannot be empty', code: 'VALIDATION_ERROR' },
+          { status: 400 }
+        );
+      }
+      update.full_name = v;
+    }
+
+    if (email != null) {
+      const v = email.trim();
+      if (!v || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+        return NextResponse.json(
+          { error: 'Invalid email', code: 'VALIDATION_ERROR' },
+          { status: 400 }
+        );
+      }
+      update.email = v;
+    }
+
+    if (specialty != null) {
+      const v = specialty.trim();
+      if (!v) {
+        return NextResponse.json(
+          { error: 'specialty cannot be empty', code: 'VALIDATION_ERROR' },
+          { status: 400 }
+        );
+      }
+      update.specialty = v;
+    }
+
+    if (board_certification !== undefined) {
+      const v = typeof board_certification === 'string' ? board_certification.trim() : '';
+      update.board_certification = v || null;
+    }
+
+    if (status != null) {
+      if (!['active', 'inactive'].includes(status)) {
+        return NextResponse.json(
+          { error: 'Invalid status', code: 'VALIDATION_ERROR' },
+          { status: 400 }
+        );
+      }
+      update.status = status;
+    }
 
     if (rate_type != null) {
       if (!['per_minute', 'per_report', 'per_hour'].includes(rate_type)) {

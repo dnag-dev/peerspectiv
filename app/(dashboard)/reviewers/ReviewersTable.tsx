@@ -17,6 +17,7 @@ interface Reviewer {
   full_name: string | null;
   email: string | null;
   specialty: string | null;
+  board_certification: string | null;
   active_cases_count: number | null;
   total_reviews_completed: number | null;
   availability_status: string | null;
@@ -57,7 +58,7 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
     setSelected(r);
     setUnavailOpen(true);
   }
-  function openRate(r: Reviewer) {
+  function openEdit(r: Reviewer) {
     setSelected(r);
     setRateOpen(true);
   }
@@ -78,11 +79,28 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
     setUnavailOpen(false);
   }
 
-  function handleRateSuccess(rateType: RateType, rateAmount: number) {
+  function handleEditSuccess(updated: {
+    full_name: string;
+    email: string;
+    specialty: string;
+    board_certification: string | null;
+    rate_type: RateType;
+    rate_amount: number;
+  }) {
     if (!selected) return;
     setReviewers((prev) =>
       prev.map((x) =>
-        x.id === selected.id ? { ...x, rate_type: rateType, rate_amount: rateAmount } : x
+        x.id === selected.id
+          ? {
+              ...x,
+              full_name: updated.full_name,
+              email: updated.email,
+              specialty: updated.specialty,
+              board_certification: updated.board_certification,
+              rate_type: updated.rate_type,
+              rate_amount: updated.rate_amount,
+            }
+          : x
       )
     );
     setRateOpen(false);
@@ -147,8 +165,8 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
-                      <Button variant="outline" size="sm" onClick={() => openRate(r)}>
-                        Edit Rate
+                      <Button variant="outline" size="sm" onClick={() => openEdit(r)}>
+                        Edit
                       </Button>
                       {status === 'available' ? (
                         <Button variant="outline" size="sm" onClick={() => openUnavail(r)}>
@@ -192,11 +210,11 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
         <EditRateModal
           open={rateOpen}
           onClose={() => setRateOpen(false)}
-          reviewerId={selected.id}
-          reviewerName={selected.full_name ?? 'Reviewer'}
+          reviewer={selected}
+          boardCertification={selected.board_certification}
           currentRateType={(selected.rate_type as RateType) ?? 'per_minute'}
           currentRateAmount={Number(selected.rate_amount ?? 1)}
-          onSuccess={handleRateSuccess}
+          onSuccess={handleEditSuccess}
         />
       )}
     </>

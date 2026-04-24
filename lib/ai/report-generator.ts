@@ -1,33 +1,44 @@
 import { callClaude } from './anthropic';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { sql } from 'drizzle-orm';
 
 export async function generateQAPIReport(
   companyId: string,
   startDate: string,
   endDate: string
 ): Promise<string> {
-  // Fetch company
-  const { data: company } = await supabaseAdmin
-    .from('companies')
-    .select('name')
-    .eq('id', companyId)
-    .single();
+  // Company name
+  const companyRows = await db.execute<{ name: string }>(sql`
+    SELECT name FROM companies WHERE id = ${companyId} LIMIT 1
+  `);
+  const company = ((companyRows as any).rows ?? companyRows)[0] as
+    | { name: string }
+    | undefined;
 
-  // Fetch completed reviews in date range
-  const { data: results } = await supabaseAdmin
-    .from('review_results')
-    .select(`
-      overall_score, quality_score, ai_agreement_percentage, deficiencies,
-      criteria_scores, submitted_at,
-      case:review_cases!inner(company_id, specialty_required, provider:providers(first_name, last_name))
-    `)
-    .gte('submitted_at', startDate)
-    .lte('submitted_at', endDate);
-
-  // Filter by company
-  const companyResults = results?.filter(
-    (r: any) => r.case?.company_id === companyId
-  ) || [];
+  // Pull completed reviews joined to their case — the Supabase-compat shim's
+  // nested "review_cases!inner(...)" syntax returned undefined joins, so the
+  // filter below thought every company had zero results. Raw SQL is plain.
+  type Row = {
+    overall_score: number | null;
+    quality_score: number | null;
+    ai_agreement_percentage: number | null;
+    deficiencies: any;
+    criteria_scores: any;
+    submitted_at: string;
+  };
+  const resultRows = await db.execute<Row>(sql`
+    SELECT rr.overall_score, rr.quality_score, rr.ai_agreement_percentage,
+           rr.deficiencies, rr.criteria_scores, rr.submitted_at
+    FROM review_results rr
+    INNER JOIN review_cases rc ON rc.id = rr.case_id
+    WHERE rc.company_id = ${companyId}
+      AND rr.submitted_at >= ${startDate}
+      AND rr.submitted_at < (${endDate}::date + INTERVAL '1 day')
+  `);
+  const companyResults = (((resultRows as any).rows ?? resultRows) as Row[]).map((r) => ({
+    ...r,
+    overall_score: r.overall_score == null ? 0 : Number(r.overall_score),
+  }));
 
   if (companyResults.length === 0) {
     return 'No completed reviews found for this company in the selected date range.';
