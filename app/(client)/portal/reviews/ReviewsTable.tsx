@@ -47,14 +47,20 @@ export function ReviewsTable({
   rows,
   initialMonth = null,
   initialCriterion = null,
+  initialStatus = "all",
+  initialSpecialty = "all",
+  initialQuarter = "all",
 }: {
   rows: Row[];
   initialMonth?: string | null;
   initialCriterion?: string | null;
+  initialStatus?: string;
+  initialSpecialty?: string;
+  initialQuarter?: string;
 }) {
-  const [status, setStatus] = useState<string>("all");
-  const [specialty, setSpecialty] = useState<string>("all");
-  const [quarter, setQuarter] = useState<string>("all");
+  const [status, setStatus] = useState<string>(initialStatus);
+  const [specialty, setSpecialty] = useState<string>(initialSpecialty);
+  const [quarter, setQuarter] = useState<string>(initialQuarter);
   const [month, setMonth] = useState<string | null>(initialMonth);
   const [criterion, setCriterion] = useState<string | null>(initialCriterion);
 

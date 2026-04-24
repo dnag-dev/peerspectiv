@@ -56,8 +56,9 @@ function yearOptions(): string[] {
 /* ------------------------------------------------------------------ */
 
 export function QAPIReportTab({ companies }: Props) {
-  const [companyId, setCompanyId] = useState("");
-  const [quarter, setQuarter] = useState("");
+  // Radix Select disallows empty-string values; use undefined until picked.
+  const [companyId, setCompanyId] = useState<string | undefined>(undefined);
+  const [quarter, setQuarter] = useState<string | undefined>(undefined);
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<QAPIReport | null>(null);
@@ -72,7 +73,7 @@ export function QAPIReportTab({ companies }: Props) {
     setReport(null);
 
     try {
-      const dates = QUARTER_DATES[quarter];
+      const dates = QUARTER_DATES[quarter!];
       const start_date = `${year}${dates.start}`;
       const end_date = `${year}${dates.end}`;
 

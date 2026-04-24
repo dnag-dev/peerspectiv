@@ -25,7 +25,13 @@ function labelize(item: any): string | null {
 export default async function AllReviewsPage({
   searchParams,
 }: {
-  searchParams: { month?: string; criterion?: string };
+  searchParams: {
+    month?: string;
+    criterion?: string;
+    status?: string;
+    specialty?: string;
+    quarter?: string;
+  };
 }) {
   const company = await getDemoCompany();
   const rows = await db
@@ -60,6 +66,13 @@ export default async function AllReviewsPage({
       <ReviewsTable
         initialMonth={searchParams.month ?? null}
         initialCriterion={searchParams.criterion ?? null}
+        initialStatus={searchParams.status ?? "all"}
+        initialSpecialty={searchParams.specialty ?? "all"}
+        initialQuarter={
+          searchParams.quarter === "current"
+            ? `Q${Math.floor(new Date().getMonth() / 3) + 1} ${new Date().getFullYear()}`
+            : (searchParams.quarter ?? "all")
+        }
         rows={rows.map((r) => {
           const defs = Array.isArray(r.deficiencies)
             ? (r.deficiencies as any[]).map(labelize).filter(Boolean) as string[]

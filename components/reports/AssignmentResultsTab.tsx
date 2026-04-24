@@ -75,7 +75,9 @@ function formatDate(d: string | null): string {
 /* ------------------------------------------------------------------ */
 
 export function AssignmentResultsTab({ companies }: Props) {
-  const [companyId, setCompanyId] = useState<string>("");
+  // NOTE: Radix Select disallows an empty-string value. Default to "all"
+  // (matches the "All companies" SelectItem) and treat it as no-filter.
+  const [companyId, setCompanyId] = useState<string>("all");
   const [providerSearch, setProviderSearch] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -88,7 +90,7 @@ export function AssignmentResultsTab({ companies }: Props) {
     setSearched(true);
     try {
       const params = new URLSearchParams();
-      if (companyId) params.set("company_id", companyId);
+      if (companyId && companyId !== "all") params.set("company_id", companyId);
       if (providerSearch) params.set("provider", providerSearch);
       if (startDate) params.set("start_date", startDate);
       if (endDate) params.set("end_date", endDate);

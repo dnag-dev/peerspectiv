@@ -123,8 +123,9 @@ export function DashboardView(props: Props) {
       </div>
 
       {/* Compliance banner */}
-      <div
-        className="rounded-lg p-6 flex flex-col lg:flex-row items-center gap-8"
+      <Link
+        href="/portal/reviews?status=completed"
+        className="rounded-lg p-6 flex flex-col lg:flex-row items-center gap-8 transition-all hover:ring-2 hover:ring-blue-500/40"
         style={{ backgroundColor: CARD_BG }}
       >
         <ComplianceRing score={compliance} />
@@ -142,9 +143,9 @@ export function DashboardView(props: Props) {
           <p className="mt-3 text-sm text-gray-400">
             {companyName} — Compliance score this quarter
           </p>
-          <p className="mt-1 text-xs text-gray-500">QoQ trend: +2.4%</p>
+          <p className="mt-1 text-xs text-gray-500">QoQ trend: +2.4% · Click to view completed reviews</p>
         </div>
-      </div>
+      </Link>
 
       {/* Projected completion */}
       {projectedCompletion && (
@@ -168,10 +169,28 @@ export function DashboardView(props: Props) {
 
       {/* KPI cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Reviews this quarter" value={reviewsThisQuarter.toString()} />
-        <KpiCard label="Avg turnaround" value={`${avgTurnaround}d`} />
-        <KpiCard label="Documentation risk" value={`${riskRate}%`} highlight={riskRate > 30} />
-        <KpiCard label="Repeat deficiencies" value={repeatCount.toString()} highlight={repeatCount > 0} />
+        <KpiCard
+          label="Reviews this quarter"
+          value={reviewsThisQuarter.toString()}
+          href="/portal/reviews?quarter=current"
+        />
+        <KpiCard
+          label="Avg turnaround"
+          value={`${avgTurnaround}d`}
+          href="/portal/reviews?status=completed"
+        />
+        <KpiCard
+          label="Documentation risk"
+          value={`${riskRate}%`}
+          highlight={riskRate > 30}
+          href="/portal/trends"
+        />
+        <KpiCard
+          label="Repeat deficiencies"
+          value={repeatCount.toString()}
+          highlight={repeatCount > 0}
+          href="/portal/trends"
+        />
       </div>
 
       {/* Charts row */}
@@ -185,23 +204,27 @@ export function DashboardView(props: Props) {
               <p className="text-sm text-gray-400">No specialty data yet.</p>
             )}
             {specialty.map((s) => (
-              <div key={s.specialty}>
-                <div className="flex justify-between text-xs text-gray-300 mb-1">
-                  <span>{s.specialty}</span>
+              <Link
+                key={s.specialty}
+                href={`/portal/reviews?specialty=${encodeURIComponent(s.specialty)}`}
+                className="block group"
+              >
+                <div className="flex justify-between text-xs text-gray-300 mb-1 group-hover:text-white">
+                  <span className="group-hover:underline">{s.specialty}</span>
                   <span>
                     {s.avg}% ({s.count})
                   </span>
                 </div>
                 <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: "#0B1829" }}>
                   <div
-                    className="h-full transition-all"
+                    className="h-full transition-all group-hover:opacity-80"
                     style={{
                       width: `${Math.min(s.avg, 100)}%`,
                       backgroundColor: complianceColor(s.avg),
                     }}
                   />
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -223,15 +246,18 @@ export function DashboardView(props: Props) {
           <AttentionColumn
             icon={<AlertTriangle className="h-4 w-4" style={{ color: DANGER }} />}
             title="Past Due Cases"
+            seeAllHref="/portal/overdue"
             items={needs.pastDue.map((c) => ({
               id: c.id,
               text: c.name,
               sub: c.due ? `Due ${new Date(c.due).toLocaleDateString()}` : null,
+              href: "/portal/overdue",
             }))}
           />
           <AttentionColumn
             icon={<TrendingDown className="h-4 w-4" style={{ color: WARNING }} />}
             title="Providers Below 75%"
+            seeAllHref="/portal/providers"
             items={needs.lowProviders.map((p) => ({
               id: p.id,
               text: p.name,
@@ -242,10 +268,12 @@ export function DashboardView(props: Props) {
           <AttentionColumn
             icon={<Wrench className="h-4 w-4" style={{ color: ACCENT }} />}
             title="Open Corrective Actions"
+            seeAllHref="/portal/corrective"
             items={needs.openActions.map((a) => ({
               id: a.id,
               text: a.title,
               sub: a.dueDate ? `Due ${new Date(a.dueDate).toLocaleDateString()}` : null,
+              href: "/portal/corrective",
             }))}
           />
         </div>
@@ -315,22 +343,39 @@ function KpiCard({
   label,
   value,
   highlight,
+  href,
 }: {
   label: string;
   value: string;
   highlight?: boolean;
+  href?: string;
 }) {
-  return (
-    <div
-      data-testid="kpi-card"
-      className="rounded-lg p-4"
-      style={{
-        backgroundColor: CARD_BG,
-        borderLeft: `3px solid ${highlight ? WARNING : ACCENT}`,
-      }}
-    >
+  const body = (
+    <>
       <div className="text-xs uppercase tracking-wider text-gray-400">{label}</div>
       <div className="mt-1 text-2xl font-bold text-white">{value}</div>
+    </>
+  );
+  const common = "rounded-lg p-4 block";
+  const style = {
+    backgroundColor: CARD_BG,
+    borderLeft: `3px solid ${highlight ? WARNING : ACCENT}`,
+  };
+  if (href) {
+    return (
+      <Link
+        href={href}
+        data-testid="kpi-card"
+        className={`${common} transition-all hover:ring-2 hover:ring-blue-500/40`}
+        style={style}
+      >
+        {body}
+      </Link>
+    );
+  }
+  return (
+    <div data-testid="kpi-card" className={common} style={style}>
+      {body}
     </div>
   );
 }
@@ -427,16 +472,25 @@ function AttentionColumn({
   icon,
   title,
   items,
+  seeAllHref,
 }: {
   icon: React.ReactNode;
   title: string;
   items: Array<{ id: string; text: string; sub: string | null; href?: string }>;
+  seeAllHref?: string;
 }) {
   return (
     <div>
-      <div className="flex items-center gap-2 mb-2">
-        {icon}
-        <span className="text-xs uppercase tracking-wider text-gray-400">{title}</span>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          {icon}
+          <span className="text-xs uppercase tracking-wider text-gray-400">{title}</span>
+        </div>
+        {seeAllHref && items.length > 0 && (
+          <Link href={seeAllHref} className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline">
+            See all →
+          </Link>
+        )}
       </div>
       {items.length === 0 ? (
         <p className="text-xs text-gray-500">None</p>
