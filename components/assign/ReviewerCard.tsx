@@ -92,10 +92,10 @@ export function ReviewerCard({
         </span>
       </div>
 
-      {rationale && (
-        <p className="text-xs italic text-muted-foreground">
-          {rationale}
-        </p>
+      {/* Rationale is rendered by the parent (AssignmentQueue) with an AI
+          badge — keep a single source so the line doesn't duplicate. */}
+      {false && rationale && (
+        <p className="text-xs italic text-muted-foreground">{rationale}</p>
       )}
     </div>
   );

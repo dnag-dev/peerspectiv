@@ -133,6 +133,35 @@ async function main() {
   }
   console.log(`  ${removedDupes} duplicate reviewers removed.`);
 
+  // Fix reviewer↔case specialty mismatches on pending_approval rows. The AI
+  // picker sometimes lands on a reviewer whose specialty doesn't match the
+  // case's specialty_required — reassign those to the lowest-loaded reviewer
+  // whose specialty DOES match. Without this the /assign queue ships with
+  // obvious wrong pairings (e.g. OB/GYN provider → Family Medicine reviewer).
+  console.log('Fixing pending_approval specialty mismatches...');
+  const mismatches = await sql`
+    SELECT rc.id, COALESCE(rc.specialty_required, p.specialty) AS needed
+    FROM review_cases rc
+    JOIN providers p ON p.id = rc.provider_id
+    JOIN reviewers r ON r.id = rc.reviewer_id
+    WHERE rc.status = 'pending_approval'
+      AND r.specialty <> COALESCE(rc.specialty_required, p.specialty)
+  `;
+  let reassigned = 0;
+  for (const m of mismatches) {
+    const [replacement] = await sql`
+      SELECT id FROM reviewers
+      WHERE status = 'active' AND specialty = ${m.needed}
+      ORDER BY active_cases_count ASC NULLS FIRST, total_reviews_completed DESC NULLS LAST
+      LIMIT 1
+    `;
+    if (replacement?.id) {
+      await sql`UPDATE review_cases SET reviewer_id = ${replacement.id}, updated_at = now() WHERE id = ${m.id}`;
+      reassigned++;
+    }
+  }
+  console.log(`  ${reassigned} cases reassigned to specialty-matched reviewers.`);
+
   // Final summary
   const [{ n: validCount }] = await sql`
     SELECT count(*)::int AS n FROM reviewers

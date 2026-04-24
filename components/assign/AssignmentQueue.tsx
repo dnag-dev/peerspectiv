@@ -156,8 +156,10 @@ export function AssignmentQueue({
         </Button>
       </div>
 
-      {/* Case cards */}
-      <div className="grid gap-4">
+      {/* Case cards — responsive grid: single column on mobile, 2-col once
+          there's room for 480px cards side-by-side. Prevents the cards from
+          stretching across the whole viewport on desktop. */}
+      <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(480px,1fr))]">
         {initialCases.map((c) => {
           const isApproving = approvingIds.has(c.id);
           const isReassigning = reassigningIds.has(c.id);
@@ -191,32 +193,31 @@ export function AssignmentQueue({
           const alts = alternateReviewers[c.id] || [];
 
           return (
-            <Card key={c.id} className="overflow-hidden">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 shrink-0 text-blue-600" />
-                      <span className="truncate text-base font-semibold">
-                        {c.company.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Stethoscope className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      <span className="text-sm font-semibold">
-                        {c.provider.first_name} {c.provider.last_name}
-                      </span>
-                      <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                        {neededSpecialty}
-                      </span>
-                    </div>
+            <Card key={c.id} className="overflow-hidden border-gray-200">
+              <CardHeader className="space-y-1.5 p-4 pb-3">
+                {/* Row 1: Company + match badge together */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Building2 className="h-4 w-4 shrink-0 text-blue-600" />
+                    <span className="truncate text-base font-semibold">
+                      {c.company.name}
+                    </span>
                   </div>
                   <ConfidenceBadge confidence={confidence} />
                 </div>
+                {/* Row 2: Provider · specialty */}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Stethoscope className="h-3.5 w-3.5 shrink-0" />
+                  <span className="font-medium text-foreground">
+                    {c.provider.first_name} {c.provider.last_name}
+                  </span>
+                  <span>·</span>
+                  <span>{neededSpecialty}</span>
+                </div>
               </CardHeader>
 
-              <CardContent className="space-y-3 pb-3">
-                {/* Proposed reviewer */}
+              <CardContent className="space-y-2 p-4 pt-0 pb-3">
+                {/* Proposed reviewer — single block, rationale included once */}
                 <div className="rounded-md border bg-muted/30 p-3">
                   <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                     Proposed Reviewer
@@ -224,23 +225,20 @@ export function AssignmentQueue({
                   <ReviewerCard
                     reviewer={c.reviewer}
                     confidence={confidence}
-                    rationale={displayRationale}
                     compact={false}
                   />
-                </div>
-
-                {/* AI rationale */}
-                <div className="flex items-start gap-2">
-                  <Badge variant="ai" className="mt-0.5 shrink-0">
-                    AI
-                  </Badge>
-                  <p className="text-xs text-muted-foreground">
-                    {displayRationale}
-                  </p>
+                  <div className="mt-2 flex items-start gap-2 border-t border-gray-200/80 pt-2">
+                    <Badge variant="ai" className="mt-0.5 shrink-0 text-[10px] px-1.5 py-0">
+                      AI
+                    </Badge>
+                    <p className="text-xs italic text-muted-foreground">
+                      {displayRationale}
+                    </p>
+                  </div>
                 </div>
               </CardContent>
 
-              <CardFooter className="flex items-center justify-between border-t bg-muted/20 px-6 py-3">
+              <CardFooter className="flex items-center justify-between border-t bg-muted/20 px-4 py-2.5">
                 <Button
                   variant="outline"
                   size="sm"

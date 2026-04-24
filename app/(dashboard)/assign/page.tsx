@@ -83,12 +83,41 @@ async function getAlternateReviewers(
   return result;
 }
 
+async function getApprovedTodayCount(): Promise<number> {
+  const startOfDayUtc = new Date();
+  startOfDayUtc.setUTCHours(0, 0, 0, 0);
+  const { data, error } = await supabaseAdmin
+    .from("review_cases")
+    .select("id, status, updated_at")
+    .gte("updated_at", startOfDayUtc.toISOString())
+    .in("status", ["assigned", "in_progress", "completed", "past_due"]);
+  if (error) return 0;
+  return (data ?? []).length;
+}
+
 export default async function AssignPage() {
   const pendingCases = await getPendingCases();
   const alternateReviewers = await getAlternateReviewers(pendingCases);
+  const approvedToday = await getApprovedTodayCount();
+
+  // Avg match across the pending queue (parsed from notes.confidence)
+  const confidences = pendingCases
+    .map((c) => {
+      try {
+        const parsed = c.notes ? JSON.parse(c.notes) : null;
+        return typeof parsed?.confidence === "number" ? parsed.confidence : 85;
+      } catch {
+        return 85;
+      }
+    })
+    .filter((v): v is number => Number.isFinite(v));
+  const avgMatch =
+    confidences.length > 0
+      ? Math.round(confidences.reduce((s, v) => s + v, 0) / confidences.length)
+      : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Page header */}
       <div>
         <div className="flex items-center gap-2">
@@ -100,9 +129,27 @@ export default async function AssignPage() {
             <Badge variant="warning">{pendingCases.length}</Badge>
           )}
         </div>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Review and approve AI-suggested reviewer assignments.
         </p>
+      </div>
+
+      {/* Stats bar */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
+        <span>
+          <span className="font-medium text-foreground">{pendingCases.length}</span> pending
+        </span>
+        <span className="text-border">•</span>
+        <span>
+          <span className="font-medium text-foreground">{approvedToday}</span> approved today
+        </span>
+        <span className="text-border">•</span>
+        <span>
+          Avg match{" "}
+          <span className="font-medium text-foreground">
+            {avgMatch != null ? `${avgMatch}%` : "—"}
+          </span>
+        </span>
       </div>
 
       {/* Queue content */}
