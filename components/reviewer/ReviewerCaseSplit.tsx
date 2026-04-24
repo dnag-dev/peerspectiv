@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from "react-resizable-panels";
+
+const STORAGE_KEY = "peerspectiv.reviewer.caseSplitLayout";
 import { FileText, Sparkles, ExternalLink, GripVertical } from "lucide-react";
 import { ReviewForm } from "@/components/reviewer/ReviewForm";
 
@@ -65,6 +67,39 @@ export function ReviewerCaseSplit({
   existingResult,
 }: Props) {
   const [tab, setTab] = useState<LeftTab>("ash");
+  const [savedLayout, setSavedLayout] = useState<{ left: number; right: number } | null>(null);
+  const [layoutReady, setLayoutReady] = useState(false);
+
+  // Hydrate saved layout after mount so SSR markup stays stable
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { left?: number; right?: number };
+        if (typeof parsed.left === "number" && typeof parsed.right === "number") {
+          setSavedLayout({ left: parsed.left, right: parsed.right });
+        }
+      }
+    } catch {
+      // ignore corrupt value
+    }
+    setLayoutReady(true);
+  }, []);
+
+  function persistLayout(layout: { [id: string]: number }) {
+    const left = layout["left-panel"];
+    const right = layout["right-panel"];
+    if (typeof left === "number" && typeof right === "number") {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ left, right }));
+      } catch {
+        // storage quota / disabled — not critical
+      }
+    }
+  }
+
+  const defaultLeft = savedLayout?.left ?? 55;
+  const defaultRight = savedLayout?.right ?? 45;
 
   const TabBtn = ({ id, icon, label }: { id: LeftTab; icon: React.ReactNode; label: string }) => (
     <button
@@ -82,9 +117,14 @@ export function ReviewerCaseSplit({
 
   return (
     <div className="min-h-0 flex-1">
-      <PanelGroup orientation="horizontal" className="flex h-full">
+      <PanelGroup
+        key={layoutReady ? "hydrated" : "default"}
+        orientation="horizontal"
+        className="flex h-full"
+        onLayoutChanged={persistLayout}
+      >
         {/* ─── LEFT PANEL: tabbed (Ash Summary / Chart) ─── */}
-        <Panel defaultSize={55} minSize={30} maxSize={70}>
+        <Panel id="left-panel" defaultSize={defaultLeft} minSize={30} maxSize={70}>
           <div className="flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0F2040]">
             {/* Tab bar */}
             <div className="flex flex-shrink-0 items-center justify-between border-b border-white/10">
@@ -197,7 +237,7 @@ export function ReviewerCaseSplit({
         </PanelResizeHandle>
 
         {/* ─── RIGHT PANEL: Review form ─── */}
-        <Panel defaultSize={45} minSize={30} maxSize={70}>
+        <Panel id="right-panel" defaultSize={defaultRight} minSize={30} maxSize={70}>
           <div className="h-full overflow-y-auto rounded-xl">
             {existingResult ? (
               <div className="space-y-4">

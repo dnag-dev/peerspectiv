@@ -98,9 +98,26 @@ export async function POST(request: NextRequest) {
       // Fetch case details and send email
       const { data: caseData } = await supabaseAdmin
         .from('review_cases')
-        .select('id, specialty_required, due_date, reviewer:reviewers(full_name, email)')
+        .select('id, batch_id, specialty_required, due_date, reviewer:reviewers(full_name, email)')
         .eq('id', case_id)
         .single();
+
+      // Recalculate projected completion for this case's batch
+      if (caseData?.batch_id) {
+        const { data: sibling } = await supabaseAdmin
+          .from('review_cases')
+          .select('due_date, status')
+          .eq('batch_id', caseData.batch_id);
+        if (sibling) {
+          const projected = calculateProjectedCompletion(sibling);
+          if (projected) {
+            await supabaseAdmin
+              .from('batches')
+              .update({ projected_completion: projected.toISOString() })
+              .eq('id', caseData.batch_id);
+          }
+        }
+      }
 
       if (caseData) {
         const reviewer = caseData.reviewer as unknown as { full_name: string; email: string } | null;
