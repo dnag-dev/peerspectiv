@@ -39,14 +39,22 @@ export async function GET() {
       }
     }
 
+    // NOTE: Postgres `numeric` columns come back as STRINGS from node-postgres.
+    // `ai_agreement_score` is numeric(4,2) — must coerce to Number or the
+    // client's `.toFixed()` call crashes the entire /reports page.
     const rows = (reviewers ?? []).map((r: any) => {
       const quality = qualityMap.get(r.id);
+      const agreementRaw = r.ai_agreement_score;
+      const agreement =
+        agreementRaw == null || agreementRaw === ""
+          ? null
+          : Number(agreementRaw);
       return {
         id: r.id as string,
         full_name: r.full_name as string,
         specialty: r.specialty as string,
-        total_reviews_completed: (r.total_reviews_completed ?? 0) as number,
-        ai_agreement_score: (r.ai_agreement_score ?? null) as number | null,
+        total_reviews_completed: Number(r.total_reviews_completed ?? 0),
+        ai_agreement_score: agreement != null && Number.isFinite(agreement) ? agreement : null,
         quality_score: quality ? Math.round((quality.sum / quality.count) * 10) / 10 : null,
         status: r.status as "active" | "inactive",
       };
