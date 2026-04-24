@@ -40,8 +40,9 @@ export function Sidebar() {
   const router = useRouter();
   const { mobileNavOpen, closeMobileNav } = useMobileNav();
 
-  // Detect role from pathname — reviewer sees different nav
-  const isReviewer = pathname.startsWith("/reviewer");
+  // Detect role from pathname — reviewer sees different nav.
+  // IMPORTANT: trailing slash so `/reviewers` (admin list) does NOT match.
+  const isReviewer = pathname === "/reviewer" || pathname.startsWith("/reviewer/");
   const navItems = isReviewer ? reviewerNavItems : adminNavItems;
 
   const session = useClerkSession({

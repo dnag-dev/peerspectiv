@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SetUnavailableModal } from '@/components/reviewers/SetUnavailableModal';
@@ -87,7 +88,12 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
               return (
                 <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-900">
-                    {r.full_name ?? '—'}
+                    <Link
+                      href={`/reviewers/${r.id}`}
+                      className="hover:text-brand-navy hover:underline"
+                    >
+                      {r.full_name ?? '—'}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{r.specialty ?? '—'}</td>
                   <td className="px-4 py-3 text-gray-600">{r.active_cases_count ?? 0}</td>
