@@ -142,12 +142,14 @@ Produce the JSON array now.`;
     if (type === 'qapi' || (start_date && end_date)) {
       try {
         const { generateQAPIReport } = await import('@/lib/ai/report-generator');
-        const report = await generateQAPIReport(
+        const narrative = await generateQAPIReport(
           company_id,
           start_date!,
           end_date!
         );
-        return NextResponse.json({ report });
+        // Client expects { report: { narrative } } — returning a bare string
+        // silently rendered a blank card for every company.
+        return NextResponse.json({ report: { narrative } });
       } catch (err) {
         console.error('[generate] QAPI generation failed:', err);
         return NextResponse.json(
