@@ -3,23 +3,32 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Practitioner status pill. Uppercase, mono, tight tracking — feels
+ * like a clinical label, not a UI sticker. Variant names map to the
+ * lifecycle states used across the app; legacy variant names are kept
+ * as aliases so existing call sites keep compiling.
+ */
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-pill px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors",
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
-        success:
-          "border-transparent bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-        warning:
-          "border-transparent bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
-        ai: "border-transparent bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+        // Lifecycle
+        default:    "bg-ink-100 text-ink-700",
+        completed:  "bg-mint-100 text-mint-700 border border-mint-600/30",
+        progress:   "bg-info-100 text-info-600 border border-info-600/30",
+        pending:    "bg-warning-100 text-warning-700 border border-warning-600/30",
+        overdue:    "bg-critical-100 text-critical-700 border border-critical-600/30",
+        approved:   "bg-mint-100 text-mint-700 border border-mint-600/30",
+        paid:       "bg-authority-700 text-paper",
+        ai:         "bg-mint-100 text-mint-700 border border-mint-600/30",
+        // Legacy aliases
+        secondary:    "bg-ink-100 text-ink-700",
+        destructive:  "bg-critical-100 text-critical-700 border border-critical-600/30",
+        outline:      "border border-ink-200 text-ink-700",
+        success:      "bg-mint-100 text-mint-700 border border-mint-600/30",
+        warning:      "bg-warning-100 text-warning-700 border border-warning-600/30",
       },
     },
     defaultVariants: {
