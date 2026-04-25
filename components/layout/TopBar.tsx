@@ -32,7 +32,7 @@ export function TopBar() {
   const { toggleMobileNav } = useMobileNav();
 
   return (
-    <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-ink-100 bg-paper px-4 md:px-6">
+    <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-ink-200 bg-paper-surface px-4 md:px-6">
       <div className="flex items-center gap-2 min-w-0">
         <button
           type="button"

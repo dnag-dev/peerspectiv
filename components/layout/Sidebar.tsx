@@ -57,11 +57,11 @@ interface SidebarShellProps {
 }
 
 const ROLE_CHIP: Record<SidebarRole, { label: string; cls: string }> = {
-  admin:      { label: "ADMIN",    cls: "bg-authority-700 text-paper" },
-  reviewer:   { label: "REVIEWER", cls: "bg-mint-600/15 text-mint-400 border border-mint-600/30" },
-  cmo:        { label: "CMO",      cls: "bg-info-600/20 text-info-100 border border-info-600/40" },
-  quality:    { label: "QUALITY",  cls: "bg-info-600/20 text-info-100 border border-info-600/40" },
-  operations: { label: "OPS",      cls: "bg-info-600/20 text-info-100 border border-info-600/40" },
+  admin:      { label: "ADMIN",    cls: "bg-cobalt-100 text-cobalt-800" },
+  reviewer:   { label: "REVIEWER", cls: "bg-mint-100 text-mint-700" },
+  cmo:        { label: "CMO",      cls: "bg-cobalt-100 text-cobalt-800" },
+  quality:    { label: "QUALITY",  cls: "bg-cobalt-100 text-cobalt-800" },
+  operations: { label: "OPS",      cls: "bg-cobalt-100 text-cobalt-800" },
 };
 
 export function SidebarShell({
@@ -88,19 +88,14 @@ export function SidebarShell({
         key={item.href}
         href={item.href}
         onClick={onCloseMobile}
-        className={`group relative flex items-center gap-3 rounded-sm px-3 py-2 text-sm font-medium transition-colors ${
+        className={`group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all ${
           isActive
-            ? "bg-mint-600/10 text-mint-400"
-            : "text-ink-300 hover:bg-ink-900 hover:text-paper"
-        } ${item.dim ? "opacity-40" : ""}`}
+            ? "bg-paper-surface text-cobalt-900 shadow-sm"
+            : "text-cobalt-100 hover:bg-cobalt-700/40 hover:text-white"
+        } ${item.dim ? "opacity-50" : ""}`}
       >
-        {isActive && (
-          <span className="absolute inset-y-1 left-0 w-[2px] rounded-r bg-mint-600" />
-        )}
         <Icon
-          className={`h-[18px] w-[18px] flex-shrink-0 ${
-            isActive ? "[filter:drop-shadow(0_0_6px_var(--mint-600))]" : ""
-          }`}
+          className="h-[18px] w-[18px] flex-shrink-0"
         />
         <span className="truncate">{item.label}</span>
       </Link>
@@ -108,10 +103,10 @@ export function SidebarShell({
   };
 
   const aside = (
-    <aside className="flex h-full w-64 flex-shrink-0 flex-col bg-ink-950">
+    <aside className="flex h-full w-64 flex-shrink-0 flex-col bg-cobalt-900">
       {/* Logo lockup */}
       <div className="flex h-20 items-center justify-between px-5">
-        <div className="rounded bg-paper px-3 py-2 shadow-sm">
+        <div className="rounded-md bg-paper-surface px-3 py-2 shadow-sm">
           <Image
             src="/peerspectiv-logo.png"
             alt="Peerspectiv"
@@ -122,7 +117,7 @@ export function SidebarShell({
           />
         </div>
         <button
-          className="lg:hidden md:hidden text-ink-300 hover:text-paper"
+          className="lg:hidden md:hidden text-cobalt-100 hover:text-white"
           onClick={onCloseMobile}
           aria-label="Close menu"
         >
@@ -131,7 +126,7 @@ export function SidebarShell({
       </div>
 
       {contextLabel && (
-        <div className="px-6 pb-2 text-eyebrow text-ink-500">
+        <div className="px-6 pb-2 text-eyebrow text-cobalt-200">
           {contextLabel}
         </div>
       )}
@@ -141,7 +136,7 @@ export function SidebarShell({
         {groups && groups.length > 0 ? (
           groups.map((g) => (
             <div key={g}>
-              <p className="px-3 pb-2 text-eyebrow text-ink-500">{g}</p>
+              <p className="px-3 pb-2 text-eyebrow text-cobalt-200">{g}</p>
               <div className="space-y-0.5">
                 {nav.filter((i) => i.group === g).map(renderItem)}
               </div>
@@ -152,33 +147,33 @@ export function SidebarShell({
         )}
       </nav>
 
-      {/* Demo Mode pill */}
-      <div className="mx-3 mb-3 rounded-pill border border-warning-600/30 bg-warning-600/10 px-3 py-1.5 text-center">
-        <span className="text-eyebrow text-warning-600">Demo Mode</span>
+      {/* Demo Mode pill — amber for visibility on cobalt */}
+      <div className="mx-3 mb-3 rounded-pill border border-amber-500/40 bg-amber-500/15 px-3 py-1.5 text-center">
+        <span className="text-eyebrow text-amber-500">Demo Mode</span>
       </div>
 
-      {/* User card */}
-      <div className="border-t border-ink-800 px-3 py-3">
+      {/* User card on white-tint surface */}
+      <div className="border-t border-cobalt-800/60 bg-white/5 px-3 py-3">
         <div className="flex items-center gap-3 px-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-pill bg-ink-800">
-            <User className="h-4 w-4 text-ink-300" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-pill bg-cobalt-700">
+            <User className="h-4 w-4 text-cobalt-100" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-paper">{userName}</p>
+            <p className="truncate text-sm font-medium text-white">{userName}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span
-                className={`inline-flex items-center rounded-pill px-1.5 py-0 text-[9px] font-mono font-semibold tracking-[0.08em] ${chip.cls}`}
+                className={`inline-flex items-center rounded-sm px-1.5 py-0 text-[9px] font-mono font-medium tracking-[0.10em] ${chip.cls}`}
               >
                 {chip.label}
               </span>
-              <span className="truncate text-[11px] text-ink-500">{userSubtitle}</span>
+              <span className="truncate text-[11px] text-cobalt-200">{userSubtitle}</span>
             </div>
           </div>
           <button
             onClick={onSignOut}
             title="Sign out"
             data-testid="sign-out"
-            className="rounded-sm p-2 text-ink-400 hover:bg-ink-900 hover:text-paper transition-colors"
+            className="rounded-md p-2 text-cobalt-200 hover:bg-cobalt-700/50 hover:text-white transition-colors"
           >
             <LogOut className="h-4 w-4" />
           </button>
