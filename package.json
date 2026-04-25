@@ -37,6 +37,7 @@
     "date-fns": "^4.1.0",
     "docusign-esign": "^8.7.0",
     "drizzle-orm": "^0.45.2",
+    "geist": "^1.7.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^1.7.0",
