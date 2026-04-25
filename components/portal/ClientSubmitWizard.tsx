@@ -305,7 +305,7 @@ export function ClientSubmitWizard({
                   <div className="font-medium text-white">{f.form_name}</div>
                   <div className="text-xs text-white/50">Specialty: {f.specialty}</div>
                 </div>
-                {formId === f.id && <Check className="h-4 w-4 text-[#2E6FE8]" />}
+                {formId === f.id && <Check className="h-4 w-4 text-mint-600" />}
               </button>
             ))}
           </div>
@@ -443,8 +443,8 @@ export function ClientSubmitWizard({
                     )}
                     {row.status === "uploading" && (
                       <>
-                        <Loader2 className="h-3 w-3 animate-spin text-[#2E6FE8]" />
-                        <span className="text-[#2E6FE8]">Uploading…</span>
+                        <Loader2 className="h-3 w-3 animate-spin text-mint-600" />
+                        <span className="text-mint-600">Uploading…</span>
                       </>
                     )}
                     {row.status === "done" && (

@@ -209,7 +209,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
                 >
                   {uploading ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                      <Loader2 className="h-5 w-5 animate-spin text-mint-600" />
                       <span className="text-xs text-muted-foreground">Uploading…</span>
                     </>
                   ) : (

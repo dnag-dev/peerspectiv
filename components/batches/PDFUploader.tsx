@@ -79,7 +79,7 @@ export function PDFUploader({ caseId, existingFileName }: PDFUploaderProps) {
         onChange={onFileChange}
       />
       {uploading ? (
-        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        <Loader2 className="h-4 w-4 animate-spin text-mint-600" />
       ) : uploadStatus === "success" ? (
         <CheckCircle2 className="h-4 w-4 text-green-600" />
       ) : uploadStatus === "error" ? (

@@ -168,7 +168,7 @@ export function PayoutsView() {
             value={totals.pending}
           />
           <SummaryPill
-            icon={<CheckCircle2 className="h-4 w-4 text-blue-600" />}
+            icon={<CheckCircle2 className="h-4 w-4 text-mint-600" />}
             label="Approved"
             value={totals.approved}
           />
@@ -198,7 +198,7 @@ export function PayoutsView() {
             {loading && (
               <tr>
                 <td colSpan={7} className="px-4 py-12 text-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-gray-400 inline" />
+                  <Loader2 className="h-6 w-6 animate-spin text-mint-600 inline" />
                 </td>
               </tr>
             )}

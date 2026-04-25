@@ -422,7 +422,7 @@ export function NewBatchModal({
                             Specialty: {f.specialty}
                           </div>
                         </div>
-                        {companyFormId === f.id && <Check className="h-4 w-4 text-blue-600" />}
+                        {companyFormId === f.id && <Check className="h-4 w-4 text-mint-600" />}
                       </button>
                     ))}
                     <button
@@ -575,8 +575,8 @@ export function NewBatchModal({
                             )}
                             {row.status === "uploading" && (
                               <>
-                                <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
-                                <span className="text-blue-600">Uploading…</span>
+                                <Loader2 className="h-3 w-3 animate-spin text-mint-600" />
+                                <span className="text-mint-600">Uploading…</span>
                               </>
                             )}
                             {row.status === "done" && (

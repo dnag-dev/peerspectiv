@@ -260,7 +260,7 @@ export function CommandCenter() {
           >
             {msg.role === "assistant" && (
               <div className="mr-2 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-blue/10">
-                <Bot className="h-4 w-4 text-brand-blue" />
+                <Bot className="h-4 w-4 text-mint-600" />
               </div>
             )}
 
@@ -299,7 +299,7 @@ export function CommandCenter() {
         {isLoading && (
           <div className="flex justify-start">
             <div className="mr-2 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-blue/10">
-              <Bot className="h-4 w-4 text-brand-blue" />
+              <Bot className="h-4 w-4 text-mint-600" />
             </div>
             <Card className="border-0 shadow-none bg-gray-50">
               <CardContent className="p-3">
@@ -320,7 +320,7 @@ export function CommandCenter() {
               type="button"
               disabled={isLoading}
               onClick={() => sendMessage(cmd)}
-              className="rounded-full border border-brand-blue/30 bg-brand-blue/5 px-3 py-1 text-xs font-medium text-brand-blue transition-colors hover:bg-brand-blue/10 disabled:opacity-50"
+              className="rounded-full border border-brand-blue/30 bg-brand-blue/5 px-3 py-1 text-xs font-medium text-mint-600 transition-colors hover:bg-brand-blue/10 disabled:opacity-50"
             >
               {cmd}
             </button>

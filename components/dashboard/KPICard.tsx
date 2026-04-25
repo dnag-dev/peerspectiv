@@ -53,19 +53,18 @@ export function KPICard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight text-foreground">
+            <span className="text-stat-large text-ink-950">
               {value.toLocaleString()}
             </span>
             {trend && (
               <Badge
-                variant={trend.startsWith("+") ? "success" : "warning"}
-                className="text-[10px] leading-tight"
+                variant={trend.startsWith("+") ? "completed" : "pending"}
               >
                 {trend}
               </Badge>
             )}
           </div>
-          <p className="mt-0.5 text-sm text-muted-foreground">{title}</p>
+          <p className="mt-1 text-eyebrow text-ink-500">{title}</p>
         </div>
       </div>
     </Card>

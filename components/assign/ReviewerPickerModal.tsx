@@ -102,7 +102,7 @@ export function ReviewerPickerModal({
                   }`}
                 >
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100">
-                    <User className="h-4 w-4 text-blue-600" />
+                    <User className="h-4 w-4 text-mint-600" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -132,7 +132,7 @@ export function ReviewerPickerModal({
                     </div>
                   </div>
                   {isPicking ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                    <Loader2 className="h-4 w-4 animate-spin text-mint-600" />
                   ) : (
                     !isUnavailable &&
                     !isCurrent && (

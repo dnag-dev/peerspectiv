@@ -40,7 +40,6 @@ export function AshChat({
 
   useEffect(() => {
     if (open) {
-      // small delay to allow panel to mount
       const t = setTimeout(() => inputRef.current?.focus(), 50);
       return () => clearTimeout(t);
     }
@@ -68,7 +67,6 @@ export function AshChat({
           message: trimmed,
           portal,
           context,
-          // send prior history (excluding the greeting) so server has conversation memory
           conversationHistory: messages.filter(
             (m, i) => !(i === 0 && m.role === 'assistant')
           ),
@@ -107,46 +105,42 @@ export function AshChat({
 
   return (
     <>
-      {/* Floating button */}
+      {/* Floating button — Practitioner: mint primary, soft mint glow */}
       {!open && (
         <button
           type="button"
           aria-label="Ask Ash"
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-white shadow-lg shadow-blue-900/40 transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          style={{ backgroundColor: '#2E6FE8' }}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-pill bg-mint-600 px-5 py-3 text-paper shadow-lg transition-all duration-150 hover:bg-mint-700 hover:shadow-[0_0_24px_var(--mint-100)] focus:outline-none focus-visible:ring-[3px] focus-visible:ring-mint-600/40"
         >
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-paper opacity-75 animate-ping" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-paper" />
+          </span>
           <MessageCircle className="h-5 w-5" />
           <span className="text-sm font-medium">Ask Ash</span>
         </button>
       )}
 
-      {/* Slide-out panel */}
+      {/* Slide-out panel — authority-900 deep surface, mint accents */}
       {open && (
         <div
           role="dialog"
           aria-label="Ash assistant"
-          className="fixed bottom-6 right-6 z-50 flex flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
-          style={{
-            width: 384,
-            height: 520,
-            backgroundColor: '#0F2040',
-          }}
+          className="fixed bottom-6 right-6 z-50 flex flex-col overflow-hidden rounded-lg border border-ink-800 bg-authority-900 shadow-modal"
+          style={{ width: 384, height: 520 }}
         >
           {/* Header */}
-          <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
-            <div
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
-              style={{ backgroundColor: '#2E6FE8' }}
-            >
+          <div className="flex items-center gap-3 border-b border-ink-800/60 px-4 py-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-mint-600 font-display text-sm italic font-semibold text-paper">
               A
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-white">Ash</span>
-                <span className="h-2 w-2 rounded-full bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.8)]" />
+                <span className="text-sm font-semibold text-paper">Ash</span>
+                <span className="h-2 w-2 rounded-full bg-mint-400 shadow-[0_0_6px_var(--mint-400)]" />
               </div>
-              <div className="text-[11px] text-white/50">
+              <div className="text-eyebrow text-ink-400">
                 Peerspectiv AI · Always on
               </div>
             </div>
@@ -154,7 +148,7 @@ export function AshChat({
               type="button"
               aria-label="Close Ash"
               onClick={() => setOpen(false)}
-              className="rounded p-1 text-white/60 transition hover:bg-white/10 hover:text-white"
+              className="rounded-sm p-1 text-ink-300 transition-colors hover:bg-ink-800 hover:text-paper"
             >
               <X className="h-4 w-4" />
             </button>
@@ -171,32 +165,19 @@ export function AshChat({
 
             {loading && (
               <div className="flex items-end gap-2">
-                <div
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
-                  style={{ backgroundColor: '#2E6FE8' }}
-                >
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-mint-600 font-display text-[10px] italic font-semibold text-paper">
                   A
                 </div>
-                <div className="rounded-2xl rounded-bl-sm bg-white/10 px-3 py-2">
+                <div className="rounded-lg rounded-bl-sm bg-ink-800/60 px-3 py-2">
                   <div className="flex items-center gap-1">
-                    <span
-                      className="h-2 w-2 animate-bounce rounded-full bg-white/70"
-                      style={{ animationDelay: '0ms' }}
-                    />
-                    <span
-                      className="h-2 w-2 animate-bounce rounded-full bg-white/70"
-                      style={{ animationDelay: '120ms' }}
-                    />
-                    <span
-                      className="h-2 w-2 animate-bounce rounded-full bg-white/70"
-                      style={{ animationDelay: '240ms' }}
-                    />
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-mint-400" style={{ animationDelay: '0ms' }} />
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-mint-400" style={{ animationDelay: '120ms' }} />
+                    <span className="h-2 w-2 animate-bounce rounded-full bg-mint-400" style={{ animationDelay: '240ms' }} />
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Suggested prompts — only before first user message */}
             {!hasUserSent && suggestedPrompts.length > 0 && !loading && (
               <div className="flex flex-wrap gap-2 pt-2">
                 {suggestedPrompts.map((prompt) => (
@@ -204,7 +185,7 @@ export function AshChat({
                     key={prompt}
                     type="button"
                     onClick={() => sendMessage(prompt)}
-                    className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/80 transition hover:border-blue-400/60 hover:bg-blue-500/10 hover:text-white"
+                    className="rounded-pill border border-ink-700 bg-ink-800/40 px-3 py-1 text-xs text-ink-200 transition-colors hover:border-mint-600/60 hover:bg-mint-600/10 hover:text-paper"
                   >
                     {prompt}
                   </button>
@@ -216,7 +197,7 @@ export function AshChat({
           {/* Input */}
           <form
             onSubmit={handleSubmit}
-            className="flex items-center gap-2 border-t border-white/10 px-3 py-3"
+            className="flex items-center gap-2 border-t border-ink-800/60 px-3 py-3"
           >
             <input
               ref={inputRef}
@@ -225,14 +206,13 @@ export function AshChat({
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask Ash anything..."
               disabled={loading}
-              className="flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/40 focus:border-blue-400/60 focus:outline-none disabled:opacity-60"
+              className="flex-1 rounded-pill border border-ink-700 bg-ink-800/40 px-4 py-2 text-sm text-paper placeholder:text-ink-400 focus:border-mint-600 focus:outline-none focus:ring-[3px] focus:ring-mint-600/30 disabled:opacity-60"
             />
             <button
               type="submit"
               aria-label="Send"
               disabled={loading || !input.trim()}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition disabled:cursor-not-allowed disabled:opacity-40"
-              style={{ backgroundColor: '#2E6FE8' }}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-mint-600 text-paper transition-colors hover:bg-mint-700 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Send className="h-4 w-4" />
             </button>
@@ -253,13 +233,10 @@ function MessageBubble({
   if (role === 'assistant') {
     return (
       <div className="flex items-end gap-2">
-        <div
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
-          style={{ backgroundColor: '#2E6FE8' }}
-        >
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-mint-600 font-display text-[10px] italic font-semibold text-paper">
           A
         </div>
-        <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-bl-sm bg-white/10 px-3 py-2 text-sm text-white/90">
+        <div className="max-w-[80%] whitespace-pre-wrap rounded-lg rounded-bl-sm bg-ink-800/60 px-3 py-2 text-sm text-ink-100">
           {content}
         </div>
       </div>
@@ -267,10 +244,7 @@ function MessageBubble({
   }
   return (
     <div className="flex justify-end">
-      <div
-        className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-br-sm px-3 py-2 text-sm text-white"
-        style={{ backgroundColor: '#2E6FE8' }}
-      >
+      <div className="max-w-[80%] whitespace-pre-wrap rounded-lg rounded-br-sm bg-mint-600 px-3 py-2 text-sm text-paper">
         {content}
       </div>
     </div>

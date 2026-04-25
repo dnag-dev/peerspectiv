@@ -198,7 +198,7 @@ export function AssignmentQueue({
                 {/* Row 1: Company + match badge together */}
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 min-w-0">
-                    <Building2 className="h-4 w-4 shrink-0 text-blue-600" />
+                    <Building2 className="h-4 w-4 shrink-0 text-mint-600" />
                     <span className="truncate text-base font-semibold">
                       {c.company.name}
                     </span>
