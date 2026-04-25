@@ -5,10 +5,8 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Practitioner data table. Editorial rules — hairline ink-100 borders,
- * uppercase eyebrow column headers, paper rows that lift on hover with
- * a faint mint-tinted background. Numerics inside cells should add the
- * `font-mono tabular-nums` classes inline so totals line up.
+ * Pulse data table. Light surface; uppercase mono eyebrow column headers
+ * on ink-50 tint; ink-200 hairlines; cobalt-50 row hover.
  */
 const Table = React.forwardRef<
   HTMLTableElement,
@@ -30,7 +28,7 @@ const TableHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <thead
     ref={ref}
-    className={cn("border-b border-ink-100 bg-ink-50/50", className)}
+    className={cn("border-b border-ink-200 bg-ink-50", className)}
     {...props}
   />
 ));
@@ -55,7 +53,7 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={cn(
-      "border-t border-ink-100 bg-ink-50/50 font-medium text-ink-900 [&>tr]:last:border-b-0",
+      "border-t border-ink-200 bg-ink-50 font-medium text-ink-900 [&>tr]:last:border-b-0",
       className
     )}
     {...props}
@@ -70,7 +68,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-ink-100 transition-colors hover:bg-mint-50/40 data-[state=selected]:bg-mint-50",
+      "border-b border-ink-200 transition-colors hover:bg-cobalt-50 data-[state=selected]:bg-cobalt-50",
       className
     )}
     {...props}
@@ -100,7 +98,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "p-4 align-middle text-ink-900 [&:has([role=checkbox])]:pr-0",
+      "p-4 align-middle text-ink-800 [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}

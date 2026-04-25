@@ -4,31 +4,29 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /**
- * Practitioner status pill. Uppercase, mono, tight tracking — feels
- * like a clinical label, not a UI sticker. Variant names map to the
- * lifecycle states used across the app; legacy variant names are kept
- * as aliases so existing call sites keep compiling.
+ * Pulse status badge — dot-prefix recipe, lowercase mono-ish.
+ * Variants map to lifecycle states. Legacy variants aliased.
  */
 const badgeVariants = cva(
-  "inline-flex items-center rounded-pill px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors",
+  "inline-flex items-center gap-1.5 rounded-pill px-2.5 py-0.5 text-[11px] font-medium tracking-[0.02em] lowercase before:content-[''] before:h-1.5 before:w-1.5 before:rounded-full before:bg-current before:flex-shrink-0",
   {
     variants: {
       variant: {
-        // Lifecycle
         default:    "bg-ink-100 text-ink-700",
-        completed:  "bg-mint-100 text-mint-700 border border-mint-600/30",
-        progress:   "bg-info-100 text-info-600 border border-info-600/30",
-        pending:    "bg-warning-100 text-warning-700 border border-warning-600/30",
-        overdue:    "bg-critical-100 text-critical-700 border border-critical-600/30",
-        approved:   "bg-mint-100 text-mint-700 border border-mint-600/30",
-        paid:       "bg-authority-700 text-paper",
-        ai:         "bg-mint-100 text-mint-700 border border-mint-600/30",
+        completed:  "bg-mint-100 text-mint-700",
+        progress:   "bg-cobalt-100 text-cobalt-700",
+        pending:    "bg-ink-100 text-ink-600",
+        overdue:    "bg-critical-100 text-critical-700",
+        assigned:   "bg-amber-100 text-amber-700",
+        approved:   "bg-mint-100 text-mint-700",
+        paid:       "bg-cobalt-700 text-cobalt-50",
+        ai:         "bg-cobalt-50 text-cobalt-700",
         // Legacy aliases
         secondary:    "bg-ink-100 text-ink-700",
-        destructive:  "bg-critical-100 text-critical-700 border border-critical-600/30",
-        outline:      "border border-ink-200 text-ink-700",
-        success:      "bg-mint-100 text-mint-700 border border-mint-600/30",
-        warning:      "bg-warning-100 text-warning-700 border border-warning-600/30",
+        destructive:  "bg-critical-100 text-critical-700",
+        outline:      "bg-paper-surface text-ink-700 border border-ink-200 before:hidden pl-2",
+        success:      "bg-mint-100 text-mint-700",
+        warning:      "bg-amber-100 text-amber-700",
       },
     },
     defaultVariants: {

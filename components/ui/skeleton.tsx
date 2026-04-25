@@ -1,10 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Practitioner skeleton — mint shimmer (not generic gray pulse). The
- * `shimmer` keyframes are defined in app/globals.css and ride a
- * mint-tinted gradient so loading states feel like AI is doing work,
- * not that the page is broken.
+ * Pulse skeleton — cobalt-tinted shimmer (cobalt-50 ↔ ink-100).
  */
 function Skeleton({
   className,
@@ -13,8 +10,8 @@ function Skeleton({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-sm bg-ink-100",
-        "before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_1.6s_ease-in-out_infinite] before:bg-gradient-to-r before:from-transparent before:via-mint-100 before:to-transparent",
+        "relative overflow-hidden rounded-md bg-ink-100",
+        "before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_1.6s_ease-in-out_infinite] before:bg-gradient-to-r before:from-transparent before:via-cobalt-50 before:to-transparent",
         className
       )}
       {...props}

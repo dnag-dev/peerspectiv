@@ -5,10 +5,8 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Practitioner card. Editorial surface — paper background, hairline ink-100
- * border, square-ish corners (4px), subtle shadow. CardTitle uses the
- * h3 type slot (Geist semibold) by default; pages that need a hero stat
- * should override className with text-stat-large or text-display-2.
+ * Pulse card. White surface, ink-200 hairline border, 12px radius,
+ * soft shadow.
  */
 const Card = React.forwardRef<
   HTMLDivElement,
@@ -17,7 +15,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-sm border border-ink-100 bg-paper text-ink-900 shadow-sm",
+      "rounded-lg border border-ink-200 bg-paper-surface text-ink-900 shadow-sm",
       className
     )}
     {...props}
@@ -43,10 +41,7 @@ const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn(
-      "text-h3 text-ink-950",
-      className
-    )}
+    className={cn("text-h3 text-ink-900", className)}
     {...props}
   />
 ));
