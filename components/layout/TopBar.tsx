@@ -8,22 +8,21 @@ import { NotificationBell } from "./NotificationBell";
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/companies": "Companies",
-  "/batches": "Batches",
-  "/assign-queue": "Assign Queue",
-  "/reviewer-portal": "Reviewer Portal",
-  "/reports": "Reports",
-  "/command-center": "Command Center",
+  "/batches":   "Batches",
+  "/assign":    "AI Assignment Queue",
+  "/reviewers": "Reviewers",
+  "/reviewer/portal":   "My Queue",
+  "/reviewer/earnings": "Earnings",
+  "/payouts":   "Payouts",
+  "/reports":   "Reports",
+  "/command":   "Command Center",
 };
 
 function getPageTitle(pathname: string): string {
-  // Exact match first
   if (pageTitles[pathname]) return pageTitles[pathname];
-
-  // Match prefix (for nested routes like /companies/123)
   for (const [route, title] of Object.entries(pageTitles)) {
     if (pathname.startsWith(route + "/")) return title;
   }
-
   return "Peerspectiv";
 }
 
@@ -33,30 +32,25 @@ export function TopBar() {
   const { toggleMobileNav } = useMobileNav();
 
   return (
-    <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 md:px-6">
-      {/* Left side: hamburger (mobile) + page title */}
+    <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-ink-100 bg-paper px-4 md:px-6">
       <div className="flex items-center gap-2 min-w-0">
         <button
           type="button"
           data-testid="hamburger"
           onClick={toggleMobileNav}
-          className="md:hidden rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+          className="md:hidden rounded-sm p-2 text-ink-500 transition-colors hover:bg-ink-50 hover:text-ink-900"
           aria-label="Open navigation menu"
         >
           <Menu className="h-5 w-5" />
         </button>
-        <h1 className="truncate text-lg font-semibold text-gray-900">{title}</h1>
+        <h1 className="truncate text-h1 text-ink-950">{title}</h1>
       </div>
 
-      {/* Right side actions */}
-      <div className="flex items-center gap-4">
-        {/* Notification bell */}
+      <div className="flex items-center gap-3">
         <NotificationBell />
-
-        {/* User avatar */}
         <button
           type="button"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-blue text-white transition-opacity hover:opacity-90"
+          className="flex h-9 w-9 items-center justify-center rounded-pill bg-ink-100 text-ink-700 transition-colors hover:bg-ink-200"
           aria-label="User menu"
         >
           <User className="h-4 w-4" />
