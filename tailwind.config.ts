@@ -1,12 +1,11 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Practitioner design system. All colors come from CSS custom properties
- * defined in app/globals.css so they can also be referenced by raw CSS,
- * inline styles, and SVG fills.
+ * PULSE design system. Light canvas, cobalt-led, modern SaaS.
+ * All colors come from CSS custom properties in app/globals.css.
  *
- * The legacy `brand` and `ai` palettes are kept as aliases for any in-flight
- * code that hasn't migrated yet. Do not add new usage of those in new code.
+ * Legacy `authority`, `warning`, `info`, `brand`, `ai` palettes are kept
+ * as aliases so any in-flight code keeps compiling. Do not add new usage.
  */
 const config: Config = {
   content: [
@@ -17,13 +16,26 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: ["var(--font-display)", "Georgia", "serif"],
-        sans:    ["var(--font-sans)", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
-        mono:    ["var(--font-mono)", "SF Mono", "Menlo", "monospace"],
-        // Legacy aliases
-        serif:   ["var(--font-display)", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        mono: ["var(--font-mono)", "SF Mono", "Menlo", "monospace"],
+        // Legacy alias — `display` no longer exists in Pulse. Mapped to sans
+        // so any stragglers degrade gracefully.
+        display: ["var(--font-sans)", "-apple-system", "sans-serif"],
+        serif:   ["var(--font-sans)", "-apple-system", "sans-serif"],
       },
       colors: {
+        cobalt: {
+          50:  "var(--cobalt-50)",
+          100: "var(--cobalt-100)",
+          200: "var(--cobalt-200)",
+          400: "var(--cobalt-400)",
+          500: "var(--cobalt-500)",
+          600: "var(--cobalt-600)",
+          700: "var(--cobalt-700)",
+          800: "var(--cobalt-800)",
+          900: "var(--cobalt-900)",
+          950: "var(--cobalt-950)",
+        },
         ink: {
           50:  "var(--ink-50)",
           100: "var(--ink-100)",
@@ -40,50 +52,67 @@ const config: Config = {
         mint: {
           50:  "var(--mint-50)",
           100: "var(--mint-100)",
-          200: "var(--mint-200)",
-          400: "var(--mint-400)",
+          // Aliases for shades referenced by legacy code
+          200: "var(--mint-100)",
+          400: "var(--mint-500)",
           500: "var(--mint-500)",
           600: "var(--mint-600)",
           700: "var(--mint-700)",
         },
-        authority: {
-          500: "var(--authority-500)",
-          700: "var(--authority-700)",
-          800: "var(--authority-800)",
-          900: "var(--authority-900)",
+        amber: {
+          50:  "var(--amber-50)",
+          100: "var(--amber-100)",
+          500: "var(--amber-500)",
+          600: "var(--amber-600)",
+          700: "var(--amber-700)",
         },
         critical: {
+          50:  "var(--critical-50)",
           100: "var(--critical-100)",
+          500: "var(--critical-500)",
           600: "var(--critical-600)",
           700: "var(--critical-700)",
         },
+        // Legacy aliases
+        authority: {
+          500: "var(--cobalt-500)",
+          700: "var(--cobalt-700)",
+          800: "var(--cobalt-800)",
+          900: "var(--cobalt-900)",
+        },
         warning: {
-          100: "var(--warning-100)",
-          600: "var(--warning-600)",
-          700: "var(--warning-700)",
+          100: "var(--amber-100)",
+          600: "var(--amber-600)",
+          700: "var(--amber-700)",
         },
         info: {
-          100: "var(--info-100)",
-          600: "var(--info-600)",
+          100: "var(--cobalt-100)",
+          600: "var(--cobalt-600)",
         },
-        paper: "var(--paper)",
-        // Legacy palette aliases — kept so existing screens compile until they're migrated.
+        paper: {
+          DEFAULT:  "var(--paper-surface)",
+          canvas:   "var(--paper-canvas)",
+          surface:  "var(--paper-surface)",
+          elevated: "var(--paper-elevated)",
+        },
         brand: {
-          navy: "var(--authority-900)",
-          blue: "var(--info-600)",
+          navy: "var(--cobalt-900)",
+          blue: "var(--cobalt-600)",
           teal: "var(--mint-600)",
         },
         ai: {
-          purple:        "var(--mint-600)",
-          "purple-light": "var(--mint-100)",
+          purple:        "var(--cobalt-600)",
+          "purple-light": "var(--cobalt-100)",
         },
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-        "mint-halo":
-          "radial-gradient(circle at center, var(--mint-100), transparent 70%)",
+        "cobalt-hero":
+          "linear-gradient(135deg, var(--cobalt-500) 0%, var(--cobalt-700) 100%)",
+        "cobalt-soft":
+          "linear-gradient(135deg, var(--cobalt-50) 0%, var(--cobalt-100) 100%)",
       },
       boxShadow: {
         sm:    "var(--shadow-sm)",
@@ -93,12 +122,13 @@ const config: Config = {
         modal: "var(--shadow-modal)",
       },
       borderRadius: {
-        sm:    "var(--radius-sm)",
+        sm:      "var(--radius-sm)",
         DEFAULT: "var(--radius)",
-        md:    "var(--radius)",
-        lg:    "var(--radius-lg)",
-        pill:  "var(--radius-pill)",
-        full:  "9999px",
+        md:      "var(--radius)",
+        lg:      "var(--radius-lg)",
+        xl:      "var(--radius-xl)",
+        pill:    "var(--radius-pill)",
+        full:    "9999px",
       },
     },
   },
