@@ -70,7 +70,7 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white border border-gray-200 shadow-2xl rounded-xl sm:max-w-[500px]">
+      <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Edit Company</DialogTitle>
           <DialogDescription>Update the company information below.</DialogDescription>
@@ -98,7 +98,7 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
             <Label htmlFor="edit-notes">Notes</Label>
             <Textarea id="edit-notes" name="notes" defaultValue={company.notes ?? ""} rows={3} />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-critical-600">{error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancel

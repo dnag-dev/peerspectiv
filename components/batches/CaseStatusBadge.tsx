@@ -1,19 +1,19 @@
 import { cn } from "@/lib/utils";
 
 const caseStatusVariants: Record<string, string> = {
-  unassigned: "bg-gray-100 text-gray-700",
-  pending_approval: "bg-amber-100 text-amber-700 animate-pulse",
-  assigned: "bg-blue-100 text-blue-700",
-  in_progress: "bg-teal-100 text-teal-700",
-  completed: "bg-green-100 text-green-700",
-  past_due: "bg-red-100 text-red-700 ring-2 ring-red-300",
+  unassigned: "bg-ink-100 text-ink-700",
+  pending_approval: "bg-warning-100 text-warning-700 animate-pulse",
+  assigned: "bg-info-100 text-info-600",
+  in_progress: "bg-mint-100 text-mint-700",
+  completed: "bg-mint-100 text-mint-700",
+  past_due: "bg-critical-100 text-critical-700 ring-2 ring-critical-600",
 };
 
 const aiStatusVariants: Record<string, string> = {
-  pending: "bg-gray-100 text-gray-600",
-  processing: "bg-purple-100 text-purple-700 animate-pulse",
-  complete: "bg-green-100 text-green-700",
-  failed: "bg-red-100 text-red-700",
+  pending: "bg-ink-100 text-ink-600",
+  processing: "bg-mint-100 text-mint-700 animate-pulse",
+  complete: "bg-mint-100 text-mint-700",
+  failed: "bg-critical-100 text-critical-700",
 };
 
 export function CaseStatusBadge({ status }: { status: string }) {

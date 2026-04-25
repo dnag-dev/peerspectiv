@@ -12,10 +12,10 @@ interface ReviewerCardProps {
 function ConfidenceBadge({ confidence }: { confidence: number }) {
   const variant =
     confidence >= 80
-      ? "bg-green-100 text-green-800"
+      ? "bg-mint-100 text-mint-700"
       : confidence >= 60
-        ? "bg-amber-100 text-amber-800"
-        : "bg-red-100 text-red-800";
+        ? "bg-warning-100 text-warning-700"
+        : "bg-critical-100 text-critical-700";
 
   return (
     <span
@@ -35,8 +35,8 @@ export function ReviewerCard({
   if (compact) {
     return (
       <div className="flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50">
-          <User className="h-4 w-4 text-blue-600" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-info-100">
+          <User className="h-4 w-4 text-info-600" />
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{reviewer.full_name}</p>
@@ -53,8 +53,8 @@ export function ReviewerCard({
     <div className="space-y-2">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50">
-            <User className="h-5 w-5 text-blue-600" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-info-100">
+            <User className="h-5 w-5 text-info-600" />
           </div>
           <div>
             <p className="text-sm font-semibold">{reviewer.full_name}</p>

@@ -228,7 +228,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
                   </div>
                   <button
                     onClick={() => { setTemplatePdfUrl(null); setTemplatePdfName(null); }}
-                    className="rounded p-1 text-muted-foreground hover:bg-red-50 hover:text-red-600"
+                    className="rounded p-1 text-muted-foreground hover:bg-critical-100 hover:text-critical-600"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -310,7 +310,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
                   </div>
                   <button
                     onClick={() => removeField(i)}
-                    className="rounded p-1 text-muted-foreground hover:bg-red-50 hover:text-red-600"
+                    className="rounded p-1 text-muted-foreground hover:bg-critical-100 hover:text-critical-600"
                     title="Remove field"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -321,7 +321,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
           </div>
 
           {error && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+            <div className="rounded-md border border-critical-600 bg-critical-100 px-3 py-2 text-xs text-critical-700">
               {error}
             </div>
           )}

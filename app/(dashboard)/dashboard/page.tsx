@@ -235,7 +235,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+        <h1 className="text-2xl font-bold tracking-tight text-ink-900">
           Dashboard
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -247,41 +247,41 @@ export default async function DashboardPage() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Link
           href="/prospects"
-          className="block rounded-lg border-l-4 border-blue-500 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+          className="block rounded-lg border-l-4 border-info-600 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
         >
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
             Prospects
           </p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">
+          <p className="mt-1 text-2xl font-bold text-ink-900">
             {pipelineCounts.prospects}
           </p>
         </Link>
         <Link
           href="/prospects"
           className={`block rounded-lg border-l-4 ${
-            hasStaleContracts ? "border-red-500" : "border-amber-500"
+            hasStaleContracts ? "border-critical-600" : "border-warning-600"
           } bg-white p-4 shadow-sm transition-shadow hover:shadow-md`}
         >
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
             Contracts Out
           </p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">
+          <p className="mt-1 text-2xl font-bold text-ink-900">
             {pipelineCounts.contractsOut}
           </p>
           {hasStaleContracts && (
-            <p className="mt-1 text-[11px] font-medium text-red-600">
+            <p className="mt-1 text-[11px] font-medium text-critical-600">
               Some &gt; 7 days old
             </p>
           )}
         </Link>
         <Link
           href="/prospects"
-          className="block rounded-lg border-l-4 border-green-500 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+          className="block rounded-lg border-l-4 border-mint-500 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
         >
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
             Pending Activation
           </p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">
+          <p className="mt-1 text-2xl font-bold text-ink-900">
             {pipelineCounts.signed}
           </p>
         </Link>
@@ -289,10 +289,10 @@ export default async function DashboardPage() {
           href="/companies?status=active"
           className="block rounded-lg border-l-4 border-brand-teal bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
         >
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
             Active Clients
           </p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">
+          <p className="mt-1 text-2xl font-bold text-ink-900">
             {pipelineCounts.active}
           </p>
         </Link>
@@ -311,7 +311,7 @@ export default async function DashboardPage() {
               No cycles due in the next 30 days
             </p>
           ) : (
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-ink-100">
               {upcomingCycles.map((c) => {
                 const dueDate = c.nextCycleDue
                   ? new Date(c.nextCycleDue as unknown as string)
@@ -330,7 +330,7 @@ export default async function DashboardPage() {
                       href={`/companies/${c.id}`}
                       className="flex items-center justify-between px-2 py-2.5 transition-colors hover:bg-muted/50"
                     >
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-ink-900">
                         {c.name}
                       </span>
                       <span className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -339,9 +339,9 @@ export default async function DashboardPage() {
                           variant="outline"
                           className={
                             daysRemaining <= 7
-                              ? "border-red-200 text-red-700"
+                              ? "border-critical-600 text-critical-700"
                               : daysRemaining <= 14
-                                ? "border-amber-200 text-amber-700"
+                                ? "border-warning-600 text-warning-700"
                                 : ""
                           }
                         >
@@ -359,8 +359,8 @@ export default async function DashboardPage() {
 
       {/* Client Review Progress */}
       {batchProgress.length > 0 && (
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">Client Review Progress</h2>
+        <div className="rounded-xl border border-ink-200 bg-white p-5">
+          <h2 className="mb-4 text-lg font-semibold text-ink-900">Client Review Progress</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {batchProgress.map((bp) => (
               <ClientOverviewCard key={`${bp.companyId}-${bp.batchName}`} {...bp} />
@@ -374,14 +374,14 @@ export default async function DashboardPage() {
         <KPICard
           title="Unassigned Cases"
           value={unassigned}
-          icon={<FileQuestion className="h-5 w-5 text-gray-500" />}
-          color="bg-gray-500"
+          icon={<FileQuestion className="h-5 w-5 text-ink-500" />}
+          color="bg-ink-500"
         />
         <KPICard
           title="Pending Approval"
           value={pendingApproval}
-          icon={<Clock className="h-5 w-5 text-amber-500" />}
-          color="bg-amber-500"
+          icon={<Clock className="h-5 w-5 text-warning-600" />}
+          color="bg-warning-600"
           pulse={pendingApproval > 0}
         />
         <KPICard
@@ -393,14 +393,14 @@ export default async function DashboardPage() {
         <KPICard
           title="Past Due"
           value={pastDue}
-          icon={<AlertTriangle className="h-5 w-5 text-red-500" />}
-          color="bg-red-500"
+          icon={<AlertTriangle className="h-5 w-5 text-critical-600" />}
+          color="bg-critical-600"
         />
         <KPICard
           title="Completed This Month"
           value={completedThisMonth}
-          icon={<CheckCircle2 className="h-5 w-5 text-green-500" />}
-          color="bg-green-500"
+          icon={<CheckCircle2 className="h-5 w-5 text-mint-500" />}
+          color="bg-mint-500"
         />
         <KPICard
           title="AI Analyses Running"

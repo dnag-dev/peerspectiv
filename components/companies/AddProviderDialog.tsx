@@ -115,7 +115,7 @@ export function AddProviderDialog({ companyId }: AddProviderDialogProps) {
               <Input id="npi" name="npi" placeholder="1234567890" />
             </div>
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-critical-600">{error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               Cancel

@@ -272,7 +272,7 @@ export function CommandCenter() {
               }
             >
               {msg.role === "assistant" ? (
-                <Card className="border-0 shadow-none bg-gray-50">
+                <Card className="border-0 shadow-none bg-ink-50">
                   <CardContent className="p-3">
                     {msg.content.text && (
                       <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -289,8 +289,8 @@ export function CommandCenter() {
             </div>
 
             {msg.role === "user" && (
-              <div className="ml-2 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200">
-                <User className="h-4 w-4 text-gray-600" />
+              <div className="ml-2 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink-200">
+                <User className="h-4 w-4 text-ink-600" />
               </div>
             )}
           </div>
@@ -301,7 +301,7 @@ export function CommandCenter() {
             <div className="mr-2 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-blue/10">
               <Bot className="h-4 w-4 text-mint-600" />
             </div>
-            <Card className="border-0 shadow-none bg-gray-50">
+            <Card className="border-0 shadow-none bg-ink-50">
               <CardContent className="p-3">
                 <TypingIndicator />
               </CardContent>

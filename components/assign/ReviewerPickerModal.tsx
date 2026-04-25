@@ -95,13 +95,13 @@ export function ReviewerPickerModal({
                   disabled={isUnavailable || isPicking || isCurrent}
                   className={`flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${
                     isCurrent
-                      ? "border-blue-300 bg-blue-50"
+                      ? "border-info-600 bg-info-100"
                       : isUnavailable
-                        ? "cursor-not-allowed border-gray-200 bg-gray-50 opacity-50"
-                        : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
+                        ? "cursor-not-allowed border-ink-200 bg-ink-50 opacity-50"
+                        : "border-ink-200 hover:border-info-600 hover:bg-info-100/50"
                   }`}
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-info-100">
                     <User className="h-4 w-4 text-mint-600" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -110,12 +110,12 @@ export function ReviewerPickerModal({
                         {r.full_name}
                       </span>
                       {isCurrent && (
-                        <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700">
+                        <span className="rounded bg-info-100 px-1.5 py-0.5 text-[10px] font-medium text-info-600">
                           CURRENT
                         </span>
                       )}
                       {isUnavailable && (
-                        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                        <span className="rounded bg-warning-100 px-1.5 py-0.5 text-[10px] font-medium text-warning-700">
                           UNAVAILABLE
                         </span>
                       )}

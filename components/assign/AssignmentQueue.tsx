@@ -36,10 +36,10 @@ interface AssignmentQueueProps {
 function ConfidenceBadge({ confidence }: { confidence: number }) {
   const variant =
     confidence >= 80
-      ? "bg-green-100 text-green-800 border-green-200"
+      ? "bg-mint-100 text-mint-700 border-mint-200"
       : confidence >= 60
-        ? "bg-amber-100 text-amber-800 border-amber-200"
-        : "bg-red-100 text-red-800 border-red-200";
+        ? "bg-warning-100 text-warning-700 border-warning-600"
+        : "bg-critical-100 text-critical-700 border-critical-600";
 
   return (
     <span
@@ -193,7 +193,7 @@ export function AssignmentQueue({
           const alts = alternateReviewers[c.id] || [];
 
           return (
-            <Card key={c.id} className="overflow-hidden border-gray-200">
+            <Card key={c.id} className="overflow-hidden border-ink-200">
               <CardHeader className="space-y-1.5 p-4 pb-3">
                 {/* Row 1: Company + match badge together */}
                 <div className="flex items-center justify-between gap-3">
@@ -227,7 +227,7 @@ export function AssignmentQueue({
                     confidence={confidence}
                     compact={false}
                   />
-                  <div className="mt-2 flex items-start gap-2 border-t border-gray-200/80 pt-2">
+                  <div className="mt-2 flex items-start gap-2 border-t border-ink-200/80 pt-2">
                     <Badge variant="ai" className="mt-0.5 shrink-0 text-[10px] px-1.5 py-0">
                       AI
                     </Badge>

@@ -4,7 +4,7 @@ export default function CommandPage() {
   return (
     <div className="flex h-[calc(100vh-theme(spacing.16))] flex-col">
       <div className="mb-4">
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+        <h1 className="text-2xl font-bold tracking-tight text-ink-900">
           Command Center
         </h1>
         <p className="text-sm text-muted-foreground">

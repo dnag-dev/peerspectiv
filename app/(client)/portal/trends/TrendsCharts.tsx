@@ -32,7 +32,7 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
           <h3 className="text-sm font-semibold text-white">
             Monthly Compliance (last 6 months)
           </h3>
-          <span className="text-[10px] uppercase tracking-wider text-gray-500">
+          <span className="text-[10px] uppercase tracking-wider text-ink-500">
             Click a bar to drill into that month
           </span>
         </div>
@@ -71,7 +71,7 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
           Top 5 Most Missed Criteria
         </h3>
         {topMissed.length === 0 ? (
-          <p className="text-sm text-gray-400">No deficiency data.</p>
+          <p className="text-sm text-ink-400">No deficiency data.</p>
         ) : (
           <ul className="space-y-3">
             {topMissed.map((t, i) => {
@@ -88,10 +88,10 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
                     className="group w-full text-left"
                   >
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-300 truncate pr-2 group-hover:text-white group-hover:underline">
+                      <span className="text-ink-300 truncate pr-2 group-hover:text-white group-hover:underline">
                         {i + 1}. {t.criterion}
                       </span>
-                      <span className="text-amber-400">{t.count}</span>
+                      <span className="text-warning-600">{t.count}</span>
                     </div>
                     <div
                       className="h-2 rounded-full overflow-hidden"

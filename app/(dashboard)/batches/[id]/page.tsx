@@ -34,9 +34,9 @@ interface BatchDetail extends Batch {
 
 function BatchStatusBadge({ status }: { status: string }) {
   const variants: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-700",
-    in_progress: "bg-blue-100 text-blue-700",
-    completed: "bg-green-100 text-green-700",
+    pending: "bg-warning-100 text-warning-700",
+    in_progress: "bg-info-100 text-info-600",
+    completed: "bg-mint-100 text-mint-700",
   };
   return (
     <span

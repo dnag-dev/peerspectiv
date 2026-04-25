@@ -95,39 +95,39 @@ export function AddReviewerModal({ open, onClose, onSuccess }: Props) {
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-ink-700 mb-1">
+              Full Name <span className="text-critical-600">*</span>
             </label>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-ink-700 mb-1">
+              Email <span className="text-critical-600">*</span>
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Specialty <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-ink-700 mb-1">
+              Specialty <span className="text-critical-600">*</span>
             </label>
             <select
               value={specialty}
               onChange={(e) => setSpecialty(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
             >
               {SPECIALTIES.map((s) => (
                 <option key={s} value={s}>
@@ -138,7 +138,7 @@ export function AddReviewerModal({ open, onClose, onSuccess }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-ink-700 mb-1">
               Board Certification
             </label>
             <input
@@ -146,19 +146,19 @@ export function AddReviewerModal({ open, onClose, onSuccess }: Props) {
               value={boardCert}
               onChange={(e) => setBoardCert(e.target.value)}
               placeholder="e.g. ABFM, ABIM"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
             />
           </div>
 
-          <div className="rounded-md border border-gray-200 bg-gray-50 p-3 space-y-3">
-            <div className="text-sm font-medium text-gray-700">Compensation</div>
+          <div className="rounded-md border border-ink-200 bg-ink-50 p-3 space-y-3">
+            <div className="text-sm font-medium text-ink-700">Compensation</div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Rate Type</label>
+                <label className="block text-xs text-ink-600 mb-1">Rate Type</label>
                 <select
                   value={rateType}
                   onChange={(e) => setRateType(e.target.value as typeof rateType)}
-                  className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm bg-white"
+                  className="w-full rounded-md border border-ink-300 px-2 py-1.5 text-sm bg-white"
                 >
                   {RATE_TYPES.map((r) => (
                     <option key={r.value} value={r.value}>
@@ -168,7 +168,7 @@ export function AddReviewerModal({ open, onClose, onSuccess }: Props) {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-gray-600 mb-1">
+                <label className="block text-xs text-ink-600 mb-1">
                   Amount ({currentRate.suffix})
                 </label>
                 <input
@@ -178,18 +178,18 @@ export function AddReviewerModal({ open, onClose, onSuccess }: Props) {
                   value={rateAmount}
                   onChange={(e) => setRateAmount(e.target.value)}
                   placeholder={currentRate.placeholder}
-                  className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm bg-white"
+                  className="w-full rounded-md border border-ink-300 px-2 py-1.5 text-sm bg-white"
                   required
                 />
               </div>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-ink-500">
               Default is per-minute billing. Change anytime in the Actions column.
             </p>
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+            <div className="rounded-md bg-critical-100 border border-critical-600 px-3 py-2 text-sm text-critical-700">
               {error}
             </div>
           )}

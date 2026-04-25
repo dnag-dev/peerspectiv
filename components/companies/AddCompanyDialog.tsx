@@ -73,7 +73,7 @@ export function AddCompanyDialog() {
           Add Company
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-white border border-gray-200 shadow-2xl rounded-xl sm:max-w-[500px]">
+      <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add New Company</DialogTitle>
           <DialogDescription>
@@ -103,7 +103,7 @@ export function AddCompanyDialog() {
             <Label htmlFor="notes">Notes</Label>
             <Textarea id="notes" name="notes" placeholder="Optional notes about this company..." rows={3} />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-critical-600">{error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               Cancel

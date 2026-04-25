@@ -32,9 +32,9 @@ const UNIT_LABEL: Record<RateType, string> = {
 };
 
 const STATUS_COLORS: Record<Status, { bg: string; text: string }> = {
-  pending: { bg: 'bg-amber-100', text: 'text-amber-800' },
-  approved: { bg: 'bg-blue-100', text: 'text-blue-800' },
-  paid: { bg: 'bg-green-100', text: 'text-green-800' },
+  pending: { bg: 'bg-warning-100', text: 'text-warning-700' },
+  approved: { bg: 'bg-info-100', text: 'text-info-600' },
+  paid: { bg: 'bg-mint-100', text: 'text-mint-700' },
 };
 
 function currentMonth(): string {
@@ -145,13 +145,13 @@ export function PayoutsView() {
       {/* Period + summary */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">
+          <label className="block text-xs uppercase tracking-wider text-ink-500 mb-1">
             Billing Period
           </label>
           <select
             value={month}
             onChange={(e) => setMonth(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm bg-white"
+            className="rounded-md border border-ink-300 px-3 py-2 text-sm bg-white"
           >
             {monthOptions().map((m) => (
               <option key={m} value={m}>
@@ -163,7 +163,7 @@ export function PayoutsView() {
 
         <div className="grid grid-cols-3 gap-3">
           <SummaryPill
-            icon={<Clock className="h-4 w-4 text-amber-600" />}
+            icon={<Clock className="h-4 w-4 text-warning-600" />}
             label="Pending"
             value={totals.pending}
           />
@@ -173,7 +173,7 @@ export function PayoutsView() {
             value={totals.approved}
           />
           <SummaryPill
-            icon={<DollarSign className="h-4 w-4 text-green-600" />}
+            icon={<DollarSign className="h-4 w-4 text-mint-600" />}
             label="Paid"
             value={totals.paid}
           />
@@ -181,10 +181,10 @@ export function PayoutsView() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-ink-200 bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
+            <tr className="border-b border-ink-200 bg-ink-50 text-left text-xs uppercase tracking-wider text-ink-500">
               <th className="px-4 py-3">Reviewer</th>
               <th className="px-4 py-3">Specialty</th>
               <th className="px-4 py-3">Units</th>
@@ -204,7 +204,7 @@ export function PayoutsView() {
             )}
             {!loading && visibleRows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={7} className="px-4 py-8 text-center text-ink-400">
                   No payouts for this period.
                 </td>
               </tr>
@@ -217,18 +217,18 @@ export function PayoutsView() {
                 return (
                   <tr
                     key={r.id ?? r.reviewer_id}
-                    className="border-b border-gray-100 hover:bg-gray-50"
+                    className="border-b border-ink-100 hover:bg-ink-50"
                   >
-                    <td className="px-4 py-3 font-medium text-gray-900">{r.reviewer_name}</td>
-                    <td className="px-4 py-3 text-gray-600">{r.specialty}</td>
-                    <td className="px-4 py-3 text-gray-700">
+                    <td className="px-4 py-3 font-medium text-ink-900">{r.reviewer_name}</td>
+                    <td className="px-4 py-3 text-ink-600">{r.specialty}</td>
+                    <td className="px-4 py-3 text-ink-700">
                       {r.units.toLocaleString()} {UNIT_LABEL[r.unit_type]}
                     </td>
-                    <td className="px-4 py-3 text-gray-700">
+                    <td className="px-4 py-3 text-ink-700">
                       ${r.rate_amount.toFixed(2)}
-                      <span className="text-gray-400">/{r.unit_type.replace('per_', '')}</span>
+                      <span className="text-ink-400">/{r.unit_type.replace('per_', '')}</span>
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold text-gray-900">
+                    <td className="px-4 py-3 text-right font-semibold text-ink-900">
                       ${r.amount.toFixed(2)}
                     </td>
                     <td className="px-4 py-3">
@@ -258,7 +258,7 @@ export function PayoutsView() {
                           </Button>
                         )}
                         {r.status === 'paid' && r.paid_at && (
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-ink-500">
                             Paid {new Date(r.paid_at).toLocaleDateString()}
                           </span>
                         )}
@@ -284,12 +284,12 @@ function SummaryPill({
   value: number;
 }) {
   return (
-    <div className="rounded-md border border-gray-200 bg-white px-4 py-2 min-w-[130px]">
-      <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-gray-500">
+    <div className="rounded-md border border-ink-200 bg-white px-4 py-2 min-w-[130px]">
+      <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-ink-500">
         {icon}
         {label}
       </div>
-      <div className="mt-0.5 text-lg font-semibold text-gray-900">
+      <div className="mt-0.5 text-lg font-semibold text-ink-900">
         ${value.toFixed(2)}
       </div>
     </div>

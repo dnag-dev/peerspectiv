@@ -151,7 +151,7 @@ export function CaseStatusChart({
                   iconType="circle"
                   iconSize={8}
                   formatter={(value: string) => (
-                    <span className="text-xs text-gray-600">{value}</span>
+                    <span className="text-xs text-ink-600">{value}</span>
                   )}
                 />
               </PieChart>

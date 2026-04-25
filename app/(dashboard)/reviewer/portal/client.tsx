@@ -26,9 +26,9 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
   if (cases.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-ink-100">
           <svg
-            className="h-8 w-8 text-gray-400"
+            className="h-8 w-8 text-ink-400"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
@@ -41,10 +41,10 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
             />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-lg font-semibold text-ink-900">
           No Assigned Cases
         </h2>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-ink-500">
           You have no cases in your queue. Check back later for new assignments.
         </p>
       </div>
@@ -54,8 +54,8 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">My Queue</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-semibold text-ink-900">My Queue</h1>
+        <p className="mt-1 text-sm text-ink-500">
           {cases.length} case{cases.length !== 1 ? "s" : ""} assigned to you
         </p>
       </div>
@@ -71,12 +71,12 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
               key={c.id}
               data-testid="case-card"
               data-case-id={c.id}
-              className="group flex flex-col rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all hover:border-brand-blue/40 hover:shadow-md"
+              className="group flex flex-col rounded-lg border border-ink-200 bg-white p-4 shadow-sm transition-all hover:border-brand-blue/40 hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="truncate text-sm font-semibold text-gray-900">
+                    <h3 className="truncate text-sm font-semibold text-ink-900">
                       {c.provider?.first_name} {c.provider?.last_name}
                     </h3>
                     {c.priority !== "normal" && (
@@ -90,7 +90,7 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
                       </Badge>
                     )}
                   </div>
-                  <p className="mt-0.5 truncate text-xs text-gray-500">
+                  <p className="mt-0.5 truncate text-xs text-ink-500">
                     {c.provider?.specialty ?? "General"} · {c.company?.name}
                   </p>
                 </div>
@@ -101,10 +101,10 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
                   className={cn(
                     "mt-3 text-xs font-medium",
                     isPastDue
-                      ? "text-red-600"
+                      ? "text-critical-600"
                       : isUrgent
-                        ? "text-amber-600"
-                        : "text-gray-500"
+                        ? "text-warning-600"
+                        : "text-ink-500"
                   )}
                 >
                   {isPastDue
@@ -131,7 +131,7 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
                 )}
               </div>
 
-              <div className="mt-4 border-t border-gray-100 pt-3">
+              <div className="mt-4 border-t border-ink-100 pt-3">
                 <Link
                   href={`/reviewer/cases/${c.id}`}
                   className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-brand-blue px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-blue/90"

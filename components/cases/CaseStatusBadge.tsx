@@ -7,27 +7,27 @@ const caseStatusConfig: Record<
 > = {
   unassigned: {
     label: "Unassigned",
-    className: "bg-gray-100 text-gray-700",
+    className: "bg-ink-100 text-ink-700",
   },
   pending_approval: {
     label: "Pending Approval",
-    className: "bg-amber-100 text-amber-700 animate-pulse",
+    className: "bg-warning-100 text-warning-700 animate-pulse",
   },
   assigned: {
     label: "Assigned",
-    className: "bg-blue-100 text-blue-700",
+    className: "bg-info-100 text-info-600",
   },
   in_progress: {
     label: "In Progress",
-    className: "bg-teal-100 text-teal-700",
+    className: "bg-mint-100 text-mint-700",
   },
   completed: {
     label: "Completed",
-    className: "bg-green-100 text-green-700",
+    className: "bg-mint-100 text-mint-700",
   },
   past_due: {
     label: "Past Due",
-    className: "bg-red-100 text-red-700 ring-2 ring-red-300",
+    className: "bg-critical-100 text-critical-700 ring-2 ring-critical-600",
   },
 };
 
@@ -37,19 +37,19 @@ const aiStatusConfig: Record<
 > = {
   pending: {
     label: "Pending",
-    className: "bg-gray-100 text-gray-600",
+    className: "bg-ink-100 text-ink-600",
   },
   processing: {
     label: "Processing",
-    className: "bg-purple-100 text-purple-700 animate-pulse",
+    className: "bg-mint-100 text-mint-700 animate-pulse",
   },
   complete: {
     label: "Complete",
-    className: "bg-green-100 text-green-700",
+    className: "bg-mint-100 text-mint-700",
   },
   failed: {
     label: "Failed",
-    className: "bg-red-100 text-red-700",
+    className: "bg-critical-100 text-critical-700",
   },
 };
 

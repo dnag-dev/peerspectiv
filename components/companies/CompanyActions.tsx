@@ -59,7 +59,7 @@ export function CompanyActions({ company }: CompanyActionsProps) {
       <EditCompanyDialog company={company} open={editOpen} onOpenChange={setEditOpen} />
 
       <Dialog open={archiveOpen} onOpenChange={setArchiveOpen}>
-        <DialogContent className="bg-white border border-gray-200 shadow-2xl rounded-xl sm:max-w-[400px]">
+        <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle>Archive Company</DialogTitle>
             <DialogDescription>

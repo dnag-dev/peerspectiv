@@ -17,7 +17,7 @@ export default async function ProvidersIndex() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Providers</h1>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-ink-400">
           All providers for {company.name} ({list.length})
         </p>
       </div>
@@ -33,7 +33,7 @@ export default async function ProvidersIndex() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-semibold text-white">{p.name}</div>
-                <div className="text-xs text-gray-400">{p.specialty}</div>
+                <div className="text-xs text-ink-400">{p.specialty}</div>
               </div>
               <span
                 className="rounded-full px-3 py-1 text-xs font-bold"
@@ -45,7 +45,7 @@ export default async function ProvidersIndex() {
                 {p.avg}%
               </span>
             </div>
-            <div className="mt-2 text-xs text-gray-500">{p.count} reviews</div>
+            <div className="mt-2 text-xs text-ink-500">{p.count} reviews</div>
           </Link>
         ))}
       </div>

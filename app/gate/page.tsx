@@ -54,7 +54,7 @@ export default function GatePage({
           <h1 className="text-lg font-semibold text-[#0F2044] mb-1">
             Access Required
           </h1>
-          <p className="text-sm text-gray-500 mb-5">
+          <p className="text-sm text-ink-500 mb-5">
             Enter the access key to continue.
           </p>
 
@@ -64,11 +64,11 @@ export default function GatePage({
             autoFocus
             autoComplete="off"
             placeholder="Access key"
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 focus:border-[#1E4DB7] focus:outline-none focus:ring-2 focus:ring-[#1E4DB7]/20"
+            className="w-full rounded-lg border border-ink-300 px-4 py-3 text-sm text-ink-900 focus:border-[#1E4DB7] focus:outline-none focus:ring-2 focus:ring-[#1E4DB7]/20"
           />
 
           {error && (
-            <p className="mt-3 text-sm text-red-600">
+            <p className="mt-3 text-sm text-critical-600">
               Incorrect key. Try again.
             </p>
           )}
@@ -81,7 +81,7 @@ export default function GatePage({
           </button>
         </form>
 
-        <p className="mt-6 text-xs text-gray-400">
+        <p className="mt-6 text-xs text-ink-400">
           Temporary access gate — remove before production launch.
         </p>
       </div>

@@ -52,7 +52,7 @@ function TopBar({ companyName }: { companyName: string }) {
         {companyName} — Client Portal
       </h1>
       <div className="flex items-center gap-3">
-        <span className="text-xs uppercase tracking-wider text-gray-400">Q1 2026</span>
+        <span className="text-xs uppercase tracking-wider text-ink-400">Q1 2026</span>
       </div>
     </header>
   );

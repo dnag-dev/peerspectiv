@@ -296,29 +296,29 @@ export function NewBatchModal({
           onClick={handleClose}
         >
           <div
-            className="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl"
+            className="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-ink-200 bg-white shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b px-5 py-4">
               <div>
-                <h2 className="text-base font-semibold text-gray-900">New Batch</h2>
-                <p className="text-xs text-gray-500">Step {step} of 5</p>
+                <h2 className="text-base font-semibold text-ink-900">New Batch</h2>
+                <p className="text-xs text-ink-500">Step {step} of 5</p>
               </div>
               <button
                 onClick={handleClose}
-                className="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                className="rounded-md p-2 text-ink-400 hover:bg-ink-100 hover:text-ink-700"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             {/* Progress bar */}
-            <div className="flex gap-1 border-b bg-gray-50 px-5 py-2">
+            <div className="flex gap-1 border-b bg-ink-50 px-5 py-2">
               {[1, 2, 3, 4, 5].map((n) => (
                 <div
                   key={n}
                   className={`h-1 flex-1 rounded-full ${
-                    n <= step ? "bg-blue-600" : "bg-gray-200"
+                    n <= step ? "bg-info-600" : "bg-ink-200"
                   }`}
                 />
               ))}
@@ -328,7 +328,7 @@ export function NewBatchModal({
               {/* STEP 1 — company */}
               {step === 1 && (
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-gray-900">
+                  <h3 className="text-sm font-semibold text-ink-900">
                     Which client is this batch for?
                   </h3>
                   <select
@@ -338,7 +338,7 @@ export function NewBatchModal({
                       setSpecialty("");
                       setCompanyFormId("");
                     }}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-blue-600 focus:outline-none"
+                    className="w-full rounded-lg border border-ink-300 px-4 py-3 text-sm focus:border-info-600 focus:outline-none"
                   >
                     <option value="">Select company…</option>
                     {companies.map((c) => (
@@ -353,13 +353,13 @@ export function NewBatchModal({
               {/* STEP 2 — specialty */}
               {step === 2 && (
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-gray-900">Specialty</h3>
-                  <p className="text-xs text-gray-500">
+                  <h3 className="text-sm font-semibold text-ink-900">Specialty</h3>
+                  <p className="text-xs text-ink-500">
                     All charts in this batch must be the same specialty. Only specialties with
                     an approved form for this client are shown.
                   </p>
                   {specialty && skipFormStep && (
-                    <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                    <p className="rounded-lg border border-mint-200 bg-mint-50 px-3 py-2 text-xs text-mint-700">
                       <Check className="mr-1 inline h-3 w-3" />
                       <strong>
                         {specialtyForms[0].form_name}
@@ -378,8 +378,8 @@ export function NewBatchModal({
                         }}
                         className={`rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
                           specialty === s
-                            ? "border-blue-600 bg-blue-50 text-blue-900"
-                            : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                            ? "border-info-600 bg-info-100 text-info-600"
+                            : "border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50"
                         }`}
                       >
                         {s}
@@ -387,7 +387,7 @@ export function NewBatchModal({
                     ))}
                   </div>
                   {availableSpecialties.length === 0 && (
-                    <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+                    <p className="rounded-lg border border-warning-600 bg-warning-100 px-4 py-3 text-xs text-warning-700">
                       No approved forms found for this client. Seed `company_forms` first.
                     </p>
                   )}
@@ -397,10 +397,10 @@ export function NewBatchModal({
               {/* STEP 3 — form */}
               {step === 3 && (
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-gray-900">
+                  <h3 className="text-sm font-semibold text-ink-900">
                     Approved review form
                   </h3>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-ink-500">
                     This is the form the reviewer will use. It must be pre-approved by the
                     client.
                   </p>
@@ -412,13 +412,13 @@ export function NewBatchModal({
                         onClick={() => setCompanyFormId(f.id)}
                         className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
                           companyFormId === f.id
-                            ? "border-blue-600 bg-blue-50"
-                            : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                            ? "border-info-600 bg-info-100"
+                            : "border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50"
                         }`}
                       >
                         <div>
-                          <div className="font-medium text-gray-900">{f.form_name}</div>
-                          <div className="text-xs text-gray-500">
+                          <div className="font-medium text-ink-900">{f.form_name}</div>
+                          <div className="text-xs text-ink-500">
                             Specialty: {f.specialty}
                           </div>
                         </div>
@@ -428,7 +428,7 @@ export function NewBatchModal({
                     <button
                       type="button"
                       onClick={() => setFormBuilderOpen(true)}
-                      className="flex w-full items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-left text-sm text-gray-600 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700"
+                      className="flex w-full items-center gap-2 rounded-lg border border-dashed border-ink-300 px-4 py-3 text-left text-sm text-ink-600 hover:border-info-600 hover:bg-info-100 hover:text-info-600"
                     >
                       <Plus className="h-4 w-4" />
                       Add new form for this client
@@ -440,29 +440,29 @@ export function NewBatchModal({
               {/* STEP 4 — upload */}
               {step === 4 && (
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-gray-900">Batch details + charts</h3>
+                  <h3 className="text-sm font-semibold text-ink-900">Batch details + charts</h3>
 
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-gray-700">
+                    <label className="mb-1 block text-xs font-medium text-ink-700">
                       Batch name
                     </label>
                     <input
                       value={batchName}
                       onChange={(e) => setBatchName(e.target.value)}
                       placeholder="e.g. Q2 2026 — OB/GYN charts"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-600 focus:outline-none"
+                      className="w-full rounded-lg border border-ink-300 px-4 py-2.5 text-sm focus:border-info-600 focus:outline-none"
                     />
                   </div>
 
                   <label
                     htmlFor="batch-pdfs"
-                    className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center hover:border-blue-400 hover:bg-blue-50"
+                    className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-ink-300 bg-ink-50 px-6 py-10 text-center hover:border-info-600 hover:bg-info-100"
                   >
-                    <Upload className="h-6 w-6 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-700">
+                    <Upload className="h-6 w-6 text-ink-400" />
+                    <span className="text-sm font-medium text-ink-700">
                       Drop PDFs here or click to browse
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-ink-500">
                       Each PDF = one case. Filename is used to suggest a provider.
                     </span>
                     <input
@@ -480,13 +480,13 @@ export function NewBatchModal({
                       {rows.map((row, i) => (
                         <div
                           key={i}
-                          className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm"
+                          className="flex items-center gap-3 rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm"
                         >
                           <div className="min-w-0 flex-1">
-                            <div className="truncate font-medium text-gray-900">
+                            <div className="truncate font-medium text-ink-900">
                               {row.file.name}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-ink-500">
                               {(row.file.size / 1024).toFixed(0)} KB
                             </div>
                           </div>
@@ -494,7 +494,7 @@ export function NewBatchModal({
                           <select
                             value={row.providerId}
                             onChange={(e) => updateRow(i, { providerId: e.target.value })}
-                            className="rounded-md border border-gray-300 px-2 py-1.5 text-xs"
+                            className="rounded-md border border-ink-300 px-2 py-1.5 text-xs"
                           >
                             <option value="">Pick provider…</option>
                             {companyProviders.map((p) => (
@@ -507,7 +507,7 @@ export function NewBatchModal({
 
                           <button
                             onClick={() => removeRow(i)}
-                            className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-red-600"
+                            className="rounded p-1 text-ink-400 hover:bg-ink-100 hover:text-critical-600"
                           >
                             <X className="h-3.5 w-3.5" />
                           </button>
@@ -521,37 +521,37 @@ export function NewBatchModal({
               {/* STEP 5 — confirm / upload progress */}
               {step === 5 && (
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-gray-900">Review and submit</h3>
+                  <h3 className="text-sm font-semibold text-ink-900">Review and submit</h3>
 
-                  <dl className="space-y-1.5 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm">
+                  <dl className="space-y-1.5 rounded-lg border border-ink-200 bg-ink-50 px-4 py-3 text-sm">
                     <div className="flex justify-between">
-                      <dt className="text-gray-500">Client</dt>
-                      <dd className="font-medium text-gray-900">
+                      <dt className="text-ink-500">Client</dt>
+                      <dd className="font-medium text-ink-900">
                         {companies.find((c) => c.id === companyId)?.name}
                       </dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-gray-500">Specialty</dt>
-                      <dd className="font-medium text-gray-900">{specialty}</dd>
+                      <dt className="text-ink-500">Specialty</dt>
+                      <dd className="font-medium text-ink-900">{specialty}</dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-gray-500">Form</dt>
-                      <dd className="font-medium text-gray-900">
+                      <dt className="text-ink-500">Form</dt>
+                      <dd className="font-medium text-ink-900">
                         {allForms.find((f) => f.id === effectiveFormId)?.form_name}
                         {skipFormStep && (
-                          <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+                          <span className="ml-2 rounded bg-mint-100 px-1.5 py-0.5 text-[10px] font-medium text-mint-700">
                             AUTO
                           </span>
                         )}
                       </dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-gray-500">Batch name</dt>
-                      <dd className="font-medium text-gray-900">{batchName}</dd>
+                      <dt className="text-ink-500">Batch name</dt>
+                      <dd className="font-medium text-ink-900">{batchName}</dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-gray-500">Cases</dt>
-                      <dd className="font-medium text-gray-900">{rows.length}</dd>
+                      <dt className="text-ink-500">Cases</dt>
+                      <dd className="font-medium text-ink-900">{rows.length}</dd>
                     </div>
                   </dl>
 
@@ -561,17 +561,17 @@ export function NewBatchModal({
                       return (
                         <div
                           key={i}
-                          className="flex items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-xs"
+                          className="flex items-center justify-between rounded-md border border-ink-200 bg-white px-3 py-2 text-xs"
                         >
                           <div className="min-w-0 flex-1 truncate">
-                            <span className="font-medium text-gray-900">
+                            <span className="font-medium text-ink-900">
                               {p ? `${p.first_name} ${p.last_name}` : "Unassigned"}
                             </span>
-                            <span className="ml-2 text-gray-500">{row.file.name}</span>
+                            <span className="ml-2 text-ink-500">{row.file.name}</span>
                           </div>
                           <div className="ml-3 flex items-center gap-1.5">
                             {row.status === "pending" && (
-                              <span className="text-gray-400">Queued</span>
+                              <span className="text-ink-400">Queued</span>
                             )}
                             {row.status === "uploading" && (
                               <>
@@ -581,12 +581,12 @@ export function NewBatchModal({
                             )}
                             {row.status === "done" && (
                               <>
-                                <Check className="h-3 w-3 text-green-600" />
-                                <span className="text-green-600">Uploaded</span>
+                                <Check className="h-3 w-3 text-mint-600" />
+                                <span className="text-mint-600">Uploaded</span>
                               </>
                             )}
                             {row.status === "error" && (
-                              <span className="text-red-600" title={row.errorMsg}>
+                              <span className="text-critical-600" title={row.errorMsg}>
                                 Failed
                               </span>
                             )}
@@ -597,7 +597,7 @@ export function NewBatchModal({
                   </div>
 
                   {submitError && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+                    <div className="rounded-lg border border-critical-600 bg-critical-100 px-3 py-2 text-xs text-critical-700">
                       {submitError}
                     </div>
                   )}
@@ -605,7 +605,7 @@ export function NewBatchModal({
               )}
             </div>
 
-            <div className="flex items-center justify-between gap-3 border-t bg-gray-50 px-5 py-3">
+            <div className="flex items-center justify-between gap-3 border-t bg-ink-50 px-5 py-3">
               <Button
                 variant="ghost"
                 onClick={goBack}

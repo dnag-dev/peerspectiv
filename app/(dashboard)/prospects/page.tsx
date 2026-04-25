@@ -30,8 +30,8 @@ const STAGES = [
   {
     key: 'active',
     title: 'Active Client',
-    accent: 'border-l-4 border-teal-500',
-    badgeClass: 'bg-teal-500 text-white',
+    accent: 'border-l-4 border-mint-500',
+    badgeClass: 'bg-mint-500 text-white',
   },
 ] as const;
 
@@ -65,7 +65,7 @@ export default async function ProspectsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white">Prospect Pipeline</h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-ink-400">
             Track potential FQHC clients from first contact through contract signing and activation.
           </p>
         </div>
@@ -90,8 +90,8 @@ export default async function ProspectsPage() {
               </div>
               <div className="flex-1 space-y-2">
                 {items.length === 0 ? (
-                  <Card className="border-dashed border-slate-700 bg-transparent">
-                    <CardContent className="py-6 text-center text-xs text-slate-500">
+                  <Card className="border-dashed border-ink-700 bg-transparent">
+                    <CardContent className="py-6 text-center text-xs text-ink-500">
                       No {stage.title.toLowerCase()}
                     </CardContent>
                   </Card>

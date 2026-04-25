@@ -50,7 +50,7 @@ export function CorrectiveList({ actions }: { actions: Action[] }) {
   if (items.length === 0) {
     return (
       <div className="rounded-lg p-5" style={{ backgroundColor: "#1A3050" }}>
-        <p className="text-sm text-gray-400">No corrective actions.</p>
+        <p className="text-sm text-ink-400">No corrective actions.</p>
       </div>
     );
   }
@@ -76,23 +76,23 @@ export function CorrectiveList({ actions }: { actions: Action[] }) {
                   {a.status}
                 </span>
                 {a.assignedTo && (
-                  <span className="text-xs text-gray-400">→ {a.assignedTo}</span>
+                  <span className="text-xs text-ink-400">→ {a.assignedTo}</span>
                 )}
               </div>
               <h3 className="text-base font-semibold text-white">{a.title}</h3>
               {a.description && (
-                <p className="mt-1 text-sm text-gray-400">{a.description}</p>
+                <p className="mt-1 text-sm text-ink-400">{a.description}</p>
               )}
             </div>
             {a.dueDate && (
-              <div className="text-right text-xs text-gray-400">
+              <div className="text-right text-xs text-ink-400">
                 Due {new Date(a.dueDate).toLocaleDateString()}
               </div>
             )}
           </div>
 
           <div className="mt-4">
-            <div className="flex justify-between text-xs text-gray-400 mb-1">
+            <div className="flex justify-between text-xs text-ink-400 mb-1">
               <span>Progress {saving === a.id && "(saving…)"}</span>
               <span>{a.progress}%</span>
             </div>

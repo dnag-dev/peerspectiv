@@ -29,9 +29,9 @@ export function ClientOverviewCard({
   // Determine status indicator based on projected completion
   const now = new Date();
   let statusLabel = 'on-track';
-  let statusColor = 'bg-green-500';
-  let statusTextColor = 'text-green-700';
-  let statusBorderColor = 'border-green-200';
+  let statusColor = 'bg-mint-500';
+  let statusTextColor = 'text-mint-700';
+  let statusBorderColor = 'border-mint-200';
 
   if (projectedCompletion) {
     const projected = new Date(projectedCompletion);
@@ -40,14 +40,14 @@ export function ClientOverviewCard({
     );
     if (daysUntil < 0) {
       statusLabel = 'delayed';
-      statusColor = 'bg-red-500';
-      statusTextColor = 'text-red-700';
-      statusBorderColor = 'border-red-200';
+      statusColor = 'bg-critical-600';
+      statusTextColor = 'text-critical-700';
+      statusBorderColor = 'border-critical-600';
     } else if (daysUntil < 7) {
       statusLabel = 'at-risk';
-      statusColor = 'bg-amber-500';
-      statusTextColor = 'text-amber-700';
-      statusBorderColor = 'border-amber-200';
+      statusColor = 'bg-warning-600';
+      statusTextColor = 'text-warning-700';
+      statusBorderColor = 'border-warning-600';
     }
   }
 
@@ -62,10 +62,10 @@ export function ClientOverviewCard({
   return (
     <Link
       href={companyId ? `/companies/${companyId}` : '#'}
-      className="block rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md"
+      className="block rounded-lg border border-ink-200 bg-white p-4 transition-shadow hover:shadow-md"
     >
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-gray-900 truncate">
+        <p className="text-sm font-semibold text-ink-900 truncate">
           {companyName ?? 'Unknown'}
         </p>
         {state && (
@@ -77,13 +77,13 @@ export function ClientOverviewCard({
 
       {/* Progress bar */}
       <div className="mt-3">
-        <div className="h-2 w-full rounded-full bg-gray-100">
+        <div className="h-2 w-full rounded-full bg-ink-100">
           <div
-            className="h-2 rounded-full bg-green-500 transition-all"
+            className="h-2 rounded-full bg-mint-500 transition-all"
             style={{ width: `${progressPct}%` }}
           />
         </div>
-        <p className="mt-1.5 text-xs text-gray-500">
+        <p className="mt-1.5 text-xs text-ink-500">
           {completed} of {total} cases complete
         </p>
       </div>
@@ -91,7 +91,7 @@ export function ClientOverviewCard({
       {/* Footer info */}
       <div className="mt-3 flex items-center justify-between">
         {formattedDate && (
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-ink-500">
             Expected: {formattedDate}
           </p>
         )}

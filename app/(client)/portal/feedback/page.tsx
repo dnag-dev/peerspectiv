@@ -14,7 +14,7 @@ function StarRating({
 }) {
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-gray-200">{label}</p>
+      <p className="text-sm font-medium text-ink-200">{label}</p>
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
@@ -26,7 +26,7 @@ function StarRating({
             <Star
               className={`h-7 w-7 ${
                 star <= value
-                  ? 'fill-yellow-400 text-yellow-400'
+                  ? 'fill-warning-600 text-warning-600'
                   : 'text-white/20'
               }`}
             />
@@ -75,11 +75,11 @@ export default function FeedbackPage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="rounded-xl p-8 text-center" style={{ backgroundColor: '#1A3050' }}>
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
-            <Star className="h-8 w-8 fill-green-400 text-green-400" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-mint-500/20">
+            <Star className="h-8 w-8 fill-mint-400 text-mint-400" />
           </div>
           <h2 className="text-xl font-semibold text-white">Thank you!</h2>
-          <p className="mt-2 text-sm text-gray-400">
+          <p className="mt-2 text-sm text-ink-400">
             Your feedback has been recorded.
           </p>
         </div>
@@ -91,7 +91,7 @@ export default function FeedbackPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Help us improve</h1>
-        <p className="mt-1 text-sm text-gray-400">
+        <p className="mt-1 text-sm text-ink-400">
           Your feedback helps Peerspectiv serve you better.
         </p>
       </div>
@@ -128,7 +128,7 @@ export default function FeedbackPage() {
           style={{ backgroundColor: '#1A3050' }}
         >
           <div>
-            <p className="text-sm font-medium text-gray-200">
+            <p className="text-sm font-medium text-ink-200">
               Would you recommend Peerspectiv to other FQHCs?
             </p>
             <div className="mt-3 flex gap-3">
@@ -138,7 +138,7 @@ export default function FeedbackPage() {
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition-colors ${
                   wouldRecommend === 'true'
                     ? 'bg-[#2E6FE8] text-white'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                    : 'bg-white/10 text-ink-300 hover:bg-white/20'
                 }`}
               >
                 Yes
@@ -149,7 +149,7 @@ export default function FeedbackPage() {
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition-colors ${
                   wouldRecommend === 'false'
                     ? 'bg-[#2E6FE8] text-white'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                    : 'bg-white/10 text-ink-300 hover:bg-white/20'
                 }`}
               >
                 Not sure
@@ -160,7 +160,7 @@ export default function FeedbackPage() {
           <div>
             <label
               htmlFor="open-feedback"
-              className="block text-sm font-medium text-gray-200"
+              className="block text-sm font-medium text-ink-200"
             >
               Anything else you&apos;d like us to know?
             </label>
@@ -169,7 +169,7 @@ export default function FeedbackPage() {
               rows={4}
               value={openFeedback}
               onChange={(e) => setOpenFeedback(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-gray-500 focus:border-[#2E6FE8] focus:outline-none focus:ring-1 focus:ring-[#2E6FE8]"
+              className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-ink-500 focus:border-[#2E6FE8] focus:outline-none focus:ring-1 focus:ring-[#2E6FE8]"
               placeholder="Share your thoughts..."
             />
           </div>

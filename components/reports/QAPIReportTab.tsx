@@ -232,9 +232,9 @@ export function QAPIReportTab({ companies }: Props) {
 
       {/* Error */}
       {error && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-critical-600 bg-critical-100">
           <CardContent className="py-4">
-            <p className="text-sm text-red-700">{error}</p>
+            <p className="text-sm text-critical-700">{error}</p>
           </CardContent>
         </Card>
       )}

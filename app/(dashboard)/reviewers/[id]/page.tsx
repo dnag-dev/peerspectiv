@@ -30,10 +30,10 @@ export const dynamic = "force-dynamic";
 const ESTIMATED_RATE_PER_CASE = 75;
 
 const AVAILABILITY_STYLES: Record<string, string> = {
-  available: "bg-green-100 text-green-800",
-  vacation: "bg-red-100 text-red-800",
-  on_leave: "bg-amber-100 text-amber-800",
-  inactive: "bg-gray-100 text-gray-800",
+  available: "bg-mint-100 text-mint-700",
+  vacation: "bg-critical-100 text-critical-700",
+  on_leave: "bg-warning-100 text-warning-700",
+  inactive: "bg-ink-100 text-ink-800",
 };
 
 function formatDate(d: string | Date | null | undefined) {
@@ -164,7 +164,7 @@ export default async function ReviewerDetailPage({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <ClipboardCheck className="h-5 w-5 text-blue-600" />
+            <ClipboardCheck className="h-5 w-5 text-info-600" />
             <div>
               <p className="text-xs text-muted-foreground">Active cases</p>
               <p className="text-xl font-semibold">{activeCases.length}</p>
@@ -173,7 +173,7 @@ export default async function ReviewerDetailPage({
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            <CheckCircle2 className="h-5 w-5 text-mint-600" />
             <div>
               <p className="text-xs text-muted-foreground">Completed reviews</p>
               <p className="text-xl font-semibold">{completedCount}</p>
@@ -182,7 +182,7 @@ export default async function ReviewerDetailPage({
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <Clock className="h-5 w-5 text-amber-600" />
+            <Clock className="h-5 w-5 text-warning-600" />
             <div>
               <p className="text-xs text-muted-foreground">Avg time / review</p>
               <p className="text-xl font-semibold">
@@ -193,7 +193,7 @@ export default async function ReviewerDetailPage({
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <DollarSign className="h-5 w-5 text-emerald-600" />
+            <DollarSign className="h-5 w-5 text-mint-600" />
             <div>
               <p className="text-xs text-muted-foreground">
                 Earnings <span className="italic">(est.)</span>
@@ -251,7 +251,7 @@ export default async function ReviewerDetailPage({
                         {c.batch_id ? (
                           <Link
                             href={`/batches/${c.batch_id}`}
-                            className="text-blue-600 hover:underline"
+                            className="text-info-600 hover:underline"
                           >
                             {batch?.batch_name || "View batch"}
                           </Link>
@@ -337,7 +337,7 @@ export default async function ReviewerDetailPage({
                         {rc?.batch_id ? (
                           <Link
                             href={`/batches/${rc.batch_id}`}
-                            className="text-blue-600 hover:underline"
+                            className="text-info-600 hover:underline"
                           >
                             View
                           </Link>

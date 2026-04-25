@@ -79,7 +79,7 @@ export function QualityInsights({
         style={{ backgroundColor: "#1A3050", borderLeftColor: "#EF4444" }}
       >
         <div className="text-sm font-semibold text-white">Failed to load insights</div>
-        <div className="text-xs text-gray-400 mt-1">{error}</div>
+        <div className="text-xs text-ink-400 mt-1">{error}</div>
       </div>
     );
   }
@@ -87,7 +87,7 @@ export function QualityInsights({
   if (!insights || insights.length === 0) {
     return (
       <div className="rounded-lg p-5" style={{ backgroundColor: "#1A3050" }}>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-ink-400">
           No insights available for {companyName} yet. Complete reviews to generate insights.
         </p>
       </div>
@@ -118,9 +118,9 @@ export function QualityInsights({
             </span>
           </div>
           <h3 className="text-sm font-semibold text-white">{insight.title}</h3>
-          <p className="mt-2 text-sm text-gray-300">{insight.description}</p>
+          <p className="mt-2 text-sm text-ink-300">{insight.description}</p>
           {insight.recommendation && (
-            <p className="mt-3 text-xs text-gray-400 italic">
+            <p className="mt-3 text-xs text-ink-400 italic">
               Recommendation: {insight.recommendation}
             </p>
           )}

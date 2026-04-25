@@ -12,8 +12,8 @@ export default async function ReviewersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Reviewers</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-ink-900">Reviewers</h1>
+        <p className="text-sm text-ink-500">
           Manage peer reviewers, compensation, and availability
         </p>
       </div>

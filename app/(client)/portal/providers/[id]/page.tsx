@@ -26,7 +26,7 @@ export default async function ProviderDetailPage({
     return (
       <div className="text-white">
         <h1 className="text-2xl font-bold">Provider not found</h1>
-        <Link href="/portal" className="text-blue-400 underline">
+        <Link href="/portal" className="text-info-600 underline">
           Back to dashboard
         </Link>
       </div>
@@ -97,7 +97,7 @@ export default async function ProviderDetailPage({
 
   return (
     <div className="space-y-6 text-white">
-      <Link href="/portal" className="text-sm text-blue-400 hover:underline">
+      <Link href="/portal" className="text-sm text-info-600 hover:underline">
         ← Back
       </Link>
 
@@ -113,8 +113,8 @@ export default async function ProviderDetailPage({
         </div>
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{name}</h1>
-          <p className="text-sm text-gray-400">{p.specialty ?? "—"}</p>
-          {p.npi && <p className="text-xs text-gray-500">NPI: {p.npi}</p>}
+          <p className="text-sm text-ink-400">{p.specialty ?? "—"}</p>
+          {p.npi && <p className="text-xs text-ink-500">NPI: {p.npi}</p>}
         </div>
         <div className="text-right">
           <div
@@ -123,7 +123,7 @@ export default async function ProviderDetailPage({
           >
             {avg}%
           </div>
-          <p className="text-xs text-gray-400 mt-1">Avg Score</p>
+          <p className="text-xs text-ink-400 mt-1">Avg Score</p>
         </div>
       </div>
 
@@ -133,11 +133,11 @@ export default async function ProviderDetailPage({
         <div className="rounded-lg p-6" style={{ backgroundColor: "#1A3050" }}>
           <h3 className="text-sm font-semibold mb-3">Recent Reviews (last 5)</h3>
           {last5.length === 0 ? (
-            <p className="text-sm text-gray-400">No reviews.</p>
+            <p className="text-sm text-ink-400">No reviews.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase text-gray-500">
+                <tr className="text-left text-xs uppercase text-ink-500">
                   <th className="pb-2">Date</th>
                   <th className="pb-2">Score</th>
                 </tr>
@@ -145,7 +145,7 @@ export default async function ProviderDetailPage({
               <tbody>
                 {last5.map((r) => (
                   <tr key={r.id} className="border-t" style={{ borderColor: "#2A3F5F" }}>
-                    <td className="py-2 text-gray-300">
+                    <td className="py-2 text-ink-300">
                       {r.submittedAt
                         ? new Date(r.submittedAt as any).toLocaleDateString()
                         : "—"}
@@ -161,7 +161,7 @@ export default async function ProviderDetailPage({
         <div className="rounded-lg p-6" style={{ backgroundColor: "#1A3050" }}>
           <h3 className="text-sm font-semibold mb-3">Common Deficiencies</h3>
           {topDeficiencies.length === 0 ? (
-            <p className="text-sm text-gray-400">No deficiencies recorded.</p>
+            <p className="text-sm text-ink-400">No deficiencies recorded.</p>
           ) : (
             <ul className="space-y-2">
               {topDeficiencies.map(([key, count]) => (
@@ -170,8 +170,8 @@ export default async function ProviderDetailPage({
                   className="flex justify-between rounded-md p-2 text-sm"
                   style={{ backgroundColor: "#0B1829" }}
                 >
-                  <span className="text-gray-200 truncate pr-2">{key}</span>
-                  <span className="text-xs text-amber-400">x{count}</span>
+                  <span className="text-ink-200 truncate pr-2">{key}</span>
+                  <span className="text-xs text-warning-600">x{count}</span>
                 </li>
               ))}
             </ul>
@@ -182,7 +182,7 @@ export default async function ProviderDetailPage({
       <div className="rounded-lg p-6" style={{ backgroundColor: "#1A3050" }}>
         <h3 className="text-sm font-semibold mb-3">Open Corrective Actions</h3>
         {openActions.length === 0 ? (
-          <p className="text-sm text-gray-400">None.</p>
+          <p className="text-sm text-ink-400">None.</p>
         ) : (
           <ul className="space-y-2">
             {openActions.map((a) => (
@@ -193,9 +193,9 @@ export default async function ProviderDetailPage({
               >
                 <div className="font-medium">{a.title}</div>
                 {a.description && (
-                  <div className="text-xs text-gray-400 mt-1">{a.description}</div>
+                  <div className="text-xs text-ink-400 mt-1">{a.description}</div>
                 )}
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-ink-500 mt-1">
                   Progress: {a.progressPct ?? 0}%
                 </div>
               </li>

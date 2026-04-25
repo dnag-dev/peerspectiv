@@ -181,7 +181,7 @@ export function AddProspectModal() {
           Add Prospect
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-white border border-gray-200 shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto sm:max-w-[640px]">
+      <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto sm:max-w-[640px]">
         <DialogHeader>
           <DialogTitle>Add Prospect</DialogTitle>
           <DialogDescription>
@@ -308,7 +308,7 @@ export function AddProspectModal() {
               {SPECIALTIES.map((s) => (
                 <label
                   key={s}
-                  className="flex items-center gap-2 rounded-md border border-slate-700 bg-[#0B1829] px-2 py-1.5 text-xs text-slate-200"
+                  className="flex items-center gap-2 rounded-md border border-ink-700 bg-[#0B1829] px-2 py-1.5 text-xs text-ink-200"
                 >
                   <input
                     type="checkbox"
@@ -342,12 +342,12 @@ export function AddProspectModal() {
                 <AlertTriangle className="mt-0.5 h-4 w-4 text-[#F59E0B]" />
                 <div className="flex-1 space-y-2">
                   <p className="text-sm font-medium text-[#F59E0B]">Possible duplicate</p>
-                  <p className="text-xs text-slate-200">{error}</p>
-                  <ul className="space-y-1 text-xs text-slate-300">
+                  <p className="text-xs text-ink-200">{error}</p>
+                  <ul className="space-y-1 text-xs text-ink-300">
                     {duplicates.map((d) => (
                       <li key={d.id} className="flex items-center justify-between gap-2">
                         <span className="font-medium text-white">{d.name}</span>
-                        <span className="text-slate-400">
+                        <span className="text-ink-400">
                           {[d.city, d.state].filter(Boolean).join(', ')} · {d.status}
                         </span>
                       </li>

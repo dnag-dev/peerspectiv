@@ -84,12 +84,12 @@ export default function LoginPage() {
             />
           </div>
         </div>
-        <p className="text-gray-300 mb-8 text-lg">AI-Powered Medical Peer Review Platform</p>
+        <p className="text-ink-300 mb-8 text-lg">AI-Powered Medical Peer Review Platform</p>
 
         {showDemo ? (
           <div className="bg-white rounded-xl shadow-xl p-8">
-            <div className="mb-5 flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-bold uppercase">
-              <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
+            <div className="mb-5 flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-warning-100 text-warning-700 text-xs font-bold uppercase">
+              <span className="w-2 h-2 bg-warning-600 rounded-full animate-pulse" />
               Demo Mode — Pick a Persona
             </div>
             <div className="space-y-3 text-left">
@@ -99,22 +99,22 @@ export default function LoginPage() {
                   data-testid={`demo-login-${u.role}`}
                   onClick={() => loginAsDemo(u.role)}
                   disabled={loading !== null}
-                  className="w-full rounded-lg border-2 border-gray-200 bg-white p-4 text-left transition-all hover:border-gray-400 hover:shadow-md disabled:opacity-50 disabled:hover:border-gray-200 disabled:hover:shadow-none"
+                  className="w-full rounded-lg border-2 border-ink-200 bg-white p-4 text-left transition-all hover:border-ink-400 hover:shadow-md disabled:opacity-50 disabled:hover:border-ink-200 disabled:hover:shadow-none"
                   style={{ borderLeftWidth: 6, borderLeftColor: u.accent }}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-semibold text-gray-900 text-sm">{u.label}</div>
-                      <div className="text-xs text-gray-500 mt-0.5">{u.email}</div>
-                      <div className="text-xs text-gray-600 mt-1">{u.blurb}</div>
+                      <div className="font-semibold text-ink-900 text-sm">{u.label}</div>
+                      <div className="text-xs text-ink-500 mt-0.5">{u.email}</div>
+                      <div className="text-xs text-ink-600 mt-1">{u.blurb}</div>
                     </div>
                     {loading === u.role ? (
-                      <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none">
+                      <svg className="animate-spin h-5 w-5 text-ink-400" viewBox="0 0 24 24" fill="none">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                       </svg>
                     ) : (
-                      <span className="text-gray-400 text-lg">→</span>
+                      <span className="text-ink-400 text-lg">→</span>
                     )}
                   </div>
                 </button>
@@ -123,7 +123,7 @@ export default function LoginPage() {
             {isClerkConfigured && (
               <button
                 onClick={() => setShowDemo(false)}
-                className="mt-5 text-xs text-gray-500 hover:text-gray-700 underline"
+                className="mt-5 text-xs text-ink-500 hover:text-ink-700 underline"
               >
                 Use real Clerk sign-in instead
               </button>
@@ -140,16 +140,16 @@ export default function LoginPage() {
             ) : (
               <div className="bg-white rounded-xl shadow-xl p-8 mx-auto">
                 <div className="animate-pulse space-y-4">
-                  <div className="h-8 bg-gray-200 rounded w-1/2 mx-auto" />
-                  <div className="h-10 bg-gray-200 rounded" />
-                  <div className="h-10 bg-gray-200 rounded" />
-                  <div className="h-10 bg-gray-200 rounded" />
+                  <div className="h-8 bg-ink-200 rounded w-1/2 mx-auto" />
+                  <div className="h-10 bg-ink-200 rounded" />
+                  <div className="h-10 bg-ink-200 rounded" />
+                  <div className="h-10 bg-ink-200 rounded" />
                 </div>
               </div>
             )}
             <button
               onClick={() => setShowDemo(true)}
-              className="mt-5 text-xs text-gray-300 hover:text-white underline"
+              className="mt-5 text-xs text-ink-300 hover:text-white underline"
             >
               ← Back to demo personas
             </button>

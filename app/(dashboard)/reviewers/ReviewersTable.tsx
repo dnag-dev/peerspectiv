@@ -27,10 +27,10 @@ interface Reviewer {
 }
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  available: { bg: 'bg-green-100', text: 'text-green-800' },
-  vacation: { bg: 'bg-red-100', text: 'text-red-800' },
-  on_leave: { bg: 'bg-amber-100', text: 'text-amber-800' },
-  inactive: { bg: 'bg-gray-100', text: 'text-gray-800' },
+  available: { bg: 'bg-mint-100', text: 'text-mint-700' },
+  vacation: { bg: 'bg-critical-100', text: 'text-critical-700' },
+  on_leave: { bg: 'bg-warning-100', text: 'text-warning-700' },
+  inactive: { bg: 'bg-ink-100', text: 'text-ink-800' },
 };
 
 const RATE_SUFFIX: Record<RateType, string> = {
@@ -109,7 +109,7 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
   return (
     <>
       <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-ink-500">
           {reviewers.length} reviewer{reviewers.length === 1 ? '' : 's'}
         </div>
         <Button onClick={() => setAddOpen(true)}>
@@ -118,10 +118,10 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
         </Button>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-ink-200 bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
+            <tr className="border-b border-ink-200 bg-ink-50 text-left text-xs uppercase tracking-wider text-ink-500">
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Specialty</th>
               <th className="px-4 py-3">Active</th>
@@ -134,7 +134,7 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
           <tbody>
             {reviewers.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={7} className="px-4 py-8 text-center text-ink-400">
                   No reviewers found.
                 </td>
               </tr>
@@ -143,8 +143,8 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
               const status = r.availability_status || 'available';
               const colors = STATUS_COLORS[status] || STATUS_COLORS.inactive;
               return (
-                <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">
+                <tr key={r.id} className="border-b border-ink-100 hover:bg-ink-50">
+                  <td className="px-4 py-3 font-medium text-ink-900">
                     <Link
                       href={`/reviewers/${r.id}`}
                       className="hover:text-brand-navy hover:underline"
@@ -152,10 +152,10 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
                       {r.full_name ?? '—'}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{r.specialty ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-600">{r.active_cases_count ?? 0}</td>
-                  <td className="px-4 py-3 text-gray-600">{r.total_reviews_completed ?? 0}</td>
-                  <td className="px-4 py-3 text-gray-700">
+                  <td className="px-4 py-3 text-ink-600">{r.specialty ?? '—'}</td>
+                  <td className="px-4 py-3 text-ink-600">{r.active_cases_count ?? 0}</td>
+                  <td className="px-4 py-3 text-ink-600">{r.total_reviews_completed ?? 0}</td>
+                  <td className="px-4 py-3 text-ink-700">
                     <span className="font-medium">{formatRate(r.rate_type, r.rate_amount)}</span>
                   </td>
                   <td className="px-4 py-3">

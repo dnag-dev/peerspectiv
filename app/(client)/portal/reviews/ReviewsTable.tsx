@@ -104,13 +104,13 @@ export function ReviewsTable({
           className="flex flex-wrap items-center gap-2 rounded-lg p-3"
           style={{ backgroundColor: "#1A3050", border: "1px solid #5EEAD4" }}
         >
-          <span className="text-xs uppercase tracking-wider text-teal-300">
+          <span className="text-xs uppercase tracking-wider text-mint-200">
             Drilled down from Trends
           </span>
           {month && (
             <button
               onClick={() => setMonth(null)}
-              className="flex items-center gap-1 rounded-full bg-teal-500/20 px-2.5 py-1 text-xs text-teal-200 hover:bg-teal-500/30"
+              className="flex items-center gap-1 rounded-full bg-mint-500/20 px-2.5 py-1 text-xs text-mint-200 hover:bg-mint-500/30"
             >
               Month: {monthLabel} <X className="h-3 w-3" />
             </button>
@@ -118,7 +118,7 @@ export function ReviewsTable({
           {criterion && (
             <button
               onClick={() => setCriterion(null)}
-              className="flex items-center gap-1 rounded-full bg-teal-500/20 px-2.5 py-1 text-xs text-teal-200 hover:bg-teal-500/30"
+              className="flex items-center gap-1 rounded-full bg-mint-500/20 px-2.5 py-1 text-xs text-mint-200 hover:bg-mint-500/30"
             >
               Criterion: {criterion} <X className="h-3 w-3" />
             </button>
@@ -128,7 +128,7 @@ export function ReviewsTable({
               setMonth(null);
               setCriterion(null);
             }}
-            className="ml-auto text-xs text-gray-400 hover:text-white"
+            className="ml-auto text-xs text-ink-400 hover:text-white"
           >
             Clear all
           </button>
@@ -164,7 +164,7 @@ export function ReviewsTable({
           <table className="w-full text-sm">
             <thead>
               <tr
-                className="text-left text-xs uppercase text-gray-500 border-b"
+                className="text-left text-xs uppercase text-ink-500 border-b"
                 style={{ borderColor: "#2A3F5F" }}
               >
                 <th className="py-2 pr-3">Case</th>
@@ -178,7 +178,7 @@ export function ReviewsTable({
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-4 text-center text-gray-400">
+                  <td colSpan={6} className="py-4 text-center text-ink-400">
                     No matching reviews.
                   </td>
                 </tr>
@@ -192,8 +192,8 @@ export function ReviewsTable({
                   <td className="py-3 pr-3 text-white truncate max-w-xs">
                     {r.chartFileName}
                   </td>
-                  <td className="py-3 pr-3 text-gray-300">{r.providerName}</td>
-                  <td className="py-3 pr-3 text-gray-400">{r.specialty}</td>
+                  <td className="py-3 pr-3 text-ink-300">{r.providerName}</td>
+                  <td className="py-3 pr-3 text-ink-400">{r.specialty}</td>
                   <td className="py-3 pr-3">
                     <span
                       className="rounded px-2 py-0.5 text-xs font-semibold"
@@ -205,10 +205,10 @@ export function ReviewsTable({
                       {r.status}
                     </span>
                   </td>
-                  <td className="py-3 pr-3 text-gray-400">
+                  <td className="py-3 pr-3 text-ink-400">
                     {r.dueDate ? new Date(r.dueDate).toLocaleDateString() : "—"}
                   </td>
-                  <td className="py-3 pr-3 text-gray-400">
+                  <td className="py-3 pr-3 text-ink-400">
                     {quarterOf(r.createdAt)}
                   </td>
                 </tr>
@@ -234,7 +234,7 @@ function FilterSelect({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs uppercase tracking-wider text-gray-400">
+      <label className="text-xs uppercase tracking-wider text-ink-400">
         {label}
       </label>
       <select

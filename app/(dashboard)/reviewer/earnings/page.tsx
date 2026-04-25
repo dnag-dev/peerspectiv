@@ -49,16 +49,16 @@ function formatMinutes(m: number | null): string {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  assigned: "bg-gray-100 text-gray-800",
-  in_progress: "bg-amber-100 text-amber-800",
-  completed: "bg-green-100 text-green-800",
-  past_due: "bg-red-100 text-red-800",
+  assigned: "bg-ink-100 text-ink-800",
+  in_progress: "bg-warning-100 text-warning-700",
+  completed: "bg-mint-100 text-mint-700",
+  past_due: "bg-critical-100 text-critical-700",
 };
 
 const PAYOUT_STYLE: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-800",
-  approved: "bg-blue-100 text-blue-800",
-  paid: "bg-green-100 text-green-800",
+  pending: "bg-warning-100 text-warning-700",
+  approved: "bg-info-100 text-info-600",
+  paid: "bg-mint-100 text-mint-700",
 };
 
 export default async function ReviewerEarningsPage() {
@@ -143,7 +143,7 @@ export default async function ReviewerEarningsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Earnings</h1>
+        <h1 className="text-2xl font-bold text-ink-900">Earnings</h1>
         <p className="text-sm text-muted-foreground">
           Time spent, computed earnings, and payout status across your cases.
         </p>
@@ -158,7 +158,7 @@ export default async function ReviewerEarningsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-gray-900">{formatMinutes(totalMinutes)}</p>
+            <p className="text-2xl font-bold text-ink-900">{formatMinutes(totalMinutes)}</p>
             <p className="text-xs text-muted-foreground">
               {inProgressCount} in progress · {completedCount} completed
             </p>
@@ -172,7 +172,7 @@ export default async function ReviewerEarningsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-amber-700">{formatMoney(earnedInProgress)}</p>
+            <p className="text-2xl font-bold text-warning-700">{formatMoney(earnedInProgress)}</p>
             <p className="text-xs text-muted-foreground">Accruing as time is logged</p>
           </CardContent>
         </Card>
@@ -184,7 +184,7 @@ export default async function ReviewerEarningsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-gray-900">{formatMoney(earnedCompleted)}</p>
+            <p className="text-2xl font-bold text-ink-900">{formatMoney(earnedCompleted)}</p>
             <p className="text-xs text-muted-foreground">
               {formatMoney(pending)} pending · {formatMoney(paid)} paid
             </p>
@@ -194,11 +194,11 @@ export default async function ReviewerEarningsPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-              <DollarSign className="h-4 w-4 text-green-600" /> Paid to date
+              <DollarSign className="h-4 w-4 text-mint-600" /> Paid to date
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-green-700">{formatMoney(paid)}</p>
+            <p className="text-2xl font-bold text-mint-700">{formatMoney(paid)}</p>
             <p className="text-xs text-muted-foreground">Settled payouts</p>
           </CardContent>
         </Card>
@@ -213,7 +213,7 @@ export default async function ReviewerEarningsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
+                <tr className="border-b border-ink-200 bg-ink-50 text-left text-xs uppercase tracking-wider text-ink-500">
                   <th className="px-4 py-3">Case</th>
                   <th className="px-4 py-3">Company</th>
                   <th className="px-4 py-3">Status</th>
@@ -226,13 +226,13 @@ export default async function ReviewerEarningsPage() {
               <tbody>
                 {enriched.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-gray-400">
+                    <td colSpan={7} className="px-4 py-8 text-center text-ink-400">
                       No cases yet. Earnings will show here as cases are assigned.
                     </td>
                   </tr>
                 )}
                 {enriched.map((r) => {
-                  const statusClass = STATUS_STYLE[r.status] ?? "bg-gray-100 text-gray-800";
+                  const statusClass = STATUS_STYLE[r.status] ?? "bg-ink-100 text-ink-800";
                   const payoutKey = r.completed ? (r.payout_status ?? "pending") : null;
                   const payoutClass = payoutKey ? PAYOUT_STYLE[payoutKey] : null;
                   const unit = unitLabel(r.rate_type);
@@ -243,24 +243,24 @@ export default async function ReviewerEarningsPage() {
                         ? `${r.units.toFixed(2)} ${unit} (${formatMinutes(r.minutes)})`
                         : `${r.minutes} ${unit}`;
                   return (
-                    <tr key={r.case_id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr key={r.case_id} className="border-b border-ink-100 hover:bg-ink-50">
                       <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900">{r.patient}</div>
+                        <div className="font-medium text-ink-900">{r.patient}</div>
                         <div className="text-xs text-muted-foreground">
                           {r.specialty ?? "—"}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-gray-700">{r.company ?? "—"}</td>
+                      <td className="px-4 py-3 text-ink-700">{r.company ?? "—"}</td>
                       <td className="px-4 py-3">
                         <Badge className={`${statusClass} border-0`}>
                           {r.status.replace("_", " ")}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-right text-gray-700">{unitsDisplay}</td>
-                      <td className="px-4 py-3 text-right text-gray-700">
+                      <td className="px-4 py-3 text-right text-ink-700">{unitsDisplay}</td>
+                      <td className="px-4 py-3 text-right text-ink-700">
                         {formatMoney(r.rate)}/{unit}
                       </td>
-                      <td className="px-4 py-3 text-right font-medium text-gray-900">
+                      <td className="px-4 py-3 text-right font-medium text-ink-900">
                         {formatMoney(r.amount)}
                       </td>
                       <td className="px-4 py-3">

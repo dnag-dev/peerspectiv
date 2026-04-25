@@ -56,11 +56,11 @@ interface FieldState {
 function confidenceClasses(c: Confidence) {
   switch (c) {
     case "high":
-      return "bg-emerald-500/15 border-emerald-500/40 text-emerald-300";
+      return "bg-mint-500/15 border-mint-500/40 text-mint-200";
     case "medium":
-      return "bg-amber-500/15 border-amber-500/40 text-amber-300";
+      return "bg-warning-600/15 border-warning-600/40 text-warning-600";
     case "low":
-      return "bg-red-500/15 border-red-500/40 text-red-300";
+      return "bg-critical-600/15 border-critical-600/40 text-critical-600";
   }
 }
 
@@ -71,9 +71,9 @@ function ratingLabel(score: number): string {
 }
 
 function ratingLabelColor(score: number): string {
-  if (score >= 80) return "text-emerald-400";
-  if (score >= 60) return "text-amber-300";
-  return "text-red-400";
+  if (score >= 80) return "text-mint-400";
+  if (score >= 60) return "text-warning-600";
+  return "text-critical-600";
 }
 
 function valuesEqual(a: unknown, b: unknown): boolean {
@@ -266,10 +266,10 @@ export function ReviewForm({
 
   if (submitted) {
     return (
-      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-10 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20">
+      <div className="rounded-xl border border-mint-500/30 bg-mint-500/5 p-10 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-mint-500/20">
           <svg
-            className="h-7 w-7 text-emerald-400"
+            className="h-7 w-7 text-mint-400"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={2.5}
@@ -330,9 +330,9 @@ export function ReviewForm({
             data-field-key={field.fieldKey}
             className={`rounded-xl border bg-[#0F2040] p-5 transition-colors ${
               isMissing
-                ? "border-red-500/60"
+                ? "border-critical-600/60"
                 : overridden
-                  ? "border-amber-500/60"
+                  ? "border-warning-600/60"
                   : "border-white/10"
             }`}
           >
@@ -341,7 +341,7 @@ export function ReviewForm({
                 <label className="text-sm font-semibold text-white">
                   {field.fieldLabel}
                   {field.isRequired && (
-                    <span className="ml-1 text-red-400">*</span>
+                    <span className="ml-1 text-critical-600">*</span>
                   )}
                 </label>
                 {prefill && (
@@ -356,10 +356,10 @@ export function ReviewForm({
                       <span
                         className={`h-1.5 w-1.5 rounded-full ${
                           prefill.confidence === "high"
-                            ? "bg-emerald-400"
+                            ? "bg-mint-400"
                             : prefill.confidence === "medium"
-                              ? "bg-amber-400"
-                              : "bg-red-400"
+                              ? "bg-warning-600"
+                              : "bg-critical-600"
                         }`}
                       />
                       AI {prefill.confidence}
@@ -373,7 +373,7 @@ export function ReviewForm({
                 )}
               </div>
               {overridden && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-300">
+                <span className="inline-flex items-center gap-1 rounded-full border border-warning-600/40 bg-warning-600/15 px-2 py-0.5 text-[10px] font-medium text-warning-600">
                   <svg
                     className="h-3 w-3"
                     fill="none"
@@ -412,7 +412,7 @@ export function ReviewForm({
                   onClick={() => setFieldValue(field.fieldKey, true)}
                   className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all ${
                     fieldState.value === true
-                      ? "border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                      ? "border-mint-500 bg-mint-500 text-white shadow-lg shadow-mint-500/20"
                       : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10"
                   }`}
                 >
@@ -426,7 +426,7 @@ export function ReviewForm({
                   onClick={() => setFieldValue(field.fieldKey, false)}
                   className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all ${
                     fieldState.value === false
-                      ? "border-red-500 bg-red-500 text-white shadow-lg shadow-red-500/20"
+                      ? "border-critical-600 bg-critical-600 text-white shadow-lg shadow-critical-600/20"
                       : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10"
                   }`}
                 >
@@ -511,7 +511,7 @@ export function ReviewForm({
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">
+        <div className="rounded-lg border border-critical-600/40 bg-critical-600/10 p-3 text-sm text-critical-600">
           {error}
         </div>
       )}

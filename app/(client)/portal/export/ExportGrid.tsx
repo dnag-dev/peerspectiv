@@ -89,7 +89,7 @@ export function ExportGrid({
             )}
             <h3 className="text-sm font-semibold text-white flex-1">{r.title}</h3>
           </div>
-          <p className="text-xs text-gray-400 flex-1">{r.description}</p>
+          <p className="text-xs text-ink-400 flex-1">{r.description}</p>
           <button
             onClick={() => handleDownload(r.key, r.title)}
             disabled={busy === r.key}

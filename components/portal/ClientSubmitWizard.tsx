@@ -191,7 +191,7 @@ export function ClientSubmitWizard({
   if (submittedBatchId) {
     return (
       <div className="space-y-4 py-4 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20 text-green-400">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-mint-500/20 text-mint-400">
           <Check className="h-6 w-6" />
         </div>
         <div>
@@ -267,12 +267,12 @@ export function ClientSubmitWizard({
             ))}
           </div>
           {availableSpecialties.length === 0 && (
-            <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
+            <p className="rounded-lg border border-warning-600/30 bg-warning-600/10 px-4 py-3 text-xs text-warning-600">
               No approved forms on file. Contact Peerspectiv to set up specialty forms.
             </p>
           )}
           {specialty && skipFormStep && (
-            <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-200">
+            <p className="rounded-lg border border-mint-500/30 bg-mint-500/10 px-4 py-3 text-xs text-mint-200">
               <Check className="mr-1 inline h-3 w-3" />
               <strong>{specialtyForms[0].form_name}</strong> will be auto-attached
               — it&rsquo;s your only approved form for {specialty}.
@@ -378,7 +378,7 @@ export function ClientSubmitWizard({
                   </select>
                   <button
                     onClick={() => removeRow(i)}
-                    className="rounded p-1 text-white/40 hover:bg-white/10 hover:text-red-300"
+                    className="rounded p-1 text-white/40 hover:bg-white/10 hover:text-critical-600"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -407,7 +407,7 @@ export function ClientSubmitWizard({
               <dd className="font-medium text-white">
                 {forms.find((f) => f.id === effectiveFormId)?.form_name}
                 {skipFormStep && (
-                  <span className="ml-2 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-medium text-emerald-300">
+                  <span className="ml-2 rounded bg-mint-500/20 px-1.5 py-0.5 text-[10px] font-medium text-mint-200">
                     AUTO
                   </span>
                 )}
@@ -449,12 +449,12 @@ export function ClientSubmitWizard({
                     )}
                     {row.status === "done" && (
                       <>
-                        <Check className="h-3 w-3 text-green-400" />
-                        <span className="text-green-400">Uploaded</span>
+                        <Check className="h-3 w-3 text-mint-400" />
+                        <span className="text-mint-400">Uploaded</span>
                       </>
                     )}
                     {row.status === "error" && (
-                      <span className="text-red-400" title={row.errorMsg}>
+                      <span className="text-critical-600" title={row.errorMsg}>
                         Failed
                       </span>
                     )}
@@ -465,7 +465,7 @@ export function ClientSubmitWizard({
           </div>
 
           {submitError && (
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            <div className="rounded-lg border border-critical-600/30 bg-critical-600/10 px-3 py-2 text-xs text-critical-600">
               {submitError}
             </div>
           )}

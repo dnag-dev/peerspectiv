@@ -299,10 +299,10 @@ export default async function ReviewerCasePage({
     daysUntilDue == null
       ? "bg-white/10 text-white/70"
       : daysUntilDue < 0
-        ? "bg-red-500/20 text-red-300 border-red-500/40"
+        ? "bg-critical-600/20 text-critical-600 border-critical-600/40"
         : daysUntilDue <= 2
-          ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-          : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+          ? "bg-warning-600/20 text-warning-600 border-warning-600/40"
+          : "bg-mint-500/20 text-mint-200 border-mint-500/40";
   const dueLabel =
     daysUntilDue == null
       ? "No due date"

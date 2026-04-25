@@ -89,7 +89,7 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
     <Card
       data-testid="prospect-card"
       className={`bg-[#0B1829] text-white shadow-md transition hover:shadow-lg ${
-        overdueContract ? 'border border-[#F59E0B]' : 'border border-slate-800'
+        overdueContract ? 'border border-[#F59E0B]' : 'border border-ink-800'
       }`}
     >
       <CardContent className="space-y-2 p-3">
@@ -97,17 +97,17 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
           <div className="flex-1">
             <h3 className="text-base font-semibold leading-tight text-white">{company.name}</h3>
             {company.contactPerson && (
-              <p className="text-xs text-slate-300">{company.contactPerson}</p>
+              <p className="text-xs text-ink-300">{company.contactPerson}</p>
             )}
           </div>
           {company.state && (
-            <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-slate-300">
+            <span className="rounded bg-ink-800 px-2 py-0.5 text-[10px] font-medium text-ink-300">
               {company.state}
             </span>
           )}
         </div>
 
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-400">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ink-400">
           {company.annualReviewCount != null && (
             <span>{company.annualReviewCount} reviews/yr</span>
           )}
@@ -162,7 +162,7 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
           {company.status === 'active' && (
             <Link
               href={`/companies/${company.id}`}
-              className="inline-flex w-full items-center justify-center rounded-md border border-teal-500 px-2 py-1.5 text-xs font-medium text-teal-400 hover:bg-teal-500/10"
+              className="inline-flex w-full items-center justify-center rounded-md border border-mint-500 px-2 py-1.5 text-xs font-medium text-mint-400 hover:bg-mint-500/10"
             >
               <ExternalLink className="mr-2 h-3 w-3" />
               View

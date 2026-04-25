@@ -125,7 +125,7 @@ export function DashboardView(props: Props) {
       {/* Compliance banner */}
       <Link
         href="/portal/reviews?status=completed"
-        className="rounded-lg p-6 flex flex-col lg:flex-row items-center gap-8 transition-all hover:ring-2 hover:ring-blue-500/40"
+        className="rounded-lg p-6 flex flex-col lg:flex-row items-center gap-8 transition-all hover:ring-2 hover:ring-info-600/40"
         style={{ backgroundColor: CARD_BG }}
       >
         <ComplianceRing score={compliance} />
@@ -140,10 +140,10 @@ export function DashboardView(props: Props) {
           >
             {complianceLabel(compliance)}
           </div>
-          <p className="mt-3 text-sm text-gray-400">
+          <p className="mt-3 text-sm text-ink-400">
             {companyName} — Compliance score this quarter
           </p>
-          <p className="mt-1 text-xs text-gray-500">QoQ trend: +2.4% · Click to view completed reviews</p>
+          <p className="mt-1 text-xs text-ink-500">QoQ trend: +2.4% · Click to view completed reviews</p>
         </div>
       </Link>
 
@@ -153,9 +153,9 @@ export function DashboardView(props: Props) {
           className="rounded-lg p-4 flex items-center gap-3"
           style={{ backgroundColor: CARD_BG, borderLeft: `3px solid ${ACCENT}` }}
         >
-          <CalendarDays className="h-5 w-5 text-blue-400 flex-shrink-0" />
+          <CalendarDays className="h-5 w-5 text-info-600 flex-shrink-0" />
           <div>
-            <div className="text-xs uppercase tracking-wider text-gray-400">Expected Completion</div>
+            <div className="text-xs uppercase tracking-wider text-ink-400">Expected Completion</div>
             <div className="text-lg font-semibold text-white">
               {new Date(projectedCompletion).toLocaleDateString('en-US', {
                 month: 'long',
@@ -201,7 +201,7 @@ export function DashboardView(props: Props) {
           </h3>
           <div className="space-y-3">
             {specialty.length === 0 && (
-              <p className="text-sm text-gray-400">No specialty data yet.</p>
+              <p className="text-sm text-ink-400">No specialty data yet.</p>
             )}
             {specialty.map((s) => (
               <Link
@@ -209,7 +209,7 @@ export function DashboardView(props: Props) {
                 href={`/portal/reviews?specialty=${encodeURIComponent(s.specialty)}`}
                 className="block group"
               >
-                <div className="flex justify-between text-xs text-gray-300 mb-1 group-hover:text-white">
+                <div className="flex justify-between text-xs text-ink-300 mb-1 group-hover:text-white">
                   <span className="group-hover:underline">{s.specialty}</span>
                   <span>
                     {s.avg}% ({s.count})
@@ -285,7 +285,7 @@ export function DashboardView(props: Props) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase text-gray-500 border-b" style={{ borderColor: "#2A3F5F" }}>
+              <tr className="text-left text-xs uppercase text-ink-500 border-b" style={{ borderColor: "#2A3F5F" }}>
                 <th className="py-2 pr-3">Provider</th>
                 <th className="py-2 pr-3">Specialty</th>
                 <th className="py-2 pr-3">Reviews</th>
@@ -297,7 +297,7 @@ export function DashboardView(props: Props) {
             <tbody>
               {providers.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-4 text-center text-gray-400">
+                  <td colSpan={6} className="py-4 text-center text-ink-400">
                     No providers yet.
                   </td>
                 </tr>
@@ -310,8 +310,8 @@ export function DashboardView(props: Props) {
                   onClick={() => (window.location.href = `/portal/providers/${p.id}`)}
                 >
                   <td className="py-3 pr-3 text-white">{p.name}</td>
-                  <td className="py-3 pr-3 text-gray-400">{p.specialty}</td>
-                  <td className="py-3 pr-3 text-gray-400">{p.count}</td>
+                  <td className="py-3 pr-3 text-ink-400">{p.specialty}</td>
+                  <td className="py-3 pr-3 text-ink-400">{p.count}</td>
                   <td className="py-3 pr-3">
                     <Sparkline values={p.last4} />
                   </td>
@@ -326,7 +326,7 @@ export function DashboardView(props: Props) {
                       {p.avg}%
                     </span>
                   </td>
-                  <td className="py-3 pr-3 text-gray-500">
+                  <td className="py-3 pr-3 text-ink-500">
                     <ChevronRight className="h-4 w-4" />
                   </td>
                 </tr>
@@ -352,7 +352,7 @@ function KpiCard({
 }) {
   const body = (
     <>
-      <div className="text-xs uppercase tracking-wider text-gray-400">{label}</div>
+      <div className="text-xs uppercase tracking-wider text-ink-400">{label}</div>
       <div className="mt-1 text-2xl font-bold text-white">{value}</div>
     </>
   );
@@ -366,7 +366,7 @@ function KpiCard({
       <Link
         href={href}
         data-testid="kpi-card"
-        className={`${common} transition-all hover:ring-2 hover:ring-blue-500/40`}
+        className={`${common} transition-all hover:ring-2 hover:ring-info-600/40`}
         style={style}
       >
         {body}
@@ -412,7 +412,7 @@ function ComplianceRing({ score }: { score: number }) {
 
 function Sparkline({ values }: { values: number[] }) {
   if (values.length === 0) {
-    return <span className="text-xs text-gray-500">—</span>;
+    return <span className="text-xs text-ink-500">—</span>;
   }
   const max = Math.max(...values, 100);
   return (
@@ -441,7 +441,7 @@ function RiskDonut({ risk }: { risk: { high: number; medium: number; low: number
   const total = risk.high + risk.medium + risk.low;
   if (total === 0) {
     return (
-      <p className="text-sm text-gray-400 h-48 flex items-center justify-center">
+      <p className="text-sm text-ink-400 h-48 flex items-center justify-center">
         No data yet
       </p>
     );
@@ -484,23 +484,23 @@ function AttentionColumn({
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           {icon}
-          <span className="text-xs uppercase tracking-wider text-gray-400">{title}</span>
+          <span className="text-xs uppercase tracking-wider text-ink-400">{title}</span>
         </div>
         {seeAllHref && items.length > 0 && (
-          <Link href={seeAllHref} className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline">
+          <Link href={seeAllHref} className="text-[10px] text-info-600 hover:text-info-600 hover:underline">
             See all →
           </Link>
         )}
       </div>
       {items.length === 0 ? (
-        <p className="text-xs text-gray-500">None</p>
+        <p className="text-xs text-ink-500">None</p>
       ) : (
         <ul className="space-y-2">
           {items.map((i) => {
             const inner = (
               <>
                 <div className="text-sm text-white truncate">{i.text}</div>
-                {i.sub && <div className="text-xs text-gray-400">{i.sub}</div>}
+                {i.sub && <div className="text-xs text-ink-400">{i.sub}</div>}
               </>
             );
             return (

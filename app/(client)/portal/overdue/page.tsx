@@ -31,12 +31,12 @@ export default async function OverduePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Overdue</h1>
-        <p className="text-sm text-gray-400">Past-due cases requiring attention ({rows.length})</p>
+        <p className="text-sm text-ink-400">Past-due cases requiring attention ({rows.length})</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {rows.length === 0 && (
-          <p className="text-gray-400">No overdue cases. Well done.</p>
+          <p className="text-ink-400">No overdue cases. Well done.</p>
         )}
         {rows.map((r) => {
           const providerName =
@@ -60,8 +60,8 @@ export default async function OverduePage() {
               <div className="mt-2 text-sm font-semibold text-white truncate">
                 {r.chartFileName ?? "Case"}
               </div>
-              <div className="text-xs text-gray-400 mt-1">{providerName}</div>
-              <div className="text-xs text-gray-400">{r.specialty ?? "—"}</div>
+              <div className="text-xs text-ink-400 mt-1">{providerName}</div>
+              <div className="text-xs text-ink-400">{r.specialty ?? "—"}</div>
               {due && (
                 <div className="mt-3 text-xs" style={{ color: "#EF4444" }}>
                   Was due {due.toLocaleDateString()}
