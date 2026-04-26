@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { scoreReviewerQuality } from '@/lib/ai/quality-scorer';
 import { auditLog } from '@/lib/utils/audit';
 import { db } from '@/lib/db';
-import { retentionSchedule } from '@/lib/db/schema';
+import { retentionSchedule, reviewResults } from '@/lib/db/schema';
 import type { CriterionScore, Deficiency, ReviewerChange } from '@/types';
 
 interface SubmitBody {
@@ -113,30 +113,106 @@ export async function POST(request: NextRequest) {
       reviewerNameSnapshot = reviewerRow?.full_name ?? null;
     }
 
-    // Save to review_results
-    const { data: result, error: resultError } = await supabaseAdmin
-      .from('review_results')
-      .upsert({
-        case_id,
-        reviewer_id: caseData.reviewer_id,
-        criteria_scores,
-        deficiencies: deficiencies || [],
-        overall_score,
-        narrative_final,
-        ai_agreement_percentage: aiAgreementPercentage,
-        reviewer_changes: reviewerChanges,
-        time_spent_minutes: time_spent_minutes || null,
-        submitted_at: new Date().toISOString(),
-        reviewer_name_snapshot: reviewerNameSnapshot,
-        reviewer_license_snapshot: license_snapshot.license_number.trim(),
-        reviewer_license_state_snapshot: license_snapshot.license_state.trim().toUpperCase(),
-      }, { onConflict: 'case_id' })
-      .select()
-      .single();
+    // Save to review_results — Drizzle onConflictDoUpdate (NOT supabase-js
+    // upsert, which mis-serializes JSONB arrays into `{}`). See P0 fix in
+    // Phase 5.0.
+    const submittedAt = new Date();
+    const deficienciesArr: Deficiency[] = deficiencies || [];
+    const aiAgreementStr =
+      aiAgreementPercentage != null ? String(aiAgreementPercentage) : null;
+    const licenseNumber = license_snapshot.license_number.trim();
+    const licenseState = license_snapshot.license_state.trim().toUpperCase();
 
-    if (resultError) {
+    const insertedRows = await db
+      .insert(reviewResults)
+      .values({
+        caseId: case_id,
+        reviewerId: caseData.reviewer_id,
+        criteriaScores: criteria_scores,
+        deficiencies: deficienciesArr,
+        overallScore: overall_score,
+        narrativeFinal: narrative_final,
+        aiAgreementPercentage: aiAgreementStr,
+        reviewerChanges: reviewerChanges,
+        timeSpentMinutes: time_spent_minutes || null,
+        submittedAt,
+        reviewerNameSnapshot,
+        reviewerLicenseSnapshot: licenseNumber,
+        reviewerLicenseStateSnapshot: licenseState,
+      })
+      .onConflictDoUpdate({
+        target: reviewResults.caseId,
+        set: {
+          reviewerId: caseData.reviewer_id,
+          criteriaScores: criteria_scores,
+          deficiencies: deficienciesArr,
+          overallScore: overall_score,
+          narrativeFinal: narrative_final,
+          aiAgreementPercentage: aiAgreementStr,
+          reviewerChanges: reviewerChanges,
+          timeSpentMinutes: time_spent_minutes || null,
+          submittedAt,
+          reviewerNameSnapshot,
+          reviewerLicenseSnapshot: licenseNumber,
+          reviewerLicenseStateSnapshot: licenseState,
+        },
+      })
+      .returning();
+
+    const result = insertedRows[0];
+    if (!result) {
       return NextResponse.json(
-        { error: resultError.message, code: 'SUBMIT_FAILED' },
+        { error: 'Insert returned no row', code: 'SUBMIT_FAILED' },
+        { status: 500 }
+      );
+    }
+
+    // Readback shape guard — verify JSONB arrays persisted as arrays with
+    // matching length. Catches any future serialization regression at the
+    // point of failure rather than silently shipping hollow data.
+    const persistedCriteria = result.criteriaScores as unknown;
+    const persistedDeficiencies = result.deficiencies as unknown;
+    const criteriaOk =
+      Array.isArray(persistedCriteria) &&
+      persistedCriteria.length === criteria_scores.length;
+    const deficienciesOk =
+      Array.isArray(persistedDeficiencies) &&
+      persistedDeficiencies.length === deficienciesArr.length;
+    if (!criteriaOk || !deficienciesOk) {
+      console.error('[API] PERSIST_SHAPE_MISMATCH for case:', case_id, {
+        criteriaInputLen: criteria_scores.length,
+        criteriaPersistedType: Array.isArray(persistedCriteria)
+          ? 'array'
+          : typeof persistedCriteria,
+        criteriaPersistedLen: Array.isArray(persistedCriteria)
+          ? persistedCriteria.length
+          : null,
+        deficienciesInputLen: deficienciesArr.length,
+        deficienciesPersistedType: Array.isArray(persistedDeficiencies)
+          ? 'array'
+          : typeof persistedDeficiencies,
+        deficienciesPersistedLen: Array.isArray(persistedDeficiencies)
+          ? persistedDeficiencies.length
+          : null,
+      });
+      await auditLog({
+        action: 'review_persist_shape_mismatch',
+        resourceType: 'review_result',
+        resourceId: case_id,
+        metadata: {
+          criteriaInputLen: criteria_scores.length,
+          criteriaPersistedIsArray: Array.isArray(persistedCriteria),
+          deficienciesInputLen: deficienciesArr.length,
+          deficienciesPersistedIsArray: Array.isArray(persistedDeficiencies),
+        },
+        request,
+      });
+      return NextResponse.json(
+        {
+          error:
+            'Review saved but JSONB shape did not match input. Refusing to mark case completed.',
+          code: 'PERSIST_SHAPE_MISMATCH',
+        },
         { status: 500 }
       );
     }
