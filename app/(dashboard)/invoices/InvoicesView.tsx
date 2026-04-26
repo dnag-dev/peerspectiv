@@ -116,6 +116,25 @@ export function InvoicesView({ invoices, companies }: Props) {
     }
   }
 
+  async function handleRegeneratePdf(id: string) {
+    setBusy(id);
+    setErr(null);
+    try {
+      const res = await fetch(`/api/invoices/${id}/regenerate-pdf`, {
+        method: "POST",
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(j.error || `HTTP ${res.status}`);
+      }
+      startTransition(() => router.refresh());
+    } catch (e) {
+      alert(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function handleMarkPaid(id: string) {
     setBusy(id);
     try {
@@ -247,7 +266,7 @@ export function InvoicesView({ invoices, companies }: Props) {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right space-x-1">
-                      {inv.pdfUrl && (
+                      {inv.pdfUrl ? (
                         <a
                           href={inv.pdfUrl}
                           target="_blank"
@@ -256,6 +275,28 @@ export function InvoicesView({ invoices, companies }: Props) {
                         >
                           <Download className="h-3 w-3" /> PDF
                         </a>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5">
+                          <span
+                            className="text-[10px] text-amber-700"
+                            title="PDF not generated — likely BLOB_READ_WRITE_TOKEN not configured in this environment."
+                          >
+                            PDF pending
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleRegeneratePdf(inv.id)}
+                            disabled={busy === inv.id || isPending}
+                            className="h-6 px-2 text-[10px]"
+                          >
+                            {busy === inv.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              "Regenerate"
+                            )}
+                          </Button>
+                        </span>
                       )}
                       {inv.paymentLinkUrl && (
                         <a
