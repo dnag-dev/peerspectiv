@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AssignmentQueue } from "@/components/assign/AssignmentQueue";
 import { Layers, Inbox } from "lucide-react";
@@ -50,7 +49,6 @@ async function getAlternateReviewers(
 ): Promise<Record<string, Reviewer[]>> {
   const result: Record<string, Reviewer[]> = {};
 
-  // Collect unique specialties needed and current reviewer IDs
   const specialtySet = new Set<string>();
   const currentReviewerIds = new Set<string>();
   for (const c of cases) {
@@ -61,7 +59,6 @@ async function getAlternateReviewers(
 
   if (specialtySet.size === 0) return result;
 
-  // Fetch active reviewers matching any needed specialty
   const { data: reviewers } = await supabaseAdmin
     .from("reviewers")
     .select("*")
@@ -72,7 +69,6 @@ async function getAlternateReviewers(
 
   if (!reviewers) return result;
 
-  // For each case, find matching alternate reviewers (excluding current)
   for (const c of cases) {
     const neededSpecialty = c.specialty_required || c.provider.specialty;
     result[c.id] = (reviewers as Reviewer[]).filter(
@@ -116,55 +112,60 @@ export default async function AssignPage() {
       ? Math.round(confidences.reduce((s, v) => s + v, 0) / confidences.length)
       : null;
 
+  const monitoringCount = new Set(
+    pendingCases.map((c) => c.batch_id).filter(Boolean)
+  ).size;
+
   return (
     <div className="space-y-5">
       {/* Page header */}
       <div>
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold tracking-tight">
-            AI Assignment Queue
-          </h1>
-          <Badge variant="ai">AI</Badge>
-          {pendingCases.length > 0 && (
-            <Badge variant="warning">{pendingCases.length}</Badge>
-          )}
+        <div className="text-eyebrow text-ink-500 mb-1">
+          ADMIN · ASSIGNMENT WORKFLOW
         </div>
-        <p className="text-sm text-muted-foreground">
-          Review and approve AI-suggested reviewer assignments.
+        <h1 className="text-h1 text-ink-900">AI assignment queue</h1>
+        <p className="mt-1 text-small text-ink-500">
+          Review and approve Ash&apos;s reviewer assignments before they go live.
         </p>
       </div>
 
-      {/* Stats bar */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
-        <span>
-          <span className="font-medium text-foreground">{pendingCases.length}</span> pending
-        </span>
-        <span className="text-border">•</span>
-        <span>
-          <span className="font-medium text-foreground">{approvedToday}</span> approved today
-        </span>
-        <span className="text-border">•</span>
-        <span>
-          Avg match{" "}
-          <span className="font-medium text-foreground">
-            {avgMatch != null ? `${avgMatch}%` : "—"}
+      {/* Stat strip */}
+      <div className="flex items-center justify-between gap-4 rounded-lg border border-ink-200 bg-paper-surface px-5 py-3.5 shadow-sm">
+        <div className="flex items-center gap-5">
+          <StatBlock label="Pending" value={pendingCases.length.toString()} />
+          <span className="w-px h-8 bg-ink-200" />
+          <StatBlock label="Approved today" value={approvedToday.toString()} />
+          <span className="w-px h-8 bg-ink-200" />
+          <StatBlock
+            label="Avg match"
+            value={avgMatch != null ? `${avgMatch}%` : "—"}
+            valueClassName="text-cobalt-700"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-mint-500 opacity-60 animate-ping" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-mint-600" />
           </span>
-        </span>
+          <span className="text-code text-ink-600">
+            Ash is monitoring {monitoringCount} {monitoringCount === 1 ? "batch" : "batches"}
+          </span>
+        </div>
       </div>
 
       {/* Queue content */}
       {pendingCases.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <Inbox className="mb-4 h-12 w-12 text-muted-foreground/50" />
-            <h3 className="text-lg font-medium">No pending assignments</h3>
-            <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+            <Inbox className="mb-4 h-12 w-12 text-ink-400" />
+            <h3 className="text-h3 text-ink-900">No pending assignments</h3>
+            <p className="mt-1 max-w-sm text-small text-ink-500">
               All AI-suggested assignments have been reviewed. Check the batches
               page to trigger new assignments.
             </p>
             <Link
               href="/batches"
-              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-cobalt-600 hover:underline"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-cobalt-700 hover:underline"
             >
               <Layers className="h-4 w-4" />
               Go to Batches
@@ -180,3 +181,23 @@ export default async function AssignPage() {
     </div>
   );
 }
+
+function StatBlock({
+  label,
+  value,
+  valueClassName,
+}: {
+  label: string;
+  value: string;
+  valueClassName?: string;
+}) {
+  return (
+    <div>
+      <div className="text-eyebrow text-ink-500">{label}</div>
+      <div className={`text-h2 font-medium text-ink-900 ${valueClassName ?? ""}`}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
