@@ -13,6 +13,7 @@ import {
   Wrench,
   Download,
   Heart,
+  Receipt,
   UploadCloud,
   Menu,
 } from "lucide-react";
@@ -32,10 +33,11 @@ const NAV: SidebarNavItem[] = [
   { label: "Providers",          href: "/portal/providers",  icon: Users,            group: "Analytics" },
   { label: "Corrective Actions", href: "/portal/corrective", icon: Wrench,           group: "Compliance" },
   { label: "Export & Reports",   href: "/portal/export",     icon: Download,         group: "Compliance" },
+  { label: "Invoices",           href: "/portal/invoices",   icon: Receipt,          group: "Billing" },
   { label: "Share Feedback",     href: "/portal/feedback",   icon: Heart,            group: "Compliance" },
 ];
 
-const GROUPS = ["Overview", "Reviews", "Analytics", "Compliance"];
+const GROUPS = ["Overview", "Reviews", "Analytics", "Compliance", "Billing"];
 
 const DIM_FOR: Record<ClientRole, string[]> = {
   cmo:        ["/portal/inprogress", "/portal/overdue"],

@@ -323,11 +323,40 @@ export async function fetchQuestionAnalyticsData(input: {
     }
   }
 
+  // Build (field_key → field_label) lookup from this company's forms so we
+  // render human-readable questions instead of raw criterion keys.
+  const formRows = rowsOf<{ form_fields: unknown }>(
+    await db.execute(sql`
+      SELECT form_fields FROM company_forms
+      WHERE company_id = ${input.companyId} AND is_active = true
+    `)
+  );
+  const labelMap = new Map<string, string>();
+  for (const fr of formRows) {
+    const fields = Array.isArray(fr.form_fields) ? fr.form_fields : [];
+    for (const f of fields as any[]) {
+      const key = f?.field_key;
+      const label = f?.field_label;
+      if (key && label && !labelMap.has(key)) {
+        labelMap.set(String(key), String(label));
+      }
+    }
+  }
+
+  // Fallback humanizer for keys that don't match any active form field
+  // (e.g. legacy / migrated seed data using ad-hoc keys).
+  const humanize = (k: string) =>
+    k
+      .replace(/[_-]+/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+
   const questions = Array.from(byQuestion.entries()).map(([questionText, t]) => {
     const total = t.yes + t.no + t.na;
     const compliancePct = total > 0 ? (t.yes / total) * 100 : 0;
     return {
-      questionText,
+      questionText:
+        labelMap.get(questionText) ??
+        (questionText.includes(' ') ? questionText : humanize(questionText)),
       yes: t.yes,
       no: t.no,
       na: t.na,

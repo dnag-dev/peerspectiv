@@ -14,6 +14,7 @@ import {
   User,
   LogOut,
   DollarSign,
+  Receipt,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -213,6 +214,7 @@ const adminNavItems: SidebarNavItem[] = [
   { label: "Assign",         href: "/assign",     icon: UserCheck },
   { label: "Reviewers",      href: "/reviewers",  icon: ClipboardCheck },
   { label: "Payouts",        href: "/payouts",    icon: DollarSign },
+  { label: "Invoices",       href: "/invoices",   icon: Receipt },
   { label: "Reports",        href: "/reports",    icon: BarChart3 },
   { label: "Command Center", href: "/command",    icon: Terminal },
 ];
