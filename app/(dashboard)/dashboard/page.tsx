@@ -239,7 +239,7 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold tracking-tight text-ink-900">
           Dashboard
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-500">
           Overview of case activity and system health
         </p>
       </div>
@@ -288,7 +288,7 @@ export default async function DashboardPage() {
         </Link>
         <Link
           href="/companies?status=active"
-          className="block rounded-lg border-l-4 border-brand-teal bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+          className="block rounded-lg border-l-4 border-mint-600 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
         >
           <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
             Active Clients
@@ -308,7 +308,7 @@ export default async function DashboardPage() {
         </CardHeader>
         <CardContent>
           {upcomingCycles.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">
+            <p className="py-4 text-center text-sm text-ink-500">
               No cycles due in the next 30 days
             </p>
           ) : (
@@ -329,12 +329,12 @@ export default async function DashboardPage() {
                   <li key={c.id}>
                     <Link
                       href={`/companies/${c.id}`}
-                      className="flex items-center justify-between px-2 py-2.5 transition-colors hover:bg-muted/50"
+                      className="flex items-center justify-between px-2 py-2.5 transition-colors hover:bg-cobalt-50"
                     >
                       <span className="text-sm font-medium text-ink-900">
                         {c.name}
                       </span>
-                      <span className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-3 text-xs text-ink-500">
                         <span>{c.nextCycleDue}</span>
                         <Badge
                           variant="outline"
@@ -388,8 +388,8 @@ export default async function DashboardPage() {
         <KPICard
           title="In Progress"
           value={inProgress}
-          icon={<Activity className="h-5 w-5 text-brand-teal" />}
-          color="bg-brand-teal"
+          icon={<Activity className="h-5 w-5 text-mint-600" />}
+          color="bg-mint-600"
         />
         <KPICard
           title="Past Due"
@@ -406,8 +406,8 @@ export default async function DashboardPage() {
         <KPICard
           title="AI Analyses Running"
           value={aiProcessing}
-          icon={<Brain className="h-5 w-5 text-ai-purple" />}
-          color="bg-ai-purple"
+          icon={<Brain className="h-5 w-5 text-cobalt-600" />}
+          color="bg-cobalt-600"
         />
       </div>
 
@@ -426,7 +426,7 @@ export default async function DashboardPage() {
         </CardHeader>
         <CardContent>
           {auditLogs.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
+            <p className="py-6 text-center text-sm text-ink-500">
               No recent activity
             </p>
           ) : (
@@ -434,21 +434,21 @@ export default async function DashboardPage() {
               {auditLogs.map((log: any) => (
                 <li
                   key={log.id}
-                  className="flex items-start gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/50"
+                  className="flex items-start gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-cobalt-50"
                 >
-                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-blue/10">
-                    <Activity className="h-4 w-4 text-brand-blue" />
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cobalt-500/10">
+                    <Activity className="h-4 w-4 text-cobalt-600" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="text-sm font-medium text-ink-900">
                       {formatAction(log.action)}
                       {log.resource_type && (
-                        <span className="ml-1 font-normal text-muted-foreground">
+                        <span className="ml-1 font-normal text-ink-500">
                           on {log.resource_type}
                         </span>
                       )}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-ink-500">
                       {formatRelativeTime(log.created_at)}
                     </p>
                   </div>
