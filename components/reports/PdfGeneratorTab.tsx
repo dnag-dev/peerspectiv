@@ -42,6 +42,21 @@ export function PdfGeneratorTab({ companies }: Props) {
 
   const tpl = TEMPLATES.find((t) => t.key === templateKey)!;
 
+  function suggestedFilename(key: string) {
+    return `${key}-${new Date().toISOString().slice(0, 10)}.pdf`;
+  }
+
+  function downloadFromUrl(url: string, filename: string) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.rel = "noopener";
+    // For absolute URLs (saved-report blob), also try to open inline as fallback
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
   async function generate(saveFirst: boolean) {
     setError(null);
     if (!companyId) {
@@ -105,12 +120,18 @@ export function PdfGeneratorTab({ companies }: Props) {
       if (savedReportId) {
         // saved-report flow returns JSON with pdfUrl
         const j = await res.json();
-        if (j.pdfUrl) window.open(j.pdfUrl, "_blank");
+        if (j.pdfUrl) downloadFromUrl(j.pdfUrl, suggestedFilename(templateKey));
         else alert("Report saved. Run generated.");
       } else {
         const blob = await res.blob();
+        // Pull filename from Content-Disposition if server set it
+        const cd = res.headers.get("content-disposition") || "";
+        const fnMatch = cd.match(/filename="?([^";]+)"?/i);
+        const filename = fnMatch?.[1] || suggestedFilename(templateKey);
         const url = URL.createObjectURL(blob);
-        window.open(url, "_blank");
+        downloadFromUrl(url, filename);
+        // Revoke after the click has fired
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

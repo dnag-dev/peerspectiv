@@ -99,8 +99,15 @@ export function SavedReportsTab({
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`);
-      if (j.pdfUrl || j.url) {
-        window.open(j.pdfUrl || j.url, "_blank");
+      const url = j.pdfUrl || j.url;
+      if (url) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${r.reportName}.pdf`;
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
       } else {
         alert("Report regenerated. Check the PDF Generator tab for output.");
       }
