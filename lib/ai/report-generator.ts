@@ -46,13 +46,20 @@ export async function generateQAPIReport(
 
   // Calculate stats
   const avgScore = companyResults.reduce((sum: number, r: any) => sum + (r.overall_score || 0), 0) / companyResults.length;
-  const allDeficiencies = companyResults.flatMap((r: any) => r.deficiencies || []);
-  const deficiencyRate = companyResults.filter((r: any) => (r.deficiencies?.length || 0) > 0).length / companyResults.length * 100;
+  const allDeficiencies = companyResults.flatMap((r: any) =>
+    Array.isArray(r.deficiencies) ? r.deficiencies : []
+  );
+  const deficiencyRate =
+    companyResults.filter((r: any) => Array.isArray(r.deficiencies) && r.deficiencies.length > 0).length /
+    companyResults.length * 100;
 
-  // Count deficiency types
+  // Count deficiency types — defensive: deficiencies may be array, object, or null
   const defTypes: Record<string, number> = {};
-  allDeficiencies.forEach((d: any) => {
-    defTypes[d.type] = (defTypes[d.type] || 0) + 1;
+  const safeDeficiencies = Array.isArray(allDeficiencies) ? allDeficiencies : [];
+  safeDeficiencies.forEach((d: any) => {
+    if (d && typeof d === 'object' && d.type) {
+      defTypes[d.type] = (defTypes[d.type] || 0) + 1;
+    }
   });
   const topDeficiencies = Object.entries(defTypes)
     .sort(([, a], [, b]) => b - a)
@@ -60,10 +67,32 @@ export async function generateQAPIReport(
     .map(([type, count]) => `${type}: ${count}`)
     .join(', ');
 
-  // Avg category scores
+  // Avg category scores — criteria_scores is jsonb, so it may come back as an
+  // array (expected), as a {criterion: score} object (older shape), or as null.
+  // Normalize to an array of {criterion, score} before iterating.
+  const normalizeCriteria = (cs: unknown): Array<{ criterion: string; score: number }> => {
+    if (Array.isArray(cs)) {
+      return cs
+        .filter((x): x is Record<string, any> => x && typeof x === 'object')
+        .map((x) => ({
+          criterion: String(x.criterion ?? ''),
+          score: Number(x.score ?? 0),
+        }))
+        .filter((x) => x.criterion);
+    }
+    if (cs && typeof cs === 'object') {
+      return Object.entries(cs as Record<string, any>).map(([criterion, score]) => ({
+        criterion,
+        score: typeof score === 'object' && score !== null ? Number(score.score ?? 0) : Number(score ?? 0),
+      }));
+    }
+    return [];
+  };
+
   const categoryTotals: Record<string, number[]> = {};
   companyResults.forEach((r: any) => {
-    (r.criteria_scores || []).forEach((cs: any) => {
+    normalizeCriteria(r.criteria_scores).forEach((cs) => {
+      if (!Number.isFinite(cs.score)) return;
       if (!categoryTotals[cs.criterion]) categoryTotals[cs.criterion] = [];
       categoryTotals[cs.criterion].push(cs.score);
     });
