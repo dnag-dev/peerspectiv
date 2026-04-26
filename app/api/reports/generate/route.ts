@@ -2,9 +2,40 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
 export const runtime = 'nodejs';
-export const maxDuration = 45;
-import { companies, reviewResults, reviewCases, providers } from '@/lib/db/schema';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+import { companies, reviewResults, reviewCases, providers, reportRuns, savedReports } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { put } from '@vercel/blob';
+import { renderPdfToBuffer, pdfResponseHeaders } from '@/lib/pdf/render';
+import { ProviderHighlightsPdf } from '@/lib/pdf/templates/ProviderHighlightsPdf';
+import { SpecialtyHighlightsPdf } from '@/lib/pdf/templates/SpecialtyHighlightsPdf';
+import { QuestionAnalyticsPdf } from '@/lib/pdf/templates/QuestionAnalyticsPdf';
+import { InvoicePdf } from '@/lib/pdf/templates/InvoicePdf';
+import { QualityCertificatePdf } from '@/lib/pdf/templates/QualityCertificatePdf';
+import { PeerEarningsSummaryPdf } from '@/lib/pdf/templates/PeerEarningsSummaryPdf';
+import {
+  fetchProviderHighlightsData,
+  fetchSpecialtyHighlightsData,
+  fetchQuestionAnalyticsData,
+  fetchInvoicePdfDataFromInvoice,
+  fetchQualityCertificateData,
+  fetchPeerEarningsSummaryData,
+} from '@/lib/reports/data';
+
+async function getAdminUserId(req: NextRequest): Promise<string | null> {
+  try {
+    const { auth } = await import('@clerk/nextjs/server');
+    const result = auth();
+    const userId = (result as any)?.userId;
+    if (userId) return userId as string;
+  } catch {
+    // Clerk not configured — fall through
+  }
+  const demo = req.headers.get('x-demo-user-id');
+  if (demo && demo.trim()) return demo.trim();
+  return null;
+}
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import {
   getComplianceScore,
@@ -19,6 +50,179 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    // ─── New flow: templateKey-driven PDF generation ────────────────────────
+    const templateKey = (body as any)?.templateKey as string | undefined;
+    if (templateKey) {
+      const userId = (await getAdminUserId(request)) ?? 'client-portal';
+      const {
+        companyId,
+        rangeStart,
+        rangeEnd,
+        filters,
+        savedReportId,
+        invoiceId,
+        reviewerId,
+        period,
+        signedByName,
+        signedByTitle,
+      } = body as Record<string, any>;
+
+      // Insert run row first so failures are tracked
+      const [run] = await db
+        .insert(reportRuns)
+        .values({
+          savedReportId: savedReportId ?? null,
+          templateKey,
+          companyId: companyId ?? null,
+          rangeStart: rangeStart ?? null,
+          rangeEnd: rangeEnd ?? null,
+          filters: filters ?? null,
+          status: 'generating',
+          generatedBy: userId,
+        })
+        .returning({ id: reportRuns.id });
+
+      try {
+        let pdfBuffer: Buffer;
+        let filename = `${templateKey}-${Date.now()}.pdf`;
+
+        switch (templateKey) {
+          case 'provider_highlights': {
+            if (!companyId || !rangeStart || !rangeEnd) {
+              throw new Error('companyId, rangeStart, rangeEnd required');
+            }
+            const data = await fetchProviderHighlightsData({
+              companyId,
+              rangeStart,
+              rangeEnd,
+              filters,
+            });
+            pdfBuffer = await renderPdfToBuffer(ProviderHighlightsPdf({ data }) as any);
+            filename = `provider-highlights-${rangeStart}-${rangeEnd}.pdf`;
+            break;
+          }
+          case 'specialty_highlights': {
+            if (!companyId || !rangeStart || !rangeEnd) {
+              throw new Error('companyId, rangeStart, rangeEnd required');
+            }
+            const data = await fetchSpecialtyHighlightsData({
+              companyId,
+              rangeStart,
+              rangeEnd,
+            });
+            pdfBuffer = await renderPdfToBuffer(SpecialtyHighlightsPdf({ data }) as any);
+            filename = `specialty-highlights-${rangeStart}-${rangeEnd}.pdf`;
+            break;
+          }
+          case 'question_analytics': {
+            if (!companyId || !rangeStart || !rangeEnd) {
+              throw new Error('companyId, rangeStart, rangeEnd required');
+            }
+            const data = await fetchQuestionAnalyticsData({
+              companyId,
+              rangeStart,
+              rangeEnd,
+              specialty: filters?.specialty,
+            });
+            pdfBuffer = await renderPdfToBuffer(QuestionAnalyticsPdf({ data }) as any);
+            filename = `question-analytics-${rangeStart}-${rangeEnd}.pdf`;
+            break;
+          }
+          case 'invoice': {
+            if (!invoiceId) throw new Error('invoiceId required');
+            const data = await fetchInvoicePdfDataFromInvoice(invoiceId);
+            if (!data) throw new Error('Invoice not found');
+            pdfBuffer = await renderPdfToBuffer(InvoicePdf({ data }) as any);
+            filename = `invoice-${data.invoiceNumber}.pdf`;
+            break;
+          }
+          case 'quality_certificate': {
+            if (!companyId || !period) {
+              throw new Error('companyId and period required');
+            }
+            const data = await fetchQualityCertificateData({
+              companyId,
+              period,
+              signedByName,
+              signedByTitle,
+            });
+            pdfBuffer = await renderPdfToBuffer(QualityCertificatePdf({ data }) as any);
+            filename = `quality-certificate-${companyId}-${period}.pdf`;
+            break;
+          }
+          case 'peer_earnings_summary': {
+            if (!reviewerId || !rangeStart || !rangeEnd) {
+              throw new Error('reviewerId, rangeStart, rangeEnd required');
+            }
+            const data = await fetchPeerEarningsSummaryData({
+              reviewerId,
+              rangeStart,
+              rangeEnd,
+            });
+            pdfBuffer = await renderPdfToBuffer(PeerEarningsSummaryPdf({ data }) as any);
+            filename = `peer-earnings-${reviewerId}-${rangeStart}-${rangeEnd}.pdf`;
+            break;
+          }
+          default:
+            throw new Error(`Unknown templateKey: ${templateKey}`);
+        }
+
+        // If saved-report linked OR caller asked for a stored URL, push to blob
+        let pdfUrl: string | null = null;
+        if (savedReportId && process.env.BLOB_READ_WRITE_TOKEN) {
+          const blob = await put(`reports/${run.id}-${filename}`, pdfBuffer, {
+            access: 'public',
+            contentType: 'application/pdf',
+          });
+          pdfUrl = blob.url;
+
+          await db
+            .update(savedReports)
+            .set({ lastRunAt: new Date() })
+            .where(eq(savedReports.id, savedReportId));
+        }
+
+        await db
+          .update(reportRuns)
+          .set({
+            status: 'ready',
+            pdfUrl,
+            completedAt: new Date(),
+          })
+          .where(eq(reportRuns.id, run.id));
+
+        if (savedReportId) {
+          return NextResponse.json({
+            runId: run.id,
+            pdfUrl,
+            status: 'ready',
+          });
+        }
+
+        // Return PDF inline
+        return new NextResponse(pdfBuffer as any, {
+          status: 200,
+          headers: pdfResponseHeaders(filename),
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error('[reports.generate] failed:', message);
+        await db
+          .update(reportRuns)
+          .set({
+            status: 'failed',
+            failReason: message,
+            completedAt: new Date(),
+          })
+          .where(eq(reportRuns.id, run.id));
+        return NextResponse.json(
+          { error: 'Report generation failed', detail: message, runId: run.id },
+          { status: 500 }
+        );
+      }
+    }
+
     const { company_id, type, start_date, end_date } = body as {
       company_id: string;
       type?: string;
