@@ -555,6 +555,26 @@ export const companySettings = pgTable(
   })
 );
 
+// ─── Company Forms ───────────────────────────────────────────────────────────
+// Mirrors the live `company_forms` table introduced via the
+// migrate-006-company-forms.ts script (predates the SQL migrations directory
+// for this table). Columns match the live information_schema definition
+// exactly: see `scripts/migrate-006-company-forms.ts` and the live DB.
+
+export const companyForms = pgTable('company_forms', {
+  id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+  companyId: uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }),
+  specialty: text('specialty').notNull(),
+  formName: text('form_name').notNull(),
+  formFields: jsonb('form_fields').notNull(),
+  isActive: boolean('is_active').default(true),
+  approvedBy: text('approved_by'),
+  approvedAt: timestamp('approved_at', { withTimezone: true }).default(sql`now()`),
+  createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+  templatePdfUrl: text('template_pdf_url'),
+  templatePdfName: text('template_pdf_name'),
+});
+
 // ─── Aautipay event log ──────────────────────────────────────────────────────
 
 export const aautipayEvents = pgTable(
