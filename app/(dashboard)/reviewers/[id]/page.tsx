@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CaseStatusBadge } from "@/components/batches/CaseStatusBadge";
+import { ReviewerOnboardCard } from "./ReviewerOnboardCard";
 import {
   ArrowLeft,
   Mail,
@@ -353,6 +354,21 @@ export default async function ReviewerDetailPage({
           )}
         </CardContent>
       </Card>
+
+      {/* Aautipay Onboarding */}
+      <ReviewerOnboardCard
+        reviewerId={reviewer.id}
+        paymentReady={reviewer.payment_ready ?? false}
+        beneficiaryStatus={reviewer.aautipay_beneficiary_status ?? null}
+        bankStatus={reviewer.aautipay_bank_status ?? null}
+        w9Status={reviewer.w9_status ?? null}
+        defaults={{
+          firstName: reviewer.full_name?.split(" ")[0] ?? null,
+          lastName:
+            reviewer.full_name?.split(" ").slice(1).join(" ") ?? null,
+          email: reviewer.email ?? null,
+        }}
+      />
 
       {/* Availability */}
       {availability !== "available" && (
