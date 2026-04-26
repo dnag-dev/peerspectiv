@@ -49,10 +49,12 @@ interface Props {
 
 type LeftTab = "ash" | "chart";
 
+// Pulse-light risk-flag tints. amber-200 / critical-200 don't exist as
+// tokens in the current Tailwind config — falling back to -100 borders.
 const SEV_META = {
-  high: { dot: "bg-critical-600", text: "text-critical-600", bg: "bg-critical-600/10", border: "border-critical-600/30", label: "HIGH" },
-  medium: { dot: "bg-amber-600", text: "text-amber-600", bg: "bg-amber-600/10", border: "border-amber-600/30", label: "MED" },
-  low: { dot: "bg-cobalt-600", text: "text-cobalt-600", bg: "bg-cobalt-600/10", border: "border-cobalt-600/30", label: "LOW" },
+  high:   { dot: "bg-critical-600", text: "text-critical-700", bg: "bg-critical-50", border: "border-critical-100", label: "HIGH" },
+  medium: { dot: "bg-amber-600",    text: "text-amber-700",    bg: "bg-amber-50",    border: "border-amber-100",    label: "MED"  },
+  low:    { dot: "bg-cobalt-600",   text: "text-cobalt-700",   bg: "bg-cobalt-50",   border: "border-cobalt-100",   label: "LOW"  },
 };
 
 export function ReviewerCaseSplit({
@@ -70,7 +72,6 @@ export function ReviewerCaseSplit({
   const [savedLayout, setSavedLayout] = useState<{ left: number; right: number } | null>(null);
   const [layoutReady, setLayoutReady] = useState(false);
 
-  // Hydrate saved layout after mount so SSR markup stays stable
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -106,8 +107,8 @@ export function ReviewerCaseSplit({
       onClick={() => setTab(id)}
       className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
         tab === id
-          ? "border-[#00C896] text-white"
-          : "border-transparent text-white/50 hover:text-white/80"
+          ? "border-cobalt-700 text-cobalt-700"
+          : "border-transparent text-ink-500 hover:text-ink-700"
       }`}
     >
       {icon}
@@ -116,7 +117,7 @@ export function ReviewerCaseSplit({
   );
 
   return (
-    <div className="min-h-0 flex-1">
+    <div className="min-h-0 flex-1 bg-paper-canvas">
       <PanelGroup
         key={layoutReady ? "hydrated" : "default"}
         orientation="horizontal"
@@ -125,11 +126,15 @@ export function ReviewerCaseSplit({
       >
         {/* ─── LEFT PANEL: tabbed (Ash Summary / Chart) ─── */}
         <Panel id="left-panel" defaultSize={defaultLeft} minSize={30} maxSize={70}>
-          <div className="flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0F2040]">
+          <div className="flex h-full flex-col overflow-hidden rounded-xl border border-ink-200 bg-paper-surface">
             {/* Tab bar */}
-            <div className="flex flex-shrink-0 items-center justify-between border-b border-white/10">
+            <div className="flex flex-shrink-0 items-center justify-between border-b border-ink-200">
               <div className="flex">
-                <TabBtn id="ash" icon={<Sparkles className="h-4 w-4" />} label="Ash Summary" />
+                <TabBtn
+                  id="ash"
+                  icon={<Sparkles className={`h-4 w-4 ${tab === "ash" ? "text-cobalt-700" : ""}`} />}
+                  label="Ash Summary"
+                />
                 <TabBtn id="chart" icon={<FileText className="h-4 w-4" />} label="Medical Chart" />
               </div>
               {tab === "chart" && chartViewUrl && (
@@ -137,7 +142,7 @@ export function ReviewerCaseSplit({
                   href={chartViewUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="mr-3 flex items-center gap-1 rounded-md border border-white/10 px-2.5 py-1 text-xs text-white/70 hover:bg-white/5"
+                  className="mr-3 flex items-center gap-1 rounded-md border border-ink-200 px-2.5 py-1 text-xs text-ink-600 hover:bg-ink-50"
                 >
                   <ExternalLink className="h-3 w-3" /> Open fullscreen
                 </a>
@@ -148,25 +153,31 @@ export function ReviewerCaseSplit({
             {tab === "ash" && (
               <div className="flex-1 space-y-6 overflow-y-auto p-5">
                 <section>
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/50">
+                  <h3 className="mb-2 text-eyebrow text-ink-500">
                     Chart Summary
                   </h3>
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-white/80">
-                    {chartSummary ?? "AI analysis pending…"}
-                  </p>
+                  {chartSummary ? (
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-700">
+                      {chartSummary}
+                    </p>
+                  ) : (
+                    <p className="text-sm leading-relaxed italic text-ink-500">
+                      AI analysis pending…
+                    </p>
+                  )}
                 </section>
 
                 <section>
-                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-white/50">
+                  <h3 className="mb-3 text-eyebrow text-ink-500">
                     Risk Flags
                     {riskFlags.length > 0 && (
-                      <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white/70">
+                      <span className="ml-2 rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-mono font-medium text-ink-600">
                         {riskFlags.length}
                       </span>
                     )}
                   </h3>
                   {riskFlags.length === 0 ? (
-                    <p className="text-xs text-white/40">No risk flags identified.</p>
+                    <p className="text-xs text-ink-400">No risk flags identified.</p>
                   ) : (
                     <ul className="space-y-2">
                       {riskFlags.map((flag, i) => {
@@ -186,12 +197,12 @@ export function ReviewerCaseSplit({
                                 >
                                   {meta.label}
                                 </span>
-                                <span className="text-sm font-medium text-white">
+                                <span className="text-sm font-medium text-ink-900">
                                   {flag.label}
                                 </span>
                               </div>
                               {flag.description && (
-                                <p className="mt-1 text-xs leading-relaxed text-white/60">
+                                <p className="mt-1 text-xs leading-relaxed text-ink-600">
                                   {flag.description}
                                 </p>
                               )}
@@ -207,20 +218,22 @@ export function ReviewerCaseSplit({
 
             {/* Chart tab */}
             {tab === "chart" && (
-              <div className="flex flex-1 flex-col">
+              <div className="flex flex-1 flex-col p-3">
                 {chartFileName && (
-                  <div className="flex-shrink-0 border-b border-white/10 px-4 py-2 text-xs text-white/50">
+                  <div className="flex-shrink-0 border-b border-ink-200 px-1 pb-2 text-xs text-ink-500">
                     {chartFileName}
                   </div>
                 )}
                 {chartViewUrl ? (
-                  <iframe
-                    src={chartViewUrl}
-                    title="Medical Chart"
-                    className="h-full w-full flex-1 border-0 bg-white"
-                  />
+                  <div className="mt-2 flex-1 overflow-hidden rounded-lg border border-ink-200">
+                    <iframe
+                      src={chartViewUrl}
+                      title="Medical Chart"
+                      className="h-full w-full border-0 bg-white"
+                    />
+                  </div>
                 ) : (
-                  <div className="flex flex-1 items-center justify-center text-sm text-white/40">
+                  <div className="flex flex-1 items-center justify-center text-sm text-ink-400">
                     No chart file — upload from admin batch page
                   </div>
                 )}
@@ -231,8 +244,8 @@ export function ReviewerCaseSplit({
 
         {/* Drag handle */}
         <PanelResizeHandle className="group mx-2 flex w-1.5 cursor-col-resize items-center justify-center">
-          <div className="flex h-full w-full items-center justify-center rounded-full bg-white/5 transition-colors group-hover:bg-[#00C896]/30 group-data-[resize-handle-state=drag]:bg-[#00C896]/50">
-            <GripVertical className="h-4 w-4 text-white/30 group-hover:text-white/70" />
+          <div className="flex h-full w-full items-center justify-center rounded-full bg-ink-50 transition-colors group-hover:bg-cobalt-200 group-data-[resize-handle-state=drag]:bg-cobalt-400">
+            <GripVertical className="h-4 w-4 text-ink-300 group-hover:text-ink-500" />
           </div>
         </PanelResizeHandle>
 
@@ -241,44 +254,41 @@ export function ReviewerCaseSplit({
           <div className="h-full overflow-y-auto rounded-xl">
             {existingResult ? (
               <div className="space-y-4">
-                <div className="rounded-xl border border-cobalt-500/30 bg-cobalt-500/5 p-6 text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-cobalt-500/20">
-                    <svg className="h-6 w-6 text-cobalt-500" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <div className="rounded-xl border border-mint-200 bg-mint-50 p-6 text-center">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-mint-100">
+                    <svg className="h-6 w-6 text-mint-700" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                   </div>
-                  <h2 className="text-lg font-semibold text-white">Review Submitted</h2>
-                  <p className="mt-1 text-xs text-white/60">
+                  <h2 className="text-h2 text-ink-900">Review Submitted</h2>
+                  <p className="mt-1 text-small text-ink-500">
                     {existingResult.submittedAt
                       ? `Submitted ${new Date(existingResult.submittedAt).toLocaleString()}`
                       : "This case has already been reviewed."}
                   </p>
                 </div>
                 {(existingResult.overallScore != null || existingResult.narrativeFinal) && (
-                  <div className="rounded-xl border border-white/10 bg-[#0F2040] p-5">
+                  <div className="rounded-xl border border-ink-200 bg-paper-surface p-5">
                     {existingResult.overallScore != null && (
                       <div className="mb-3">
-                        <div className="text-[10px] uppercase tracking-wide text-white/40">Overall Score</div>
-                        <div className="mt-1 text-2xl font-semibold text-white">
+                        <div className="text-eyebrow text-ink-500">Overall Score</div>
+                        <div className="mt-1 text-h1 text-ink-900">
                           {existingResult.overallScore}
-                          <span className="ml-1 text-sm text-white/40">/ 100</span>
+                          <span className="ml-1 text-small text-ink-400">/ 100</span>
                         </div>
                       </div>
                     )}
                     {existingResult.narrativeFinal && (
                       <div>
-                        <div className="text-[10px] uppercase tracking-wide text-white/40">Reviewer Narrative</div>
-                        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-white/80">
+                        <div className="text-eyebrow text-ink-500">Reviewer Narrative</div>
+                        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-ink-700">
                           {existingResult.narrativeFinal}
                         </p>
                       </div>
                     )}
                   </div>
                 )}
-                <a
-                  href="/reviewer/portal"
-                  className="block rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-center text-sm font-medium text-white/80 transition-colors hover:bg-white/10"
-                >
+                <a href="/reviewer/portal" className="btn-secondary block text-center">
                   Back to My Queue
                 </a>
               </div>

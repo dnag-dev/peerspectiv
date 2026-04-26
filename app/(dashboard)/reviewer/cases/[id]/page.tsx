@@ -297,12 +297,12 @@ export default async function ReviewerCasePage({
     : null;
   const dueColorClass =
     daysUntilDue == null
-      ? "bg-white/10 text-white/70"
+      ? "border-ink-200 bg-paper-surface text-ink-600"
       : daysUntilDue < 0
-        ? "bg-critical-600/20 text-critical-600 border-critical-600/40"
+        ? "border-critical-100 bg-critical-50 text-critical-700"
         : daysUntilDue <= 2
-          ? "bg-amber-600/20 text-amber-600 border-amber-600/40"
-          : "bg-cobalt-500/20 text-mint-200 border-cobalt-500/40";
+          ? "border-amber-100 bg-amber-50 text-amber-700"
+          : "border-ink-200 bg-paper-surface text-ink-700";
   const dueLabel =
     daysUntilDue == null
       ? "No due date"
@@ -314,41 +314,41 @@ export default async function ReviewerCasePage({
   const caseRefShort = caseId.slice(0, 8);
 
   return (
-    <div className="flex h-[calc(100vh-64px)] flex-col bg-[#172554] text-white">
+    <div className="flex h-[calc(100vh-64px)] flex-col bg-paper-canvas text-ink-900">
       {/* ─── Full-width Case Context Header ─── */}
       <div className="flex-shrink-0 px-4 pt-4 lg:px-6 lg:pt-6">
-        <div className="rounded-xl border border-white/10 bg-[#0F2040] px-5 py-4">
+        <div className="rounded-lg border border-ink-200 bg-paper-surface p-4 lg:p-5 shadow-sm">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <div>
-              <div className="text-[10px] uppercase tracking-wide text-white/40">
+              <div className="text-eyebrow text-ink-500">
                 Provider
               </div>
-              <div className="text-lg font-semibold">{providerName}</div>
+              <div className="text-lg font-semibold text-ink-900">{providerName}</div>
             </div>
             {providerRow?.specialty && (
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-white/40">
+                <div className="text-eyebrow text-ink-500">
                   Specialty
                 </div>
-                <span className="mt-0.5 inline-flex items-center rounded-full border border-[#00B582]/40 bg-[#00B582]/10 px-2.5 py-0.5 text-xs font-medium text-[#00C896]">
+                <span className="mt-0.5 inline-flex items-center rounded-full border border-mint-200 bg-mint-50 px-2.5 py-0.5 text-xs font-medium text-mint-700">
                   {providerRow.specialty}
                 </span>
               </div>
             )}
             {companyRow?.name && (
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-white/40">
+                <div className="text-eyebrow text-ink-500">
                   Company
                 </div>
-                <div className="text-sm font-medium">{companyRow.name}</div>
+                <div className="text-sm font-medium text-ink-900">{companyRow.name}</div>
               </div>
             )}
             {batchRow?.batchName && (
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-white/40">
+                <div className="text-eyebrow text-ink-500">
                   Batch
                 </div>
-                <div className="text-sm">
+                <div className="text-sm text-ink-900">
                   {batchRow.batchName}
                   {reviewCase.batchPeriod ? ` · ${reviewCase.batchPeriod}` : ""}
                 </div>
@@ -356,19 +356,19 @@ export default async function ReviewerCasePage({
             )}
             {reviewCase.encounterDate && (
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-white/40">
+                <div className="text-eyebrow text-ink-500">
                   Encounter
                 </div>
-                <div className="text-sm">
+                <div className="text-sm text-ink-900">
                   {new Date(reviewCase.encounterDate).toLocaleDateString()}
                 </div>
               </div>
             )}
             <div>
-              <div className="text-[10px] uppercase tracking-wide text-white/40">
+              <div className="text-eyebrow text-ink-500">
                 Case Ref
               </div>
-              <div className="font-mono text-xs text-white/70">
+              <div className="font-mono text-xs text-ink-600">
                 #{caseRefShort}
               </div>
             </div>
