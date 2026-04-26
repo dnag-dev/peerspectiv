@@ -6,6 +6,7 @@ import { AssignmentResultsTab } from "@/components/reports/AssignmentResultsTab"
 import { QAPIReportTab } from "@/components/reports/QAPIReportTab";
 import { ReviewerScorecardTab } from "@/components/reports/ReviewerScorecardTab";
 import { PdfGeneratorTab } from "@/components/reports/PdfGeneratorTab";
+import { SavedReportsTab } from "@/components/reports/SavedReportsTab";
 
 export const dynamic = 'force-dynamic';
 
@@ -63,6 +64,7 @@ export default async function ReportsPage() {
           <TabsTrigger value="qapi">QAPI Report</TabsTrigger>
           <TabsTrigger value="scorecard">Reviewer Scorecard</TabsTrigger>
           <TabsTrigger value="pdf">PDF Generator</TabsTrigger>
+          <TabsTrigger value="saved">Saved</TabsTrigger>
         </TabsList>
 
         <TabsContent value="assignments">
@@ -79,6 +81,10 @@ export default async function ReportsPage() {
 
         <TabsContent value="pdf">
           <PdfGeneratorTab companies={companyList} />
+        </TabsContent>
+
+        <TabsContent value="saved">
+          <SavedReportsTab companies={companyList} />
         </TabsContent>
       </Tabs>
     </div>

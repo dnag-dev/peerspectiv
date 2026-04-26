@@ -16,6 +16,8 @@ import {
   DollarSign,
   Receipt,
   FileText,
+  Tag,
+  Settings,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -218,6 +220,8 @@ const adminNavItems: SidebarNavItem[] = [
   { label: "Payouts",        href: "/payouts",    icon: DollarSign },
   { label: "Invoices",       href: "/invoices",   icon: Receipt },
   { label: "Reports",        href: "/reports",    icon: BarChart3 },
+  { label: "Tags",           href: "/tags",       icon: Tag },
+  { label: "Settings",       href: "/settings",   icon: Settings },
   { label: "Command Center", href: "/command",    icon: Terminal },
 ];
 
