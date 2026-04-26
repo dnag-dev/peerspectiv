@@ -35,6 +35,13 @@ interface ExistingResult {
   narrativeFinal: string | null;
 }
 
+interface ReviewerLicense {
+  fullName: string | null;
+  credential?: string | null;
+  licenseNumber: string | null;
+  licenseState: string | null;
+}
+
 interface Props {
   chartViewUrl: string | null;
   chartFileName: string | null;
@@ -45,6 +52,7 @@ interface Props {
   formFields: FormField[];
   aiPrefills: Record<string, AiPrefill>;
   existingResult: ExistingResult | null;
+  reviewerLicense?: ReviewerLicense;
 }
 
 type LeftTab = "ash" | "chart";
@@ -67,6 +75,7 @@ export function ReviewerCaseSplit({
   formFields,
   aiPrefills,
   existingResult,
+  reviewerLicense,
 }: Props) {
   const [tab, setTab] = useState<LeftTab>("ash");
   const [savedLayout, setSavedLayout] = useState<{ left: number; right: number } | null>(null);
@@ -298,6 +307,7 @@ export function ReviewerCaseSplit({
                 reviewerId={reviewerId}
                 formFields={formFields}
                 aiPrefills={aiPrefills}
+                reviewerLicense={reviewerLicense}
               />
             )}
           </div>

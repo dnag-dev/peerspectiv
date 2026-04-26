@@ -14,16 +14,33 @@ interface SubmitBody {
   overall_score: number;
   narrative_final: string;
   time_spent_minutes: number;
+  license_snapshot?: {
+    license_number: string;
+    license_state: string;
+    attested_at: string;
+  };
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: SubmitBody = await request.json();
-    const { case_id, criteria_scores, deficiencies, overall_score, narrative_final, time_spent_minutes } = body;
+    const { case_id, criteria_scores, deficiencies, overall_score, narrative_final, time_spent_minutes, license_snapshot } = body;
 
     if (!case_id || !criteria_scores || overall_score == null || !narrative_final) {
       return NextResponse.json(
         { error: 'case_id, criteria_scores, overall_score, and narrative_final are required', code: 'VALIDATION_ERROR' },
+        { status: 400 }
+      );
+    }
+
+    // HRSA audit gate — license snapshot required at submission
+    if (
+      !license_snapshot ||
+      !license_snapshot.license_number?.trim() ||
+      !license_snapshot.license_state?.trim()
+    ) {
+      return NextResponse.json(
+        { error: 'License attestation is required for HRSA audit', code: 'LICENSE_REQUIRED' },
         { status: 400 }
       );
     }
@@ -85,6 +102,17 @@ export async function POST(request: NextRequest) {
       aiAgreementPercentage = total > 0 ? Math.round((agreements / total) * 100) : null;
     }
 
+    // Resolve reviewer full name for the snapshot
+    let reviewerNameSnapshot: string | null = null;
+    if (caseData.reviewer_id) {
+      const { data: reviewerRow } = await supabaseAdmin
+        .from('reviewers')
+        .select('full_name')
+        .eq('id', caseData.reviewer_id)
+        .single();
+      reviewerNameSnapshot = reviewerRow?.full_name ?? null;
+    }
+
     // Save to review_results
     const { data: result, error: resultError } = await supabaseAdmin
       .from('review_results')
@@ -99,6 +127,9 @@ export async function POST(request: NextRequest) {
         reviewer_changes: reviewerChanges,
         time_spent_minutes: time_spent_minutes || null,
         submitted_at: new Date().toISOString(),
+        reviewer_name_snapshot: reviewerNameSnapshot,
+        reviewer_license_snapshot: license_snapshot.license_number.trim(),
+        reviewer_license_state_snapshot: license_snapshot.license_state.trim().toUpperCase(),
       }, { onConflict: 'case_id' })
       .select()
       .single();

@@ -281,6 +281,31 @@ export default async function ReviewerCasePage({
   // 6) Reviewer id
   const reviewerId = reviewCase.reviewerId ?? (await resolveReviewerId()) ?? "";
 
+  // 6b) Reviewer license info (HRSA attestation prefill)
+  let reviewerLicense:
+    | { fullName: string | null; credential: string | null; licenseNumber: string | null; licenseState: string | null }
+    | undefined;
+  if (reviewerId) {
+    const [reviewerRow] = await db
+      .select({
+        fullName: reviewers.fullName,
+        boardCertification: reviewers.boardCertification,
+        licenseNumber: reviewers.licenseNumber,
+        licenseState: reviewers.licenseState,
+      })
+      .from(reviewers)
+      .where(eq(reviewers.id, reviewerId))
+      .limit(1);
+    if (reviewerRow) {
+      reviewerLicense = {
+        fullName: reviewerRow.fullName,
+        credential: reviewerRow.boardCertification,
+        licenseNumber: reviewerRow.licenseNumber,
+        licenseState: reviewerRow.licenseState,
+      };
+    }
+  }
+
   // chartFilePath is a public Vercel Blob URL — use it directly (no proxy route needed).
   const chartViewUrl = reviewCase.chartFilePath || null;
 
@@ -403,6 +428,7 @@ export default async function ReviewerCasePage({
                 }
               : null
           }
+          reviewerLicense={reviewerLicense}
         />
       </div>
     </div>

@@ -35,6 +35,18 @@ export interface ReviewFormSubmitData {
     }
   >;
   reviewer_comments: string;
+  license_snapshot?: {
+    license_number: string;
+    license_state: string;
+    attested_at: string;
+  };
+}
+
+export interface ReviewerLicenseInfo {
+  fullName: string | null;
+  credential?: string | null;
+  licenseNumber: string | null;
+  licenseState: string | null;
 }
 
 interface ReviewFormProps {
@@ -43,6 +55,7 @@ interface ReviewFormProps {
   formFields: FormField[];
   aiPrefills?: Record<string, AIPrefill>;
   onSubmit?: (data: ReviewFormSubmitData) => Promise<void>;
+  reviewerLicense?: ReviewerLicenseInfo;
 }
 
 interface FieldState {
@@ -93,8 +106,18 @@ export function ReviewForm({
   formFields,
   aiPrefills = {},
   onSubmit,
+  reviewerLicense,
 }: ReviewFormProps) {
   const startedAt = useRef(Date.now());
+
+  // ── License attestation state (Phase 4.B — HRSA audit trail) ──
+  const [licenseNumber, setLicenseNumber] = useState<string>(
+    reviewerLicense?.licenseNumber ?? ""
+  );
+  const [licenseState, setLicenseState] = useState<string>(
+    reviewerLicense?.licenseState ?? ""
+  );
+  const [attested, setAttested] = useState(false);
 
   const sortedFields = useMemo(
     () => [...formFields].sort((a, b) => a.displayOrder - b.displayOrder),
@@ -157,6 +180,16 @@ export function ReviewForm({
     if (submitting || submitted) return;
     setError(null);
 
+    // License attestation gate — must be filled and attested before submit.
+    if (!licenseNumber.trim() || !licenseState.trim()) {
+      setError("License number and state are required for HRSA audit.");
+      return;
+    }
+    if (!attested) {
+      setError("You must attest to your license before submitting.");
+      return;
+    }
+
     const missing = new Set<string>();
     for (const f of sortedFields) {
       if (f.isRequired && isEmpty(f, state[f.fieldKey]?.value)) {
@@ -185,9 +218,16 @@ export function ReviewForm({
       };
     }
 
+    const licenseSnapshot = {
+      license_number: licenseNumber.trim(),
+      license_state: licenseState.trim().toUpperCase(),
+      attested_at: new Date().toISOString(),
+    };
+
     const payload: ReviewFormSubmitData = {
       form_responses,
       reviewer_comments: reviewerComments,
+      license_snapshot: licenseSnapshot,
     };
 
     setSubmitting(true);
@@ -246,6 +286,7 @@ export function ReviewForm({
             overall_score: overallScore,
             narrative_final: narrative.trim() || reviewerComments || "Reviewer submitted form.",
             time_spent_minutes: timeSpent,
+            license_snapshot: licenseSnapshot,
           }),
         });
 
@@ -306,6 +347,81 @@ export function ReviewForm({
           Review each field below. AI prefills are shown with confidence
           indicators — override where your clinical judgment differs.
         </p>
+      </div>
+
+      {/* ── License attestation (HRSA audit) ── */}
+      <div
+        data-testid="license-attestation"
+        className="rounded-xl border-2 border-cobalt-200 bg-cobalt-50/40 p-5 shadow-sm"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-eyebrow text-cobalt-700">
+              REVIEWER · LICENSE ATTESTATION
+            </div>
+            <h3 className="mt-1 text-base font-semibold text-ink-900">
+              You are reviewing this case as:{" "}
+              <span className="text-cobalt-800">
+                {reviewerLicense?.fullName ?? "Reviewer"}
+                {reviewerLicense?.credential ? `, ${reviewerLicense.credential}` : ""}
+              </span>
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-ink-600">
+              Your responses below will be permanently attached to this license
+              for HRSA audit. Verify your license details before submitting.
+            </p>
+          </div>
+          <span className="inline-flex items-center rounded-full border border-cobalt-200 bg-paper-surface px-2 py-0.5 text-[10px] font-mono font-medium uppercase tracking-wide text-cobalt-700">
+            Required
+          </span>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-ink-700">
+              License #
+            </label>
+            <input
+              type="text"
+              data-testid="license-number-input"
+              value={licenseNumber}
+              onChange={(e) => setLicenseNumber(e.target.value)}
+              placeholder="e.g. MD123456"
+              className="w-full rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm text-ink-900 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-ink-700">
+              State
+            </label>
+            <input
+              type="text"
+              data-testid="license-state-input"
+              value={licenseState}
+              maxLength={2}
+              onChange={(e) =>
+                setLicenseState(e.target.value.toUpperCase().slice(0, 2))
+              }
+              placeholder="e.g. CA"
+              className="w-full rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm uppercase text-ink-900 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
+            />
+          </div>
+        </div>
+
+        <label className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-700">
+          <input
+            type="checkbox"
+            data-testid="license-attest-checkbox"
+            checked={attested}
+            onChange={(e) => setAttested(e.target.checked)}
+            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-ink-300 text-cobalt-700 focus:ring-cobalt-200"
+          />
+          <span>
+            I attest that the above license is current, in good standing, and
+            that I am personally performing this peer review under that license.
+            I understand this attestation is recorded for HRSA audit purposes.
+          </span>
+        </label>
       </div>
 
       {sortedFields.map((field) => {
