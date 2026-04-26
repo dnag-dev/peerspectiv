@@ -317,6 +317,7 @@ export function Sparkline({
   className?: string;
   height?: number;
 }) {
+  const id = React.useId();
   if (!data.length) return null;
   const w = 120;
   const h = height;
@@ -325,7 +326,6 @@ export function Sparkline({
   const range = max - min || 1;
   const step = w / (data.length - 1 || 1);
   const points = data.map((v, i) => `${i * step},${h - ((v - min) / range) * (h - 4) - 2}`);
-  const id = React.useId();
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className={cn("w-full", className)} preserveAspectRatio="none">
       {fill && (
