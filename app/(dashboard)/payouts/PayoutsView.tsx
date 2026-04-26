@@ -32,9 +32,9 @@ const UNIT_LABEL: Record<RateType, string> = {
 };
 
 const STATUS_COLORS: Record<Status, { bg: string; text: string }> = {
-  pending: { bg: 'bg-warning-100', text: 'text-warning-700' },
-  approved: { bg: 'bg-info-100', text: 'text-info-600' },
-  paid: { bg: 'bg-mint-100', text: 'text-mint-700' },
+  pending: { bg: 'bg-amber-100', text: 'text-amber-700' },
+  approved: { bg: 'bg-cobalt-100', text: 'text-cobalt-600' },
+  paid: { bg: 'bg-mint-100', text: 'text-cobalt-700' },
 };
 
 function currentMonth(): string {
@@ -163,17 +163,17 @@ export function PayoutsView() {
 
         <div className="grid grid-cols-3 gap-3">
           <SummaryPill
-            icon={<Clock className="h-4 w-4 text-warning-600" />}
+            icon={<Clock className="h-4 w-4 text-amber-600" />}
             label="Pending"
             value={totals.pending}
           />
           <SummaryPill
-            icon={<CheckCircle2 className="h-4 w-4 text-mint-600" />}
+            icon={<CheckCircle2 className="h-4 w-4 text-cobalt-600" />}
             label="Approved"
             value={totals.approved}
           />
           <SummaryPill
-            icon={<DollarSign className="h-4 w-4 text-mint-600" />}
+            icon={<DollarSign className="h-4 w-4 text-cobalt-600" />}
             label="Paid"
             value={totals.paid}
           />
@@ -198,7 +198,7 @@ export function PayoutsView() {
             {loading && (
               <tr>
                 <td colSpan={7} className="px-4 py-12 text-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-mint-600 inline" />
+                  <Loader2 className="h-6 w-6 animate-spin text-cobalt-600 inline" />
                 </td>
               </tr>
             )}

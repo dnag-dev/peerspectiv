@@ -29,8 +29,8 @@ export function ClientOverviewCard({
   // Determine status indicator based on projected completion
   const now = new Date();
   let statusLabel = 'on-track';
-  let statusColor = 'bg-mint-500';
-  let statusTextColor = 'text-mint-700';
+  let statusColor = 'bg-cobalt-500';
+  let statusTextColor = 'text-cobalt-700';
   let statusBorderColor = 'border-mint-200';
 
   if (projectedCompletion) {
@@ -45,9 +45,9 @@ export function ClientOverviewCard({
       statusBorderColor = 'border-critical-600';
     } else if (daysUntil < 7) {
       statusLabel = 'at-risk';
-      statusColor = 'bg-warning-600';
-      statusTextColor = 'text-warning-700';
-      statusBorderColor = 'border-warning-600';
+      statusColor = 'bg-amber-600';
+      statusTextColor = 'text-amber-700';
+      statusBorderColor = 'border-amber-600';
     }
   }
 
@@ -79,7 +79,7 @@ export function ClientOverviewCard({
       <div className="mt-3">
         <div className="h-2 w-full rounded-full bg-ink-100">
           <div
-            className="h-2 rounded-full bg-mint-500 transition-all"
+            className="h-2 rounded-full bg-cobalt-500 transition-all"
             style={{ width: `${progressPct}%` }}
           />
         </div>

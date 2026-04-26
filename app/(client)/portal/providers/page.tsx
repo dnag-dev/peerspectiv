@@ -28,7 +28,7 @@ export default async function ProvidersIndex() {
             key={p.id}
             href={`/portal/providers/${p.id}`}
             className="rounded-lg p-4 hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: "#1A3050" }}
+            style={{ backgroundColor: "#1E3A8A" }}
           >
             <div className="flex items-center justify-between">
               <div>

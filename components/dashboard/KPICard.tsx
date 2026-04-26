@@ -40,7 +40,7 @@ export function KPICard({
 
   return (
     <Card data-testid="kpi-card" className="relative overflow-hidden transition-shadow hover:shadow-md">
-      <div className={cn("absolute left-0 top-0 h-full w-1.5", color)} />
+      <div className={cn("absolute left-0 top-0 h-full w-1", color)} />
       <div className="flex items-start gap-4 p-5 pl-6">
         <div
           className={cn(

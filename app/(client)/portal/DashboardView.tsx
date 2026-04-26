@@ -39,8 +39,8 @@ interface Props {
   }>;
 }
 
-const CARD_BG = "#1A3050";
-const ACCENT = "#2E6FE8";
+const CARD_BG = "#1E3A8A";
+const ACCENT = "#2563EB";
 const SUCCESS = "#22C55E";
 const WARNING = "#F59E0B";
 const DANGER = "#EF4444";
@@ -125,7 +125,7 @@ export function DashboardView(props: Props) {
       {/* Compliance banner */}
       <Link
         href="/portal/reviews?status=completed"
-        className="rounded-lg p-6 flex flex-col lg:flex-row items-center gap-8 transition-all hover:ring-2 hover:ring-info-600/40"
+        className="rounded-lg p-6 flex flex-col lg:flex-row items-center gap-8 transition-all hover:ring-2 hover:ring-cobalt-600/40"
         style={{ backgroundColor: CARD_BG }}
       >
         <ComplianceRing score={compliance} />
@@ -153,7 +153,7 @@ export function DashboardView(props: Props) {
           className="rounded-lg p-4 flex items-center gap-3"
           style={{ backgroundColor: CARD_BG, borderLeft: `3px solid ${ACCENT}` }}
         >
-          <CalendarDays className="h-5 w-5 text-info-600 flex-shrink-0" />
+          <CalendarDays className="h-5 w-5 text-cobalt-600 flex-shrink-0" />
           <div>
             <div className="text-xs uppercase tracking-wider text-ink-400">Expected Completion</div>
             <div className="text-lg font-semibold text-white">
@@ -215,7 +215,7 @@ export function DashboardView(props: Props) {
                     {s.avg}% ({s.count})
                   </span>
                 </div>
-                <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: "#0B1829" }}>
+                <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: "#172554" }}>
                   <div
                     className="h-full transition-all group-hover:opacity-80"
                     style={{
@@ -366,7 +366,7 @@ function KpiCard({
       <Link
         href={href}
         data-testid="kpi-card"
-        className={`${common} transition-all hover:ring-2 hover:ring-info-600/40`}
+        className={`${common} transition-all hover:ring-2 hover:ring-cobalt-600/40`}
         style={style}
       >
         {body}
@@ -389,7 +389,7 @@ function ComplianceRing({ score }: { score: number }) {
   return (
     <div data-testid="compliance-ring" className="relative h-40 w-40 flex-shrink-0">
       <svg viewBox="0 0 160 160" className="h-40 w-40 -rotate-90">
-        <circle cx="80" cy="80" r={radius} stroke="#0B1829" strokeWidth="14" fill="none" />
+        <circle cx="80" cy="80" r={radius} stroke="#172554" strokeWidth="14" fill="none" />
         <circle
           cx="80"
           cy="80"
@@ -456,7 +456,7 @@ function RiskDonut({ risk }: { risk: { high: number; medium: number; low: number
             ))}
           </Pie>
           <ReTooltip
-            contentStyle={{ backgroundColor: "#0B1829", border: "1px solid #2A3F5F", color: "white" }}
+            contentStyle={{ backgroundColor: "#172554", border: "1px solid #2A3F5F", color: "white" }}
           />
           <Legend
             wrapperStyle={{ fontSize: "12px", color: "#CBD5E1" }}
@@ -487,7 +487,7 @@ function AttentionColumn({
           <span className="text-xs uppercase tracking-wider text-ink-400">{title}</span>
         </div>
         {seeAllHref && items.length > 0 && (
-          <Link href={seeAllHref} className="text-[10px] text-info-600 hover:text-info-600 hover:underline">
+          <Link href={seeAllHref} className="text-[10px] text-cobalt-600 hover:text-cobalt-600 hover:underline">
             See all →
           </Link>
         )}
@@ -507,7 +507,7 @@ function AttentionColumn({
               <li
                 key={i.id}
                 className="rounded-md p-2"
-                style={{ backgroundColor: "#0B1829" }}
+                style={{ backgroundColor: "#172554" }}
               >
                 {i.href ? (
                   <Link href={i.href} className="block hover:opacity-80">

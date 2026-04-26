@@ -318,7 +318,7 @@ export function NewBatchModal({
                 <div
                   key={n}
                   className={`h-1 flex-1 rounded-full ${
-                    n <= step ? "bg-info-600" : "bg-ink-200"
+                    n <= step ? "bg-cobalt-600" : "bg-ink-200"
                   }`}
                 />
               ))}
@@ -338,7 +338,7 @@ export function NewBatchModal({
                       setSpecialty("");
                       setCompanyFormId("");
                     }}
-                    className="w-full rounded-lg border border-ink-300 px-4 py-3 text-sm focus:border-info-600 focus:outline-none"
+                    className="w-full rounded-lg border border-ink-300 px-4 py-3 text-sm focus:border-cobalt-600 focus:outline-none"
                   >
                     <option value="">Select company…</option>
                     {companies.map((c) => (
@@ -359,7 +359,7 @@ export function NewBatchModal({
                     an approved form for this client are shown.
                   </p>
                   {specialty && skipFormStep && (
-                    <p className="rounded-lg border border-mint-200 bg-mint-50 px-3 py-2 text-xs text-mint-700">
+                    <p className="rounded-lg border border-mint-200 bg-mint-50 px-3 py-2 text-xs text-cobalt-700">
                       <Check className="mr-1 inline h-3 w-3" />
                       <strong>
                         {specialtyForms[0].form_name}
@@ -378,7 +378,7 @@ export function NewBatchModal({
                         }}
                         className={`rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
                           specialty === s
-                            ? "border-info-600 bg-info-100 text-info-600"
+                            ? "border-cobalt-600 bg-cobalt-100 text-cobalt-600"
                             : "border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50"
                         }`}
                       >
@@ -387,7 +387,7 @@ export function NewBatchModal({
                     ))}
                   </div>
                   {availableSpecialties.length === 0 && (
-                    <p className="rounded-lg border border-warning-600 bg-warning-100 px-4 py-3 text-xs text-warning-700">
+                    <p className="rounded-lg border border-amber-600 bg-amber-100 px-4 py-3 text-xs text-amber-700">
                       No approved forms found for this client. Seed `company_forms` first.
                     </p>
                   )}
@@ -412,7 +412,7 @@ export function NewBatchModal({
                         onClick={() => setCompanyFormId(f.id)}
                         className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
                           companyFormId === f.id
-                            ? "border-info-600 bg-info-100"
+                            ? "border-cobalt-600 bg-cobalt-100"
                             : "border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50"
                         }`}
                       >
@@ -422,13 +422,13 @@ export function NewBatchModal({
                             Specialty: {f.specialty}
                           </div>
                         </div>
-                        {companyFormId === f.id && <Check className="h-4 w-4 text-mint-600" />}
+                        {companyFormId === f.id && <Check className="h-4 w-4 text-cobalt-600" />}
                       </button>
                     ))}
                     <button
                       type="button"
                       onClick={() => setFormBuilderOpen(true)}
-                      className="flex w-full items-center gap-2 rounded-lg border border-dashed border-ink-300 px-4 py-3 text-left text-sm text-ink-600 hover:border-info-600 hover:bg-info-100 hover:text-info-600"
+                      className="flex w-full items-center gap-2 rounded-lg border border-dashed border-ink-300 px-4 py-3 text-left text-sm text-ink-600 hover:border-cobalt-600 hover:bg-cobalt-100 hover:text-cobalt-600"
                     >
                       <Plus className="h-4 w-4" />
                       Add new form for this client
@@ -450,13 +450,13 @@ export function NewBatchModal({
                       value={batchName}
                       onChange={(e) => setBatchName(e.target.value)}
                       placeholder="e.g. Q2 2026 — OB/GYN charts"
-                      className="w-full rounded-lg border border-ink-300 px-4 py-2.5 text-sm focus:border-info-600 focus:outline-none"
+                      className="w-full rounded-lg border border-ink-300 px-4 py-2.5 text-sm focus:border-cobalt-600 focus:outline-none"
                     />
                   </div>
 
                   <label
                     htmlFor="batch-pdfs"
-                    className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-ink-300 bg-ink-50 px-6 py-10 text-center hover:border-info-600 hover:bg-info-100"
+                    className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-ink-300 bg-ink-50 px-6 py-10 text-center hover:border-cobalt-600 hover:bg-cobalt-100"
                   >
                     <Upload className="h-6 w-6 text-ink-400" />
                     <span className="text-sm font-medium text-ink-700">
@@ -539,7 +539,7 @@ export function NewBatchModal({
                       <dd className="font-medium text-ink-900">
                         {allForms.find((f) => f.id === effectiveFormId)?.form_name}
                         {skipFormStep && (
-                          <span className="ml-2 rounded bg-mint-100 px-1.5 py-0.5 text-[10px] font-medium text-mint-700">
+                          <span className="ml-2 rounded bg-mint-100 px-1.5 py-0.5 text-[10px] font-medium text-cobalt-700">
                             AUTO
                           </span>
                         )}
@@ -575,14 +575,14 @@ export function NewBatchModal({
                             )}
                             {row.status === "uploading" && (
                               <>
-                                <Loader2 className="h-3 w-3 animate-spin text-mint-600" />
-                                <span className="text-mint-600">Uploading…</span>
+                                <Loader2 className="h-3 w-3 animate-spin text-cobalt-600" />
+                                <span className="text-cobalt-600">Uploading…</span>
                               </>
                             )}
                             {row.status === "done" && (
                               <>
-                                <Check className="h-3 w-3 text-mint-600" />
-                                <span className="text-mint-600">Uploaded</span>
+                                <Check className="h-3 w-3 text-cobalt-600" />
+                                <span className="text-cobalt-600">Uploaded</span>
                               </>
                             )}
                             {row.status === "error" && (

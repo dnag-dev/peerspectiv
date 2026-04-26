@@ -27,9 +27,9 @@ interface Reviewer {
 }
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  available: { bg: 'bg-mint-100', text: 'text-mint-700' },
+  available: { bg: 'bg-mint-100', text: 'text-cobalt-700' },
   vacation: { bg: 'bg-critical-100', text: 'text-critical-700' },
-  on_leave: { bg: 'bg-warning-100', text: 'text-warning-700' },
+  on_leave: { bg: 'bg-amber-100', text: 'text-amber-700' },
   inactive: { bg: 'bg-ink-100', text: 'text-ink-800' },
 };
 

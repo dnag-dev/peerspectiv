@@ -191,7 +191,7 @@ export function ClientSubmitWizard({
   if (submittedBatchId) {
     return (
       <div className="space-y-4 py-4 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-mint-500/20 text-mint-400">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-cobalt-500/20 text-cobalt-500">
           <Check className="h-6 w-6" />
         </div>
         <div>
@@ -219,7 +219,7 @@ export function ClientSubmitWizard({
   }
 
   const btnDark =
-    "rounded-lg bg-[#2E6FE8] px-4 py-2 text-sm font-semibold text-white hover:bg-[#2658b7] disabled:opacity-50 disabled:cursor-not-allowed";
+    "rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white hover:bg-[#2658b7] disabled:opacity-50 disabled:cursor-not-allowed";
   const btnGhost =
     "rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10";
 
@@ -231,7 +231,7 @@ export function ClientSubmitWizard({
           <div
             key={n}
             className={`h-1 flex-1 rounded-full ${
-              n <= step ? "bg-[#2E6FE8]" : "bg-white/10"
+              n <= step ? "bg-[#2563EB]" : "bg-white/10"
             }`}
           />
         ))}
@@ -258,7 +258,7 @@ export function ClientSubmitWizard({
                 }}
                 className={`rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
                   specialty === s
-                    ? "border-[#2E6FE8] bg-[#2E6FE8]/20 text-white"
+                    ? "border-[#2563EB] bg-[#2563EB]/20 text-white"
                     : "border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10"
                 }`}
               >
@@ -267,12 +267,12 @@ export function ClientSubmitWizard({
             ))}
           </div>
           {availableSpecialties.length === 0 && (
-            <p className="rounded-lg border border-warning-600/30 bg-warning-600/10 px-4 py-3 text-xs text-warning-600">
+            <p className="rounded-lg border border-amber-600/30 bg-amber-600/10 px-4 py-3 text-xs text-amber-600">
               No approved forms on file. Contact Peerspectiv to set up specialty forms.
             </p>
           )}
           {specialty && skipFormStep && (
-            <p className="rounded-lg border border-mint-500/30 bg-mint-500/10 px-4 py-3 text-xs text-mint-200">
+            <p className="rounded-lg border border-cobalt-500/30 bg-cobalt-500/10 px-4 py-3 text-xs text-mint-200">
               <Check className="mr-1 inline h-3 w-3" />
               <strong>{specialtyForms[0].form_name}</strong> will be auto-attached
               — it&rsquo;s your only approved form for {specialty}.
@@ -297,7 +297,7 @@ export function ClientSubmitWizard({
                 onClick={() => setFormId(f.id)}
                 className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
                   formId === f.id
-                    ? "border-[#2E6FE8] bg-[#2E6FE8]/15"
+                    ? "border-[#2563EB] bg-[#2563EB]/15"
                     : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
                 }`}
               >
@@ -305,7 +305,7 @@ export function ClientSubmitWizard({
                   <div className="font-medium text-white">{f.form_name}</div>
                   <div className="text-xs text-white/50">Specialty: {f.specialty}</div>
                 </div>
-                {formId === f.id && <Check className="h-4 w-4 text-mint-600" />}
+                {formId === f.id && <Check className="h-4 w-4 text-cobalt-600" />}
               </button>
             ))}
           </div>
@@ -324,13 +324,13 @@ export function ClientSubmitWizard({
               value={batchName}
               onChange={(e) => setBatchName(e.target.value)}
               placeholder={`e.g. Q2 2026 — ${specialty}`}
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#2E6FE8] focus:outline-none"
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#2563EB] focus:outline-none"
             />
           </div>
 
           <label
             htmlFor="client-submit-pdfs"
-            className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-white/20 bg-white/5 px-6 py-10 text-center hover:border-[#2E6FE8] hover:bg-[#2E6FE8]/10"
+            className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-white/20 bg-white/5 px-6 py-10 text-center hover:border-[#2563EB] hover:bg-[#2563EB]/10"
           >
             <Upload className="h-6 w-6 text-white/40" />
             <span className="text-sm font-medium text-white">
@@ -367,7 +367,7 @@ export function ClientSubmitWizard({
                   <select
                     value={row.providerId}
                     onChange={(e) => updateRow(i, { providerId: e.target.value })}
-                    className="rounded-md border border-white/10 bg-[#0B1829] px-2 py-1.5 text-xs text-white"
+                    className="rounded-md border border-white/10 bg-[#172554] px-2 py-1.5 text-xs text-white"
                   >
                     <option value="">Pick provider…</option>
                     {specialtyProviders.map((p) => (
@@ -407,7 +407,7 @@ export function ClientSubmitWizard({
               <dd className="font-medium text-white">
                 {forms.find((f) => f.id === effectiveFormId)?.form_name}
                 {skipFormStep && (
-                  <span className="ml-2 rounded bg-mint-500/20 px-1.5 py-0.5 text-[10px] font-medium text-mint-200">
+                  <span className="ml-2 rounded bg-cobalt-500/20 px-1.5 py-0.5 text-[10px] font-medium text-mint-200">
                     AUTO
                   </span>
                 )}
@@ -443,14 +443,14 @@ export function ClientSubmitWizard({
                     )}
                     {row.status === "uploading" && (
                       <>
-                        <Loader2 className="h-3 w-3 animate-spin text-mint-600" />
-                        <span className="text-mint-600">Uploading…</span>
+                        <Loader2 className="h-3 w-3 animate-spin text-cobalt-600" />
+                        <span className="text-cobalt-600">Uploading…</span>
                       </>
                     )}
                     {row.status === "done" && (
                       <>
-                        <Check className="h-3 w-3 text-mint-400" />
-                        <span className="text-mint-400">Uploaded</span>
+                        <Check className="h-3 w-3 text-cobalt-500" />
+                        <span className="text-cobalt-500">Uploaded</span>
                       </>
                     )}
                     {row.status === "error" && (

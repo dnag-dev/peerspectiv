@@ -75,8 +75,8 @@ export function BatchActions({ batchId, hasUnassigned }: BatchActionsProps) {
 
           {result ? (
             <div className="rounded-lg border border-mint-200 bg-mint-50 p-4">
-              <p className="text-sm font-medium text-mint-700">Assignment Complete</p>
-              <p className="mt-1 text-sm text-mint-700">{result.summary}</p>
+              <p className="text-sm font-medium text-cobalt-700">Assignment Complete</p>
+              <p className="mt-1 text-sm text-cobalt-700">{result.summary}</p>
             </div>
           ) : error ? (
             <div className="rounded-lg border border-critical-600 bg-critical-100 p-4">

@@ -15,7 +15,7 @@ const DEMO_USERS = [
     label: 'Continue as Admin (Ashton)',
     email: 'admin@peerspectiv.com',
     blurb: 'Full access — pipeline, batches, reviewers, finance.',
-    accent: '#2E6FE8',
+    accent: '#2563EB',
   },
   {
     role: 'client' as const,
@@ -88,8 +88,8 @@ export default function LoginPage() {
 
         {showDemo ? (
           <div className="bg-white rounded-xl shadow-xl p-8">
-            <div className="mb-5 flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-warning-100 text-warning-700 text-xs font-bold uppercase">
-              <span className="w-2 h-2 bg-warning-600 rounded-full animate-pulse" />
+            <div className="mb-5 flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold uppercase">
+              <span className="w-2 h-2 bg-amber-600 rounded-full animate-pulse" />
               Demo Mode — Pick a Persona
             </div>
             <div className="space-y-3 text-left">

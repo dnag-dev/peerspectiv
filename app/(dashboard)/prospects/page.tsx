@@ -12,26 +12,26 @@ const STAGES = [
   {
     key: 'prospect',
     title: 'Prospect',
-    accent: 'border-l-4 border-[#2E6FE8]',
-    badgeClass: 'bg-[#2E6FE8] text-white',
+    accent: 'border-l-4 border-[#2563EB]',
+    badgeClass: 'bg-[#2563EB] text-white',
   },
   {
     key: 'contract_sent',
     title: 'Contract Sent',
     accent: 'border-l-4 border-[#F59E0B]',
-    badgeClass: 'bg-[#F59E0B] text-[#0B1829]',
+    badgeClass: 'bg-[#F59E0B] text-[#172554]',
   },
   {
     key: 'contract_signed',
     title: 'Contract Signed',
     accent: 'border-l-4 border-[#22C55E]',
-    badgeClass: 'bg-[#22C55E] text-[#0B1829]',
+    badgeClass: 'bg-[#22C55E] text-[#172554]',
   },
   {
     key: 'active',
     title: 'Active Client',
-    accent: 'border-l-4 border-mint-500',
-    badgeClass: 'bg-mint-500 text-white',
+    accent: 'border-l-4 border-cobalt-500',
+    badgeClass: 'bg-cobalt-500 text-white',
   },
 ] as const;
 
@@ -80,7 +80,7 @@ export default async function ProspectsPage() {
               key={stage.key}
               data-testid="pipeline-column"
               data-stage={stage.key}
-              className={`flex min-h-[400px] flex-col rounded-lg bg-[#1A3050] p-3 ${stage.accent}`}
+              className={`flex min-h-[400px] flex-col rounded-lg bg-[#1E3A8A] p-3 ${stage.accent}`}
             >
               <div className="mb-3 flex items-center justify-between px-1">
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-white">

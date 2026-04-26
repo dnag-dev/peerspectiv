@@ -56,9 +56,9 @@ interface FieldState {
 function confidenceClasses(c: Confidence) {
   switch (c) {
     case "high":
-      return "bg-mint-500/15 border-mint-500/40 text-mint-200";
+      return "bg-cobalt-500/15 border-cobalt-500/40 text-mint-200";
     case "medium":
-      return "bg-warning-600/15 border-warning-600/40 text-warning-600";
+      return "bg-amber-600/15 border-amber-600/40 text-amber-600";
     case "low":
       return "bg-critical-600/15 border-critical-600/40 text-critical-600";
   }
@@ -71,8 +71,8 @@ function ratingLabel(score: number): string {
 }
 
 function ratingLabelColor(score: number): string {
-  if (score >= 80) return "text-mint-400";
-  if (score >= 60) return "text-warning-600";
+  if (score >= 80) return "text-cobalt-500";
+  if (score >= 60) return "text-amber-600";
   return "text-critical-600";
 }
 
@@ -266,10 +266,10 @@ export function ReviewForm({
 
   if (submitted) {
     return (
-      <div className="rounded-xl border border-mint-500/30 bg-mint-500/5 p-10 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-mint-500/20">
+      <div className="rounded-xl border border-cobalt-500/30 bg-cobalt-500/5 p-10 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-cobalt-500/20">
           <svg
-            className="h-7 w-7 text-mint-400"
+            className="h-7 w-7 text-cobalt-500"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={2.5}
@@ -332,7 +332,7 @@ export function ReviewForm({
               isMissing
                 ? "border-critical-600/60"
                 : overridden
-                  ? "border-warning-600/60"
+                  ? "border-amber-600/60"
                   : "border-white/10"
             }`}
           >
@@ -356,9 +356,9 @@ export function ReviewForm({
                       <span
                         className={`h-1.5 w-1.5 rounded-full ${
                           prefill.confidence === "high"
-                            ? "bg-mint-400"
+                            ? "bg-cobalt-500"
                             : prefill.confidence === "medium"
-                              ? "bg-warning-600"
+                              ? "bg-amber-600"
                               : "bg-critical-600"
                         }`}
                       />
@@ -373,7 +373,7 @@ export function ReviewForm({
                 )}
               </div>
               {overridden && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-warning-600/40 bg-warning-600/15 px-2 py-0.5 text-[10px] font-medium text-warning-600">
+                <span className="inline-flex items-center gap-1 rounded-full border border-amber-600/40 bg-amber-600/15 px-2 py-0.5 text-[10px] font-medium text-amber-600">
                   <svg
                     className="h-3 w-3"
                     fill="none"
@@ -412,7 +412,7 @@ export function ReviewForm({
                   onClick={() => setFieldValue(field.fieldKey, true)}
                   className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all ${
                     fieldState.value === true
-                      ? "border-mint-500 bg-mint-500 text-white shadow-lg shadow-mint-500/20"
+                      ? "border-cobalt-500 bg-cobalt-500 text-white shadow-lg shadow-mint-500/20"
                       : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10"
                   }`}
                 >
@@ -459,7 +459,7 @@ export function ReviewForm({
                         setFieldValue(field.fieldKey, n);
                       }
                     }}
-                    className="w-28 rounded-lg border border-white/15 bg-[#0B1829] px-3 py-2 text-sm text-white outline-none focus:border-[#1E4DB7] focus:ring-1 focus:ring-[#1E4DB7]"
+                    className="w-28 rounded-lg border border-white/15 bg-[#172554] px-3 py-2 text-sm text-white outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                     placeholder="0-100"
                   />
                   <span className="text-xs text-white/40">/ 100</span>
@@ -479,7 +479,7 @@ export function ReviewForm({
                 value={String(fieldState.value ?? "")}
                 onChange={(e) => setFieldValue(field.fieldKey, e.target.value)}
                 rows={4}
-                className="w-full resize-y rounded-lg border border-white/15 bg-[#0B1829] px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-[#1E4DB7] focus:ring-1 focus:ring-[#1E4DB7]"
+                className="w-full resize-y rounded-lg border border-white/15 bg-[#172554] px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
                 placeholder="Enter your assessment..."
               />
             )}
@@ -490,7 +490,7 @@ export function ReviewForm({
               value={fieldState.comment}
               onChange={(e) => setFieldComment(field.fieldKey, e.target.value)}
               placeholder="Add a comment (optional)"
-              className="mt-3 w-full rounded-lg border border-white/10 bg-[#0B1829] px-3 py-2 text-xs text-white/80 placeholder:text-white/30 outline-none focus:border-[#1E4DB7]"
+              className="mt-3 w-full rounded-lg border border-white/10 bg-[#172554] px-3 py-2 text-xs text-white/80 placeholder:text-white/30 outline-none focus:border-[#1D4ED8]"
             />
           </div>
         );
@@ -505,7 +505,7 @@ export function ReviewForm({
           value={reviewerComments}
           onChange={(e) => setReviewerComments(e.target.value)}
           rows={4}
-          className="w-full resize-y rounded-lg border border-white/15 bg-[#0B1829] px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-[#1E4DB7] focus:ring-1 focus:ring-[#1E4DB7]"
+          className="w-full resize-y rounded-lg border border-white/15 bg-[#172554] px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-[#1D4ED8] focus:ring-1 focus:ring-[#1D4ED8]"
           placeholder="Any additional commentary for this case..."
         />
       </div>
@@ -525,7 +525,7 @@ export function ReviewForm({
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#1E4DB7] px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#1E4DB7]/20 transition-colors hover:bg-[#1E4DB7]/90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#1D4ED8] px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#1D4ED8]/20 transition-colors hover:bg-[#1D4ED8]/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {submitting ? (
               <>

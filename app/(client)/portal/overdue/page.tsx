@@ -49,7 +49,7 @@ export default async function OverduePage() {
             <div
               key={r.id}
               className="rounded-lg p-4 border-l-[3px]"
-              style={{ backgroundColor: "#1A3050", borderLeftColor: "#EF4444" }}
+              style={{ backgroundColor: "#1E3A8A", borderLeftColor: "#EF4444" }}
             >
               <div
                 className="inline-block rounded px-2 py-0.5 text-xs font-bold"

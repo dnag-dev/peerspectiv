@@ -103,7 +103,7 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
                     isPastDue
                       ? "text-critical-600"
                       : isUrgent
-                        ? "text-warning-600"
+                        ? "text-amber-600"
                         : "text-ink-500"
                   )}
                 >

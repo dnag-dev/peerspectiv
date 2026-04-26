@@ -102,7 +102,7 @@ export function ReviewsTable({
       {(month || criterion) && (
         <div
           className="flex flex-wrap items-center gap-2 rounded-lg p-3"
-          style={{ backgroundColor: "#1A3050", border: "1px solid #5EEAD4" }}
+          style={{ backgroundColor: "#1E3A8A", border: "1px solid #00C896" }}
         >
           <span className="text-xs uppercase tracking-wider text-mint-200">
             Drilled down from Trends
@@ -110,7 +110,7 @@ export function ReviewsTable({
           {month && (
             <button
               onClick={() => setMonth(null)}
-              className="flex items-center gap-1 rounded-full bg-mint-500/20 px-2.5 py-1 text-xs text-mint-200 hover:bg-mint-500/30"
+              className="flex items-center gap-1 rounded-full bg-cobalt-500/20 px-2.5 py-1 text-xs text-mint-200 hover:bg-cobalt-500/30"
             >
               Month: {monthLabel} <X className="h-3 w-3" />
             </button>
@@ -118,7 +118,7 @@ export function ReviewsTable({
           {criterion && (
             <button
               onClick={() => setCriterion(null)}
-              className="flex items-center gap-1 rounded-full bg-mint-500/20 px-2.5 py-1 text-xs text-mint-200 hover:bg-mint-500/30"
+              className="flex items-center gap-1 rounded-full bg-cobalt-500/20 px-2.5 py-1 text-xs text-mint-200 hover:bg-cobalt-500/30"
             >
               Criterion: {criterion} <X className="h-3 w-3" />
             </button>
@@ -137,7 +137,7 @@ export function ReviewsTable({
 
       <div
         className="flex flex-wrap gap-3 rounded-lg p-4"
-        style={{ backgroundColor: "#1A3050" }}
+        style={{ backgroundColor: "#1E3A8A" }}
       >
         <FilterSelect
           label="Status"
@@ -159,7 +159,7 @@ export function ReviewsTable({
         />
       </div>
 
-      <div className="rounded-lg p-6" style={{ backgroundColor: "#1A3050" }}>
+      <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -241,7 +241,7 @@ function FilterSelect({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="rounded-md px-3 py-1.5 text-sm text-white"
-        style={{ backgroundColor: "#0B1829", border: "1px solid #2A3F5F" }}
+        style={{ backgroundColor: "#172554", border: "1px solid #2A3F5F" }}
       >
         {options.map((o) => (
           <option key={o} value={o}>

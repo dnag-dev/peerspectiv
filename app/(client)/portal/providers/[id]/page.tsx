@@ -26,7 +26,7 @@ export default async function ProviderDetailPage({
     return (
       <div className="text-white">
         <h1 className="text-2xl font-bold">Provider not found</h1>
-        <Link href="/portal" className="text-info-600 underline">
+        <Link href="/portal" className="text-cobalt-600 underline">
           Back to dashboard
         </Link>
       </div>
@@ -97,17 +97,17 @@ export default async function ProviderDetailPage({
 
   return (
     <div className="space-y-6 text-white">
-      <Link href="/portal" className="text-sm text-info-600 hover:underline">
+      <Link href="/portal" className="text-sm text-cobalt-600 hover:underline">
         ← Back
       </Link>
 
       <div
         className="rounded-lg p-6 flex items-center gap-6"
-        style={{ backgroundColor: "#1A3050" }}
+        style={{ backgroundColor: "#1E3A8A" }}
       >
         <div
           className="flex h-20 w-20 items-center justify-center rounded-full text-xl font-bold"
-          style={{ backgroundColor: "#2E6FE8" }}
+          style={{ backgroundColor: "#2563EB" }}
         >
           {initials}
         </div>
@@ -130,7 +130,7 @@ export default async function ProviderDetailPage({
       <ProviderCharts last6={last6} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-lg p-6" style={{ backgroundColor: "#1A3050" }}>
+        <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
           <h3 className="text-sm font-semibold mb-3">Recent Reviews (last 5)</h3>
           {last5.length === 0 ? (
             <p className="text-sm text-ink-400">No reviews.</p>
@@ -158,7 +158,7 @@ export default async function ProviderDetailPage({
           )}
         </div>
 
-        <div className="rounded-lg p-6" style={{ backgroundColor: "#1A3050" }}>
+        <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
           <h3 className="text-sm font-semibold mb-3">Common Deficiencies</h3>
           {topDeficiencies.length === 0 ? (
             <p className="text-sm text-ink-400">No deficiencies recorded.</p>
@@ -168,10 +168,10 @@ export default async function ProviderDetailPage({
                 <li
                   key={key}
                   className="flex justify-between rounded-md p-2 text-sm"
-                  style={{ backgroundColor: "#0B1829" }}
+                  style={{ backgroundColor: "#172554" }}
                 >
                   <span className="text-ink-200 truncate pr-2">{key}</span>
-                  <span className="text-xs text-warning-600">x{count}</span>
+                  <span className="text-xs text-amber-600">x{count}</span>
                 </li>
               ))}
             </ul>
@@ -179,7 +179,7 @@ export default async function ProviderDetailPage({
         </div>
       </div>
 
-      <div className="rounded-lg p-6" style={{ backgroundColor: "#1A3050" }}>
+      <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
         <h3 className="text-sm font-semibold mb-3">Open Corrective Actions</h3>
         {openActions.length === 0 ? (
           <p className="text-sm text-ink-400">None.</p>
@@ -189,7 +189,7 @@ export default async function ProviderDetailPage({
               <li
                 key={a.id}
                 className="rounded-md p-3"
-                style={{ backgroundColor: "#0B1829" }}
+                style={{ backgroundColor: "#172554" }}
               >
                 <div className="font-medium">{a.title}</div>
                 {a.description && (

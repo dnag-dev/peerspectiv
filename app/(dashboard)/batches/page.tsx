@@ -23,9 +23,9 @@ interface BatchWithCompany extends Batch {
 
 function BatchStatusBadge({ status }: { status: string }) {
   const variants: Record<string, string> = {
-    pending: "bg-warning-100 text-warning-700",
-    in_progress: "bg-info-100 text-info-600",
-    completed: "bg-mint-100 text-mint-700",
+    pending: "bg-amber-100 text-amber-700",
+    in_progress: "bg-cobalt-100 text-cobalt-600",
+    completed: "bg-mint-100 text-cobalt-700",
   };
   return (
     <span
@@ -147,7 +147,7 @@ export default async function BatchesPage() {
                     <TableCell className="font-medium">
                       <Link
                         href={`/batches/${batch.id}`}
-                        className="text-info-600 hover:underline"
+                        className="text-cobalt-600 hover:underline"
                       >
                         {batch.batch_name}
                       </Link>

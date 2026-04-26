@@ -49,7 +49,7 @@ export function CorrectiveList({ actions }: { actions: Action[] }) {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-lg p-5" style={{ backgroundColor: "#1A3050" }}>
+      <div className="rounded-lg p-5" style={{ backgroundColor: "#1E3A8A" }}>
         <p className="text-sm text-ink-400">No corrective actions.</p>
       </div>
     );
@@ -61,7 +61,7 @@ export function CorrectiveList({ actions }: { actions: Action[] }) {
         <div
           key={a.id}
           className="rounded-lg p-5"
-          style={{ backgroundColor: "#1A3050" }}
+          style={{ backgroundColor: "#1E3A8A" }}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
@@ -99,7 +99,7 @@ export function CorrectiveList({ actions }: { actions: Action[] }) {
             <div
               data-testid="progress-bar"
               className="h-2 rounded-full overflow-hidden"
-              style={{ backgroundColor: "#0B1829" }}
+              style={{ backgroundColor: "#172554" }}
             >
               <div
                 className="h-full transition-all"
@@ -116,7 +116,7 @@ export function CorrectiveList({ actions }: { actions: Action[] }) {
               step={5}
               value={a.progress}
               onChange={(e) => updateProgress(a.id, parseInt(e.target.value, 10))}
-              className="mt-2 w-full accent-[#2E6FE8]"
+              className="mt-2 w-full accent-[#2563EB]"
             />
           </div>
         </div>

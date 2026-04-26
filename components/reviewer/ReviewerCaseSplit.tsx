@@ -51,8 +51,8 @@ type LeftTab = "ash" | "chart";
 
 const SEV_META = {
   high: { dot: "bg-critical-600", text: "text-critical-600", bg: "bg-critical-600/10", border: "border-critical-600/30", label: "HIGH" },
-  medium: { dot: "bg-warning-600", text: "text-warning-600", bg: "bg-warning-600/10", border: "border-warning-600/30", label: "MED" },
-  low: { dot: "bg-info-600", text: "text-info-600", bg: "bg-info-600/10", border: "border-info-600/30", label: "LOW" },
+  medium: { dot: "bg-amber-600", text: "text-amber-600", bg: "bg-amber-600/10", border: "border-amber-600/30", label: "MED" },
+  low: { dot: "bg-cobalt-600", text: "text-cobalt-600", bg: "bg-cobalt-600/10", border: "border-cobalt-600/30", label: "LOW" },
 };
 
 export function ReviewerCaseSplit({
@@ -106,7 +106,7 @@ export function ReviewerCaseSplit({
       onClick={() => setTab(id)}
       className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
         tab === id
-          ? "border-[#5EEAD4] text-white"
+          ? "border-[#00C896] text-white"
           : "border-transparent text-white/50 hover:text-white/80"
       }`}
     >
@@ -231,7 +231,7 @@ export function ReviewerCaseSplit({
 
         {/* Drag handle */}
         <PanelResizeHandle className="group mx-2 flex w-1.5 cursor-col-resize items-center justify-center">
-          <div className="flex h-full w-full items-center justify-center rounded-full bg-white/5 transition-colors group-hover:bg-[#5EEAD4]/30 group-data-[resize-handle-state=drag]:bg-[#5EEAD4]/50">
+          <div className="flex h-full w-full items-center justify-center rounded-full bg-white/5 transition-colors group-hover:bg-[#00C896]/30 group-data-[resize-handle-state=drag]:bg-[#00C896]/50">
             <GripVertical className="h-4 w-4 text-white/30 group-hover:text-white/70" />
           </div>
         </PanelResizeHandle>
@@ -241,9 +241,9 @@ export function ReviewerCaseSplit({
           <div className="h-full overflow-y-auto rounded-xl">
             {existingResult ? (
               <div className="space-y-4">
-                <div className="rounded-xl border border-mint-500/30 bg-mint-500/5 p-6 text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-mint-500/20">
-                    <svg className="h-6 w-6 text-mint-400" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <div className="rounded-xl border border-cobalt-500/30 bg-cobalt-500/5 p-6 text-center">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-cobalt-500/20">
+                    <svg className="h-6 w-6 text-cobalt-500" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                   </div>

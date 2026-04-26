@@ -301,8 +301,8 @@ export default async function ReviewerCasePage({
       : daysUntilDue < 0
         ? "bg-critical-600/20 text-critical-600 border-critical-600/40"
         : daysUntilDue <= 2
-          ? "bg-warning-600/20 text-warning-600 border-warning-600/40"
-          : "bg-mint-500/20 text-mint-200 border-mint-500/40";
+          ? "bg-amber-600/20 text-amber-600 border-amber-600/40"
+          : "bg-cobalt-500/20 text-mint-200 border-cobalt-500/40";
   const dueLabel =
     daysUntilDue == null
       ? "No due date"
@@ -314,7 +314,7 @@ export default async function ReviewerCasePage({
   const caseRefShort = caseId.slice(0, 8);
 
   return (
-    <div className="flex h-[calc(100vh-64px)] flex-col bg-[#0B1829] text-white">
+    <div className="flex h-[calc(100vh-64px)] flex-col bg-[#172554] text-white">
       {/* ─── Full-width Case Context Header ─── */}
       <div className="flex-shrink-0 px-4 pt-4 lg:px-6 lg:pt-6">
         <div className="rounded-xl border border-white/10 bg-[#0F2040] px-5 py-4">
@@ -330,7 +330,7 @@ export default async function ReviewerCasePage({
                 <div className="text-[10px] uppercase tracking-wide text-white/40">
                   Specialty
                 </div>
-                <span className="mt-0.5 inline-flex items-center rounded-full border border-[#0EA5A5]/40 bg-[#0EA5A5]/10 px-2.5 py-0.5 text-xs font-medium text-[#5EEAD4]">
+                <span className="mt-0.5 inline-flex items-center rounded-full border border-[#00B582]/40 bg-[#00B582]/10 px-2.5 py-0.5 text-xs font-medium text-[#00C896]">
                   {providerRow.specialty}
                 </span>
               </div>

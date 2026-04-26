@@ -36,9 +36,9 @@ interface AssignmentQueueProps {
 function ConfidenceBadge({ confidence }: { confidence: number }) {
   const variant =
     confidence >= 80
-      ? "bg-mint-100 text-mint-700 border-mint-200"
+      ? "bg-mint-100 text-cobalt-700 border-mint-200"
       : confidence >= 60
-        ? "bg-warning-100 text-warning-700 border-warning-600"
+        ? "bg-amber-100 text-amber-700 border-amber-600"
         : "bg-critical-100 text-critical-700 border-critical-600";
 
   return (
@@ -198,7 +198,7 @@ export function AssignmentQueue({
                 {/* Row 1: Company + match badge together */}
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 min-w-0">
-                    <Building2 className="h-4 w-4 shrink-0 text-mint-600" />
+                    <Building2 className="h-4 w-4 shrink-0 text-cobalt-600" />
                     <span className="truncate text-base font-semibold">
                       {c.company.name}
                     </span>

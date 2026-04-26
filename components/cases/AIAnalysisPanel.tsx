@@ -38,23 +38,23 @@ interface AIAnalysisPanelProps {
 function ScoreGauge({ score, label }: { score: number; label: string }) {
   const color =
     score >= 80
-      ? "text-mint-600"
+      ? "text-cobalt-600"
       : score >= 60
-        ? "text-warning-600"
+        ? "text-amber-600"
         : "text-critical-600";
 
   const bgColor =
     score >= 80
       ? "bg-mint-100"
       : score >= 60
-        ? "bg-warning-100"
+        ? "bg-amber-100"
         : "bg-critical-100";
 
   const strokeColor =
     score >= 80
-      ? "stroke-mint-500"
+      ? "stroke-cobalt-500"
       : score >= 60
-        ? "stroke-warning-600"
+        ? "stroke-amber-600"
         : "stroke-critical-600";
 
   const circumference = 2 * Math.PI * 40;
@@ -95,8 +95,8 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
 
 function SeverityBadge({ severity }: { severity: string }) {
   const config: Record<string, string> = {
-    Minor: "bg-warning-100 text-warning-700",
-    Moderate: "bg-warning-100 text-warning-700",
+    Minor: "bg-amber-100 text-amber-700",
+    Moderate: "bg-amber-100 text-amber-700",
     Major: "bg-critical-100 text-critical-700",
   };
   return (
@@ -173,7 +173,7 @@ export function AIAnalysisPanel({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Brain className="h-5 w-5 text-mint-600" />
+            <Brain className="h-5 w-5 text-cobalt-600" />
             AI Analysis
             <Badge variant="ai">AI</Badge>
           </CardTitle>
@@ -264,11 +264,11 @@ export function AIAnalysisPanel({
                           <div className="flex items-center gap-2">
                             {cs.criterion}
                             {cs.ai_flag && (
-                              <AlertTriangle className="h-3 w-3 text-warning-600" />
+                              <AlertTriangle className="h-3 w-3 text-amber-600" />
                             )}
                           </div>
                           {cs.flag_reason && (
-                            <p className="mt-0.5 text-[10px] text-warning-600">
+                            <p className="mt-0.5 text-[10px] text-amber-600">
                               {cs.flag_reason}
                             </p>
                           )}
@@ -334,7 +334,7 @@ export function AIAnalysisPanel({
                       </p>
                     )}
                     {def.recommendation && (
-                      <p className="text-xs text-info-600">
+                      <p className="text-xs text-cobalt-600">
                         Recommendation: {def.recommendation}
                       </p>
                     )}
@@ -352,7 +352,7 @@ export function AIAnalysisPanel({
             icon={FileText}
             defaultOpen={false}
           >
-            <div className="rounded-md border-l-4 border-mint-200 bg-mint-50 p-4 dark:bg-mint-700/20">
+            <div className="rounded-md border-l-4 border-mint-200 bg-mint-50 p-4 dark:bg-cobalt-700/20">
               <p className="whitespace-pre-wrap text-sm leading-relaxed">
                 {analysis.narrative_draft}
               </p>

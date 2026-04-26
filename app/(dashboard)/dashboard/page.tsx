@@ -44,13 +44,14 @@ function formatRelativeTime(dateStr: string): string {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+// Pulse chart palette — semantic tokens, not stock Tailwind hex
 const STATUS_COLORS: Record<string, string> = {
-  unassigned: "#6b7280",
-  pending_approval: "#f59e0b",
-  assigned: "#3b82f6",
-  in_progress: "#0ea5a5",
-  completed: "#22c55e",
-  past_due: "#ef4444",
+  unassigned:       "#64748B", // ink-500
+  pending_approval: "#F59E0B", // amber-500
+  assigned:         "#3B82F6", // cobalt-500
+  in_progress:      "#2563EB", // cobalt-600
+  completed:        "#00B582", // mint-600
+  past_due:         "#EF4444", // critical-500
 };
 
 export default async function DashboardPage() {
@@ -247,7 +248,7 @@ export default async function DashboardPage() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Link
           href="/prospects"
-          className="block rounded-lg border-l-4 border-info-600 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+          className="block rounded-lg border-l-4 border-cobalt-600 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
         >
           <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
             Prospects
@@ -259,7 +260,7 @@ export default async function DashboardPage() {
         <Link
           href="/prospects"
           className={`block rounded-lg border-l-4 ${
-            hasStaleContracts ? "border-critical-600" : "border-warning-600"
+            hasStaleContracts ? "border-critical-600" : "border-amber-600"
           } bg-white p-4 shadow-sm transition-shadow hover:shadow-md`}
         >
           <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
@@ -276,7 +277,7 @@ export default async function DashboardPage() {
         </Link>
         <Link
           href="/prospects"
-          className="block rounded-lg border-l-4 border-mint-500 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+          className="block rounded-lg border-l-4 border-cobalt-500 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
         >
           <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
             Pending Activation
@@ -341,7 +342,7 @@ export default async function DashboardPage() {
                             daysRemaining <= 7
                               ? "border-critical-600 text-critical-700"
                               : daysRemaining <= 14
-                                ? "border-warning-600 text-warning-700"
+                                ? "border-amber-600 text-amber-700"
                                 : ""
                           }
                         >
@@ -380,8 +381,8 @@ export default async function DashboardPage() {
         <KPICard
           title="Pending Approval"
           value={pendingApproval}
-          icon={<Clock className="h-5 w-5 text-warning-600" />}
-          color="bg-warning-600"
+          icon={<Clock className="h-5 w-5 text-amber-600" />}
+          color="bg-amber-600"
           pulse={pendingApproval > 0}
         />
         <KPICard
@@ -399,8 +400,8 @@ export default async function DashboardPage() {
         <KPICard
           title="Completed This Month"
           value={completedThisMonth}
-          icon={<CheckCircle2 className="h-5 w-5 text-mint-500" />}
-          color="bg-mint-500"
+          icon={<CheckCircle2 className="h-5 w-5 text-cobalt-500" />}
+          color="bg-cobalt-500"
         />
         <KPICard
           title="AI Analyses Running"

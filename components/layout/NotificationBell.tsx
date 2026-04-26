@@ -124,7 +124,7 @@ export function NotificationBell() {
                     key={n.id}
                     onClick={() => !n.readAt && markRead(n.id)}
                     className={`cursor-pointer border-b border-ink-50 px-4 py-3 transition-colors hover:bg-ink-50 ${
-                      !n.readAt ? 'bg-info-100/40' : ''
+                      !n.readAt ? 'bg-cobalt-100/40' : ''
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -132,7 +132,7 @@ export function NotificationBell() {
                         {n.title}
                       </p>
                       {!n.readAt && (
-                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-info-600" />
+                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-cobalt-600" />
                       )}
                     </div>
                     {n.body && (

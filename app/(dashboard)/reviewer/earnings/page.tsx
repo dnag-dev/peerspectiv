@@ -50,15 +50,15 @@ function formatMinutes(m: number | null): string {
 
 const STATUS_STYLE: Record<string, string> = {
   assigned: "bg-ink-100 text-ink-800",
-  in_progress: "bg-warning-100 text-warning-700",
-  completed: "bg-mint-100 text-mint-700",
+  in_progress: "bg-amber-100 text-amber-700",
+  completed: "bg-mint-100 text-cobalt-700",
   past_due: "bg-critical-100 text-critical-700",
 };
 
 const PAYOUT_STYLE: Record<string, string> = {
-  pending: "bg-warning-100 text-warning-700",
-  approved: "bg-info-100 text-info-600",
-  paid: "bg-mint-100 text-mint-700",
+  pending: "bg-amber-100 text-amber-700",
+  approved: "bg-cobalt-100 text-cobalt-600",
+  paid: "bg-mint-100 text-cobalt-700",
 };
 
 export default async function ReviewerEarningsPage() {
@@ -172,7 +172,7 @@ export default async function ReviewerEarningsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-warning-700">{formatMoney(earnedInProgress)}</p>
+            <p className="text-2xl font-bold text-amber-700">{formatMoney(earnedInProgress)}</p>
             <p className="text-xs text-muted-foreground">Accruing as time is logged</p>
           </CardContent>
         </Card>
@@ -194,11 +194,11 @@ export default async function ReviewerEarningsPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-              <DollarSign className="h-4 w-4 text-mint-600" /> Paid to date
+              <DollarSign className="h-4 w-4 text-cobalt-600" /> Paid to date
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-mint-700">{formatMoney(paid)}</p>
+            <p className="text-2xl font-bold text-cobalt-700">{formatMoney(paid)}</p>
             <p className="text-xs text-muted-foreground">Settled payouts</p>
           </CardContent>
         </Card>

@@ -26,7 +26,7 @@ function StarRating({
             <Star
               className={`h-7 w-7 ${
                 star <= value
-                  ? 'fill-warning-600 text-warning-600'
+                  ? 'fill-amber-600 text-amber-600'
                   : 'text-white/20'
               }`}
             />
@@ -74,9 +74,9 @@ export default function FeedbackPage() {
   if (submitted) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="rounded-xl p-8 text-center" style={{ backgroundColor: '#1A3050' }}>
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-mint-500/20">
-            <Star className="h-8 w-8 fill-mint-400 text-mint-400" />
+        <div className="rounded-xl p-8 text-center" style={{ backgroundColor: '#1E3A8A' }}>
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cobalt-500/20">
+            <Star className="h-8 w-8 fill-cobalt-500 text-cobalt-500" />
           </div>
           <h2 className="text-xl font-semibold text-white">Thank you!</h2>
           <p className="mt-2 text-sm text-ink-400">
@@ -99,7 +99,7 @@ export default function FeedbackPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div
           className="space-y-6 rounded-xl p-6"
-          style={{ backgroundColor: '#1A3050' }}
+          style={{ backgroundColor: '#1E3A8A' }}
         >
           <StarRating
             label="How satisfied are you with our turnaround time?"
@@ -125,7 +125,7 @@ export default function FeedbackPage() {
 
         <div
           className="space-y-4 rounded-xl p-6"
-          style={{ backgroundColor: '#1A3050' }}
+          style={{ backgroundColor: '#1E3A8A' }}
         >
           <div>
             <p className="text-sm font-medium text-ink-200">
@@ -137,7 +137,7 @@ export default function FeedbackPage() {
                 onClick={() => setWouldRecommend('true')}
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition-colors ${
                   wouldRecommend === 'true'
-                    ? 'bg-[#2E6FE8] text-white'
+                    ? 'bg-[#2563EB] text-white'
                     : 'bg-white/10 text-ink-300 hover:bg-white/20'
                 }`}
               >
@@ -148,7 +148,7 @@ export default function FeedbackPage() {
                 onClick={() => setWouldRecommend('false')}
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition-colors ${
                   wouldRecommend === 'false'
-                    ? 'bg-[#2E6FE8] text-white'
+                    ? 'bg-[#2563EB] text-white'
                     : 'bg-white/10 text-ink-300 hover:bg-white/20'
                 }`}
               >
@@ -169,7 +169,7 @@ export default function FeedbackPage() {
               rows={4}
               value={openFeedback}
               onChange={(e) => setOpenFeedback(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-ink-500 focus:border-[#2E6FE8] focus:outline-none focus:ring-1 focus:ring-[#2E6FE8]"
+              className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-ink-500 focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
               placeholder="Share your thoughts..."
             />
           </div>
@@ -179,7 +179,7 @@ export default function FeedbackPage() {
           type="submit"
           disabled={submitting}
           className="w-full rounded-lg py-3 text-sm font-semibold text-white transition-colors disabled:opacity-50"
-          style={{ backgroundColor: '#2E6FE8' }}
+          style={{ backgroundColor: '#2563EB' }}
         >
           {submitting ? 'Submitting...' : 'Submit Feedback'}
         </button>

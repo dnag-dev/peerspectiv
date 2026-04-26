@@ -243,7 +243,7 @@ export default async function CaseDetailPage({
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-mint-50">
-              <Stethoscope className="h-8 w-8 text-mint-400" />
+              <Stethoscope className="h-8 w-8 text-cobalt-500" />
             </div>
             <h3 className="text-lg font-medium">No AI Analysis Yet</h3>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
@@ -267,7 +267,7 @@ export default async function CaseDetailPage({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Shield className="h-5 w-5 text-mint-600" />
+              <Shield className="h-5 w-5 text-cobalt-600" />
               Final Review Result
               <Badge variant="success">Completed</Badge>
             </CardTitle>
@@ -365,7 +365,7 @@ export default async function CaseDetailPage({
                 <h4 className="mb-2 text-sm font-medium">
                   Final Narrative
                 </h4>
-                <div className="rounded-md border-l-4 border-mint-200 bg-mint-50 p-4 dark:bg-mint-700/20">
+                <div className="rounded-md border-l-4 border-mint-200 bg-mint-50 p-4 dark:bg-cobalt-700/20">
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">
                     {reviewCase.review_result.narrative_final}
                   </p>

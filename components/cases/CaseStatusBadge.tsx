@@ -11,19 +11,19 @@ const caseStatusConfig: Record<
   },
   pending_approval: {
     label: "Pending Approval",
-    className: "bg-warning-100 text-warning-700 animate-pulse",
+    className: "bg-amber-100 text-amber-700 animate-pulse",
   },
   assigned: {
     label: "Assigned",
-    className: "bg-info-100 text-info-600",
+    className: "bg-cobalt-100 text-cobalt-600",
   },
   in_progress: {
     label: "In Progress",
-    className: "bg-mint-100 text-mint-700",
+    className: "bg-mint-100 text-cobalt-700",
   },
   completed: {
     label: "Completed",
-    className: "bg-mint-100 text-mint-700",
+    className: "bg-mint-100 text-cobalt-700",
   },
   past_due: {
     label: "Past Due",
@@ -41,11 +41,11 @@ const aiStatusConfig: Record<
   },
   processing: {
     label: "Processing",
-    className: "bg-mint-100 text-mint-700 animate-pulse",
+    className: "bg-mint-100 text-cobalt-700 animate-pulse",
   },
   complete: {
     label: "Complete",
-    className: "bg-mint-100 text-mint-700",
+    className: "bg-mint-100 text-cobalt-700",
   },
   failed: {
     label: "Failed",

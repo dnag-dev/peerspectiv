@@ -135,7 +135,7 @@ export default function ClientWelcomePage() {
               style={{
                 fontSize: 14,
                 letterSpacing: 3,
-                color: '#2E6FE8',
+                color: '#2563EB',
                 fontWeight: 600,
                 marginBottom: 8,
               }}
@@ -292,7 +292,7 @@ function ProgressDots({ current, total }: { current: number; total: number }) {
               flex: 1,
               height: 4,
               borderRadius: 2,
-              background: active || done ? '#2E6FE8' : 'rgba(255,255,255,0.08)',
+              background: active || done ? '#2563EB' : 'rgba(255,255,255,0.08)',
               transition: 'background 180ms ease',
             }}
           />
@@ -330,7 +330,7 @@ function Field(props: {
         onChange={(e) => props.onChange(e.target.value)}
         style={{
           width: '100%',
-          background: '#0B1829',
+          background: '#172554',
           border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: 8,
           color: '#F8FAFC',
@@ -353,7 +353,7 @@ function PrimaryButton(props: {
       onClick={props.onClick}
       disabled={props.disabled}
       style={{
-        background: '#2E6FE8',
+        background: '#2563EB',
         color: 'white',
         padding: '12px 24px',
         borderRadius: 8,
@@ -407,7 +407,7 @@ function TimelineItem(props: { num: string; title: string; body: string }) {
           width: 32,
           height: 32,
           borderRadius: '50%',
-          background: '#2E6FE8',
+          background: '#2563EB',
           color: 'white',
           display: 'grid',
           placeItems: 'center',
@@ -434,13 +434,13 @@ const shellStyle: React.CSSProperties = {
   padding: '48px 24px',
   display: 'flex',
   justifyContent: 'center',
-  background: '#0B1829',
+  background: '#172554',
 };
 
 const cardStyle: React.CSSProperties = {
   width: '100%',
   maxWidth: 640,
-  background: '#1A3050',
+  background: '#1E3A8A',
   border: '1px solid rgba(255,255,255,0.06)',
   borderRadius: 16,
   padding: 40,

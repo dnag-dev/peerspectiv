@@ -79,13 +79,13 @@ export function ExportGrid({
         <div
           key={r.key}
           className="rounded-lg p-5 flex flex-col"
-          style={{ backgroundColor: "#1A3050" }}
+          style={{ backgroundColor: "#1E3A8A" }}
         >
           <div className="flex items-center gap-3 mb-3">
             {r.icon === "csv" ? (
               <FileSpreadsheet className="h-8 w-8" style={{ color: "#22C55E" }} />
             ) : (
-              <FileText className="h-8 w-8" style={{ color: "#2E6FE8" }} />
+              <FileText className="h-8 w-8" style={{ color: "#2563EB" }} />
             )}
             <h3 className="text-sm font-semibold text-white flex-1">{r.title}</h3>
           </div>
@@ -94,7 +94,7 @@ export function ExportGrid({
             onClick={() => handleDownload(r.key, r.title)}
             disabled={busy === r.key}
             className="mt-4 inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-            style={{ backgroundColor: "#2E6FE8" }}
+            style={{ backgroundColor: "#2563EB" }}
           >
             {busy === r.key ? (
               <>

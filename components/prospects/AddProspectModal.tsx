@@ -176,7 +176,7 @@ export function AddProspectModal() {
       }}
     >
       <DialogTrigger asChild>
-        <Button data-testid="add-prospect" className="bg-[#2E6FE8] text-white hover:bg-[#2558bb]">
+        <Button data-testid="add-prospect" className="bg-[#2563EB] text-white hover:bg-[#2558bb]">
           <Plus className="mr-2 h-4 w-4" />
           Add Prospect
         </Button>
@@ -308,13 +308,13 @@ export function AddProspectModal() {
               {SPECIALTIES.map((s) => (
                 <label
                   key={s}
-                  className="flex items-center gap-2 rounded-md border border-ink-700 bg-[#0B1829] px-2 py-1.5 text-xs text-ink-200"
+                  className="flex items-center gap-2 rounded-md border border-ink-700 bg-[#172554] px-2 py-1.5 text-xs text-ink-200"
                 >
                   <input
                     type="checkbox"
                     checked={specialties.includes(s)}
                     onChange={() => toggleSpecialty(s)}
-                    className="h-4 w-4 accent-[#2E6FE8]"
+                    className="h-4 w-4 accent-[#2563EB]"
                   />
                   {s}
                 </label>
@@ -369,7 +369,7 @@ export function AddProspectModal() {
                     <Button
                       type="button"
                       size="sm"
-                      className="bg-[#F59E0B] text-[#0B1829] hover:bg-[#d98806]"
+                      className="bg-[#F59E0B] text-[#172554] hover:bg-[#d98806]"
                       onClick={() => submit(true)}
                       disabled={loading}
                     >
@@ -392,7 +392,7 @@ export function AddProspectModal() {
             </Button>
             <Button
               type="submit"
-              className="bg-[#2E6FE8] text-white hover:bg-[#2558bb]"
+              className="bg-[#2563EB] text-white hover:bg-[#2558bb]"
               disabled={loading}
             >
               {loading ? 'Creating…' : 'Create Prospect'}

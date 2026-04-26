@@ -49,7 +49,7 @@ export default async function InProgressPage() {
             <div
               key={r.id}
               className="rounded-lg p-4 border-l-[3px]"
-              style={{ backgroundColor: "#1A3050", borderLeftColor: "#F59E0B" }}
+              style={{ backgroundColor: "#1E3A8A", borderLeftColor: "#F59E0B" }}
             >
               <div className="text-xs uppercase tracking-wider text-ink-500">
                 {r.status}

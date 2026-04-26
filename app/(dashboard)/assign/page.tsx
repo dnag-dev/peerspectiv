@@ -164,7 +164,7 @@ export default async function AssignPage() {
             </p>
             <Link
               href="/batches"
-              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-info-600 hover:underline"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-cobalt-600 hover:underline"
             >
               <Layers className="h-4 w-4" />
               Go to Batches

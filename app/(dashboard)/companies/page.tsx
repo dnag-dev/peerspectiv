@@ -118,7 +118,7 @@ export default async function CompaniesPage() {
                     <TableCell className="font-medium">
                       <Link
                         href={`/companies/${company.id}`}
-                        className="text-info-600 hover:underline"
+                        className="text-cobalt-600 hover:underline"
                       >
                         {company.name}
                       </Link>

@@ -88,7 +88,7 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
   return (
     <Card
       data-testid="prospect-card"
-      className={`bg-[#0B1829] text-white shadow-md transition hover:shadow-lg ${
+      className={`bg-[#172554] text-white shadow-md transition hover:shadow-lg ${
         overdueContract ? 'border border-[#F59E0B]' : 'border border-ink-800'
       }`}
     >
@@ -123,7 +123,7 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
           {company.status === 'prospect' && (
             <Button
               size="sm"
-              className="w-full bg-[#2E6FE8] text-white hover:bg-[#2558bb]"
+              className="w-full bg-[#2563EB] text-white hover:bg-[#2558bb]"
               onClick={handleGenerateContract}
               disabled={loading}
             >
@@ -147,7 +147,7 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
           {company.status === 'contract_signed' && (
             <Button
               size="sm"
-              className="w-full bg-[#22C55E] text-[#0B1829] hover:bg-[#16a34a]"
+              className="w-full bg-[#22C55E] text-[#172554] hover:bg-[#16a34a]"
               onClick={handleActivate}
               disabled={loading}
             >
@@ -162,7 +162,7 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
           {company.status === 'active' && (
             <Link
               href={`/companies/${company.id}`}
-              className="inline-flex w-full items-center justify-center rounded-md border border-mint-500 px-2 py-1.5 text-xs font-medium text-mint-400 hover:bg-mint-500/10"
+              className="inline-flex w-full items-center justify-center rounded-md border border-cobalt-500 px-2 py-1.5 text-xs font-medium text-cobalt-500 hover:bg-cobalt-500/10"
             >
               <ExternalLink className="mr-2 h-3 w-3" />
               View

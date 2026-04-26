@@ -13,7 +13,7 @@ const BORDER_COLORS: Record<Insight["type"], string> = {
   positive: "#22C55E",
   urgent: "#EF4444",
   warning: "#F59E0B",
-  info: "#2E6FE8",
+  info: "#2563EB",
 };
 
 export function QualityInsights({
@@ -61,7 +61,7 @@ export function QualityInsights({
           <div
             key={i}
             className="rounded-lg p-5 animate-pulse"
-            style={{ backgroundColor: "#1A3050" }}
+            style={{ backgroundColor: "#1E3A8A" }}
           >
             <div className="h-4 w-1/2 rounded mb-3" style={{ backgroundColor: "#2A3F5F" }} />
             <div className="h-3 w-full rounded mb-2" style={{ backgroundColor: "#2A3F5F" }} />
@@ -76,7 +76,7 @@ export function QualityInsights({
     return (
       <div
         className="rounded-lg p-5 border-l-[4px]"
-        style={{ backgroundColor: "#1A3050", borderLeftColor: "#EF4444" }}
+        style={{ backgroundColor: "#1E3A8A", borderLeftColor: "#EF4444" }}
       >
         <div className="text-sm font-semibold text-white">Failed to load insights</div>
         <div className="text-xs text-ink-400 mt-1">{error}</div>
@@ -86,7 +86,7 @@ export function QualityInsights({
 
   if (!insights || insights.length === 0) {
     return (
-      <div className="rounded-lg p-5" style={{ backgroundColor: "#1A3050" }}>
+      <div className="rounded-lg p-5" style={{ backgroundColor: "#1E3A8A" }}>
         <p className="text-sm text-ink-400">
           No insights available for {companyName} yet. Complete reviews to generate insights.
         </p>
@@ -102,8 +102,8 @@ export function QualityInsights({
           data-testid="ai-insight"
           className="rounded-lg p-5 border-l-[4px]"
           style={{
-            backgroundColor: "#1A3050",
-            borderLeftColor: BORDER_COLORS[insight.type] ?? "#2E6FE8",
+            backgroundColor: "#1E3A8A",
+            borderLeftColor: BORDER_COLORS[insight.type] ?? "#2563EB",
           }}
         >
           <div className="flex items-center gap-2 mb-2">

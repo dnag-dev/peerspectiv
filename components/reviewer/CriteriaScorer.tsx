@@ -89,7 +89,7 @@ export function CriteriaScorer({
       className={cn(
         "rounded-lg border bg-white p-4 transition-colors",
         isScored && mode === "agreed" && "border-mint-200 bg-mint-50/30",
-        isScored && mode === "override" && "border-warning-600 bg-warning-100/30",
+        isScored && mode === "override" && "border-amber-600 bg-amber-100/30",
         !isScored && "border-ink-200"
       )}
     >
@@ -124,7 +124,7 @@ export function CriteriaScorer({
               size="sm"
               variant="outline"
               onClick={handleAgree}
-              className="border-mint-200 text-mint-700 hover:bg-mint-50 hover:text-mint-700"
+              className="border-mint-200 text-cobalt-700 hover:bg-mint-50 hover:text-cobalt-700"
             >
               <svg
                 className="mr-1 h-3.5 w-3.5"
@@ -145,7 +145,7 @@ export function CriteriaScorer({
               size="sm"
               variant="outline"
               onClick={handleOverrideToggle}
-              className="border-warning-600 text-warning-700 hover:bg-warning-100 hover:text-warning-700"
+              className="border-amber-600 text-amber-700 hover:bg-amber-100 hover:text-amber-700"
             >
               <svg
                 className="mr-1 h-3.5 w-3.5"
@@ -179,7 +179,7 @@ export function CriteriaScorer({
 
       {/* Override Form */}
       {mode === "override" && !isScored && (
-        <div className="mt-3 flex flex-col gap-2 rounded-md border border-warning-600 bg-warning-100/50 p-3 sm:flex-row sm:items-end">
+        <div className="mt-3 flex flex-col gap-2 rounded-md border border-amber-600 bg-amber-100/50 p-3 sm:flex-row sm:items-end">
           <div className="w-full sm:w-24">
             <label className="mb-1 block text-xs font-medium text-ink-700">
               Your Score

@@ -27,7 +27,7 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
   const router = useRouter();
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div className="rounded-lg p-6" style={{ backgroundColor: "#1A3050" }}>
+      <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-white">
             Monthly Compliance (last 6 months)
@@ -51,7 +51,7 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
               <Tooltip
                 cursor={{ fill: "#ffffff10" }}
                 contentStyle={{
-                  backgroundColor: "#0B1829",
+                  backgroundColor: "#172554",
                   border: "1px solid #2A3F5F",
                   color: "white",
                 }}
@@ -66,7 +66,7 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
         </div>
       </div>
 
-      <div className="rounded-lg p-6" style={{ backgroundColor: "#1A3050" }}>
+      <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
         <h3 className="text-sm font-semibold text-white mb-3">
           Top 5 Most Missed Criteria
         </h3>
@@ -91,11 +91,11 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
                       <span className="text-ink-300 truncate pr-2 group-hover:text-white group-hover:underline">
                         {i + 1}. {t.criterion}
                       </span>
-                      <span className="text-warning-600">{t.count}</span>
+                      <span className="text-amber-600">{t.count}</span>
                     </div>
                     <div
                       className="h-2 rounded-full overflow-hidden"
-                      style={{ backgroundColor: "#0B1829" }}
+                      style={{ backgroundColor: "#172554" }}
                     >
                       <div
                         className="h-full transition-opacity group-hover:opacity-80"

@@ -17,7 +17,7 @@ export function ProviderCharts({
 }) {
   if (last6.length === 0) return null;
   return (
-    <div className="rounded-lg p-6" style={{ backgroundColor: "#1A3050" }}>
+    <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
       <h3 className="text-sm font-semibold text-white mb-3">Score Trend</h3>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
@@ -27,7 +27,7 @@ export function ProviderCharts({
             <YAxis domain={[0, 100]} stroke="#94A3B8" fontSize={11} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#0B1829",
+                backgroundColor: "#172554",
                 border: "1px solid #2A3F5F",
                 color: "white",
               }}
@@ -35,9 +35,9 @@ export function ProviderCharts({
             <Line
               type="monotone"
               dataKey="score"
-              stroke="#2E6FE8"
+              stroke="#2563EB"
               strokeWidth={2}
-              dot={{ fill: "#2E6FE8" }}
+              dot={{ fill: "#2563EB" }}
             />
           </LineChart>
         </ResponsiveContainer>

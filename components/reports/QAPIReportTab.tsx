@@ -221,7 +221,7 @@ export function QAPIReportTab({ companies }: Props) {
         <Card>
           <CardContent className="flex items-center justify-center py-16">
             <div className="text-center">
-              <Loader2 className="mx-auto h-8 w-8 animate-spin text-mint-600" />
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-cobalt-600" />
               <p className="mt-3 text-sm text-muted-foreground">
                 AI is generating your QAPI report. This may take a moment...
               </p>

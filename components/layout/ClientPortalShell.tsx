@@ -29,11 +29,11 @@ export function ClientPortalShell({
 
   return (
     <RoleContext.Provider value={{ role, setRole }}>
-      <div className="flex h-screen overflow-hidden" style={{ backgroundColor: "#0B1829" }}>
+      <div className="flex h-screen overflow-hidden" style={{ backgroundColor: "#172554" }}>
         <ClientSidebar companyName={companyName} role={role} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <TopBar companyName={companyName} />
-          <main className="flex-1 overflow-y-auto p-6" style={{ backgroundColor: "#0B1829" }}>
+          <main className="flex-1 overflow-y-auto p-6" style={{ backgroundColor: "#172554" }}>
             {children}
           </main>
         </div>
@@ -46,7 +46,7 @@ function TopBar({ companyName }: { companyName: string }) {
   return (
     <header
       className="flex h-16 flex-shrink-0 items-center justify-between border-b px-6 lg:px-6"
-      style={{ backgroundColor: "#0F2040", borderColor: "#1A3050" }}
+      style={{ backgroundColor: "#0F2040", borderColor: "#1E3A8A" }}
     >
       <h1 className="pl-10 lg:pl-0 text-base font-semibold text-white">
         {companyName} — Client Portal

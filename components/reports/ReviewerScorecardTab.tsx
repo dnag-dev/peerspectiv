@@ -52,7 +52,7 @@ type SortKey = keyof Pick<
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
 
-const BAR_COLOR = "#1E4DB7";
+const BAR_COLOR = "#1D4ED8";
 const BAR_COLOR_LOW = "#EF4444";
 
 /* ------------------------------------------------------------------ */
@@ -129,7 +129,7 @@ export function ReviewerScorecardTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-mint-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-cobalt-600" />
       </div>
     );
   }

@@ -95,14 +95,14 @@ export function ReviewerPickerModal({
                   disabled={isUnavailable || isPicking || isCurrent}
                   className={`flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${
                     isCurrent
-                      ? "border-info-600 bg-info-100"
+                      ? "border-cobalt-600 bg-cobalt-100"
                       : isUnavailable
                         ? "cursor-not-allowed border-ink-200 bg-ink-50 opacity-50"
-                        : "border-ink-200 hover:border-info-600 hover:bg-info-100/50"
+                        : "border-ink-200 hover:border-cobalt-600 hover:bg-cobalt-100/50"
                   }`}
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-info-100">
-                    <User className="h-4 w-4 text-mint-600" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cobalt-100">
+                    <User className="h-4 w-4 text-cobalt-600" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -110,12 +110,12 @@ export function ReviewerPickerModal({
                         {r.full_name}
                       </span>
                       {isCurrent && (
-                        <span className="rounded bg-info-100 px-1.5 py-0.5 text-[10px] font-medium text-info-600">
+                        <span className="rounded bg-cobalt-100 px-1.5 py-0.5 text-[10px] font-medium text-cobalt-600">
                           CURRENT
                         </span>
                       )}
                       {isUnavailable && (
-                        <span className="rounded bg-warning-100 px-1.5 py-0.5 text-[10px] font-medium text-warning-700">
+                        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
                           UNAVAILABLE
                         </span>
                       )}
@@ -132,7 +132,7 @@ export function ReviewerPickerModal({
                     </div>
                   </div>
                   {isPicking ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-mint-600" />
+                    <Loader2 className="h-4 w-4 animate-spin text-cobalt-600" />
                   ) : (
                     !isUnavailable &&
                     !isCurrent && (
