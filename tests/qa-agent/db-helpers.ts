@@ -1,8 +1,7 @@
 /**
- * READ-ONLY Drizzle helpers. Loads .env.local for DATABASE_URL.
+ * READ-ONLY Drizzle helpers. Loads .env.local for DATABASE_URL via dotenv.
  * Wrapped so a missing DB doesn't crash the harness — callers handle null.
  */
-import fs from 'fs';
 import path from 'path';
 import { REPO_ROOT } from './config';
 
@@ -10,29 +9,41 @@ let loaded = false;
 function loadEnv() {
   if (loaded) return;
   loaded = true;
-  const envPath = path.join(REPO_ROOT, '.env.local');
-  if (!fs.existsSync(envPath)) return;
-  const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
-  for (const line of lines) {
-    const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
-    if (!m) continue;
-    let v = m[2];
-    if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1, -1);
-    if (v.startsWith("'") && v.endsWith("'")) v = v.slice(1, -1);
-    if (!process.env[m[1]]) process.env[m[1]] = v;
+  // dotenv is already a devDep
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const dotenv = require('dotenv');
+  dotenv.config({ path: path.join(REPO_ROOT, '.env.local') });
+}
+
+let _client: any = null;
+async function getClient() {
+  loadEnv();
+  if (!process.env.DATABASE_URL) return null;
+  if (_client) return _client;
+  try {
+    const mod: any = await import('@neondatabase/serverless');
+    _client = mod.neon(process.env.DATABASE_URL);
+    return _client;
+  } catch {
+    return null;
   }
 }
 
 export async function sql<T = any>(query: string, params: any[] = []): Promise<T[] | null> {
-  loadEnv();
-  if (!process.env.DATABASE_URL) return null;
+  const client = await getClient();
+  if (!client) return null;
   try {
-    // Lazy import; @neondatabase/serverless is in deps
-    const mod: any = await import('@neondatabase/serverless');
-    const client = mod.neon(process.env.DATABASE_URL);
-    const rows = await client(query, params);
-    return rows as T[];
+    // Modern @neondatabase/serverless: tagged-template is the default callable;
+    // .query(text, params) is the parameterized escape hatch.
+    const result = params.length === 0
+      ? await client.query(query)
+      : await client.query(query, params);
+    // .query() returns { rows, rowCount, ... } similar to pg
+    if (Array.isArray(result)) return result as T[];
+    if (result && Array.isArray(result.rows)) return result.rows as T[];
+    return [];
   } catch (e) {
+    if (process.env.QA_DEBUG) console.error('[qa.sql]', e);
     return null;
   }
 }

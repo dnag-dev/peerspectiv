@@ -6,7 +6,16 @@ import type { BrowserContext, Page } from '@playwright/test';
 import { BASE_URL, PERSONAS, Role } from './config';
 
 export async function loginAs(context: BrowserContext, role: Role): Promise<void> {
-  // Use the request fixture against the live server to set the cookie.
+  // Bypass site_gate first — middleware redirects /api/* to /gate without it.
+  const url = new URL(BASE_URL);
+  await context.addCookies([
+    {
+      name: 'site_gate',
+      value: '1',
+      domain: url.hostname,
+      path: '/',
+    },
+  ]);
   const res = await context.request.post(`${BASE_URL}/api/demo/login`, {
     data: { role },
     headers: { 'content-type': 'application/json' },
