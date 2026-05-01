@@ -124,3 +124,96 @@ Format: Professional medical report language. No bullet points - full paragraphs
 
   return await callClaude(systemPrompt, userPrompt, 4096);
 }
+
+/**
+ * Auto-draft a Corrective Action Plan (CAP) from a case's chart summary +
+ * deficiencies. Returns the structured fields used to populate a
+ * `corrective_actions` row. Section J4.
+ */
+export async function generateCorrectiveActionPlan(
+  caseId: string,
+  deficiencies: Array<{ type?: string; description?: string; severity?: string }> | unknown
+): Promise<{ title: string; description: string; identified_issue: string }> {
+  // Pull a small chart context: provider name + AI summary, if available.
+  type CaseRow = {
+    provider_name: string | null;
+    ai_summary: string | null;
+    overall_score: number | null;
+  };
+  const rows = await db.execute<CaseRow>(sql`
+    SELECT
+      COALESCE(p.first_name || ' ' || p.last_name, '') AS provider_name,
+      aa.summary AS ai_summary,
+      rr.overall_score
+    FROM review_cases rc
+    LEFT JOIN providers p ON p.id = rc.provider_id
+    LEFT JOIN ai_analyses aa ON aa.case_id = rc.id
+    LEFT JOIN review_results rr ON rr.case_id = rc.id
+    WHERE rc.id = ${caseId}
+    LIMIT 1
+  `);
+  const ctxRow = (((rows as any).rows ?? rows) as CaseRow[])[0];
+
+  const defList = Array.isArray(deficiencies)
+    ? (deficiencies as any[])
+        .filter((d) => d && typeof d === 'object')
+        .map((d, i) => `${i + 1}. [${d.severity ?? 'unknown'}] ${d.type ?? 'Deficiency'}: ${d.description ?? ''}`)
+        .join('\n')
+    : 'None provided';
+
+  const systemPrompt = `You are drafting a Corrective Action Plan (CAP) for an FQHC peer-review finding.
+
+Return STRICT JSON with these keys ONLY:
+{
+  "title": "Short imperative title (under 80 chars)",
+  "identified_issue": "1-2 sentence summary of the root issue",
+  "description": "Concrete corrective steps and remediation timeline (3-6 sentences)"
+}
+
+No markdown, no surrounding prose. Just JSON.`;
+
+  const userPrompt = `Case ID: ${caseId}
+Provider: ${ctxRow?.provider_name || 'Unknown'}
+Overall score: ${ctxRow?.overall_score ?? 'n/a'}
+Chart AI summary: ${ctxRow?.ai_summary || 'No summary available'}
+
+Deficiencies:
+${defList}
+
+Draft the CAP now.`;
+
+  let raw: string;
+  try {
+    raw = await callClaude(systemPrompt, userPrompt, 1024);
+  } catch (err) {
+    console.error('[generateCorrectiveActionPlan] AI call failed:', err);
+    return {
+      title: 'Auto-generated corrective action',
+      identified_issue: 'Review identified deficiencies requiring remediation.',
+      description:
+        'Please review the case findings and document corrective steps with assigned owner and target date.',
+    };
+  }
+
+  // Strip code fences if Claude wrapped JSON in ```json ... ```
+  const cleaned = raw
+    .trim()
+    .replace(/^```(?:json)?/i, '')
+    .replace(/```$/i, '')
+    .trim();
+
+  try {
+    const parsed = JSON.parse(cleaned);
+    return {
+      title: String(parsed.title || 'Auto-generated corrective action').slice(0, 200),
+      identified_issue: String(parsed.identified_issue || ''),
+      description: String(parsed.description || ''),
+    };
+  } catch {
+    return {
+      title: 'Auto-generated corrective action',
+      identified_issue: 'Review identified deficiencies requiring remediation.',
+      description: cleaned.slice(0, 1500),
+    };
+  }
+}

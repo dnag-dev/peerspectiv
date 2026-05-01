@@ -164,6 +164,74 @@ function escapeHtml(s: string): string {
     .replace(/'/g, '&#39;');
 }
 
+/**
+ * Notify a client that their review cycle is complete and reports are ready.
+ * Falls back to console.log when RESEND_API_KEY is unset.
+ *
+ * @param company  – minimum: id, name, contact_email
+ * @param urls     – list of report URLs (signed download links or per-report URLs)
+ * @param mode     – 'email' = attach links directly, 'portal' = link to /portal/export, 'both' = both
+ */
+export async function sendCycleCompletionEmail(
+  company: { id: string; name: string; contact_email: string | null },
+  urls: string[],
+  mode: 'email' | 'portal' | 'both'
+): Promise<{ delivery: 'email' | 'log' | 'skipped' }> {
+  if (!company.contact_email) {
+    console.log('[cycle-completion] no contact_email for company:', company.id);
+    return { delivery: 'skipped' };
+  }
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.ai';
+  const portalUrl = `${appUrl}/portal/export`;
+
+  let body = `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+    <h2 style="color:#0F2044;">Your review reports are ready</h2>
+    <p>Hello ${escapeHtml(company.name)} team,</p>
+    <p>Your latest peer review cycle is complete. Reports are ready below.</p>`;
+
+  if (mode === 'email' || mode === 'both') {
+    if (urls.length > 0) {
+      body += `<p><strong>Direct download links</strong> (expire in 14 days):</p><ul>`;
+      for (const url of urls) {
+        body += `<li><a href="${url}">${escapeHtml(url)}</a></li>`;
+      }
+      body += `</ul>`;
+    }
+  }
+  if (mode === 'portal' || mode === 'both') {
+    body += `<p>You can also access all reports anytime in the portal:</p>
+      <a href="${portalUrl}" style="background:#1E4DB7;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:16px;">
+        Open Reports Portal
+      </a>`;
+  }
+  body += `<p style="color:#888;font-size:12px;margin-top:32px;">Peerspectiv &middot; FQHC Peer Reviews</p></div>`;
+
+  const subject = `Your peer review reports are ready — ${company.name}`;
+
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[cycle-completion] (no RESEND_API_KEY — printing to log)', {
+      to: company.contact_email,
+      subject,
+      mode,
+      urlCount: urls.length,
+    });
+    return { delivery: 'log' };
+  }
+
+  try {
+    await getResend().emails.send({
+      from: 'Peerspectiv <reports@peerspectiv.com>',
+      to: company.contact_email,
+      subject,
+      html: body,
+    });
+    return { delivery: 'email' };
+  } catch (err) {
+    console.log('[cycle-completion] send failed:', err);
+    return { delivery: 'log' };
+  }
+}
+
 export async function sendReviewerAssignment(params: {
   reviewerEmail: string;
   reviewerName: string;

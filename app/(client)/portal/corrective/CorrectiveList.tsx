@@ -1,6 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const UPTODATE_BANNER_KEY = "uptodate_banner_dismissed_v1";
+
+function UpToDateBanner() {
+  const [dismissed, setDismissed] = useState<boolean>(true);
+
+  useEffect(() => {
+    try {
+      const v = window.localStorage.getItem(UPTODATE_BANNER_KEY);
+      setDismissed(v === "1");
+    } catch {
+      setDismissed(false);
+    }
+  }, []);
+
+  function dismiss() {
+    try {
+      window.localStorage.setItem(UPTODATE_BANNER_KEY, "1");
+    } catch {}
+    setDismissed(true);
+  }
+
+  if (dismissed) return null;
+
+  return (
+    <div className="flex items-start justify-between gap-3 rounded-lg border border-cobalt-500/40 bg-cobalt-500/10 px-4 py-3 text-sm text-cobalt-100">
+      <p className="flex-1 text-ink-100">
+        Want industry-standard guidelines? Talk to us about UpToDate
+        integration.
+      </p>
+      <button
+        type="button"
+        onClick={dismiss}
+        aria-label="Dismiss"
+        className="ml-2 shrink-0 rounded p-1 text-ink-300 hover:bg-white/10 hover:text-white"
+      >
+        ×
+      </button>
+    </div>
+  );
+}
 
 interface Action {
   id: string;
@@ -49,14 +90,18 @@ export function CorrectiveList({ actions }: { actions: Action[] }) {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-lg p-5" style={{ backgroundColor: "#1E3A8A" }}>
-        <p className="text-sm text-ink-400">No corrective actions.</p>
+      <div className="space-y-3">
+        <UpToDateBanner />
+        <div className="rounded-lg p-5" style={{ backgroundColor: "#1E3A8A" }}>
+          <p className="text-sm text-ink-400">No corrective actions.</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
+      <UpToDateBanner />
       {items.map((a) => (
         <div
           key={a.id}

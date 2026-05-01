@@ -29,6 +29,9 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
   const [itemizeInvoice, setItemizeInvoice] = useState<boolean>(
     Boolean(company.itemize_invoice)
   );
+  const [deliveryPreference, setDeliveryPreference] = useState<'email' | 'portal' | 'both'>(
+    (company.delivery_preference as 'email' | 'portal' | 'both' | null) ?? 'portal'
+  );
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -43,6 +46,7 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
       contact_phone: (formData.get("contact_phone") as string) || null,
       notes: (formData.get("notes") as string) || null,
       itemize_invoice: itemizeInvoice,
+      delivery_preference: deliveryPreference,
     };
 
     if (!payload.name.trim()) {
@@ -111,6 +115,24 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
             />
             Itemize invoices (show per-provider breakdown on PDF)
           </label>
+          <div className="space-y-2">
+            <Label htmlFor="edit-delivery_preference">Report Delivery Preference</Label>
+            <select
+              id="edit-delivery_preference"
+              value={deliveryPreference}
+              onChange={(e) =>
+                setDeliveryPreference(e.target.value as 'email' | 'portal' | 'both')
+              }
+              className="flex h-10 w-full rounded-md border border-ink-300 bg-white px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-cobalt-600"
+            >
+              <option value="portal">Portal only</option>
+              <option value="email">Email only</option>
+              <option value="both">Both portal &amp; email</option>
+            </select>
+            <p className="text-xs text-ink-500">
+              How to deliver completed cycle reports to this client.
+            </p>
+          </div>
           {error && <p className="text-sm text-critical-600">{error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>

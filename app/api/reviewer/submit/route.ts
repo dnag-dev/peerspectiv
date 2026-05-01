@@ -4,7 +4,8 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { scoreReviewerQuality } from '@/lib/ai/quality-scorer';
 import { auditLog } from '@/lib/utils/audit';
 import { db } from '@/lib/db';
-import { retentionSchedule, reviewResults } from '@/lib/db/schema';
+import { retentionSchedule, reviewResults, correctiveActions } from '@/lib/db/schema';
+import { generateCorrectiveActionPlan } from '@/lib/ai/report-generator';
 import type { CriterionScore, Deficiency, ReviewerChange } from '@/types';
 
 interface SubmitBody {
@@ -335,6 +336,38 @@ export async function POST(request: NextRequest) {
     scoreReviewerQuality(case_id).catch((err) => {
       console.error('[API] Quality scoring failed for case:', case_id, err);
     });
+
+    // Section J4 — auto-draft a Corrective Action Plan when the result hits
+    // the threshold (overall_score < 70 OR any deficiencies). Runs in the
+    // background; never blocks the submit response.
+    const shouldDraftCap =
+      (typeof overall_score === 'number' && overall_score < 70) ||
+      deficienciesArr.length > 0;
+    if (shouldDraftCap) {
+      (async () => {
+        try {
+          const cap = await generateCorrectiveActionPlan(case_id, deficienciesArr);
+          // Look up companyId + providerId from the case for the CAP row.
+          const { data: caseCtx } = await supabaseAdmin
+            .from('review_cases')
+            .select('company_id, provider_id')
+            .eq('id', case_id)
+            .single();
+          await db.insert(correctiveActions).values({
+            companyId: caseCtx?.company_id ?? null,
+            providerId: caseCtx?.provider_id ?? null,
+            title: cap.title,
+            description: cap.description,
+            identifiedIssue: cap.identified_issue,
+            assignedTo: null,
+            status: 'open',
+            sourceCaseId: case_id,
+          });
+        } catch (capErr) {
+          console.error('[API] CAP auto-draft failed for case:', case_id, capErr);
+        }
+      })();
+    }
 
     await auditLog({
       action: 'review_submitted',
