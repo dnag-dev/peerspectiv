@@ -6,11 +6,13 @@ export interface ProviderHighlightsData {
   companyName: string;
   rangeStart: string;
   rangeEnd: string;
+  generatedAt?: string;
   overallScore: number;
   providers: Array<{
     providerName: string;
     overallScore: number;
     reviews: Array<{ reviewType: string; count: number; score: number }>;
+    previousQuarters?: Array<{ label: string; score: number | null }>;
   }>;
 }
 
@@ -28,11 +30,14 @@ export function ProviderHighlightsPdf({ data }: { data: ProviderHighlightsData }
           <View>
             <Text style={styles.brand}>Peerspectiv</Text>
             <Text style={styles.eyebrow}>QUALITY REPORT</Text>
-            <Text style={styles.reportTitle}>Provider Score Report</Text>
-            <Text style={styles.reportSubtitle}>{data.companyName}</Text>
+            <Text style={[styles.reportTitle, { fontSize: 22 }]}>{data.companyName}</Text>
+            <Text style={styles.reportSubtitle}>Provider Score Report</Text>
             <Text style={styles.dateRange}>
-              {data.rangeStart} — {data.rangeEnd}
+              Period: {data.rangeStart} — {data.rangeEnd}
             </Text>
+            {data.generatedAt && (
+              <Text style={styles.dateRange}>Generated: {data.generatedAt}</Text>
+            )}
           </View>
           <View style={[styles.scoreCallout, { backgroundColor: overallTone.bg }]}>
             <Text style={styles.eyebrow}>OVERALL SCORE</Text>
@@ -67,11 +72,22 @@ export function ProviderHighlightsPdf({ data }: { data: ProviderHighlightsData }
               {p.reviews.map((r, j) => (
                 <View key={j} style={styles.reviewRow}>
                   <Text style={styles.reviewName}>
-                    {r.reviewType} {r.count > 1 ? `(${r.count})` : ''}
+                    {r.reviewType} ({r.count} review{r.count === 1 ? '' : 's'})
                   </Text>
                   <Text style={styles.reviewScore}>{fmtPct(r.score)}</Text>
                 </View>
               ))}
+              {p.previousQuarters && p.previousQuarters.length > 0 && (
+                <View style={[styles.reviewRow, { marginTop: 4 }]}>
+                  <Text style={[styles.reviewName, { fontSize: 9, color: colors.ink500 }]}>
+                    Trend:&nbsp;
+                    {p.previousQuarters
+                      .map((q) => `${q.label}: ${q.score == null ? '—' : fmtPct(q.score)}`)
+                      .join('  ·  ')}
+                    {`  ·  Current: ${fmtPct(p.overallScore)}`}
+                  </Text>
+                </View>
+              )}
             </View>
           );
         })}

@@ -11,6 +11,9 @@ export interface QualityCertificateData {
   signedDate: string;
   // Optional rendered signature image data URL (PNG/JPG); leave undefined to omit.
   signatureImageUrl?: string;
+  // Optional provider attestation list (added per HRSA section)
+  providers?: Array<{ name: string; score: number }>;
+  scoreThreshold?: number;
 }
 
 export function QualityCertificatePdf({ data }: { data: QualityCertificateData }) {
@@ -30,10 +33,30 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
 
         <Text style={[styles.certBody, { marginTop: 18 }]}>
           has successfully completed the independent peer-review process for the
-          assessment period <Text style={{ fontWeight: 700 }}>{data.period}</Text>,
-          {'\n'}in compliance with HRSA quality-improvement standards for Federally
-          Qualified Health Centers.
+          assessment period <Text style={{ fontWeight: 700 }}>{data.period}</Text>.
+          {'\n'}We attest that the providers listed below were peer-reviewed and
+          determined to be clinically competent in compliance with HRSA
+          quality-improvement standards for Federally Qualified Health Centers.
         </Text>
+
+        {data.providers && data.providers.length > 0 && (
+          <View style={{ marginTop: 14, alignSelf: 'center', maxWidth: '80%' }}>
+            <Text style={[styles.eyebrow, { textAlign: 'center', marginBottom: 4 }]}>
+              ATTESTED PROVIDERS
+              {data.scoreThreshold != null
+                ? ` (score ≥ ${Math.round(data.scoreThreshold)}%)`
+                : ''}
+            </Text>
+            {data.providers.map((p, i) => (
+              <Text
+                key={i}
+                style={{ fontSize: 10, color: colors.ink900, textAlign: 'center' }}
+              >
+                {p.name} — {Math.round(p.score)}%
+              </Text>
+            ))}
+          </View>
+        )}
 
         {data.hrsaRegistration ? (
           <View style={{ marginTop: 14, alignItems: 'center' }}>

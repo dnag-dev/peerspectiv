@@ -1,23 +1,60 @@
 import { db } from "@/lib/db";
-import { reviewResults, reviewCases } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { reviewResults, reviewCases, providers } from "@/lib/db/schema";
+import { eq, inArray, and } from "drizzle-orm";
 import { getDemoCompany } from "@/lib/portal/queries";
 import { TrendsCharts } from "./TrendsCharts";
 
 export const dynamic = "force-dynamic";
 
-export default async function TrendsPage() {
+interface PageProps {
+  searchParams?: { specialty?: string | string[] };
+}
+
+function quarterKeyFromDate(d: Date): string {
+  const q = Math.floor(d.getUTCMonth() / 3) + 1;
+  return `Q${q} ${d.getUTCFullYear()}`;
+}
+
+export default async function TrendsPage({ searchParams }: PageProps) {
   const company = await getDemoCompany();
+
+  // Specialty filter (multi-select via repeated query string)
+  const raw = searchParams?.specialty;
+  const selectedSpecialties = Array.isArray(raw)
+    ? raw
+    : raw
+    ? [raw]
+    : [];
+
+  // Pull all available specialties for the filter dropdown.
+  const allProviders = await db
+    .select({ specialty: providers.specialty })
+    .from(providers);
+  const specialtyOptions = Array.from(
+    new Set(
+      allProviders
+        .map((p) => (p.specialty ?? "").trim())
+        .filter((s) => s.length > 0)
+    )
+  ).sort();
+
+  const conditions = [eq(reviewCases.companyId, company.id)];
+  if (selectedSpecialties.length > 0) {
+    conditions.push(inArray(providers.specialty, selectedSpecialties));
+  }
 
   const rows = await db
     .select({
       score: reviewResults.overallScore,
       submittedAt: reviewResults.submittedAt,
       deficiencies: reviewResults.deficiencies,
+      criteriaScores: reviewResults.criteriaScores,
+      providerSpecialty: providers.specialty,
     })
     .from(reviewResults)
     .innerJoin(reviewCases, eq(reviewCases.id, reviewResults.caseId))
-    .where(eq(reviewCases.companyId, company.id));
+    .innerJoin(providers, eq(providers.id, reviewCases.providerId))
+    .where(and(...conditions));
 
   // Bucket by month — last 6 months
   const now = new Date();
@@ -48,43 +85,92 @@ export default async function TrendsPage() {
     count: m.scores.length,
   }));
 
-  // Top missed criteria — flatten {note, category, criterion, description} shapes
-  // into a human label; never leak JSON into the UI.
-  const defCount = new Map<string, number>();
-  const labelize = (item: any): string | null => {
-    if (!item) return null;
-    if (typeof item === "string") return item;
-    if (typeof item === "object") {
-      return (
-        item.criterion ??
-        item.note ??
-        item.description ??
-        item.label ??
-        item.name ??
-        null
-      );
+  // Build per-criterion yes/no tallies (from criteria_scores JSONB) and quarterly trend.
+  type Bucket = { yes: number; no: number; na: number; perQuarter: Map<string, { yes: number; no: number; na: number }> };
+  const byCriterion = new Map<string, Bucket>();
+
+  function tallyResponse(
+    criterion: string,
+    response: "yes" | "no" | "na",
+    quarterKey: string
+  ) {
+    let b = byCriterion.get(criterion);
+    if (!b) {
+      b = { yes: 0, no: 0, na: 0, perQuarter: new Map() };
+      byCriterion.set(criterion, b);
     }
-    return null;
-  };
+    b[response] += 1;
+    let q = b.perQuarter.get(quarterKey);
+    if (!q) {
+      q = { yes: 0, no: 0, na: 0 };
+      b.perQuarter.set(quarterKey, q);
+    }
+    q[response] += 1;
+  }
+
   for (const r of rows) {
-    const d = r.deficiencies as any;
-    if (Array.isArray(d)) {
-      for (const item of d) {
-        const key = labelize(item);
-        if (key) defCount.set(key, (defCount.get(key) ?? 0) + 1);
-      }
-    } else if (d && typeof d === "object") {
-      for (const [k, v] of Object.entries(d)) {
-        if (v === false || (v as any)?.met === false) {
-          defCount.set(k, (defCount.get(k) ?? 0) + 1);
+    const cs = r.criteriaScores as any;
+    if (!cs) continue;
+    const submitted = r.submittedAt ? new Date(r.submittedAt as any) : null;
+    if (!submitted) continue;
+    const qKey = quarterKeyFromDate(submitted);
+
+    if (Array.isArray(cs)) {
+      for (const item of cs) {
+        const criterion =
+          item?.criterion ?? item?.label ?? item?.name ?? null;
+        if (!criterion) continue;
+        // score 0..4 — treat 0 as "no", 4 as "yes", neutral as "na"
+        const score = item?.score;
+        const lbl = (item?.score_label ?? "").toString().toLowerCase();
+        let response: "yes" | "no" | "na";
+        if (lbl === "yes" || lbl === "met" || score === 4 || score === 3) {
+          response = "yes";
+        } else if (lbl === "no" || lbl === "not_met" || score === 0 || score === 1) {
+          response = "no";
+        } else {
+          response = "na";
         }
+        tallyResponse(String(criterion), response, qKey);
+      }
+    } else if (typeof cs === "object") {
+      for (const [criterion, value] of Object.entries(cs)) {
+        let response: "yes" | "no" | "na" = "na";
+        if (value === true || (value as any)?.met === true) response = "yes";
+        else if (value === false || (value as any)?.met === false) response = "no";
+        tallyResponse(criterion, response, qKey);
       }
     }
   }
-  const topMissed = Array.from(defCount.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([criterion, count]) => ({ criterion, count }));
+
+  const topMissed = Array.from(byCriterion.entries())
+    .map(([criterion, b]) => {
+      const total = b.yes + b.no + b.na;
+      const noPct = total > 0 ? Math.round((b.no / total) * 100) : 0;
+      const quarters = Array.from(b.perQuarter.entries())
+        .map(([qLabel, q]) => {
+          const t = q.yes + q.no + q.na;
+          return {
+            quarter: qLabel,
+            noPct: t > 0 ? Math.round((q.no / t) * 100) : 0,
+          };
+        })
+        // sort chronologically by year then Q
+        .sort((a, b) => {
+          const parse = (s: string) => {
+            const m = /^Q(\d) (\d{4})$/.exec(s);
+            return m ? Number(m[2]) * 10 + Number(m[1]) : 0;
+          };
+          return parse(a.quarter) - parse(b.quarter);
+        });
+      return { criterion, count: b.no, noPct, quarters };
+    })
+    .filter((x) => x.count > 0)
+    .sort((a, b) => {
+      if (b.noPct !== a.noPct) return b.noPct - a.noPct;
+      return b.count - a.count;
+    })
+    .slice(0, 10);
 
   return (
     <div className="space-y-6">
@@ -94,6 +180,47 @@ export default async function TrendsPage() {
           Compliance and deficiency trends over time
         </p>
       </div>
+
+      <form
+        method="get"
+        className="flex flex-wrap items-end gap-3 rounded-lg p-3"
+        style={{ backgroundColor: "#1E3A8A" }}
+      >
+        <div className="flex flex-col">
+          <label className="text-xs text-ink-400 mb-1">
+            Filter by specialty (Cmd/Ctrl-click for multi)
+          </label>
+          <select
+            name="specialty"
+            multiple
+            defaultValue={selectedSpecialties}
+            className="rounded-md px-3 py-2 text-sm text-ink-900 min-w-[220px]"
+            size={Math.min(6, Math.max(3, specialtyOptions.length))}
+          >
+            {specialtyOptions.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          type="submit"
+          className="rounded-md px-4 py-2 text-sm font-semibold text-white"
+          style={{ backgroundColor: "#2563EB" }}
+        >
+          Apply
+        </button>
+        {selectedSpecialties.length > 0 && (
+          <a
+            href="/portal/trends"
+            className="rounded-md px-4 py-2 text-sm text-ink-400 hover:text-white"
+          >
+            Clear
+          </a>
+        )}
+      </form>
+
       <TrendsCharts monthly={monthly} topMissed={topMissed} />
     </div>
   );

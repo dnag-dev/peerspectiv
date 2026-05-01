@@ -33,6 +33,9 @@ interface AssignmentRow {
   provider_id: string | null;
   reviewer_id: string | null;
   provider_name: string;
+  mrn_number: string;
+  is_pediatric: boolean;
+  pediatric_mismatch: boolean;
   reviewer_name: string;
   encounter_date: string | null;
   overall_score: number | null;
@@ -90,6 +93,7 @@ export function AssignmentResultsTab({ companies }: Props) {
   // (matches the "All companies" SelectItem) and treat it as no-filter.
   const [companyId, setCompanyId] = useState<string>("all");
   const [providerSearch, setProviderSearch] = useState("");
+  const [layout, setLayout] = useState<"portrait" | "landscape">("portrait");
   // Default to year-to-date so the tab shows data on first load instead of
   // a blank Search-first state.
   const [startDate, setStartDate] = useState(ytdStart());
@@ -133,7 +137,7 @@ export function AssignmentResultsTab({ companies }: Props) {
     const { default: jsPDF } = await import("jspdf");
     await import("jspdf-autotable");
 
-    const doc = new jsPDF({ orientation: "landscape" });
+    const doc = new jsPDF({ orientation: layout });
     doc.setFontSize(16);
     doc.text("Assignment Results Report", 14, 18);
     doc.setFontSize(9);
@@ -141,7 +145,7 @@ export function AssignmentResultsTab({ companies }: Props) {
 
     const head = [
       [
-        "Provider",
+        "MRN",
         "Reviewer",
         "Encounter Date",
         "Overall Score",
@@ -151,7 +155,7 @@ export function AssignmentResultsTab({ companies }: Props) {
       ],
     ];
     const body = results.map((r) => [
-      r.provider_name,
+      r.mrn_number + (r.pediatric_mismatch ? " ⚠ Pediatric" : ""),
       r.reviewer_name,
       formatDate(r.encounter_date),
       r.overall_score != null ? r.overall_score.toFixed(1) : "--",
@@ -169,7 +173,7 @@ export function AssignmentResultsTab({ companies }: Props) {
     });
 
     doc.save("assignment-results.pdf");
-  }, [results]);
+  }, [results, layout]);
 
   return (
     <div className="space-y-6">
@@ -242,10 +246,27 @@ export function AssignmentResultsTab({ companies }: Props) {
               {results.length} result{results.length !== 1 ? "s" : ""} found
             </p>
             {results.length > 0 && (
-              <Button variant="outline" size="sm" onClick={exportPdf}>
-                <Download className="h-4 w-4" />
-                Export to PDF
-              </Button>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="layout-select" className="text-xs text-muted-foreground">
+                  Layout
+                </Label>
+                <Select
+                  value={layout}
+                  onValueChange={(v: string) => setLayout(v as "portrait" | "landscape")}
+                >
+                  <SelectTrigger id="layout-select" className="h-8 w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="portrait">Portrait</SelectItem>
+                    <SelectItem value="landscape">Landscape</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm" onClick={exportPdf}>
+                  <Download className="h-4 w-4" />
+                  Export to PDF
+                </Button>
+              </div>
             )}
           </div>
 
@@ -254,7 +275,7 @@ export function AssignmentResultsTab({ companies }: Props) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Provider</TableHead>
+                    <TableHead>MRN</TableHead>
                     <TableHead>Reviewer</TableHead>
                     <TableHead>Encounter Date</TableHead>
                     <TableHead className="text-right">Overall Score</TableHead>
@@ -268,7 +289,12 @@ export function AssignmentResultsTab({ companies }: Props) {
                   {results.map((row) => (
                     <TableRow key={row.id}>
                       <TableCell className="font-medium">
-                        {row.provider_name}
+                        <span>{row.mrn_number}</span>
+                        {row.pediatric_mismatch && (
+                          <Badge variant="destructive" className="ml-2 text-[10px]">
+                            ⚠ Pediatric
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         {row.reviewer_id ? (

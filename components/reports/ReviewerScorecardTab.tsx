@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
-import Link from "next/link";
-import { ArrowUpDown, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect, useCallback } from "react";
+import { Loader2, Download, FileText, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -12,270 +13,220 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
-interface ReviewerRow {
-  id: string;
+interface ScorecardRow {
+  reviewer_id: string;
   full_name: string;
-  specialty: string;
-  total_reviews_completed: number;
-  ai_agreement_score: number | null;
+  cases_reviewed: number;
+  avg_turnaround_days: number | null;
+  ai_agreement_pct: number | null;
   quality_score: number | null;
-  status: "active" | "inactive";
+  avg_minutes_per_chart: number | null;
+  earnings: number;
 }
 
-type SortKey = keyof Pick<
-  ReviewerRow,
-  | "full_name"
-  | "specialty"
-  | "total_reviews_completed"
-  | "ai_agreement_score"
-  | "quality_score"
-  | "status"
->;
-
-/* ------------------------------------------------------------------ */
-/*  Constants                                                          */
-/* ------------------------------------------------------------------ */
-
-const BAR_COLOR = "#1D4ED8";
-const BAR_COLOR_LOW = "#EF4444";
+function ytdStart(): string {
+  return `${new Date().getFullYear()}-01-01`;
+}
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
 export function ReviewerScorecardTab() {
-  const [reviewers, setReviewers] = useState<ReviewerRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [sortKey, setSortKey] = useState<SortKey>("full_name");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [periodStart, setPeriodStart] = useState(ytdStart());
+  const [periodEnd, setPeriodEnd] = useState(todayIso());
+  const [rows, setRows] = useState<ScorecardRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams({
+        period_start: periodStart,
+        period_end: periodEnd,
+      });
+      const res = await fetch(`/api/reports/reviewer-scorecard?${params.toString()}`);
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      const json = (await res.json()) as { data: ScorecardRow[] };
+      setRows(json.data ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load");
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [periodStart, periodEnd]);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch("/api/reports/reviewers");
-        if (!res.ok) throw new Error("Failed to fetch");
-        const json = (await res.json()) as { data: ReviewerRow[] };
-        setReviewers(json.data ?? []);
-      } catch {
-        setReviewers([]);
-      } finally {
-        setLoading(false);
-      }
-    }
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSort = useCallback(
-    (key: SortKey) => {
-      if (sortKey === key) {
-        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-      } else {
-        setSortKey(key);
-        setSortDir("asc");
-      }
-    },
-    [sortKey]
-  );
+  const generatePdf = useCallback(async () => {
+    setGenerating(true);
+    try {
+      // Render via the PDF generate route by importing the renderer dynamically
+      // through a server endpoint. Since there's no scorecard route in /generate,
+      // use jspdf inline as a quick path.
+      const { default: jsPDF } = await import("jspdf");
+      const autoTableModule: any = await import("jspdf-autotable");
+      const autoTable = autoTableModule.default ?? autoTableModule;
+      const doc = new jsPDF({ orientation: "landscape" });
+      doc.setFontSize(16);
+      doc.text("Reviewer Scorecard", 14, 18);
+      doc.setFontSize(10);
+      doc.text(`Period: ${periodStart} — ${periodEnd}`, 14, 25);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 31);
+      autoTable(doc, {
+        startY: 36,
+        head: [
+          [
+            "Reviewer",
+            "Cases",
+            "Turnaround (d)",
+            "AI Agreement %",
+            "Quality",
+            "Min/Chart",
+            "Earnings",
+          ],
+        ],
+        body: rows.map((r) => [
+          r.full_name,
+          r.cases_reviewed,
+          r.avg_turnaround_days != null ? r.avg_turnaround_days.toFixed(1) : "—",
+          r.ai_agreement_pct != null ? `${r.ai_agreement_pct.toFixed(1)}%` : "—",
+          r.quality_score != null ? r.quality_score.toFixed(1) : "—",
+          r.avg_minutes_per_chart != null ? r.avg_minutes_per_chart.toFixed(1) : "—",
+          `$${r.earnings.toFixed(2)}`,
+        ]),
+        theme: "grid",
+        headStyles: { fillColor: [30, 77, 183] },
+        styles: { fontSize: 9 },
+      });
+      doc.save(`reviewer-scorecard-${periodStart}-to-${periodEnd}.pdf`);
+    } finally {
+      setGenerating(false);
+    }
+  }, [rows, periodStart, periodEnd]);
 
-  const sorted = useMemo(() => {
-    const copy = [...reviewers];
-    copy.sort((a, b) => {
-      const aVal = a[sortKey];
-      const bVal = b[sortKey];
-      if (aVal == null && bVal == null) return 0;
-      if (aVal == null) return 1;
-      if (bVal == null) return -1;
-      if (typeof aVal === "string") {
-        return sortDir === "asc"
-          ? aVal.localeCompare(bVal as string)
-          : (bVal as string).localeCompare(aVal);
-      }
-      return sortDir === "asc"
-        ? (aVal as number) - (bVal as number)
-        : (bVal as number) - (aVal as number);
-    });
-    return copy;
-  }, [reviewers, sortKey, sortDir]);
-
-  const chartData = useMemo(
-    () =>
-      reviewers
-        .filter((r) => r.ai_agreement_score != null)
-        .map((r) => ({
-          name: r.full_name.split(" ").slice(-1)[0], // Last name for brevity
-          fullName: r.full_name,
-          agreement: Math.round(r.ai_agreement_score!),
-        }))
-        .sort((a, b) => b.agreement - a.agreement),
-    [reviewers]
-  );
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-cobalt-600" />
-      </div>
-    );
-  }
-
-  if (reviewers.length === 0) {
-    return (
-      <div className="py-16 text-center text-sm text-muted-foreground">
-        No reviewer data available.
-      </div>
-    );
-  }
-
-  function SortableHeader({
-    label,
-    column,
-    className,
-  }: {
-    label: string;
-    column: SortKey;
-    className?: string;
-  }) {
-    return (
-      <TableHead className={className}>
-        <button
-          type="button"
-          onClick={() => handleSort(column)}
-          className="inline-flex items-center gap-1 hover:text-foreground"
-        >
-          {label}
-          <ArrowUpDown className="h-3 w-3" />
-        </button>
-      </TableHead>
-    );
-  }
+  const exportCsv = useCallback(() => {
+    const url = `/api/reports/reviewer-scorecard/csv?period_start=${periodStart}&period_end=${periodEnd}`;
+    window.location.href = url;
+  }, [periodStart, periodEnd]);
 
   return (
     <div className="space-y-6">
-      {/* Agreement rate chart */}
-      {chartData.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">
-              Reviewer Agreement Rates
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  margin={{ top: 8, right: 16, bottom: 24, left: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fontSize: 12 }}
-                    angle={-35}
-                    textAnchor="end"
-                    height={60}
-                  />
-                  <YAxis
-                    domain={[0, 100]}
-                    tick={{ fontSize: 12 }}
-                    tickFormatter={(v: number) => `${v}%`}
-                  />
-                  <Tooltip
-                    formatter={(value: unknown) => [`${value}%`, "Agreement Rate"]}
-                    labelFormatter={(_: unknown, payload: unknown) => {
-                      const items = payload as Array<{ payload?: { fullName?: string } }> | undefined;
-                      return items?.[0]?.payload?.fullName ?? "";
-                    }}
-                  />
-                  <Bar dataKey="agreement" radius={[4, 4, 0, 0]}>
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={index}
-                        fill={entry.agreement < 70 ? BAR_COLOR_LOW : BAR_COLOR}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="space-y-1.5">
+          <Label htmlFor="ps">Period Start</Label>
+          <Input
+            id="ps"
+            type="date"
+            value={periodStart}
+            onChange={(e) => setPeriodStart(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="pe">Period End</Label>
+          <Input
+            id="pe"
+            type="date"
+            value={periodEnd}
+            onChange={(e) => setPeriodEnd(e.target.value)}
+          />
+        </div>
+        <div className="flex items-end">
+          <Button onClick={load} disabled={loading} className="w-full">
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
+            {loading ? "Loading..." : "Refresh"}
+          </Button>
+        </div>
+        <div className="flex items-end">
+          <Button
+            variant="outline"
+            onClick={generatePdf}
+            disabled={generating || rows.length === 0}
+            className="w-full"
+          >
+            <FileText className="h-4 w-4" />
+            {generating ? "Generating..." : "Generate PDF"}
+          </Button>
+        </div>
+        <div className="flex items-end">
+          <Button
+            variant="outline"
+            onClick={exportCsv}
+            disabled={rows.length === 0}
+            className="w-full"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </Button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="rounded-md border border-critical-600 bg-critical-100 p-3 text-sm text-critical-700">
+          {error}
+        </div>
       )}
 
-      {/* Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <SortableHeader label="Reviewer Name" column="full_name" />
-              <SortableHeader label="Specialty" column="specialty" />
-              <SortableHeader
-                label="Cases Completed"
-                column="total_reviews_completed"
-                className="text-right"
-              />
-              <SortableHeader
-                label="Agreement Rate"
-                column="ai_agreement_score"
-                className="text-right"
-              />
-              <SortableHeader
-                label="Quality Score"
-                column="quality_score"
-                className="text-right"
-              />
-              <SortableHeader label="Status" column="status" />
+              <TableHead>Reviewer</TableHead>
+              <TableHead className="text-right">Cases</TableHead>
+              <TableHead className="text-right">Turnaround (d)</TableHead>
+              <TableHead className="text-right">AI Agreement %</TableHead>
+              <TableHead className="text-right">Quality</TableHead>
+              <TableHead className="text-right">Min/Chart</TableHead>
+              <TableHead className="text-right">Earnings</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sorted.map((r) => (
-              <TableRow key={r.id}>
-                <TableCell className="font-medium">
-                  <Link
-                    href={`/reviewers/${r.id}`}
-                    className="text-brand-navy hover:underline"
-                  >
-                    {r.full_name}
-                  </Link>
-                </TableCell>
-                <TableCell>{r.specialty}</TableCell>
-                <TableCell className="text-right">
-                  {r.total_reviews_completed}
-                </TableCell>
-                <TableCell className="text-right">
-                  {r.ai_agreement_score != null
-                    ? `${r.ai_agreement_score.toFixed(1)}%`
-                    : "--"}
-                </TableCell>
-                <TableCell className="text-right">
-                  {r.quality_score != null
-                    ? r.quality_score.toFixed(1)
-                    : "--"}
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant={r.status === "active" ? "success" : "secondary"}
-                  >
-                    {r.status}
-                  </Badge>
+            {rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
+                  {loading ? "Loading..." : "No reviewer data for this period."}
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              rows.map((r) => (
+                <TableRow key={r.reviewer_id}>
+                  <TableCell className="font-medium">{r.full_name}</TableCell>
+                  <TableCell className="text-right">{r.cases_reviewed}</TableCell>
+                  <TableCell className="text-right">
+                    {r.avg_turnaround_days != null ? r.avg_turnaround_days.toFixed(1) : "—"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {r.ai_agreement_pct != null ? `${r.ai_agreement_pct.toFixed(1)}%` : "—"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {r.quality_score != null ? r.quality_score.toFixed(1) : "—"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {r.avg_minutes_per_chart != null ? r.avg_minutes_per_chart.toFixed(1) : "—"}
+                  </TableCell>
+                  <TableCell className="text-right">${r.earnings.toFixed(2)}</TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

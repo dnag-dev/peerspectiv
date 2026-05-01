@@ -25,8 +25,10 @@ export async function GET(request: NextRequest) {
         updated_at,
         provider_id,
         reviewer_id,
+        mrn_number,
+        is_pediatric,
         provider:providers(first_name, last_name),
-        reviewer:reviewers(full_name),
+        reviewer:reviewers(full_name, specialties),
         review_results(overall_score, deficiencies)
       `
       )
@@ -62,10 +64,12 @@ export async function GET(request: NextRequest) {
       updated_at: string;
       provider_id: string | null;
       reviewer_id: string | null;
+      mrn_number: string | null;
+      is_pediatric: boolean | null;
       provider: { first_name: string; last_name: string } | null;
       providers: { first_name: string; last_name: string } | null;
-      reviewer: { full_name: string } | null;
-      reviewers: { full_name: string } | null;
+      reviewer: { full_name: string; specialties: string[] | null } | null;
+      reviewers: { full_name: string; specialties: string[] | null } | null;
       review_results: Array<{
         overall_score: number | null;
         deficiencies: unknown[] | null;
@@ -75,6 +79,12 @@ export async function GET(request: NextRequest) {
     let rows = ((data ?? []) as unknown as RawRow[]).map((c) => {
       const result = c.review_results?.[0];
       const deficiencies = result?.deficiencies;
+      const reviewer = c.reviewer ?? c.reviewers;
+      const reviewerSpecialties = reviewer?.specialties ?? [];
+      const isPediatric = c.is_pediatric === true;
+      const pediatricMismatch =
+        isPediatric &&
+        !reviewerSpecialties.some((s) => s?.toLowerCase().includes("pediatric"));
       return {
         id: c.id,
         provider_id: c.provider_id,
@@ -82,7 +92,10 @@ export async function GET(request: NextRequest) {
         provider_name: (c.provider ?? c.providers)
           ? `${(c.provider ?? c.providers)!.first_name} ${(c.provider ?? c.providers)!.last_name}`
           : "Unassigned",
-        reviewer_name: (c.reviewer ?? c.reviewers)?.full_name ?? "Unassigned",
+        mrn_number: c.mrn_number ?? "—",
+        is_pediatric: isPediatric,
+        pediatric_mismatch: pediatricMismatch,
+        reviewer_name: reviewer?.full_name ?? "Unassigned",
         encounter_date: c.encounter_date,
         overall_score: result?.overall_score ?? null,
         deficiencies_count: Array.isArray(deficiencies) ? deficiencies.length : 0,

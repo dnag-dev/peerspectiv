@@ -217,7 +217,8 @@ async function generatePdf(
       headStyles: { fillColor: [46, 111, 232] },
     });
   } else if (kind === "hrsa_summary") {
-    const { compliance, reviews, specialty, topMissed } = payload;
+    const { compliance, reviews, specialty, topMissed, narrative, hrsaMeasures } =
+      payload;
     doc.setFontSize(11);
     doc.setTextColor(30);
     doc.text(
@@ -226,8 +227,33 @@ async function generatePdf(
       y
     );
     y += 6;
+
+    if (narrative && typeof narrative === "string") {
+      doc.setFontSize(10);
+      doc.setTextColor(60);
+      const lines = doc.splitTextToSize(narrative, 180);
+      doc.text(lines, 14, y);
+      y += Math.min(lines.length * 5, 80) + 4;
+    }
+
+    if (Array.isArray(hrsaMeasures) && hrsaMeasures.length > 0) {
+      autoTable(doc, {
+        startY: y,
+        head: [["HRSA Quality Measure", "Value", "Target", "Status"]],
+        body: hrsaMeasures.map((m: any) => [
+          m.measure,
+          m.value,
+          m.target,
+          m.met ? "Met" : "Not met",
+        ]),
+        theme: "grid",
+        headStyles: { fillColor: [46, 111, 232] },
+      });
+      y = (doc as any).lastAutoTable?.finalY ?? y + 30;
+    }
+
     autoTable(doc, {
-      startY: y,
+      startY: y + 6,
       head: [["Specialty", "Avg Compliance", "Reviews"]],
       body: (specialty ?? []).map((s: any) => [s.specialty, `${s.avg}%`, s.count]),
       theme: "grid",

@@ -155,10 +155,74 @@ export async function fetchProviderHighlightsData(input: {
   }
   providers.sort((a, b) => b.overallScore - a.overallScore);
 
+  // Compute previous 2 quarter scores per provider, based on rangeStart's quarter.
+  const startDate = new Date(input.rangeStart + 'T00:00:00Z');
+  const startMonth = startDate.getUTCMonth();
+  const startYear = startDate.getUTCFullYear();
+  const currentQuarter = Math.floor(startMonth / 3); // 0..3
+  function prevQuarter(qIdx: number): { label: string; start: string; end: string } {
+    // qIdx: 1 => previous, 2 => prev-prev
+    let q = currentQuarter - qIdx;
+    let y = startYear;
+    while (q < 0) {
+      q += 4;
+      y -= 1;
+    }
+    const startMonth = q * 3;
+    const start = new Date(Date.UTC(y, startMonth, 1));
+    const end = new Date(Date.UTC(y, startMonth + 3, 0)); // last day
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    return { label: `Q${q + 1} ${y}`, start: fmt(start), end: fmt(end) };
+  }
+  const prev1 = prevQuarter(1);
+  const prev2 = prevQuarter(2);
+
+  type PrevRow = { provider_id: string; quarter_idx: number; avg_score: number | null };
+  const prevRows = rowsOf<PrevRow>(
+    await db.execute(sql`
+      SELECT
+        rc.provider_id,
+        CASE
+          WHEN rr.submitted_at::date BETWEEN ${prev1.start}::date AND ${prev1.end}::date THEN 1
+          WHEN rr.submitted_at::date BETWEEN ${prev2.start}::date AND ${prev2.end}::date THEN 2
+        END AS quarter_idx,
+        AVG(rr.overall_score)::float AS avg_score
+      FROM review_results rr
+      INNER JOIN review_cases rc ON rc.id = rr.case_id
+      WHERE rc.company_id = ${input.companyId}
+        AND (
+          rr.submitted_at::date BETWEEN ${prev2.start}::date AND ${prev2.end}::date
+          OR rr.submitted_at::date BETWEEN ${prev1.start}::date AND ${prev1.end}::date
+        )
+      GROUP BY rc.provider_id, quarter_idx
+    `)
+  );
+  const prevByProvider = new Map<string, { 1?: number; 2?: number }>();
+  for (const r of prevRows) {
+    if (!r.quarter_idx) continue;
+    const m = prevByProvider.get(r.provider_id) ?? {};
+    if (r.quarter_idx === 1) m[1] = r.avg_score == null ? undefined : Number(r.avg_score);
+    if (r.quarter_idx === 2) m[2] = r.avg_score == null ? undefined : Number(r.avg_score);
+    prevByProvider.set(r.provider_id, m);
+  }
+
+  // Map provider name back to id for previous-quarter lookup.
+  const nameToId = new Map<string, string>();
+  byProvider.forEach((b, pid) => nameToId.set(b.providerName, pid));
+  for (const p of providers) {
+    const pid = nameToId.get(p.providerName);
+    const m = pid ? prevByProvider.get(pid) : undefined;
+    p.previousQuarters = [
+      { label: prev2.label, score: m && m[2] != null ? (m[2] as number) : null },
+      { label: prev1.label, score: m && m[1] != null ? (m[1] as number) : null },
+    ];
+  }
+
   return {
     companyName: company.name,
     rangeStart: input.rangeStart,
     rangeEnd: input.rangeEnd,
+    generatedAt: new Date().toISOString().slice(0, 10),
     overallScore: overallCnt > 0 ? overallSum / overallCnt : 0,
     providers,
   };
@@ -365,7 +429,15 @@ export async function fetchQuestionAnalyticsData(input: {
     };
   });
 
-  questions.sort((a, b) => a.compliancePct - b.compliancePct);
+  // Sort by % "no" descending (worst first); secondary by total responses desc.
+  questions.sort((a, b) => {
+    const totalA = a.yes + a.no + a.na;
+    const totalB = b.yes + b.no + b.na;
+    const noPctA = totalA > 0 ? a.no / totalA : 0;
+    const noPctB = totalB > 0 ? b.no / totalB : 0;
+    if (noPctB !== noPctA) return noPctB - noPctA;
+    return totalB - totalA;
+  });
 
   return {
     companyName: company.name,
@@ -469,10 +541,40 @@ export async function fetchInvoicePdfDataFromInvoice(
 export async function fetchQualityCertificateData(input: {
   companyId: string;
   period: string;
+  periodStart?: string;
+  periodEnd?: string;
+  scoreThreshold?: number;
   signedByName?: string;
   signedByTitle?: string;
 }): Promise<QualityCertificateData> {
   const company = await getCompany(input.companyId);
+
+  let providers: Array<{ name: string; score: number }> | undefined;
+  if (input.periodStart && input.periodEnd) {
+    const threshold = input.scoreThreshold ?? 70;
+    type Row = { provider_name: string; avg_score: number | null };
+    const rows = rowsOf<Row>(
+      await db.execute(sql`
+        SELECT
+          COALESCE(NULLIF(TRIM(CONCAT(p.first_name, ' ', p.last_name)), ''), 'Unknown provider') AS provider_name,
+          AVG(rr.overall_score)::float AS avg_score
+        FROM review_results rr
+        INNER JOIN review_cases rc ON rc.id = rr.case_id
+        INNER JOIN providers     p  ON p.id  = rc.provider_id
+        WHERE rc.company_id = ${input.companyId}
+          AND rr.submitted_at::date >= ${input.periodStart}::date
+          AND rr.submitted_at::date <= ${input.periodEnd}::date
+        GROUP BY p.id, p.first_name, p.last_name
+        HAVING AVG(rr.overall_score) >= ${threshold}
+        ORDER BY avg_score DESC NULLS LAST
+      `)
+    );
+    providers = rows.map((r) => ({
+      name: r.provider_name,
+      score: r.avg_score == null ? 0 : Number(r.avg_score),
+    }));
+  }
+
   return {
     organizationName: company?.name ?? 'Unknown Organization',
     period: input.period,
@@ -480,6 +582,8 @@ export async function fetchQualityCertificateData(input: {
     signedByName: input.signedByName ?? 'Quality Director',
     signedByTitle: input.signedByTitle ?? 'Independent Peer Review Network',
     signedDate: new Date().toISOString().slice(0, 10),
+    providers,
+    scoreThreshold: input.scoreThreshold,
   };
 }
 
@@ -565,4 +669,84 @@ export async function fetchPeerEarningsSummaryData(input: {
     totalAmount,
     ytdTotal,
   };
+}
+
+// ─── Reviewer Scorecard ───────────────────────────────────────────────────
+
+export interface ReviewerScorecardRow {
+  reviewer_id: string;
+  full_name: string;
+  cases_reviewed: number;
+  avg_turnaround_days: number | null;
+  ai_agreement_pct: number | null;
+  quality_score: number | null;
+  avg_minutes_per_chart: number | null;
+  earnings: number;
+}
+
+export async function fetchReviewerScorecard(
+  periodStart: string,
+  periodEnd: string
+): Promise<ReviewerScorecardRow[]> {
+  type Row = {
+    reviewer_id: string;
+    full_name: string;
+    avg_minutes_per_chart: string | null;
+    cases_reviewed: number;
+    avg_turnaround_days: number | null;
+    ai_agreement_pct: number | null;
+    quality_score: number | null;
+    earnings: string | null;
+  };
+
+  const result = await db.execute<Row>(sql`
+    SELECT
+      r.id AS reviewer_id,
+      r.full_name,
+      r.avg_minutes_per_chart,
+      COALESCE(rev.cases_reviewed, 0)::int AS cases_reviewed,
+      rev.avg_turnaround_days,
+      rev.ai_agreement_pct,
+      rev.quality_score,
+      COALESCE(po.earnings, '0')::text AS earnings
+    FROM reviewers r
+    LEFT JOIN (
+      SELECT
+        rc.reviewer_id,
+        COUNT(rr.id)::int AS cases_reviewed,
+        AVG(EXTRACT(EPOCH FROM (rr.submitted_at - rc.assigned_at)) / 86400.0)::float AS avg_turnaround_days,
+        AVG(rr.ai_agreement_percentage)::float AS ai_agreement_pct,
+        AVG(rr.quality_score)::float AS quality_score
+      FROM review_results rr
+      INNER JOIN review_cases rc ON rc.id = rr.case_id
+      WHERE rr.submitted_at::date BETWEEN ${periodStart}::date AND ${periodEnd}::date
+      GROUP BY rc.reviewer_id
+    ) rev ON rev.reviewer_id = r.id
+    LEFT JOIN (
+      SELECT reviewer_id, SUM(amount) AS earnings
+      FROM reviewer_payouts
+      WHERE period_start >= ${periodStart}::date
+        AND period_end <= ${periodEnd}::date
+      GROUP BY reviewer_id
+    ) po ON po.reviewer_id = r.id
+    ORDER BY r.full_name ASC
+  `);
+
+  const rawRows = ((result as { rows?: Row[] }).rows ?? (result as unknown as Row[])) as Row[];
+  return rawRows.map((r) => ({
+    reviewer_id: r.reviewer_id,
+    full_name: r.full_name,
+    cases_reviewed: Number(r.cases_reviewed ?? 0),
+    avg_turnaround_days:
+      r.avg_turnaround_days == null
+        ? null
+        : Math.round(Number(r.avg_turnaround_days) * 10) / 10,
+    ai_agreement_pct:
+      r.ai_agreement_pct == null ? null : Math.round(Number(r.ai_agreement_pct) * 10) / 10,
+    quality_score:
+      r.quality_score == null ? null : Math.round(Number(r.quality_score) * 10) / 10,
+    avg_minutes_per_chart:
+      r.avg_minutes_per_chart == null ? null : Number(r.avg_minutes_per_chart),
+    earnings: Number(r.earnings ?? 0),
+  }));
 }

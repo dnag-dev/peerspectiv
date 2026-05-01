@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BarChart,
   Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -12,9 +15,16 @@ import {
   Cell,
 } from "recharts";
 
+interface MissedCriterion {
+  criterion: string;
+  count: number;
+  noPct: number;
+  quarters: Array<{ quarter: string; noPct: number }>;
+}
+
 interface Props {
   monthly: Array<{ key: string; label: string; avg: number; count: number }>;
-  topMissed: Array<{ criterion: string; count: number }>;
+  topMissed: MissedCriterion[];
 }
 
 function color(score: number) {
@@ -25,6 +35,8 @@ function color(score: number) {
 
 export function TrendsCharts({ monthly, topMissed }: Props) {
   const router = useRouter();
+  const [expanded, setExpanded] = useState<string | null>(null);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
@@ -68,48 +80,97 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
 
       <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
         <h3 className="text-sm font-semibold text-white mb-3">
-          Top 5 Most Missed Criteria
+          Most Missed Criteria (sorted by % no, descending)
         </h3>
         {topMissed.length === 0 ? (
           <p className="text-sm text-ink-400">No deficiency data.</p>
         ) : (
-          <ul className="space-y-3">
-            {topMissed.map((t, i) => {
-              const max = topMissed[0].count || 1;
-              return (
-                <li key={t.criterion}>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      router.push(
-                        `/portal/reviews?criterion=${encodeURIComponent(t.criterion)}`
-                      )
-                    }
-                    className="group w-full text-left"
-                  >
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-ink-300 truncate pr-2 group-hover:text-white group-hover:underline">
-                        {i + 1}. {t.criterion}
-                      </span>
-                      <span className="text-amber-600">{t.count}</span>
-                    </div>
-                    <div
-                      className="h-2 rounded-full overflow-hidden"
-                      style={{ backgroundColor: "#172554" }}
+          <table className="w-full text-xs text-white">
+            <thead>
+              <tr className="text-ink-400 border-b border-ink-700/60">
+                <th className="text-left py-2 font-medium">Criterion</th>
+                <th className="text-right py-2 font-medium">% No</th>
+                <th className="text-right py-2 font-medium">No Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topMissed.map((t) => {
+                const isOpen = expanded === t.criterion;
+                return (
+                  <>
+                    <tr
+                      key={t.criterion}
+                      className="border-b border-ink-700/30 cursor-pointer hover:bg-white/5"
+                      onClick={() =>
+                        setExpanded(isOpen ? null : t.criterion)
+                      }
                     >
-                      <div
-                        className="h-full transition-opacity group-hover:opacity-80"
-                        style={{
-                          width: `${(t.count / max) * 100}%`,
-                          backgroundColor: "#EF4444",
-                        }}
-                      />
-                    </div>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+                      <td className="py-2 pr-2">
+                        <span className="text-ink-300">
+                          {isOpen ? "▼" : "▶"} {t.criterion}
+                        </span>
+                      </td>
+                      <td className="py-2 text-right text-amber-400">
+                        {t.noPct}%
+                      </td>
+                      <td className="py-2 text-right text-ink-300">
+                        {t.count}
+                      </td>
+                    </tr>
+                    {isOpen && (
+                      <tr key={`${t.criterion}-trend`}>
+                        <td colSpan={3} className="py-3 pl-4 pr-2">
+                          {t.quarters.length === 0 ? (
+                            <p className="text-ink-400 text-xs">
+                              No quarterly data.
+                            </p>
+                          ) : (
+                            <div className="h-36">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={t.quarters}>
+                                  <CartesianGrid
+                                    stroke="#2A3F5F"
+                                    strokeDasharray="3 3"
+                                  />
+                                  <XAxis
+                                    dataKey="quarter"
+                                    stroke="#94A3B8"
+                                    fontSize={10}
+                                  />
+                                  <YAxis
+                                    domain={[0, 100]}
+                                    stroke="#94A3B8"
+                                    fontSize={10}
+                                    tickFormatter={(v: number) => `${v}%`}
+                                  />
+                                  <Tooltip
+                                    contentStyle={{
+                                      backgroundColor: "#172554",
+                                      border: "1px solid #2A3F5F",
+                                      color: "white",
+                                      fontSize: 11,
+                                    }}
+                                    formatter={(v: unknown) => [`${v}%`, "% No"] as [string, string]}
+                                  />
+                                  <Line
+                                    type="monotone"
+                                    dataKey="noPct"
+                                    stroke="#EF4444"
+                                    strokeWidth={2}
+                                    dot
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                );
+              })}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

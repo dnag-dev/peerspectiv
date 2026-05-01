@@ -128,11 +128,50 @@ export async function GET(request: NextRequest) {
         .slice(0, 10)
         .map(([criterion, count]) => ({ criterion, count }));
 
+      // Generate a Claude narrative paragraph + a small HRSA quality measures
+      // table, replacing the previous stub.
+      const yearStart = `${new Date().getFullYear()}-01-01`;
+      const today = new Date().toISOString().slice(0, 10);
+      let narrative = "";
+      try {
+        const { generateQAPIReport } = await import("@/lib/ai/report-generator");
+        narrative = await generateQAPIReport(companyId, yearStart, today);
+      } catch (err) {
+        console.error("[hrsa_summary] narrative generation failed:", err);
+      }
+
+      // HRSA quality measures: simple proxy table derived from specialty
+      // compliance + the company's overall metrics. Keeps the response
+      // shape backward-compatible (compliance/reviews/specialty/topMissed)
+      // while adding `narrative` and `hrsaMeasures`.
+      const hrsaMeasures = [
+        {
+          measure: "Overall compliance",
+          value: `${compliance}%`,
+          target: "≥ 85%",
+          met: compliance >= 85,
+        },
+        {
+          measure: "Reviews this period",
+          value: String(reviews),
+          target: "≥ 1",
+          met: reviews >= 1,
+        },
+        ...(specialty ?? []).slice(0, 5).map((s: any) => ({
+          measure: `${s.specialty} compliance`,
+          value: `${s.avg}%`,
+          target: "≥ 85%",
+          met: s.avg >= 85,
+        })),
+      ];
+
       return NextResponse.json({
         compliance,
         reviews,
         specialty,
         topMissed,
+        narrative,
+        hrsaMeasures,
       });
     }
 
