@@ -165,10 +165,15 @@ export async function POST(req: NextRequest) {
         .where(eq(contracts.id, contract.id));
 
       if (company) {
+        // Section N2 — auto-promote: when envelope completes AND company is
+        // currently 'contract_sent', jump straight to 'active_client'.
+        // Otherwise just record the signed flags without changing status.
+        const nextStatus =
+          company.status === 'contract_sent' ? 'active_client' : company.status;
         await db
           .update(companies)
           .set({
-            status: 'contract_signed',
+            status: nextStatus,
             contractSignedAt: now,
             baaSignedAt: now,
             updatedAt: now,
