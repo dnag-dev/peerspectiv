@@ -10,6 +10,9 @@
     "test:pdf": "vitest run tests/pdf",
     "test:pdf:report": "tsx tests/pdf/generate-report.ts",
     "test:e2e": "playwright test",
+    "test:qa": "tsx tests/qa-agent/runner.ts",
+    "test:qa:fast": "QA_FAST=1 tsx tests/qa-agent/runner.ts",
+    "test:qa:persona": "tsx tests/qa-agent/runner.ts --persona",
     "db:reseed-real": "node scripts/reseed-real-data.mjs",
     "db:reseed-forms": "node scripts/reseed-form-templates.mjs",
     "smoke": "node scripts/smoke-marketing.mjs"
