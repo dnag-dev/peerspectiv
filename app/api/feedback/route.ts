@@ -65,23 +65,27 @@ export async function POST(request: NextRequest) {
       } catch {}
     }
 
-    await db.insert(clientFeedback).values({
-      companyId,
-      submittedBy,
-      ratingTurnaround,
-      ratingReportQuality,
-      ratingCommunication,
-      ratingOverall,
-      wouldRecommend: wouldRecommend ?? null,
-      openFeedback: openFeedback || null,
-    });
+    const [insertedFeedback] = await db
+      .insert(clientFeedback)
+      .values({
+        companyId,
+        submittedBy,
+        ratingTurnaround,
+        ratingReportQuality,
+        ratingCommunication,
+        ratingOverall,
+        wouldRecommend: wouldRecommend ?? null,
+        openFeedback: openFeedback || null,
+      })
+      .returning({ id: clientFeedback.id });
 
-    // Insert notification for admin
+    // Insert notification for admin — bind entityId so the link works
     await db.insert(notifications).values({
       type: 'client_feedback',
       title: `New feedback from ${companyName}`,
       body: `${submittedBy} submitted feedback (overall: ${ratingOverall}/5)`,
       entityType: 'client_feedback',
+      entityId: insertedFeedback?.id ?? null,
     });
 
     return NextResponse.json({ success: true });

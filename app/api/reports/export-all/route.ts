@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+async function isAuthenticated(req: NextRequest): Promise<boolean> {
+  try {
+    const { auth } = await import("@clerk/nextjs/server");
+    const result = auth();
+    if ((result as any)?.userId) return true;
+  } catch {
+    /* clerk not configured */
+  }
+  // Demo / portal-cookie auth: any of these signals is sufficient.
+  if (req.headers.get("x-demo-user-id")?.trim()) return true;
+  if (req.cookies.get("demo_user")?.value) return true;
+  return false;
+}
+
 /**
  * Export-all fallback for a quarter. archiver is not a dependency, so this
  * returns a manifest of per-file URLs. The client opens them sequentially
@@ -11,6 +25,9 @@ export const dynamic = "force-dynamic";
  *   -> { files: [{ name, url }] }
  */
 export async function POST(request: NextRequest) {
+  if (!(await isAuthenticated(request))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const { company_id, year, quarter } = body as {

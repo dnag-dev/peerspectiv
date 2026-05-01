@@ -1,6 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
+
+async function getAdminUserId(req: NextRequest): Promise<string | null> {
+  try {
+    const { auth } = await import('@clerk/nextjs/server');
+    const result = auth();
+    const userId = (result as any)?.userId;
+    if (userId) return userId as string;
+  } catch {
+    /* clerk not configured */
+  }
+  const demo = req.headers.get('x-demo-user-id');
+  if (demo && demo.trim()) return demo.trim();
+  return null;
+}
 
 /**
  * GET /api/payouts/current-period
@@ -45,7 +59,11 @@ function secondToLastBusinessDay(year: number, month: number): Date {
   return prevBusinessDay(lastBusinessDay(year, month));
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const userId = await getAdminUserId(req);
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const now = new Date();
     const y = now.getUTCFullYear();

@@ -3,7 +3,25 @@ import { db } from "@/lib/db";
 import { clinics } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
 
+async function getAdminUserId(req: NextRequest): Promise<string | null> {
+  try {
+    const { auth } = await import("@clerk/nextjs/server");
+    const result = auth();
+    const userId = (result as any)?.userId;
+    if (userId) return userId as string;
+  } catch {
+    /* clerk not configured */
+  }
+  const demo = req.headers.get("x-demo-user-id");
+  if (demo && demo.trim()) return demo.trim();
+  return null;
+}
+
 export async function GET(req: NextRequest) {
+  const userId = await getAdminUserId(req);
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const companyId = req.nextUrl.searchParams.get("company_id");
     if (!companyId) {
@@ -24,6 +42,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const userId = await getAdminUserId(req);
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const body = await req.json();
     const { company_id, name, city, state } = body || {};

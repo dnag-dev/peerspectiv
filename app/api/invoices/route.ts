@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
       rate: number;
       total: number;
     }> | null = null;
-    if ((company as any).itemizeInvoice) {
+    if (company.itemizeInvoice) {
       const itemRows = (await db.execute(sql`
         SELECT p.id AS provider_id,
                COALESCE(p.first_name, '') AS first_name,
@@ -240,7 +240,22 @@ export async function POST(req: NextRequest) {
           request: req,
         });
       } catch (e) {
+        // Don't lose the override silently — drop a notification so an admin
+        // sees it during their next session even if audit log itself broke.
         console.error('[invoices.create] audit log failed:', e);
+        try {
+          const { notifications } = await import('@/lib/db/schema');
+          await db.insert(notifications).values({
+            userId: null,
+            type: 'audit_log_failure',
+            title: 'Invoice override saved without audit trail',
+            body: `Invoice ${created.invoiceNumber} had quantity overridden from ${reviewCount} to ${quantityOverride} (reason: ${adjustmentReason}). Audit log write failed.`,
+            entityType: 'invoice',
+            entityId: created.id,
+          });
+        } catch {
+          /* last-ditch swallow */
+        }
       }
     }
 

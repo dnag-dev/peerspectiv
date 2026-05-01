@@ -16,8 +16,16 @@ export const dynamic = 'force-dynamic';
 function verifyHmac(rawBody: string, headerSig: string | null): boolean {
   const secret = process.env.DOCUSIGN_WEBHOOK_HMAC_SECRET;
   if (!secret || secret === '' || secret.startsWith('stub')) {
+    // In production, an unset/stub secret is a hard failure — we will not
+    // accept unsigned webhooks. In dev/preview, log and allow through.
+    if (process.env.NODE_ENV === 'production') {
+      console.error(
+        '[DocuSign webhook] HMAC secret unset in production — rejecting.'
+      );
+      return false;
+    }
     console.warn(
-      '[DocuSign webhook] HMAC secret not configured — skipping signature verification (prototype mode).'
+      '[DocuSign webhook] HMAC secret not configured — skipping signature verification (non-prod).'
     );
     return true;
   }

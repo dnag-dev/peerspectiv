@@ -3,7 +3,25 @@ import { fetchReviewerScorecard } from "@/lib/reports/data";
 
 export const dynamic = "force-dynamic";
 
+async function getAdminUserId(req: NextRequest): Promise<string | null> {
+  try {
+    const { auth } = await import("@clerk/nextjs/server");
+    const result = auth();
+    const userId = (result as any)?.userId;
+    if (userId) return userId as string;
+  } catch {
+    /* clerk not configured */
+  }
+  const demo = req.headers.get("x-demo-user-id");
+  if (demo && demo.trim()) return demo.trim();
+  return null;
+}
+
 export async function GET(request: NextRequest) {
+  const userId = await getAdminUserId(request);
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const periodStart = searchParams.get("period_start");

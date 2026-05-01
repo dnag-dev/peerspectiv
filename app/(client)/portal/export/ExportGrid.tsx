@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FileText, FileSpreadsheet, Loader2 } from "lucide-react";
+import { Download, FileText, FileSpreadsheet, Loader2, Package } from "lucide-react";
 
 interface ReportDef {
   key: string;
@@ -51,6 +51,67 @@ export function ExportGrid({
   companyName: string;
 }) {
   const [busy, setBusy] = useState<string | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkStatus, setBulkStatus] = useState<string | null>(null);
+
+  // Default to the most recently completed quarter.
+  const today = new Date();
+  const currentQuarter = Math.floor(today.getMonth() / 3) + 1;
+  const defaultQuarter = currentQuarter === 1 ? 4 : currentQuarter - 1;
+  const defaultYear = currentQuarter === 1 ? today.getFullYear() - 1 : today.getFullYear();
+  const [quarter, setQuarter] = useState<number>(defaultQuarter);
+  const [year, setYear] = useState<number>(defaultYear);
+
+  const handleDownloadAll = async () => {
+    setBulkBusy(true);
+    setBulkStatus(null);
+    try {
+      const res = await fetch("/api/reports/export-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ company_id: companyId, year, quarter }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`);
+      const files: Array<{ name: string; url: string; method: string; body: any }> =
+        j.files ?? [];
+      let succeeded = 0;
+      let failed = 0;
+      for (const f of files) {
+        setBulkStatus(`Generating ${f.name}…`);
+        try {
+          const r = await fetch(f.url, {
+            method: f.method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(f.body),
+          });
+          if (!r.ok) {
+            failed++;
+            continue;
+          }
+          const blob = await r.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = f.name;
+          a.click();
+          URL.revokeObjectURL(url);
+          succeeded++;
+          // Small delay so the browser doesn't drop rapid clicks.
+          await new Promise((res) => setTimeout(res, 250));
+        } catch {
+          failed++;
+        }
+      }
+      setBulkStatus(
+        `Done — ${succeeded} downloaded${failed ? `, ${failed} failed` : ""}`
+      );
+    } catch (e) {
+      setBulkStatus(e instanceof Error ? e.message : "Download failed");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
 
   const handleDownload = async (key: string, title: string) => {
     setBusy(key);
@@ -74,7 +135,63 @@ export function ExportGrid({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="space-y-4">
+      {/* Bulk download row */}
+      <div
+        className="rounded-lg p-4 flex flex-col md:flex-row md:items-center gap-3"
+        style={{ backgroundColor: "#0F2040" }}
+      >
+        <Package className="h-6 w-6 text-white shrink-0" />
+        <div className="flex-1">
+          <div className="text-sm font-semibold text-white">
+            Download everything for one quarter
+          </div>
+          <div className="text-xs text-ink-300">
+            Provider highlights, specialty highlights, question analytics, and the quality certificate — one click.
+          </div>
+        </div>
+        <select
+          value={quarter}
+          onChange={(e) => setQuarter(Number(e.target.value))}
+          disabled={bulkBusy}
+          className="rounded-md bg-white/10 text-white text-sm px-2 py-1.5 border border-white/20"
+        >
+          <option value={1}>Q1</option>
+          <option value={2}>Q2</option>
+          <option value={3}>Q3</option>
+          <option value={4}>Q4</option>
+        </select>
+        <input
+          type="number"
+          value={year}
+          onChange={(e) => setYear(Number(e.target.value))}
+          disabled={bulkBusy}
+          className="w-24 rounded-md bg-white/10 text-white text-sm px-2 py-1.5 border border-white/20"
+        />
+        <button
+          onClick={handleDownloadAll}
+          disabled={bulkBusy}
+          className="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          style={{ backgroundColor: "#2563EB" }}
+        >
+          {bulkBusy ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Working…
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4" />
+              Download all
+            </>
+          )}
+        </button>
+      </div>
+      {bulkStatus && (
+        <div className="text-xs text-ink-400">{bulkStatus}</div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {REPORTS.map((r) => (
         <div
           key={r.key}
@@ -110,6 +227,7 @@ export function ExportGrid({
           </button>
         </div>
       ))}
+      </div>
     </div>
   );
 }

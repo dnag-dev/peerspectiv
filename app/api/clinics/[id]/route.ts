@@ -3,10 +3,28 @@ import { db } from "@/lib/db";
 import { clinics } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
+async function getAdminUserId(req: NextRequest): Promise<string | null> {
+  try {
+    const { auth } = await import("@clerk/nextjs/server");
+    const result = auth();
+    const userId = (result as any)?.userId;
+    if (userId) return userId as string;
+  } catch {
+    /* clerk not configured */
+  }
+  const demo = req.headers.get("x-demo-user-id");
+  if (demo && demo.trim()) return demo.trim();
+  return null;
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const userId = await getAdminUserId(req);
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const body = await req.json();
     const updates: Record<string, unknown> = {};
@@ -38,9 +56,13 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const userId = await getAdminUserId(req);
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const [row] = await db
       .delete(clinics)

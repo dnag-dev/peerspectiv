@@ -6,7 +6,25 @@ import { fetchQualityCertificateData } from "@/lib/reports/data";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+async function getAdminUserId(req: NextRequest): Promise<string | null> {
+  try {
+    const { auth } = await import("@clerk/nextjs/server");
+    const result = auth();
+    const userId = (result as any)?.userId;
+    if (userId) return userId as string;
+  } catch {
+    /* clerk not configured */
+  }
+  const demo = req.headers.get("x-demo-user-id");
+  if (demo && demo.trim()) return demo.trim();
+  return null;
+}
+
 export async function POST(request: NextRequest) {
+  const userId = await getAdminUserId(request);
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const {
