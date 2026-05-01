@@ -35,7 +35,8 @@ interface AiPrefill {
 
 interface ExistingResult {
   submittedAt: string | Date | null;
-  overallScore: number | null;
+  // numeric(5,2) — drizzle returns string from postgres; consumers Number() it.
+  overallScore: number | string | null;
   narrativeFinal: string | null;
 }
 

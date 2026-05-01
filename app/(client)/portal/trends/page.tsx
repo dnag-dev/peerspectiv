@@ -73,7 +73,7 @@ export default async function TrendsPage({ searchParams }: PageProps) {
     const d = new Date(r.submittedAt as any);
     const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}`;
     const m = months.find((x) => x.key === key);
-    if (m) m.scores.push(r.score);
+    if (m) m.scores.push(Number(r.score));
   }
   const monthly = months.map((m) => ({
     key: m.key,

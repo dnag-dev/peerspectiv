@@ -32,7 +32,10 @@ async function computeComplianceScore(companyId: string): Promise<number> {
       .where(eq(reviewCases.companyId, companyId));
 
     if (rows.length === 0) return 0;
-    const scores = rows.map((r) => r.score ?? 0).filter((s) => s > 0);
+    // overall_score is numeric(5,2) → arrives as string from drizzle/neon
+    const scores = rows
+      .map((r) => (r.score == null ? 0 : Number(r.score)))
+      .filter((s) => s > 0);
     if (scores.length === 0) return 0;
     return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
   } catch {

@@ -246,7 +246,8 @@ export const aiAnalyses = pgTable('ai_analyses', {
   chartSummary: text('chart_summary'),
   criteriaScores: jsonb('criteria_scores'),
   deficiencies: jsonb('deficiencies'),
-  overallScore: integer('overall_score'),
+  // numeric(5,2) so 88.89 round-trips exactly. Was integer (lossy).
+  overallScore: numeric('overall_score', { precision: 5, scale: 2 }),
   documentationScore: integer('documentation_score'),
   clinicalAppropriatenessScore: integer('clinical_appropriateness_score'),
   careCoordinationScore: integer('care_coordination_score'),
@@ -276,7 +277,8 @@ export const reviewResults = pgTable('review_results', {
   reviewerId: uuid('reviewer_id').references(() => reviewers.id),
   criteriaScores: jsonb('criteria_scores'),
   deficiencies: jsonb('deficiencies'),
-  overallScore: integer('overall_score'),
+  // numeric(5,2) so 88.89 round-trips exactly. Was integer (lossy).
+  overallScore: numeric('overall_score', { precision: 5, scale: 2 }),
   narrativeFinal: text('narrative_final'),
   aiAgreementPercentage: numeric('ai_agreement_percentage', {
     precision: 5,

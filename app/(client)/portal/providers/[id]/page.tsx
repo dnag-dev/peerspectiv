@@ -53,7 +53,7 @@ export default async function ProviderDetailPage({
   const last5 = reviews.slice(0, 5);
   const last6 = reviews.slice(0, 6).reverse().map((r, i) => ({
     label: r.submittedAt ? new Date(r.submittedAt as any).toLocaleDateString() : `#${i + 1}`,
-    score: r.overallScore ?? 0,
+    score: Number(r.overallScore ?? 0),
   }));
 
   // Common deficiencies
@@ -90,7 +90,7 @@ export default async function ProviderDetailPage({
   const avg =
     reviews.length > 0
       ? Math.round(
-          reviews.reduce((a, r) => a + (r.overallScore ?? 0), 0) / reviews.length
+          reviews.reduce((a, r) => a + Number(r.overallScore ?? 0), 0) / reviews.length
         )
       : 0;
   const badgeColor = avg >= 85 ? "#22C55E" : avg >= 70 ? "#F59E0B" : "#EF4444";

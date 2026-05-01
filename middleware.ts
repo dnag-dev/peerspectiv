@@ -249,7 +249,14 @@ export default async function middleware(request: NextRequest) {
     if (demo.role === 'client' && !pathname.startsWith('/portal') && !pathname.startsWith('/api/')) {
       return NextResponse.redirect(new URL('/portal', request.url));
     }
-    if (demo.role === 'reviewer' && !pathname.startsWith('/reviewer') && !pathname.startsWith('/api/')) {
+    if (
+      demo.role === 'reviewer' &&
+      !pathname.startsWith('/reviewer/') &&
+      pathname !== '/reviewer' &&
+      !pathname.startsWith('/api/')
+    ) {
+      // Tightened from startsWith('/reviewer') which prefix-matched /reviewers
+      // (admin route) and let reviewer-role users hit the admin roster page.
       return NextResponse.redirect(new URL('/reviewer/portal', request.url));
     }
 

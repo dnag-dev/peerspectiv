@@ -57,10 +57,12 @@ export async function POST(request: NextRequest) {
       }
       const denom = yes + no;
       if (denom > 0) {
-        const yesNoScore = Math.round((yes / denom) * 100);
+        // Round to 2 decimals so 8/9 yields 88.89 (not 89). DB column is
+        // numeric(5,2) — see migration 010.
+        const yesNoScore = Math.round((yes / denom) * 10000) / 100;
         // Average with the existing rating-based overall_score when both exist.
         if (typeof overall_score_in === 'number' && criteria_scores?.length) {
-          overall_score = Math.round((overall_score_in + yesNoScore) / 2);
+          overall_score = Math.round(((overall_score_in + yesNoScore) / 2) * 100) / 100;
         } else {
           overall_score = yesNoScore;
         }
@@ -174,7 +176,7 @@ export async function POST(request: NextRequest) {
         reviewerId: caseData.reviewer_id,
         criteriaScores: criteria_scores,
         deficiencies: deficienciesArr,
-        overallScore: overall_score,
+        overallScore: overall_score == null ? null : String(overall_score),
         narrativeFinal: narrative_final,
         aiAgreementPercentage: aiAgreementStr,
         reviewerChanges: reviewerChanges,
@@ -192,7 +194,7 @@ export async function POST(request: NextRequest) {
           reviewerId: caseData.reviewer_id,
           criteriaScores: criteria_scores,
           deficiencies: deficienciesArr,
-          overallScore: overall_score,
+          overallScore: overall_score == null ? null : String(overall_score),
           narrativeFinal: narrative_final,
           aiAgreementPercentage: aiAgreementStr,
           reviewerChanges: reviewerChanges,

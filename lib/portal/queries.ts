@@ -26,7 +26,10 @@ export async function getComplianceScore(companyId: string) {
     .from(reviewResults)
     .innerJoin(reviewCases, eq(reviewCases.id, reviewResults.caseId))
     .where(eq(reviewCases.companyId, companyId));
-  const scores = rows.map((r) => r.score ?? 0).filter((s) => s > 0);
+  // overall_score is numeric(5,2) → drizzle returns string. Coerce to number.
+  const scores = rows
+    .map((r) => (r.score == null ? 0 : Number(r.score)))
+    .filter((s) => s > 0);
   if (scores.length === 0) return 0;
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 }
@@ -99,7 +102,7 @@ export async function getRepeatDeficiencyCount(companyId: string) {
 
   const lowByProvider = new Map<string, number>();
   for (const r of rows) {
-    if (r.providerId && (r.score ?? 100) < 75) {
+    if (r.providerId && Number(r.score ?? 100) < 75) {
       lowByProvider.set(r.providerId, (lowByProvider.get(r.providerId) ?? 0) + 1);
     }
   }
@@ -125,7 +128,7 @@ export async function getSpecialtyCompliance(companyId: string) {
   for (const r of rows) {
     const sp = r.specialty ?? "Other";
     if (!bySpec.has(sp)) bySpec.set(sp, []);
-    bySpec.get(sp)!.push(r.score ?? 0);
+    bySpec.get(sp)!.push(Number(r.score ?? 0));
   }
   const out: Array<{ specialty: string; avg: number; count: number }> = [];
   bySpec.forEach((scores, specialty) => {
@@ -149,7 +152,7 @@ export async function getRiskDistribution(companyId: string) {
 
   let high = 0, medium = 0, low = 0;
   for (const r of rows) {
-    const s = r.score ?? 0;
+    const s = Number(r.score ?? 0);
     if (s < 70) high++;
     else if (s < 85) medium++;
     else low++;
@@ -183,7 +186,7 @@ export async function getNeedsAttention(companyId: string) {
     if (!r.providerId) continue;
     const name = `${r.firstName ?? ""} ${r.lastName ?? ""}`.trim();
     const existing = bestByProv.get(r.providerId);
-    const s = r.score ?? 100;
+    const s = Number(r.score ?? 100);
     if (!existing || s < existing.score) {
       bestByProv.set(r.providerId, { name, score: s });
     }
@@ -242,7 +245,7 @@ export async function getProviderPerformance(companyId: string) {
     }
     if (r.score != null && r.submittedAt) {
       byProv.get(r.providerId)!.scores.push({
-        score: r.score,
+        score: Number(r.score),
         at: new Date(r.submittedAt as any),
       });
     }
