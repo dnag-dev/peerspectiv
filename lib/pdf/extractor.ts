@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { PDFParse } from 'pdf-parse';
+import { callClaude } from '@/lib/ai/anthropic';
 
 const MAX_CHARS = 80000;
 const TEXT_LAYER_THRESHOLD = 200; // < 200 chars => probably scanned
@@ -111,5 +112,93 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<ExtractedPDF> 
       method: 'failed',
       isScanned: true,
     };
+  }
+}
+
+// ─── Chart metadata extraction (D1) ──────────────────────────────────────────
+
+export interface ChartMetadataGuess {
+  provider_first: string | null;
+  provider_last: string | null;
+  specialty_guess: string | null;
+  encounter_date: string | null; // YYYY-MM-DD
+  patient_first: string | null;
+  patient_last: string | null;
+  mrn: string | null;
+  is_pediatric: boolean;
+}
+
+const EMPTY_METADATA: ChartMetadataGuess = {
+  provider_first: null,
+  provider_last: null,
+  specialty_guess: null,
+  encounter_date: null,
+  patient_first: null,
+  patient_last: null,
+  mrn: null,
+  is_pediatric: false,
+};
+
+const METADATA_SYSTEM_PROMPT = `You extract structured metadata from the first few pages of a medical encounter chart.
+Return ONLY valid JSON (no prose) matching this exact schema:
+{
+  "provider_first": string|null,
+  "provider_last": string|null,
+  "specialty_guess": string|null,
+  "encounter_date": "YYYY-MM-DD"|null,
+  "patient_first": string|null,
+  "patient_last": string|null,
+  "mrn": string|null,
+  "is_pediatric": boolean
+}
+specialty_guess must be one of: "Family Medicine", "Internal Medicine", "Pediatrics", "OB/GYN", "Behavioral Health", "Dental", or null.
+is_pediatric is true only when the patient is clearly under 18 (DOB or stated age). If unclear, false.
+Use null for any field you cannot confidently extract. Do not guess.`;
+
+/** Extract patient/provider/encounter metadata from the first ~3 pages of chart text. */
+export async function extractChartMetadata(buffer: Buffer): Promise<ChartMetadataGuess> {
+  let firstPagesText = '';
+  try {
+    const parser = new PDFParse({ data: buffer });
+    const data = await parser.getText();
+    if (Array.isArray(data.pages) && data.pages.length > 0) {
+      firstPagesText = data.pages
+        .slice(0, 3)
+        .map((p: any) => (typeof p === 'string' ? p : p?.text ?? ''))
+        .join('\n')
+        .replace(/-- \d+ of \d+ --/g, '')
+        .trim();
+    } else {
+      // Fallback: take a slice of the full text
+      firstPagesText = (data.text || '').slice(0, 12000).replace(/-- \d+ of \d+ --/g, '').trim();
+    }
+  } catch (err) {
+    console.warn('[pdf] metadata extraction pdf-parse failed:', (err as Error).message);
+    return EMPTY_METADATA;
+  }
+
+  if (!firstPagesText || firstPagesText.length < 50) {
+    return EMPTY_METADATA;
+  }
+
+  try {
+    const userPrompt = `CHART TEXT (first ~3 pages):\n---\n${firstPagesText.slice(0, 12000)}\n---`;
+    const raw = await callClaude(METADATA_SYSTEM_PROMPT, userPrompt, 1024);
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) return EMPTY_METADATA;
+    const parsed = JSON.parse(match[0]);
+    return {
+      provider_first: parsed.provider_first ?? null,
+      provider_last: parsed.provider_last ?? null,
+      specialty_guess: parsed.specialty_guess ?? null,
+      encounter_date: parsed.encounter_date ?? null,
+      patient_first: parsed.patient_first ?? null,
+      patient_last: parsed.patient_last ?? null,
+      mrn: parsed.mrn ?? null,
+      is_pediatric: !!parsed.is_pediatric,
+    };
+  } catch (err) {
+    console.warn('[pdf] metadata Claude call failed:', (err as Error).message);
+    return EMPTY_METADATA;
   }
 }

@@ -37,7 +37,7 @@ async function getWizardData(): Promise<{
   const [companiesRes, providersRes, formsRes] = await Promise.all([
     supabaseAdmin
       .from("companies")
-      .select("id, name")
+      .select("id, name, billing_cycle, fiscal_year_start_month")
       .order("name", { ascending: true }),
     supabaseAdmin
       .from("providers")

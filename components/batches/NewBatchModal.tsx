@@ -1,12 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Upload, Check, ChevronRight, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormBuilderModal } from "@/components/forms/FormBuilderModal";
 
-export type BatchWizardCompany = { id: string; name: string };
+export type BatchWizardCompany = {
+  id: string;
+  name: string;
+  billing_cycle?: string | null;
+  fiscal_year_start_month?: number | null;
+};
 export type BatchWizardProvider = {
   id: string;
   company_id: string;
@@ -84,8 +89,78 @@ interface Row {
   file: File;
   providerId: string;
   encounterDate: string;
+  // D6 — only consulted when batch specialty === "Mixed"
+  rowSpecialty?: string;
+  // D3 — per-row form override (used in Mixed mode, or when multiple forms exist)
+  companyFormId?: string;
   status: "pending" | "uploading" | "done" | "error";
   errorMsg?: string;
+}
+
+/**
+ * D2 — Suggest a batch name from billing cycle + the spread of encounter dates.
+ * Inline per memory rule (no new utility files).
+ *
+ *   monthly    → "<Month YYYY>"          (all dates in same calendar month)
+ *   quarterly  → "Q<n> YYYY" or "Q<n>-Q<m> YYYY"
+ *   semi-annual→ "H1 YYYY" or "H2 YYYY"
+ *   annual     → "YYYY"
+ *
+ *   `fiscalYearStartMonth` reserved for future fiscal-year cycles; quarter math
+ *   here is calendar-based which matches what billing cycles mean today.
+ */
+function suggestBatchName(
+  rows: Array<{ encounterDate: string }>,
+  billingCycle: string | null | undefined,
+  _fiscalYearStartMonth: number | null | undefined
+): string {
+  const dates: Date[] = [];
+  for (const r of rows) {
+    if (!r.encounterDate) continue;
+    const d = new Date(r.encounterDate);
+    if (!isNaN(d.getTime())) dates.push(d);
+  }
+  if (dates.length === 0) return "";
+
+  const cycle = (billingCycle || "").toLowerCase();
+  const years = new Set(dates.map((d) => d.getFullYear()));
+  // Mixed-year batches don't get a clean label
+  if (years.size > 1 && cycle !== "annual") return "";
+  const year = dates[0].getFullYear();
+
+  const months = dates.map((d) => d.getMonth()); // 0..11
+  const quarter = (m: number) => Math.floor(m / 3) + 1; // 1..4
+
+  if (cycle === "monthly") {
+    const allSame = months.every((m) => m === months[0]);
+    if (!allSame) return "";
+    const monthName = new Date(year, months[0], 1).toLocaleString("en-US", {
+      month: "long",
+    });
+    return `${monthName} ${year}`;
+  }
+
+  if (cycle === "quarterly") {
+    const qs = Array.from(new Set(months.map(quarter))).sort((a, b) => a - b);
+    if (qs.length === 1) return `Q${qs[0]} ${year}`;
+    return `Q${qs[0]}-Q${qs[qs.length - 1]} ${year}`;
+  }
+
+  if (cycle === "semi-annual" || cycle === "semiannual") {
+    const halves = new Set(months.map((m) => (m < 6 ? 1 : 2)));
+    if (halves.size === 1) {
+      const h = halves.values().next().value;
+      return `H${h} ${year}`;
+    }
+    return `${year}`;
+  }
+
+  if (cycle === "annual") {
+    if (years.size === 1) return `${year}`;
+    return "";
+  }
+
+  return "";
 }
 
 export function NewBatchModal({
@@ -115,6 +190,10 @@ export function NewBatchModal({
     () => providers.filter((p) => p.company_id === companyId),
     [providers, companyId]
   );
+  const selectedCompany = useMemo(
+    () => companies.find((c) => c.id === companyId) ?? null,
+    [companies, companyId]
+  );
   const specialtyForms = useMemo(
     () => allForms.filter((f) => f.company_id === companyId && f.specialty === specialty),
     [allForms, companyId, specialty]
@@ -124,6 +203,31 @@ export function NewBatchModal({
     const hasForm = new Set(allForms.filter((f) => f.company_id === companyId).map((f) => f.specialty));
     return CORE_SPECIALTIES.filter((s) => hasForm.has(s));
   }, [allForms, companyId]);
+  const isMixed = specialty === "Mixed";
+
+  // D3 — find candidate forms for a given (companyId, specialty)
+  function formsFor(spec: string): BatchWizardForm[] {
+    return allForms.filter(
+      (f) => f.company_id === companyId && f.specialty === spec && f.is_active
+    );
+  }
+
+  // D2 — auto-fill batch name from billing cycle + encounter dates whenever
+  // those inputs change, but only if the user hasn't manually edited it.
+  const batchNameTouched = useRef(false);
+  const suggestedName = useMemo(
+    () =>
+      suggestBatchName(
+        rows.map((r) => ({ encounterDate: r.encounterDate })),
+        selectedCompany?.billing_cycle ?? null,
+        selectedCompany?.fiscal_year_start_month ?? null
+      ),
+    [rows, selectedCompany]
+  );
+  useEffect(() => {
+    if (batchNameTouched.current) return;
+    if (suggestedName) setBatchName(suggestedName);
+  }, [suggestedName]);
 
   function reset() {
     setStep(1);
@@ -134,6 +238,7 @@ export function NewBatchModal({
     setRows([]);
     setSubmitting(false);
     setSubmitError(null);
+    batchNameTouched.current = false;
   }
 
   function handleClose() {
@@ -146,17 +251,29 @@ export function NewBatchModal({
     if (!files) return;
     const pdfs = Array.from(files).filter((f) => f.name.toLowerCase().endsWith(".pdf"));
     const next: Row[] = pdfs.map((f) => {
-      const { lastName } = parseFilename(f.name);
+      const parsed = parseFilename(f.name);
       // find best provider match within companyProviders
-      const match = lastName
+      const match = parsed.lastName
         ? companyProviders.find(
-            (p) => p.last_name?.toLowerCase() === lastName.toLowerCase()
+            (p) => p.last_name?.toLowerCase() === parsed.lastName!.toLowerCase()
           )
         : null;
+      // D6 — seed per-row specialty from filename guess (Mixed mode only)
+      const rowSpec = isMixed
+        ? parsed.specialty ?? match?.specialty ?? ""
+        : undefined;
+      // D3 — auto-attach a row-level form if exactly one matches the row's specialty
+      let rowFormId: string | undefined = undefined;
+      if (isMixed && rowSpec) {
+        const candidates = formsFor(rowSpec);
+        if (candidates.length === 1) rowFormId = candidates[0].id;
+      }
       return {
         file: f,
         providerId: match?.id ?? companyProviders[0]?.id ?? "",
         encounterDate: "",
+        rowSpecialty: rowSpec,
+        companyFormId: rowFormId,
         status: "pending",
       };
     });
@@ -181,19 +298,28 @@ export function NewBatchModal({
       }
 
       // 1. Create the batch + cases
+      // In Mixed mode, validate every row has a specialty + send per-row.
+      if (isMixed) {
+        const missing = rows.find((r) => !r.rowSpecialty);
+        if (missing) {
+          throw new Error("Every row needs a specialty when batch type is Mixed.");
+        }
+      }
+
       const createRes = await fetch("/api/batches", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           batch_name: batchName,
           company_id: companyId,
-          specialty,
-          company_form_id: effectiveFormId,
+          specialty: isMixed ? "Mixed" : specialty,
+          company_form_id: isMixed ? null : effectiveFormId,
           cases: rows.map((r) => ({
             provider_id: r.providerId,
-            specialty_required: specialty,
+            specialty_required: isMixed ? r.rowSpecialty! : specialty,
             encounter_date: r.encounterDate || null,
             chart_file_name: r.file.name,
+            company_form_id: r.companyFormId ?? null,
           })),
         }),
       });
@@ -203,9 +329,19 @@ export function NewBatchModal({
         throw new Error(body.error || "Batch creation failed");
       }
 
-      const { data: batch, cases } = (await createRes.json()) as {
+      const {
+        data: batch,
+        batches: createdBatches,
+        cases,
+      } = (await createRes.json()) as {
         data: { id: string };
-        cases: Array<{ id: string; chart_file_name: string | null; provider_id: string | null }>;
+        batches?: Array<{ id: string; batch_name: string }>;
+        cases: Array<{
+          id: string;
+          chart_file_name: string | null;
+          provider_id: string | null;
+          batch_id?: string | null;
+        }>;
       };
 
       // 2. For each row, match a case by filename and upload PDF
@@ -250,8 +386,14 @@ export function NewBatchModal({
         return;
       }
 
-      // Navigate to the new batch
-      router.push(`/batches/${batch.id}`);
+      // Navigate. For Mixed (split) batches, drop user on the batches index so
+      // they can see all the new child batches; otherwise jump straight in.
+      const splitCount = createdBatches?.length ?? 1;
+      if (isMixed && splitCount > 1) {
+        router.push(`/batches`);
+      } else {
+        router.push(`/batches/${batch.id}`);
+      }
       router.refresh();
       setTimeout(() => {
         setOpen(false);
@@ -265,13 +407,14 @@ export function NewBatchModal({
 
   // Auto-attach: if the chosen (company, specialty) has exactly one approved form,
   // stamp it silently and skip the manual form-picker step.
+  // Mixed mode also skips the form step entirely — per-row forms attach later.
   const autoAttachedFormId = specialtyForms.length === 1 ? specialtyForms[0].id : "";
   const effectiveFormId = companyFormId || autoAttachedFormId;
-  const skipFormStep = specialtyForms.length === 1;
+  const skipFormStep = isMixed || specialtyForms.length === 1;
 
   function goNext() {
     if (step === 2 && skipFormStep) {
-      if (!companyFormId) setCompanyFormId(autoAttachedFormId);
+      if (!isMixed && !companyFormId) setCompanyFormId(autoAttachedFormId);
       setStep(4);
       return;
     }
@@ -287,9 +430,14 @@ export function NewBatchModal({
   }
 
   const canNext1 = !!companyId;
-  const canNext2 = !!specialty && availableSpecialties.includes(specialty);
+  const canNext2 =
+    !!specialty &&
+    (isMixed || availableSpecialties.includes(specialty));
   const canNext3 = !!effectiveFormId;
-  const canNext4 = rows.length > 0 && !!batchName.trim();
+  const canNext4 =
+    rows.length > 0 &&
+    !!batchName.trim() &&
+    (!isMixed || rows.every((r) => !!r.rowSpecialty));
 
   return (
     <>
@@ -393,6 +541,26 @@ export function NewBatchModal({
                         {s}
                       </button>
                     ))}
+                    {/* D6 — Mixed-specialty option. Server splits into one batch per specialty. */}
+                    {availableSpecialties.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSpecialty("Mixed");
+                          setCompanyFormId("");
+                        }}
+                        className={`rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
+                          specialty === "Mixed"
+                            ? "border-cobalt-600 bg-cobalt-100 text-cobalt-600"
+                            : "border-dashed border-ink-300 bg-white hover:border-cobalt-600 hover:bg-cobalt-50"
+                        }`}
+                      >
+                        Mixed
+                        <div className="text-xs font-normal text-ink-500">
+                          Multiple specialties — server splits into separate batches
+                        </div>
+                      </button>
+                    )}
                   </div>
                   {availableSpecialties.length === 0 && (
                     <p className="rounded-lg border border-amber-600 bg-amber-100 px-4 py-3 text-xs text-amber-700">
@@ -456,10 +624,18 @@ export function NewBatchModal({
                     </label>
                     <input
                       value={batchName}
-                      onChange={(e) => setBatchName(e.target.value)}
+                      onChange={(e) => {
+                        batchNameTouched.current = true;
+                        setBatchName(e.target.value);
+                      }}
                       placeholder="e.g. Q2 2026 — OB/GYN charts"
                       className="w-full rounded-lg border border-ink-300 px-4 py-2.5 text-sm focus:border-cobalt-600 focus:outline-none"
                     />
+                    {suggestedName && !batchNameTouched.current && (
+                      <p className="mt-1 text-xs text-ink-500">
+                        Auto-filled from billing cycle. Edit to override.
+                      </p>
+                    )}
                   </div>
 
                   <label
@@ -494,42 +670,105 @@ export function NewBatchModal({
 
                   {rows.length > 0 && (
                     <div className="space-y-2">
-                      {rows.map((row, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-3 rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate font-medium text-ink-900">
-                              {row.file.name}
+                      {rows.map((row, i) => {
+                        // D3 — pick the row's effective specialty (Mixed vs single)
+                        const rowSpec = isMixed ? row.rowSpecialty || "" : specialty;
+                        const rowFormCandidates = rowSpec ? formsFor(rowSpec) : [];
+                        const showRowFormPicker =
+                          isMixed && rowFormCandidates.length > 1;
+                        return (
+                          <div
+                            key={i}
+                            className="flex flex-wrap items-center gap-2 rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate font-medium text-ink-900">
+                                {row.file.name}
+                              </div>
+                              <div className="text-xs text-ink-500">
+                                {(row.file.size / 1024).toFixed(0)} KB
+                              </div>
                             </div>
-                            <div className="text-xs text-ink-500">
-                              {(row.file.size / 1024).toFixed(0)} KB
-                            </div>
+
+                            <select
+                              value={row.providerId}
+                              onChange={(e) =>
+                                updateRow(i, { providerId: e.target.value })
+                              }
+                              className="rounded-md border border-ink-300 px-2 py-1.5 text-xs"
+                            >
+                              <option value="">Pick provider…</option>
+                              {companyProviders.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                  {p.first_name} {p.last_name}
+                                  {p.specialty ? ` — ${p.specialty}` : ""}
+                                </option>
+                              ))}
+                            </select>
+
+                            <input
+                              type="date"
+                              value={row.encounterDate}
+                              onChange={(e) =>
+                                updateRow(i, { encounterDate: e.target.value })
+                              }
+                              className="rounded-md border border-ink-300 px-2 py-1.5 text-xs"
+                              title="Encounter date"
+                            />
+
+                            {isMixed && (
+                              <select
+                                value={row.rowSpecialty || ""}
+                                onChange={(e) => {
+                                  const newSpec = e.target.value;
+                                  // Re-evaluate single-form auto-attach for the new specialty
+                                  const candidates = newSpec ? formsFor(newSpec) : [];
+                                  updateRow(i, {
+                                    rowSpecialty: newSpec,
+                                    companyFormId:
+                                      candidates.length === 1
+                                        ? candidates[0].id
+                                        : undefined,
+                                  });
+                                }}
+                                className="rounded-md border border-ink-300 px-2 py-1.5 text-xs"
+                              >
+                                <option value="">Specialty…</option>
+                                {availableSpecialties.map((s) => (
+                                  <option key={s} value={s}>
+                                    {s}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+
+                            {showRowFormPicker && (
+                              <select
+                                value={row.companyFormId || ""}
+                                onChange={(e) =>
+                                  updateRow(i, { companyFormId: e.target.value })
+                                }
+                                className="rounded-md border border-ink-300 px-2 py-1.5 text-xs"
+                                title="Review form"
+                              >
+                                <option value="">Pick form…</option>
+                                {rowFormCandidates.map((f) => (
+                                  <option key={f.id} value={f.id}>
+                                    {f.form_name}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+
+                            <button
+                              onClick={() => removeRow(i)}
+                              className="rounded p-1 text-ink-400 hover:bg-ink-100 hover:text-critical-600"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
                           </div>
-
-                          <select
-                            value={row.providerId}
-                            onChange={(e) => updateRow(i, { providerId: e.target.value })}
-                            className="rounded-md border border-ink-300 px-2 py-1.5 text-xs"
-                          >
-                            <option value="">Pick provider…</option>
-                            {companyProviders.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.first_name} {p.last_name}
-                                {p.specialty ? ` — ${p.specialty}` : ""}
-                              </option>
-                            ))}
-                          </select>
-
-                          <button
-                            onClick={() => removeRow(i)}
-                            className="rounded p-1 text-ink-400 hover:bg-ink-100 hover:text-critical-600"
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>

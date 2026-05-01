@@ -5,6 +5,7 @@ import { analyzeChart } from '@/lib/ai/chart-analyzer';
 import { auditLog } from '@/lib/utils/audit';
 import { db } from '@/lib/db';
 import { retentionSchedule } from '@/lib/db/schema';
+import { extractChartMetadata } from '@/lib/pdf/extractor';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Verify case exists
     const { data: caseData, error: caseError } = await supabaseAdmin
       .from('review_cases')
-      .select('id')
+      .select('id, encounter_date')
       .eq('id', caseId)
       .single();
 
@@ -64,14 +65,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // D1: extract patient/provider/encounter metadata from the PDF
+    let metadata: Awaited<ReturnType<typeof extractChartMetadata>> | null = null;
+    try {
+      metadata = await extractChartMetadata(buffer);
+    } catch (metaErr) {
+      console.warn('[API] chart metadata extraction failed for case:', caseId, metaErr);
+    }
+
+    // Build the case update — only fill fields we have.
+    const caseUpdate: Record<string, unknown> = {
+      chart_file_path: blobUrl,
+      chart_file_name: file.name,
+      updated_at: new Date().toISOString(),
+    };
+    if (metadata) {
+      if (metadata.patient_first) caseUpdate.patient_first_name = metadata.patient_first;
+      if (metadata.patient_last) caseUpdate.patient_last_name = metadata.patient_last;
+      if (metadata.mrn) caseUpdate.mrn_number = metadata.mrn;
+      if (typeof metadata.is_pediatric === 'boolean') caseUpdate.is_pediatric = metadata.is_pediatric;
+      // Only set encounter_date if not already present
+      if (metadata.encounter_date && !caseData.encounter_date) {
+        caseUpdate.encounter_date = metadata.encounter_date;
+      }
+    }
+
     // Update review_cases with chart info (store blob URL instead of path)
     await supabaseAdmin
       .from('review_cases')
-      .update({
-        chart_file_path: blobUrl,
-        chart_file_name: file.name,
-        updated_at: new Date().toISOString(),
-      })
+      .update(caseUpdate)
       .eq('id', caseId);
 
     // Audit log -- case_id only, no filename (PHI protection)
@@ -102,7 +124,10 @@ export async function POST(request: NextRequest) {
       console.error('[API] Background analysis after upload failed for case:', caseId, err);
     });
 
-    return NextResponse.json({ success: true, path: blobUrl }, { status: 201 });
+    return NextResponse.json(
+      { success: true, path: blobUrl, metadata: metadata ?? null },
+      { status: 201 }
+    );
   } catch (err) {
     console.error('[API] POST /api/upload/chart error:', err);
     return NextResponse.json(

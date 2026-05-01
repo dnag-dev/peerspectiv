@@ -174,6 +174,32 @@ export default async function CaseDetailPage({
           <CaseStatusBadge status={reviewCase.status} />
           <AIStatusBadge status={reviewCase.ai_analysis_status} />
         </div>
+        {/* D7 — admin-only patient identifiers, used for disambiguation. Never
+            surfaced in invoices or client reports. */}
+        {(reviewCase.patient_first_name ||
+          reviewCase.patient_last_name ||
+          reviewCase.mrn_number) && (
+          <p className="text-xs text-muted-foreground">
+            Patient:{" "}
+            <span className="font-medium text-foreground">
+              {[reviewCase.patient_first_name, reviewCase.patient_last_name]
+                .filter(Boolean)
+                .join(" ") || "—"}
+            </span>
+            {reviewCase.mrn_number && (
+              <>
+                {" "}
+                &middot; MRN{" "}
+                <span className="font-mono">{reviewCase.mrn_number}</span>
+              </>
+            )}
+            {reviewCase.is_pediatric && (
+              <Badge variant="secondary" className="ml-2 text-[10px]">
+                Pediatric
+              </Badge>
+            )}
+          </p>
+        )}
       </div>
 
       {/* Case info header cards */}

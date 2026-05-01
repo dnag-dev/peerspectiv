@@ -7,6 +7,7 @@ export interface Company {
   status: 'active' | 'archived';
   notes: string | null;
   itemize_invoice?: boolean | null;
+  delivery_preference?: 'email' | 'portal' | 'both' | null;
   created_at: string;
   updated_at: string;
 }
@@ -77,6 +78,11 @@ export interface ReviewCase {
   priority: 'normal' | 'high' | 'urgent';
   notes: string | null;
   batch_period: string | null;
+  // Post-Ashton review (009): admin-only patient identifiers + pediatric flag
+  mrn_number?: string | null;
+  patient_first_name?: string | null;
+  patient_last_name?: string | null;
+  is_pediatric?: boolean | null;
   created_at: string;
   updated_at: string;
   provider?: Provider;
