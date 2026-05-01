@@ -15,7 +15,12 @@ export async function PATCH(
       full_name,
       email,
       specialty,
+      specialties,
       board_certification,
+      license_number,
+      license_state,
+      credential_valid_until,
+      max_case_load,
       status,
     } = body as {
       rate_type?: 'per_minute' | 'per_report' | 'per_hour';
@@ -23,7 +28,12 @@ export async function PATCH(
       full_name?: string;
       email?: string;
       specialty?: string;
+      specialties?: string[];
       board_certification?: string | null;
+      license_number?: string | null;
+      license_state?: string | null;
+      credential_valid_until?: string | null;
+      max_case_load?: number | string;
       status?: string;
     };
 
@@ -51,7 +61,18 @@ export async function PATCH(
       update.email = v;
     }
 
-    if (specialty != null) {
+    // Multi-specialty: if specialties[] provided, also write specialty=specialties[0]
+    if (Array.isArray(specialties)) {
+      const cleaned = specialties.map((s) => s.trim()).filter(Boolean);
+      if (cleaned.length === 0) {
+        return NextResponse.json(
+          { error: 'specialties cannot be empty', code: 'VALIDATION_ERROR' },
+          { status: 400 }
+        );
+      }
+      update.specialties = cleaned;
+      update.specialty = cleaned[0];
+    } else if (specialty != null) {
       const v = specialty.trim();
       if (!v) {
         return NextResponse.json(
@@ -65,6 +86,32 @@ export async function PATCH(
     if (board_certification !== undefined) {
       const v = typeof board_certification === 'string' ? board_certification.trim() : '';
       update.board_certification = v || null;
+    }
+
+    if (license_number !== undefined) {
+      const v = typeof license_number === 'string' ? license_number.trim() : '';
+      update.license_number = v || null;
+    }
+
+    if (license_state !== undefined) {
+      const v = typeof license_state === 'string' ? license_state.trim() : '';
+      update.license_state = v || null;
+    }
+
+    if (credential_valid_until !== undefined) {
+      const v = typeof credential_valid_until === 'string' ? credential_valid_until.trim() : '';
+      update.credential_valid_until = v || null;
+    }
+
+    if (max_case_load !== undefined && max_case_load !== null && max_case_load !== '') {
+      const n = Math.max(1, Number(max_case_load) || 0);
+      if (!Number.isFinite(n) || n < 1) {
+        return NextResponse.json(
+          { error: 'Invalid max_case_load', code: 'VALIDATION_ERROR' },
+          { status: 400 }
+        );
+      }
+      update.max_case_load = n;
     }
 
     if (status != null) {

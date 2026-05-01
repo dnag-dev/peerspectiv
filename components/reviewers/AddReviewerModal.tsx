@@ -22,10 +22,6 @@ const SPECIALTIES = [
   'OB/GYN',
   'Behavioral Health',
   'Dental',
-  'Cardiology',
-  'Dermatology',
-  'Emergency Medicine',
-  'Other',
 ];
 
 const RATE_TYPES = [
@@ -37,8 +33,12 @@ const RATE_TYPES = [
 export function AddReviewerModal({ open, onClose, onSuccess }: Props) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [specialty, setSpecialty] = useState(SPECIALTIES[0]);
+  const [specialties, setSpecialties] = useState<string[]>([SPECIALTIES[0]]);
   const [boardCert, setBoardCert] = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
+  const [licenseState, setLicenseState] = useState('');
+  const [credentialValidUntil, setCredentialValidUntil] = useState('');
+  const [maxCaseLoad, setMaxCaseLoad] = useState('75');
   const [rateType, setRateType] = useState<'per_minute' | 'per_report' | 'per_hour'>('per_minute');
   const [rateAmount, setRateAmount] = useState('1.00');
   const [submitting, setSubmitting] = useState(false);
@@ -47,16 +47,30 @@ export function AddReviewerModal({ open, onClose, onSuccess }: Props) {
   function reset() {
     setFullName('');
     setEmail('');
-    setSpecialty(SPECIALTIES[0]);
+    setSpecialties([SPECIALTIES[0]]);
     setBoardCert('');
+    setLicenseNumber('');
+    setLicenseState('');
+    setCredentialValidUntil('');
+    setMaxCaseLoad('75');
     setRateType('per_minute');
     setRateAmount('1.00');
     setError(null);
   }
 
+  function toggleSpecialty(s: string) {
+    setSpecialties((prev) =>
+      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
+    );
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (specialties.length === 0) {
+      setError('Select at least one specialty');
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch('/api/reviewers', {
@@ -65,8 +79,12 @@ export function AddReviewerModal({ open, onClose, onSuccess }: Props) {
         body: JSON.stringify({
           full_name: fullName,
           email,
-          specialty,
+          specialties,
           board_certification: boardCert || null,
+          license_number: licenseNumber || null,
+          license_state: licenseState || null,
+          credential_valid_until: credentialValidUntil || null,
+          max_case_load: Number(maxCaseLoad) || 75,
           rate_type: rateType,
           rate_amount: Number(rateAmount),
         }),
@@ -88,7 +106,7 @@ export function AddReviewerModal({ open, onClose, onSuccess }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Reviewer</DialogTitle>
         </DialogHeader>
@@ -121,20 +139,22 @@ export function AddReviewerModal({ open, onClose, onSuccess }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink-700 mb-1">
-              Specialty <span className="text-critical-600">*</span>
+            <label className="block text-sm font-medium text-ink-700 mb-2">
+              Specialties <span className="text-critical-600">*</span>
             </label>
-            <select
-              value={specialty}
-              onChange={(e) => setSpecialty(e.target.value)}
-              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
-            >
+            <div className="grid grid-cols-2 gap-2">
               {SPECIALTIES.map((s) => (
-                <option key={s} value={s}>
+                <label key={s} className="flex items-center gap-2 text-sm text-ink-700">
+                  <input
+                    type="checkbox"
+                    checked={specialties.includes(s)}
+                    onChange={() => toggleSpecialty(s)}
+                    className="rounded border-ink-300"
+                  />
                   {s}
-                </option>
+                </label>
               ))}
-            </select>
+            </div>
           </div>
 
           <div>
@@ -148,6 +168,63 @@ export function AddReviewerModal({ open, onClose, onSuccess }: Props) {
               placeholder="e.g. ABFM, ABIM"
               className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1">
+                License Number
+              </label>
+              <input
+                type="text"
+                value={licenseNumber}
+                onChange={(e) => setLicenseNumber(e.target.value)}
+                className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1">
+                License State
+              </label>
+              <input
+                type="text"
+                value={licenseState}
+                onChange={(e) => setLicenseState(e.target.value)}
+                placeholder="e.g. CA"
+                maxLength={2}
+                className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm uppercase"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1">
+                Credential Valid Until
+              </label>
+              <input
+                type="date"
+                value={credentialValidUntil}
+                onChange={(e) => setCredentialValidUntil(e.target.value)}
+                className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              />
+              <p className="mt-1 text-xs text-ink-500">
+                Leave blank to keep reviewer inactive until set.
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1">
+                Max Case Load
+              </label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={maxCaseLoad}
+                onChange={(e) => setMaxCaseLoad(e.target.value)}
+                className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              />
+            </div>
           </div>
 
           <div className="rounded-md border border-ink-200 bg-ink-50 p-3 space-y-3">

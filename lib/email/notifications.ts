@@ -38,6 +38,65 @@ export async function sendEmail(params: {
   }
 }
 
+/**
+ * Notify the credentialing inbox about a newly created reviewer (or expiring
+ * credential). Falls back to console.log when RESEND_API_KEY is unset, matching
+ * the leads endpoint pattern.
+ */
+export async function sendCredentialingAlert(params: {
+  reviewerId: string;
+  reviewerName: string;
+  email: string;
+  specialties: string[];
+  /** Optional override subject — used by the expiry-warning cron. */
+  subject?: string;
+  /** Optional message body, e.g. "Credential expires on 2026-05-30" */
+  bodyHtml?: string;
+}): Promise<{ delivery: 'email' | 'log' }> {
+  const to = process.env.CREDENTIALING_EMAIL || 'credentialing@peerspectiv.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.ai';
+  const editUrl = `${appUrl}/credentials`;
+
+  const subject =
+    params.subject ?? `Credentialing review needed: ${params.reviewerName}`;
+  const html =
+    params.bodyHtml ??
+    `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color:#0F2044;">New Reviewer Awaiting Credentialing</h2>
+        <p><strong>${params.reviewerName}</strong> (${params.email}) was added and is currently inactive.</p>
+        <p>Specialties: ${params.specialties.join(', ') || '—'}</p>
+        <p>Please review credentials and set the expiry date to activate the reviewer.</p>
+        <a href="${editUrl}"
+           style="background:#1E4DB7;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:16px;">
+          Open Credentialing
+        </a>
+      </div>
+    `;
+
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[credentialing] (no RESEND_API_KEY — printing to log)', {
+      to,
+      subject,
+      reviewer: params.reviewerName,
+    });
+    return { delivery: 'log' };
+  }
+
+  try {
+    await getResend().emails.send({
+      from: 'Peerspectiv <notifications@peerspectiv.com>',
+      to,
+      subject,
+      html,
+    });
+    return { delivery: 'email' };
+  } catch (err) {
+    console.log('[credentialing] send failed:', err);
+    return { delivery: 'log' };
+  }
+}
+
 export async function sendReviewerAssignment(params: {
   reviewerEmail: string;
   reviewerName: string;

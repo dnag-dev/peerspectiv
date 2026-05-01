@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
+import { sendCredentialingAlert } from '@/lib/email/notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,21 +11,37 @@ export async function POST(request: NextRequest) {
       full_name,
       email,
       specialty,
+      specialties,
       board_certification,
+      license_number,
+      license_state,
+      credential_valid_until,
+      max_case_load,
       rate_type,
       rate_amount,
     } = body as {
       full_name?: string;
       email?: string;
       specialty?: string;
+      specialties?: string[];
       board_certification?: string;
+      license_number?: string | null;
+      license_state?: string | null;
+      credential_valid_until?: string | null;
+      max_case_load?: number | string;
       rate_type?: 'per_minute' | 'per_report' | 'per_hour';
       rate_amount?: number | string;
     };
 
-    if (!full_name || !email || !specialty) {
+    // Resolve effective specialties array (multi) and back-compat scalar
+    let specs: string[] = Array.isArray(specialties)
+      ? specialties.map((s) => s.trim()).filter(Boolean)
+      : [];
+    if (specs.length === 0 && specialty) specs = [specialty];
+
+    if (!full_name || !email || specs.length === 0) {
       return NextResponse.json(
-        { error: 'full_name, email, and specialty are required', code: 'VALIDATION_ERROR' },
+        { error: 'full_name, email, and at least one specialty are required', code: 'VALIDATION_ERROR' },
         { status: 400 }
       );
     }
@@ -45,14 +62,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const mcl = max_case_load != null ? Math.max(1, Number(max_case_load) || 75) : 75;
+
+    // No credential expiry → keep reviewer inactive until credentialing reviews.
+    const initialStatus = credential_valid_until ? 'active' : 'inactive';
+
     const { data, error } = await supabaseAdmin
       .from('reviewers')
       .insert({
         full_name,
         email,
-        specialty,
+        specialty: specs[0],
+        specialties: specs,
         board_certification: board_certification ?? null,
-        status: 'active',
+        license_number: license_number ?? null,
+        license_state: license_state ?? null,
+        credential_valid_until: credential_valid_until ?? null,
+        max_case_load: mcl,
+        status: initialStatus,
         availability_status: 'available',
         active_cases_count: 0,
         total_reviews_completed: 0,
@@ -69,6 +96,16 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Fire-and-forget credentialing notification.
+    void sendCredentialingAlert({
+      reviewerId: data.id,
+      reviewerName: data.full_name ?? full_name,
+      email: data.email ?? email,
+      specialties: specs,
+    }).catch((err) => {
+      console.error('[API] sendCredentialingAlert failed:', err);
+    });
 
     return NextResponse.json({ data });
   } catch (err) {

@@ -1,8 +1,9 @@
 'use client';
 
 // Despite the filename this is the full reviewer editor (name, email,
-// specialty, board cert, rate). Kept the file name to avoid a rename churn
-// across the codebase — the export is also aliased as `EditReviewerModal`.
+// specialties, board cert, license, credential expiry, caseload, rate).
+// Kept the file name to avoid a rename churn across the codebase — the
+// export is also aliased as `EditReviewerModal`.
 
 import { useEffect, useState } from 'react';
 import {
@@ -20,8 +21,13 @@ interface Reviewer {
   full_name: string | null;
   email: string | null;
   specialty: string | null;
+  specialties?: string[] | null;
   rate_type: string | null;
   rate_amount: string | number | null;
+  license_number?: string | null;
+  license_state?: string | null;
+  credential_valid_until?: string | null;
+  max_case_load?: number | null;
 }
 
 interface Props {
@@ -39,7 +45,12 @@ interface Props {
     full_name: string;
     email: string;
     specialty: string;
+    specialties: string[];
     board_certification: string | null;
+    license_number: string | null;
+    license_state: string | null;
+    credential_valid_until: string | null;
+    max_case_load: number;
     rate_type: RateType;
     rate_amount: number;
   }) => void;
@@ -52,10 +63,6 @@ const SPECIALTIES = [
   'OB/GYN',
   'Behavioral Health',
   'Dental',
-  'Cardiology',
-  'Dermatology',
-  'Emergency Medicine',
-  'Other',
 ];
 
 const RATE_TYPES = [
@@ -63,6 +70,14 @@ const RATE_TYPES = [
   { value: 'per_report' as const, label: 'Per report', suffix: '$/report' },
   { value: 'per_hour' as const, label: 'Per hour', suffix: '$/hour' },
 ];
+
+function initialSpecialties(r: Reviewer): string[] {
+  if (Array.isArray(r.specialties) && r.specialties.length > 0) {
+    return r.specialties;
+  }
+  if (r.specialty) return [r.specialty];
+  return [SPECIALTIES[0]];
+}
 
 export function EditRateModal({
   open,
@@ -76,8 +91,14 @@ export function EditRateModal({
   const id = reviewer.id;
   const [fullName, setFullName] = useState(reviewer.full_name ?? '');
   const [email, setEmail] = useState(reviewer.email ?? '');
-  const [specialty, setSpecialty] = useState(reviewer.specialty ?? SPECIALTIES[0]);
+  const [specialties, setSpecialties] = useState<string[]>(initialSpecialties(reviewer));
   const [boardCert, setBoardCert] = useState(boardCertification ?? '');
+  const [licenseNumber, setLicenseNumber] = useState(reviewer.license_number ?? '');
+  const [licenseState, setLicenseState] = useState(reviewer.license_state ?? '');
+  const [credentialValidUntil, setCredentialValidUntil] = useState(
+    reviewer.credential_valid_until ? String(reviewer.credential_valid_until).slice(0, 10) : ''
+  );
+  const [maxCaseLoad, setMaxCaseLoad] = useState(String(reviewer.max_case_load ?? 75));
   const [rateType, setRateType] = useState<RateType>(
     (currentRateType ?? (reviewer.rate_type as RateType)) ?? 'per_minute'
   );
@@ -92,24 +113,48 @@ export function EditRateModal({
     if (!open) return;
     setFullName(reviewer.full_name ?? '');
     setEmail(reviewer.email ?? '');
-    setSpecialty(reviewer.specialty ?? SPECIALTIES[0]);
+    setSpecialties(initialSpecialties(reviewer));
     setBoardCert(boardCertification ?? '');
+    setLicenseNumber(reviewer.license_number ?? '');
+    setLicenseState(reviewer.license_state ?? '');
+    setCredentialValidUntil(
+      reviewer.credential_valid_until
+        ? String(reviewer.credential_valid_until).slice(0, 10)
+        : ''
+    );
+    setMaxCaseLoad(String(reviewer.max_case_load ?? 75));
     setRateType(((currentRateType ?? (reviewer.rate_type as RateType)) ?? 'per_minute'));
     setRateAmount(String(currentRateAmount ?? Number(reviewer.rate_amount ?? 1)));
     setError(null);
   }, [open, reviewer, boardCertification, currentRateType, currentRateAmount]);
 
+  function toggleSpecialty(s: string) {
+    setSpecialties((prev) =>
+      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
+    );
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (specialties.length === 0) {
+      setError('Select at least one specialty');
+      return;
+    }
     setSubmitting(true);
     try {
       const ra = Number(rateAmount);
+      const mcl = Math.max(1, Number(maxCaseLoad) || 75);
       const payload = {
         full_name: fullName.trim(),
         email: email.trim(),
-        specialty,
+        specialty: specialties[0],
+        specialties,
         board_certification: boardCert.trim() || null,
+        license_number: licenseNumber.trim() || null,
+        license_state: licenseState.trim() || null,
+        credential_valid_until: credentialValidUntil || null,
+        max_case_load: mcl,
         rate_type: rateType,
         rate_amount: ra,
       };
@@ -134,7 +179,7 @@ export function EditRateModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Reviewer</DialogTitle>
         </DialogHeader>
@@ -167,20 +212,22 @@ export function EditRateModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink-700 mb-1">
-              Specialty <span className="text-critical-600">*</span>
+            <label className="block text-sm font-medium text-ink-700 mb-2">
+              Specialties <span className="text-critical-600">*</span>
             </label>
-            <select
-              value={specialty}
-              onChange={(e) => setSpecialty(e.target.value)}
-              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
-            >
+            <div className="grid grid-cols-2 gap-2">
               {SPECIALTIES.map((s) => (
-                <option key={s} value={s}>
+                <label key={s} className="flex items-center gap-2 text-sm text-ink-700">
+                  <input
+                    type="checkbox"
+                    checked={specialties.includes(s)}
+                    onChange={() => toggleSpecialty(s)}
+                    className="rounded border-ink-300"
+                  />
                   {s}
-                </option>
+                </label>
               ))}
-            </select>
+            </div>
           </div>
 
           <div>
@@ -194,6 +241,59 @@ export function EditRateModal({
               placeholder="e.g. ABFM, ABIM"
               className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1">
+                License Number
+              </label>
+              <input
+                type="text"
+                value={licenseNumber}
+                onChange={(e) => setLicenseNumber(e.target.value)}
+                className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1">
+                License State
+              </label>
+              <input
+                type="text"
+                value={licenseState}
+                onChange={(e) => setLicenseState(e.target.value)}
+                maxLength={2}
+                className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm uppercase"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1">
+                Credential Valid Until
+              </label>
+              <input
+                type="date"
+                value={credentialValidUntil}
+                onChange={(e) => setCredentialValidUntil(e.target.value)}
+                className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1">
+                Max Case Load
+              </label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={maxCaseLoad}
+                onChange={(e) => setMaxCaseLoad(e.target.value)}
+                className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              />
+            </div>
           </div>
 
           <div className="rounded-md border border-ink-200 bg-ink-50 p-3">
