@@ -3,7 +3,7 @@ import { TopBar } from '@/components/layout/TopBar';
 import { MobileNavProvider } from '@/components/layout/MobileNavContext';
 import { AshChat } from '@/components/ash/AshChat';
 import { db } from '@/lib/db';
-import { reviewCases, reviewers } from '@/lib/db/schema';
+import { reviewCases, reviewers, caseReassignmentRequests } from '@/lib/db/schema';
 import { eq, ne, sql } from 'drizzle-orm';
 
 async function getAdminContext() {
@@ -23,14 +23,20 @@ async function getAdminContext() {
       .from(reviewers)
       .where(ne(reviewers.availabilityStatus, 'available'));
 
+    const [reassignRow] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(caseReassignmentRequests)
+      .where(eq(caseReassignmentRequests.status, 'open'));
+
     return {
       overdueCount: Number(overdueRow?.count ?? 0),
       pendingCount: Number(pendingRow?.count ?? 0),
       unavailableReviewerCount: Number(unavailableRow?.count ?? 0),
+      openReassignmentCount: Number(reassignRow?.count ?? 0),
     };
   } catch (err) {
     console.error('[dashboard layout] failed to load admin context', err);
-    return { overdueCount: 0, pendingCount: 0 };
+    return { overdueCount: 0, pendingCount: 0, openReassignmentCount: 0 };
   }
 }
 
@@ -39,7 +45,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { overdueCount, pendingCount, unavailableReviewerCount } = await getAdminContext();
+  const { overdueCount, pendingCount, unavailableReviewerCount, openReassignmentCount } = await getAdminContext();
 
   const initialGreeting = `Hey 👋 You have ${overdueCount} overdue cases and ${pendingCount} pending your approval. What do you need?`;
 
@@ -61,7 +67,7 @@ export default async function DashboardLayout({
   return (
     <MobileNavProvider>
       <div className="flex h-screen overflow-hidden">
-        <Sidebar />
+        <Sidebar openReassignmentCount={openReassignmentCount} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <TopBar />
           <main className="flex-1 overflow-y-auto bg-paper-canvas p-4 md:p-6">

@@ -12,6 +12,7 @@ import {
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { ReviewerCaseSplit } from "@/components/reviewer/ReviewerCaseSplit";
+import { RequestReassignmentButton } from "@/components/reviewer/RequestReassignmentButton";
 import { auth } from "@clerk/nextjs/server";
 
 export const dynamic = "force-dynamic";
@@ -143,13 +144,10 @@ async function loadFormFields(
   }
 }
 
-export default async function ReviewerCasePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id: caseId } = await params;
-
+// Section F1: extracted so the group/[providerId]/[batchPeriod] tabbed page
+// can render the same per-case detail content inside a tab without
+// duplicating all the data-loading + AI-prefill assembly logic.
+export async function renderReviewerCaseDetail(caseId: string) {
   // 1) Fetch the case
   const caseRows = await db
     .select()
@@ -424,7 +422,14 @@ export default async function ReviewerCasePage({
                 #{caseRefShort}
               </div>
             </div>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <RequestReassignmentButton
+                caseId={caseId}
+                alreadyRequested={
+                  (reviewCase as unknown as { reassignmentRequested?: boolean })
+                    .reassignmentRequested === true
+                }
+              />
               <span
                 className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${dueColorClass}`}
               >
@@ -458,8 +463,18 @@ export default async function ReviewerCasePage({
           reviewerLicense={reviewerLicense}
           initialMrnNumber={(reviewCase as unknown as { mrnNumber?: string | null }).mrnNumber ?? null}
           allowAiNarrative={allowAiNarrative}
+          chartTextExtracted={analysisRow?.chartTextExtracted ?? null}
         />
       </div>
     </div>
   );
+}
+
+export default async function ReviewerCasePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id: caseId } = await params;
+  return renderReviewerCaseDetail(caseId);
 }

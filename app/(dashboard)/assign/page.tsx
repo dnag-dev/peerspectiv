@@ -2,6 +2,8 @@ import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { AssignmentQueue } from "@/components/assign/AssignmentQueue";
+import { AssignTabsNav } from "@/components/assign/AssignTabsNav";
+import { AssignedTab, type AssignedRow } from "@/components/assign/AssignedTab";
 import { Layers, Inbox } from "lucide-react";
 import type { ReviewCase, Reviewer, Provider, Company } from "@/types";
 
@@ -91,12 +93,65 @@ async function getApprovedTodayCount(): Promise<number> {
   return (data ?? []).length;
 }
 
-export default async function AssignPage() {
-  const pendingCases = await getPendingCases();
-  const alternateReviewers = await getAlternateReviewers(pendingCases);
+async function getAssignedRows(): Promise<AssignedRow[]> {
+  const { data, error } = await supabaseAdmin
+    .from("review_cases")
+    .select(
+      `
+      id, status, due_date, specialty_required, batch_id,
+      provider:providers(id, first_name, last_name, specialty),
+      reviewer:reviewers(id, full_name),
+      company:companies(id, name),
+      batch:batches(id, batch_name)
+    `
+    )
+    .in("status", ["assigned", "in_progress"])
+    .order("due_date", { ascending: true });
+
+  if (error) {
+    console.error("[assign] Failed to fetch assigned cases:", error);
+    return [];
+  }
+
+  return (data || []).map((c: any) => ({
+    id: c.id,
+    status: c.status,
+    due_date: c.due_date,
+    specialty_required: c.specialty_required,
+    batch_id: c.batch_id,
+    batch_name: c.batch?.batch_name ?? null,
+    provider: c.provider
+      ? {
+          id: c.provider.id,
+          first_name: c.provider.first_name,
+          last_name: c.provider.last_name,
+          specialty: c.provider.specialty,
+        }
+      : null,
+    reviewer: c.reviewer
+      ? { id: c.reviewer.id, full_name: c.reviewer.full_name }
+      : null,
+    company: c.company ? { id: c.company.id, name: c.company.name } : null,
+  }));
+}
+
+export default async function AssignPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const sp = await searchParams;
+  const activeTab = sp?.tab === "assigned" ? "assigned" : "pending";
+
+  const [pendingCases, assignedRows] = await Promise.all([
+    getPendingCases(),
+    getAssignedRows(),
+  ]);
+
+  const alternateReviewers =
+    activeTab === "pending" ? await getAlternateReviewers(pendingCases) : {};
   const approvedToday = await getApprovedTodayCount();
 
-  // Avg match across the pending queue (parsed from notes.confidence)
   const confidences = pendingCases
     .map((c) => {
       try {
@@ -116,6 +171,25 @@ export default async function AssignPage() {
     pendingCases.map((c) => c.batch_id).filter(Boolean)
   ).size;
 
+  // Filter dropdown options for the Assigned tab.
+  const companyMap = new Map<string, string>();
+  const reviewerMap = new Map<string, string>();
+  const specialtySet = new Set<string>();
+  for (const r of assignedRows) {
+    if (r.company?.id && r.company.name) companyMap.set(r.company.id, r.company.name);
+    if (r.reviewer?.id && r.reviewer.full_name)
+      reviewerMap.set(r.reviewer.id, r.reviewer.full_name);
+    const s = r.specialty_required ?? r.provider?.specialty;
+    if (s) specialtySet.add(s);
+  }
+  const companies = Array.from(companyMap, ([id, name]) => ({ id, name })).sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+  const reviewers = Array.from(reviewerMap, ([id, full_name]) => ({ id, full_name })).sort(
+    (a, b) => a.full_name.localeCompare(b.full_name)
+  );
+  const specialties = Array.from(specialtySet).sort();
+
   return (
     <div className="space-y-5">
       {/* Page header */}
@@ -133,6 +207,8 @@ export default async function AssignPage() {
       <div className="flex items-center justify-between gap-4 rounded-lg border border-ink-200 bg-paper-surface px-5 py-3.5 shadow-sm">
         <div className="flex items-center gap-5">
           <StatBlock label="Pending" value={pendingCases.length.toString()} />
+          <span className="w-px h-8 bg-ink-200" />
+          <StatBlock label="Assigned" value={assignedRows.length.toString()} />
           <span className="w-px h-8 bg-ink-200" />
           <StatBlock label="Approved today" value={approvedToday.toString()} />
           <span className="w-px h-8 bg-ink-200" />
@@ -153,29 +229,44 @@ export default async function AssignPage() {
         </div>
       </div>
 
-      {/* Queue content */}
-      {pendingCases.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <Inbox className="mb-4 h-12 w-12 text-ink-400" />
-            <h3 className="text-h3 text-ink-900">No pending assignments</h3>
-            <p className="mt-1 max-w-sm text-small text-ink-500">
-              All AI-suggested assignments have been reviewed. Check the batches
-              page to trigger new assignments.
-            </p>
-            <Link
-              href="/batches"
-              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-cobalt-700 hover:underline"
-            >
-              <Layers className="h-4 w-4" />
-              Go to Batches
-            </Link>
-          </CardContent>
-        </Card>
+      {/* Tabs */}
+      <AssignTabsNav
+        pendingCount={pendingCases.length}
+        assignedCount={assignedRows.length}
+      />
+
+      {/* Tab content */}
+      {activeTab === "pending" ? (
+        pendingCases.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <Inbox className="mb-4 h-12 w-12 text-ink-400" />
+              <h3 className="text-h3 text-ink-900">No pending assignments</h3>
+              <p className="mt-1 max-w-sm text-small text-ink-500">
+                All AI-suggested assignments have been reviewed. Check the batches
+                page to trigger new assignments.
+              </p>
+              <Link
+                href="/batches"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-cobalt-700 hover:underline"
+              >
+                <Layers className="h-4 w-4" />
+                Go to Batches
+              </Link>
+            </CardContent>
+          </Card>
+        ) : (
+          <AssignmentQueue
+            pendingCases={pendingCases}
+            alternateReviewers={alternateReviewers}
+          />
+        )
       ) : (
-        <AssignmentQueue
-          pendingCases={pendingCases}
-          alternateReviewers={alternateReviewers}
+        <AssignedTab
+          rows={assignedRows}
+          companies={companies}
+          reviewers={reviewers}
+          specialties={specialties}
         />
       )}
     </div>
@@ -200,4 +291,3 @@ function StatBlock({
     </div>
   );
 }
-

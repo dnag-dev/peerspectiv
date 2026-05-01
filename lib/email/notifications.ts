@@ -97,6 +97,73 @@ export async function sendCredentialingAlert(params: {
   }
 }
 
+/**
+ * Notify the admin inbox when a reviewer requests reassignment of a case.
+ * Falls back to console.log when RESEND_API_KEY is unset (matches sendCredentialingAlert).
+ */
+export async function sendReassignmentRequestAlert(params: {
+  caseId: string;
+  reviewerName: string;
+  reviewerEmail?: string | null;
+  providerName?: string | null;
+  reason: string;
+}): Promise<{ delivery: 'email' | 'log' }> {
+  const to = process.env.ADMIN_EMAIL || 'admin@peerspectiv.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.ai';
+  const reviewUrl = `${appUrl}/reassignments`;
+
+  const subject = `Reassignment requested: case ${params.caseId.slice(0, 8)}`;
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color:#0F2044;">Reviewer requested reassignment</h2>
+      <p><strong>${params.reviewerName}</strong>${
+        params.reviewerEmail ? ` (${params.reviewerEmail})` : ''
+      } has asked to be reassigned from case <code>${params.caseId}</code>${
+        params.providerName ? ` (provider: ${params.providerName})` : ''
+      }.</p>
+      <p style="background:#F8FAFC;border-left:3px solid #1E4DB7;padding:12px 16px;margin:16px 0;">
+        <em>${escapeHtml(params.reason)}</em>
+      </p>
+      <a href="${reviewUrl}"
+         style="background:#1E4DB7;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:8px;">
+        Review reassignment requests
+      </a>
+    </div>
+  `;
+
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[reassignment] (no RESEND_API_KEY — printing to log)', {
+      to,
+      subject,
+      caseId: params.caseId,
+      reviewer: params.reviewerName,
+    });
+    return { delivery: 'log' };
+  }
+
+  try {
+    await getResend().emails.send({
+      from: 'Peerspectiv <notifications@peerspectiv.com>',
+      to,
+      subject,
+      html,
+    });
+    return { delivery: 'email' };
+  } catch (err) {
+    console.log('[reassignment] send failed:', err);
+    return { delivery: 'log' };
+  }
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export async function sendReviewerAssignment(params: {
   reviewerEmail: string;
   reviewerName: string;

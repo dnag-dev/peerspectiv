@@ -19,6 +19,7 @@ import {
   FileText,
   Tag,
   Settings,
+  ArrowUpDown,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -45,6 +46,8 @@ export interface SidebarNavItem {
   icon: LucideIcon;
   group?: string;
   dim?: boolean;
+  /** Optional count badge — only rendered when > 0. */
+  badge?: number;
 }
 
 interface SidebarShellProps {
@@ -103,6 +106,17 @@ export function SidebarShell({
           className="h-[18px] w-[18px] flex-shrink-0"
         />
         <span className="truncate">{item.label}</span>
+        {typeof item.badge === "number" && item.badge > 0 && (
+          <span
+            className={`ml-auto inline-flex min-w-[20px] items-center justify-center rounded-pill px-1.5 py-0.5 font-mono text-[10px] font-medium ${
+              isActive
+                ? "bg-cobalt-100 text-cobalt-800"
+                : "bg-amber-500/20 text-amber-300"
+            }`}
+          >
+            {item.badge}
+          </span>
+        )}
       </Link>
     );
   };
@@ -211,35 +225,38 @@ export function SidebarShell({
 
 /* ---------- Default export: admin + reviewer wrapper ---------- */
 
-const adminNavItems: SidebarNavItem[] = [
-  { label: "Dashboard",      href: "/dashboard",  icon: LayoutDashboard },
-  { label: "Companies",      href: "/companies",  icon: Building2 },
-  { label: "Batches",        href: "/batches",    icon: FolderOpen },
-  { label: "Assign",         href: "/assign",     icon: UserCheck },
-  { label: "Reviewers",      href: "/reviewers",  icon: ClipboardCheck },
-  { label: "Credentials",    href: "/credentials", icon: ShieldCheck },
-  { label: "Forms",          href: "/forms",      icon: FileText },
-  { label: "Payouts",        href: "/payouts",    icon: DollarSign },
-  { label: "Invoices",       href: "/invoices",   icon: Receipt },
-  { label: "Reports",        href: "/reports",    icon: BarChart3 },
-  { label: "Tags",           href: "/tags",       icon: Tag },
-  { label: "Settings",       href: "/settings",   icon: Settings },
-  { label: "Command Center", href: "/command",    icon: Terminal },
-];
+function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
+  return [
+    { label: "Dashboard",      href: "/dashboard",  icon: LayoutDashboard },
+    { label: "Companies",      href: "/companies",  icon: Building2 },
+    { label: "Batches",        href: "/batches",    icon: FolderOpen },
+    { label: "Assign",         href: "/assign",     icon: UserCheck },
+    { label: "Reassignments",  href: "/reassignments", icon: ArrowUpDown, badge: openReassignmentCount },
+    { label: "Reviewers",      href: "/reviewers",  icon: ClipboardCheck },
+    { label: "Credentials",    href: "/credentials", icon: ShieldCheck },
+    { label: "Forms",          href: "/forms",      icon: FileText },
+    { label: "Payouts",        href: "/payouts",    icon: DollarSign },
+    { label: "Invoices",       href: "/invoices",   icon: Receipt },
+    { label: "Reports",        href: "/reports",    icon: BarChart3 },
+    { label: "Tags",           href: "/tags",       icon: Tag },
+    { label: "Settings",       href: "/settings",   icon: Settings },
+    { label: "Command Center", href: "/command",    icon: Terminal },
+  ];
+}
 
 const reviewerNavItems: SidebarNavItem[] = [
   { label: "My Queue", href: "/reviewer/portal",   icon: ClipboardCheck },
   { label: "Earnings", href: "/reviewer/earnings", icon: DollarSign },
 ];
 
-export function Sidebar() {
+export function Sidebar({ openReassignmentCount = 0 }: { openReassignmentCount?: number } = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const { mobileNavOpen, closeMobileNav } = useMobileNav();
 
   const isReviewer = pathname === "/reviewer" || pathname.startsWith("/reviewer/");
   const role: SidebarRole = isReviewer ? "reviewer" : "admin";
-  const navItems = isReviewer ? reviewerNavItems : adminNavItems;
+  const navItems = isReviewer ? reviewerNavItems : buildAdminNavItems(openReassignmentCount);
 
   const session = useClerkSession({
     fallbackName: isReviewer ? "Dr. Richard Johnson" : "Ashton Williams",
