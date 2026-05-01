@@ -26,6 +26,9 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [itemizeInvoice, setItemizeInvoice] = useState<boolean>(
+    Boolean(company.itemize_invoice)
+  );
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,6 +42,7 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
       contact_email: (formData.get("contact_email") as string) || null,
       contact_phone: (formData.get("contact_phone") as string) || null,
       notes: (formData.get("notes") as string) || null,
+      itemize_invoice: itemizeInvoice,
     };
 
     if (!payload.name.trim()) {
@@ -98,6 +102,15 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
             <Label htmlFor="edit-notes">Notes</Label>
             <Textarea id="edit-notes" name="notes" defaultValue={company.notes ?? ""} rows={3} />
           </div>
+          <label className="flex items-center gap-2 text-sm text-ink-700">
+            <input
+              type="checkbox"
+              checked={itemizeInvoice}
+              onChange={(e) => setItemizeInvoice(e.target.checked)}
+              className="h-4 w-4 rounded border-ink-300 text-cobalt-600 focus:ring-cobalt-600"
+            />
+            Itemize invoices (show per-provider breakdown on PDF)
+          </label>
           {error && <p className="text-sm text-critical-600">{error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>

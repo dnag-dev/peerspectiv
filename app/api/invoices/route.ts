@@ -77,7 +77,28 @@ export async function POST(req: NextRequest) {
       notes,
       dueDate: overrideDueDate,
       createPaymentLink: shouldCreatePaymentLink,
+      quantityOverride: rawQuantityOverride,
+      adjustmentReason: rawAdjustmentReason,
     } = body as Record<string, any>;
+
+    const quantityOverride =
+      rawQuantityOverride === undefined ||
+      rawQuantityOverride === null ||
+      rawQuantityOverride === ''
+        ? null
+        : Number.isFinite(Number(rawQuantityOverride))
+          ? Math.trunc(Number(rawQuantityOverride))
+          : null;
+    const adjustmentReason =
+      typeof rawAdjustmentReason === 'string' && rawAdjustmentReason.trim()
+        ? rawAdjustmentReason.trim()
+        : null;
+    if (quantityOverride !== null && !adjustmentReason) {
+      return NextResponse.json(
+        { error: 'adjustmentReason is required when quantityOverride is set' },
+        { status: 400 }
+      );
+    }
 
     if (!companyId || !rangeStart || !rangeEnd) {
       return NextResponse.json(
@@ -115,7 +136,8 @@ export async function POST(req: NextRequest) {
       overrideUnitPrice ?? company.perReviewRate ?? globalRate
     );
 
-    const subtotal = +(unitPrice * reviewCount).toFixed(2);
+    const billedQuantity = quantityOverride ?? reviewCount;
+    const subtotal = +(unitPrice * billedQuantity).toFixed(2);
     const tax = Number(taxAmount ?? 0);
     const total = +(subtotal + tax).toFixed(2);
 
@@ -129,11 +151,51 @@ export async function POST(req: NextRequest) {
     const lineItems = [
       {
         description: `Peer reviews completed (${rangeStart} — ${rangeEnd})`,
-        quantity: reviewCount,
+        quantity: billedQuantity,
         unitPrice,
         lineTotal: subtotal,
       },
     ];
+
+    // Compute per-provider itemized lines if company opted in
+    let itemizedLines: Array<{
+      provider_name: string;
+      count: number;
+      rate: number;
+      total: number;
+    }> | null = null;
+    if ((company as any).itemizeInvoice) {
+      const itemRows = (await db.execute(sql`
+        SELECT p.id AS provider_id,
+               COALESCE(p.first_name, '') AS first_name,
+               COALESCE(p.last_name, '') AS last_name,
+               COUNT(rr.id)::int AS cnt
+        FROM review_results rr
+        INNER JOIN review_cases rc ON rc.id = rr.case_id
+        LEFT JOIN providers p ON p.id = rc.provider_id
+        WHERE rc.company_id = ${companyId}
+          AND rr.submitted_at >= ${rangeStart}::date
+          AND rr.submitted_at < (${rangeEnd}::date + INTERVAL '1 day')
+        GROUP BY p.id, p.first_name, p.last_name
+        ORDER BY last_name, first_name
+      `)).rows as Array<{
+        provider_id: string | null;
+        first_name: string;
+        last_name: string;
+        cnt: number;
+      }>;
+      itemizedLines = itemRows.map((r) => {
+        const name =
+          `${r.first_name} ${r.last_name}`.trim() || 'Unassigned provider';
+        const count = Number(r.cnt);
+        return {
+          provider_name: name,
+          count,
+          rate: unitPrice,
+          total: +(unitPrice * count).toFixed(2),
+        };
+      });
+    }
 
     const [created] = await db
       .insert(invoices)
@@ -155,8 +217,32 @@ export async function POST(req: NextRequest) {
         dueDate,
         notes: notes ?? null,
         createdBy: userId,
+        quantityOverride: quantityOverride ?? undefined,
+        adjustmentReason: adjustmentReason ?? undefined,
+        itemizedLines: itemizedLines ?? undefined,
       })
       .returning();
+
+    // Audit log: quantity override
+    if (quantityOverride !== null) {
+      try {
+        const { auditLog } = await import('@/lib/utils/audit');
+        await auditLog({
+          userId,
+          action: 'invoice_quantity_override',
+          resourceType: 'invoice',
+          resourceId: created.id,
+          metadata: {
+            original: reviewCount,
+            override: quantityOverride,
+            reason: adjustmentReason,
+          },
+          request: req,
+        });
+      } catch (e) {
+        console.error('[invoices.create] audit log failed:', e);
+      }
+    }
 
     // Render PDF + push to blob (always, per Phase 3 contract)
     let pdfUrl: string | null = null;

@@ -38,6 +38,14 @@ export interface InvoicePdfData {
   currency: string;
   paymentLinkUrl?: string | null;
   notes?: string | null;
+  quantityOverride?: number | null;
+  adjustmentReason?: string | null;
+  itemizedLines?: Array<{
+    provider_name: string;
+    count: number;
+    rate: number;
+    total: number;
+  }> | null;
 }
 
 const fmtMoney = (n: number, ccy: string) =>
@@ -139,6 +147,33 @@ export function InvoicePdf({ data }: { data: InvoicePdfData }) {
           ))}
         </View>
 
+        {/* Per-provider breakdown (itemized — never includes patient/MRN) */}
+        {data.itemizedLines && data.itemizedLines.length > 0 && (
+          <View style={{ marginTop: 14 }}>
+            <Text style={styles.eyebrow}>PROVIDER BREAKDOWN</Text>
+            <View style={[styles.invoiceTable, { marginTop: 4 }]}>
+              <View style={styles.invoiceTableHeader}>
+                <Text style={{ flex: 4 }}>Provider</Text>
+                <Text style={{ flex: 1, textAlign: 'right' }}>Reviews</Text>
+                <Text style={{ flex: 1.5, textAlign: 'right' }}>Rate</Text>
+                <Text style={{ flex: 1.5, textAlign: 'right' }}>Total</Text>
+              </View>
+              {data.itemizedLines.map((row, i) => (
+                <View key={`item-${i}`} style={styles.invoiceTableRow}>
+                  <Text style={{ flex: 4 }}>{row.provider_name}</Text>
+                  <Text style={{ flex: 1, textAlign: 'right' }}>{row.count}</Text>
+                  <Text style={{ flex: 1.5, textAlign: 'right' }}>
+                    {fmtMoney(row.rate, data.currency)}
+                  </Text>
+                  <Text style={{ flex: 1.5, textAlign: 'right' }}>
+                    {fmtMoney(row.total, data.currency)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* Totals */}
         <View style={{ marginTop: 12, paddingHorizontal: 6 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 10 }}>
@@ -175,6 +210,16 @@ export function InvoicePdf({ data }: { data: InvoicePdfData }) {
             </Text>
           </View>
         </View>
+
+        {/* Adjustments footer line */}
+        {data.adjustmentReason ? (
+          <View style={{ marginTop: 8, paddingHorizontal: 6 }}>
+            <Text style={{ fontSize: 9, color: colors.ink600, fontStyle: 'italic' }}>
+              Adjustments: Quantity adjusted from {data.reviewCount} to{' '}
+              {data.quantityOverride ?? data.reviewCount} — {data.adjustmentReason}
+            </Text>
+          </View>
+        ) : null}
 
         {/* Payment block */}
         <View

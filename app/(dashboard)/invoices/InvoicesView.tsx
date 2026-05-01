@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   FileText,
@@ -10,6 +10,10 @@ import {
   ExternalLink,
   Loader2,
   X,
+  Search,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,11 +76,124 @@ export function InvoicesView({ invoices, companies }: Props) {
   const [rangeStart, setRangeStart] = useState(fmt(ninetyAgo));
   const [rangeEnd, setRangeEnd] = useState(fmt(today));
   const [createPaymentLink, setCreatePaymentLink] = useState(false);
+  const [quantityOverride, setQuantityOverride] = useState<string>("");
+  const [adjustmentReason, setAdjustmentReason] = useState<string>("");
+
+  // Filter / sort state
+  const [searchQ, setSearchQ] = useState("");
+  const [companyFilter, setCompanyFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  type SortKey =
+    | "invoiceNumber"
+    | "companyName"
+    | "rangeStart"
+    | "reviewCount"
+    | "totalAmount"
+    | "status";
+  type SortDir = "asc" | "desc";
+  const [sortKey, setSortKey] = useState<SortKey>("invoiceNumber");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const filtered = useMemo(() => {
+    const q = searchQ.trim().toLowerCase();
+    return invoices.filter((inv) => {
+      if (companyFilter !== "all" && inv.companyId !== companyFilter) return false;
+      if (statusFilter !== "all" && inv.status !== statusFilter) return false;
+      if (!q) return true;
+      return (
+        inv.invoiceNumber.toLowerCase().includes(q) ||
+        (inv.companyName ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [invoices, companyFilter, statusFilter, searchQ]);
+
+  const visibleInvoices = useMemo(() => {
+    const arr = [...filtered];
+    arr.sort((a, b) => {
+      let av: number | string = "";
+      let bv: number | string = "";
+      switch (sortKey) {
+        case "invoiceNumber":
+          av = a.invoiceNumber.toLowerCase();
+          bv = b.invoiceNumber.toLowerCase();
+          break;
+        case "companyName":
+          av = (a.companyName ?? "").toLowerCase();
+          bv = (b.companyName ?? "").toLowerCase();
+          break;
+        case "rangeStart":
+          av = a.rangeStart ?? "";
+          bv = b.rangeStart ?? "";
+          break;
+        case "reviewCount":
+          av = a.reviewCount;
+          bv = b.reviewCount;
+          break;
+        case "totalAmount":
+          av = Number(a.totalAmount);
+          bv = Number(b.totalAmount);
+          break;
+        case "status":
+          av = a.status;
+          bv = b.status;
+          break;
+      }
+      if (av < bv) return sortDir === "asc" ? -1 : 1;
+      if (av > bv) return sortDir === "asc" ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }, [filtered, sortKey, sortDir]);
+
+  function toggleSort(k: SortKey) {
+    if (sortKey === k) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(k);
+      setSortDir("asc");
+    }
+  }
+
+  function SortHead({
+    label,
+    k,
+    align = "left",
+  }: {
+    label: string;
+    k: SortKey;
+    align?: "left" | "right";
+  }) {
+    const active = sortKey === k;
+    const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+    return (
+      <th
+        onClick={() => toggleSort(k)}
+        className={`px-4 py-3 cursor-pointer select-none hover:text-ink-900 ${
+          align === "right" ? "text-right" : "text-left"
+        }`}
+      >
+        <span className="inline-flex items-center gap-1">
+          {label}
+          <Icon className={`h-3 w-3 ${active ? "text-cobalt-600" : "text-ink-300"}`} />
+        </span>
+      </th>
+    );
+  }
 
   async function handleCreate() {
     setErr(null);
     if (!companyId) {
       setErr("Select a company");
+      return;
+    }
+    const qoTrim = quantityOverride.trim();
+    const qoNum = qoTrim === "" ? null : Number(qoTrim);
+    if (qoTrim !== "" && (!Number.isFinite(qoNum) || (qoNum as number) < 0)) {
+      setErr("Quantity override must be a non-negative integer");
+      return;
+    }
+    if (qoNum !== null && !adjustmentReason.trim()) {
+      setErr("Adjustment reason is required when quantity override is set");
       return;
     }
     setBusy("create");
@@ -87,11 +204,20 @@ export function InvoicesView({ invoices, companies }: Props) {
           "Content-Type": "application/json",
           "x-demo-user-id": "admin-demo",
         },
-        body: JSON.stringify({ companyId, rangeStart, rangeEnd, createPaymentLink }),
+        body: JSON.stringify({
+          companyId,
+          rangeStart,
+          rangeEnd,
+          createPaymentLink,
+          quantityOverride: qoNum,
+          adjustmentReason: adjustmentReason.trim() || null,
+        }),
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`);
       setShowCreate(false);
+      setQuantityOverride("");
+      setAdjustmentReason("");
       startTransition(() => router.refresh());
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
@@ -198,6 +324,34 @@ export function InvoicesView({ invoices, companies }: Props) {
                 <Input type="date" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} />
               </div>
             </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label>Quantity override (optional)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={1}
+                  placeholder="Leave blank to use auto-computed count"
+                  value={quantityOverride}
+                  onChange={(e) => setQuantityOverride(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>
+                  Adjustment reason{" "}
+                  {quantityOverride.trim() !== "" && (
+                    <span className="text-critical-600">*</span>
+                  )}
+                </Label>
+                <Input
+                  type="text"
+                  placeholder="Required when quantity override is set"
+                  value={adjustmentReason}
+                  onChange={(e) => setAdjustmentReason(e.target.value)}
+                  disabled={quantityOverride.trim() === ""}
+                />
+              </div>
+            </div>
             <label className="flex items-center gap-2 text-sm text-ink-700">
               <input
                 type="checkbox"
@@ -221,29 +375,78 @@ export function InvoicesView({ invoices, companies }: Props) {
         </Card>
       )}
 
+      {/* Filter bar */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="grid gap-3 md:grid-cols-[1fr_200px_160px]">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+              <Input
+                value={searchQ}
+                onChange={(e) => setSearchQ(e.target.value)}
+                placeholder="Search invoice number, company…"
+                className="pl-9"
+              />
+            </div>
+            <Select value={companyFilter} onValueChange={setCompanyFilter}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All companies</SelectItem>
+                {companies.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any status</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="sent">Sent</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="overdue">Overdue</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="mt-3 text-xs text-ink-500">
+            Showing <strong>{visibleInvoices.length}</strong> of {invoices.length} invoices
+          </p>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
               <tr>
-                <th className="px-4 py-3 text-left">Number</th>
-                <th className="px-4 py-3 text-left">Company</th>
-                <th className="px-4 py-3 text-left">Period</th>
-                <th className="px-4 py-3 text-right">Reviews</th>
-                <th className="px-4 py-3 text-right">Total</th>
-                <th className="px-4 py-3 text-left">Status</th>
+                <SortHead label="Number" k="invoiceNumber" />
+                <SortHead label="Company" k="companyName" />
+                <SortHead label="Period" k="rangeStart" />
+                <SortHead label="Reviews" k="reviewCount" align="right" />
+                <SortHead label="Total" k="totalAmount" align="right" />
+                <SortHead label="Status" k="status" />
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {invoices.length === 0 && (
+              {visibleInvoices.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-4 py-12 text-center text-ink-500">
-                    No invoices yet. Click <strong>New Invoice</strong> to generate one.
+                    {invoices.length === 0 ? (
+                      <>No invoices yet. Click <strong>New Invoice</strong> to generate one.</>
+                    ) : (
+                      <>No invoices match your filters.</>
+                    )}
                   </td>
                 </tr>
               )}
-              {invoices.map((inv) => {
+              {visibleInvoices.map((inv) => {
                 const total = Number(inv.totalAmount);
                 return (
                   <tr key={inv.id} className="border-t border-ink-100 hover:bg-ink-50/50">

@@ -6,6 +6,7 @@ export interface Company {
   contact_phone: string | null;
   status: 'active' | 'archived';
   notes: string | null;
+  itemize_invoice?: boolean | null;
   created_at: string;
   updated_at: string;
 }

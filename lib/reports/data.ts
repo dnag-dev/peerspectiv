@@ -399,12 +399,16 @@ export async function fetchInvoicePdfDataFromInvoice(
     notes: string | null;
     due_date: string | null;
     created_at: string;
+    quantity_override: number | null;
+    adjustment_reason: string | null;
+    itemized_lines: unknown;
   };
   const rows = rowsOf<InvoiceRow>(
     await db.execute(sql`
       SELECT invoice_number, company_id, range_start, range_end, unit_price,
              review_count, provider_count, subtotal, tax_amount, total_amount,
-             currency, line_items, payment_link_url, notes, due_date, created_at
+             currency, line_items, payment_link_url, notes, due_date, created_at,
+             quantity_override, adjustment_reason, itemized_lines
       FROM invoices WHERE id = ${invoiceId} LIMIT 1
     `)
   );
@@ -447,6 +451,16 @@ export async function fetchInvoicePdfDataFromInvoice(
     currency: inv.currency,
     paymentLinkUrl: inv.payment_link_url,
     notes: inv.notes,
+    quantityOverride: inv.quantity_override,
+    adjustmentReason: inv.adjustment_reason,
+    itemizedLines: Array.isArray(inv.itemized_lines)
+      ? (inv.itemized_lines as Array<{
+          provider_name: string;
+          count: number;
+          rate: number;
+          total: number;
+        }>)
+      : null,
   };
 }
 
