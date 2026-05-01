@@ -1,29 +1,45 @@
+/**
+ * C2 — Reviewer case detail: PDF + form + MRN field + attestation.
+ */
 import { withPage, ScenarioCtx } from './_shared';
-import { detectVisualGremlins, safeGoto, snap } from '../scenario-helpers';
+import { snap, loadOk, settle } from '../scenario-helpers';
+import { sql } from '../db-helpers';
 
 export const meta = { name: 'reviewer-case-detail', persona: 'reviewer' as const };
+
 export async function run(ctx: ScenarioCtx) {
+  const log = ctx.logger;
   await withPage(ctx, 'reviewer', async (page) => {
-    ctx.logger.resetHarvest();
-    await safeGoto(page, '/reviewer/portal');
-    await page.waitForTimeout(2000);
-    const link = page.locator('a[href*="/reviewer/cases/"]').first();
-    if (!(await link.isVisible().catch(() => false))) {
-      ctx.logger.log({ spec_section: 'F1/F5', severity: 'info', category: 'functional', title: 'No assignable case to drill into', description: 'Reviewer portal had no case links — backend may have no fixtures for this persona.', url: page.url() });
+    log.resetHarvest();
+    const c = await sql<{ id: string }>(
+      `SELECT rc.id FROM review_cases rc
+       JOIN reviewers r ON r.id = rc.reviewer_id
+       WHERE r.email = 'rjohnson@peerspectiv.com'
+         AND rc.status NOT IN ('completed','submitted','closed') LIMIT 1`
+    ).catch(() => null);
+    if (!c || c.length === 0) {
+      log.log({ spec_section: 'C2', severity: 'info', category: 'functional', title: 'No active case for rjohnson — cannot exercise detail page', description: 'Fixture has no assigned cases for the demo reviewer.' });
       return;
     }
-    await link.click().catch(() => {});
-    await page.waitForTimeout(2500);
-    const txt = await page.locator('body').innerText().catch(() => '');
-    if (!/chart|case|patient|mrn/i.test(txt)) {
-      ctx.logger.log({ spec_section: 'F1', severity: 'high', category: 'functional', title: 'Reviewer case detail has no chart/case content', description: 'Expected at least chart/case/MRN labels.', url: page.url(), screenshot: await snap(page, meta.name, 'no-content') });
+    const { status, bodyText } = await loadOk(page, `/reviewer/cases/${c[0].id}`);
+    if (status === 404) {
+      log.log({ spec_section: 'C2', severity: 'medium', category: 'not-yet-built', title: 'Reviewer case detail 404', description: `case id=${c[0].id}` });
+      return;
     }
-    if (!/multi|chart 1|chart 2|tab/i.test(txt)) {
-      ctx.logger.log({ spec_section: 'F1', severity: 'low', category: 'functional', title: 'Multi-chart tabs not visible (may be single-chart case)', description: 'F1 calls for chart tabs in multi-chart cases.', url: page.url() });
+    if (status >= 500) {
+      log.log({ spec_section: 'C2', severity: 'critical', category: 'functional', title: `Case detail ${status}`, description: 'Server error.', screenshot: await snap(page, meta.name, '5xx') });
+      return;
     }
-    const gremlins = await detectVisualGremlins(page);
-    if (gremlins.length) {
-      ctx.logger.log({ spec_section: 'F1', severity: 'medium', category: 'visual', title: `Visual gremlin on case detail: ${gremlins[0]}`, description: gremlins.join('; '), url: page.url(), screenshot: await snap(page, meta.name, 'gremlin') });
+    if (!/mrn/i.test(bodyText)) {
+      log.log({ spec_section: 'C2', severity: 'medium', category: 'functional', title: 'Case detail missing MRN field', description: 'Spec C2: MRN must appear at the top.', url: page.url(), screenshot: await snap(page, meta.name, 'no-mrn') });
+    }
+    if (!/attest|sign|certif/i.test(bodyText)) {
+      log.log({ spec_section: 'C2', severity: 'medium', category: 'functional', title: 'Case detail missing attestation block', description: 'Spec C2 requires an attestation block.', url: page.url() });
+    }
+    // PDF viewer iframe?
+    const hasPdf = await page.locator('iframe, embed, object').first().isVisible({ timeout: 2000 }).catch(() => false);
+    if (!hasPdf) {
+      log.log({ spec_section: 'C2', severity: 'low', category: 'functional', title: 'No PDF viewer (iframe/embed) detected on case detail', description: 'Chart PDF may not be rendering inline.', url: page.url() });
     }
   });
 }

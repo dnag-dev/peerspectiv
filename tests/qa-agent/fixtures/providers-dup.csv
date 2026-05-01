@@ -1,0 +1,6 @@
+npi,first_name,last_name,specialty,email,company_name
+1234567890,Test,Provider,Cardiology,t1@example.com,QA Test Health
+1234567891,Test2,Provider,Neurology,t2@example.com,QA Test Health
+1234567892,Test3,Provider,Orthopedics,t3@example.com,QA Test Health
+1234567893,Test4,Provider,Pediatrics,t4@example.com,QA Test Health
+1234567894,Test5,Provider,Family Medicine,t5@example.com,QA Test Health

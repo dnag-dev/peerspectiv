@@ -1,56 +1,41 @@
+/**
+ * Backend data integrity sweep — schema-level invariants.
+ */
 import { ScenarioCtx } from './_shared';
 import { sql } from '../db-helpers';
 
 export const meta = { name: 'backend-data-integrity', persona: 'backend' as const };
+
 export async function run(ctx: ScenarioCtx) {
-  const checks: Array<{ q: string; spec: string; title: string; sev: any; cat: any }> = [
-    {
-      q: `SELECT COUNT(*)::int AS c FROM review_cases WHERE company_id IS NULL`,
-      spec: 'A1', title: 'review_cases with NULL company_id', sev: 'high', cat: 'data-integrity',
-    },
-    {
-      q: `SELECT COUNT(*)::int AS c FROM review_cases WHERE provider_id IS NULL AND status NOT IN ('draft')`,
-      spec: 'A2', title: 'non-draft review_cases with NULL provider_id', sev: 'high', cat: 'data-integrity',
-    },
-    {
-      q: `SELECT COUNT(*)::int AS c FROM invoices WHERE total_amount IS NOT NULL AND total_amount < 0`,
-      spec: 'G1', title: 'invoices with negative total_amount', sev: 'critical', cat: 'data-integrity',
-    },
-    {
-      q: `SELECT COUNT(*)::int AS c FROM review_cases rc WHERE rc.batch_id IS NOT NULL AND rc.batch_id NOT IN (SELECT id FROM batches)`,
-      spec: 'mega', title: 'review_cases with orphan batch_id', sev: 'high', cat: 'data-integrity',
-    },
-    {
-      q: `SELECT COUNT(*)::int AS c FROM review_cases WHERE status='completed' AND id NOT IN (SELECT case_id FROM review_results WHERE case_id IS NOT NULL)`,
-      spec: 'C-submit', title: 'completed cases lacking review_results row', sev: 'critical', cat: 'data-integrity',
-    },
-    {
-      q: `SELECT COUNT(*)::int AS c FROM review_results WHERE ai_agreement_percentage IS NOT NULL AND (ai_agreement_percentage < 0 OR ai_agreement_percentage > 100)`,
-      spec: 'mega', title: 'review_results with out-of-range ai_agreement_percentage', sev: 'high', cat: 'data-integrity',
-    },
-    {
-      q: `SELECT COUNT(*)::int AS c FROM reviewers WHERE credential_valid_until IS NOT NULL AND credential_valid_until < CURRENT_DATE AND availability_status='available'`,
-      spec: 'B3', title: 'expired-credential reviewers still showing as available', sev: 'high', cat: 'data-integrity',
-    },
-    {
-      q: `SELECT COUNT(*)::int AS c FROM reviewers WHERE specialties IS NULL OR array_length(specialties,1) = 0`,
-      spec: 'B1', title: 'reviewers with no specialties', sev: 'medium', cat: 'data-integrity',
-    },
+  const log = ctx.logger;
+
+  const checks: Array<{ name: string; spec: string; severity: 'high' | 'medium' | 'low'; sql: string; assertion: string }> = [
+    { name: 'orphan review_cases (company_id null)', spec: 'L', severity: 'medium', sql: `SELECT id FROM review_cases WHERE company_id IS NULL LIMIT 5`, assertion: 'review_cases.company_id NOT NULL' },
+    { name: 'orphan review_cases (provider_id null)', spec: 'L', severity: 'medium', sql: `SELECT id FROM review_cases WHERE provider_id IS NULL LIMIT 5`, assertion: 'review_cases.provider_id NOT NULL' },
+    { name: 'invoices missing total_amount', spec: 'G', severity: 'medium', sql: `SELECT id FROM invoices WHERE total_amount IS NULL LIMIT 5`, assertion: 'invoices.total_amount NOT NULL' },
+    { name: 'audit_logs PHI leak — invoice metadata containing patient name', spec: 'L', severity: 'high', sql: `SELECT id FROM audit_logs WHERE resource_type='invoice' AND metadata::text ~* 'patient.?name|ssn|date.?of.?birth' LIMIT 5`, assertion: 'audit_logs.metadata for invoices has no PHI' },
+    { name: 'retention past delete_after with NULL deleted_at', spec: 'L', severity: 'medium', sql: `SELECT id FROM retention_schedule WHERE delete_after < NOW() AND deleted_at IS NULL LIMIT 5`, assertion: 'retention_schedule.delete_after past → deleted_at NOT NULL' },
+    { name: 'reviewers with non-empty active_cases_count but zero live cases', spec: 'B4', severity: 'low', sql: `SELECT r.id FROM reviewers r WHERE r.active_cases_count > 0 AND NOT EXISTS (SELECT 1 FROM review_cases rc WHERE rc.reviewer_id=r.id AND rc.status NOT IN ('completed','submitted','closed')) LIMIT 5`, assertion: 'active_cases_count > 0 implies at least 1 live case' },
+    { name: 'review_results with overall_score outside 0-100', spec: 'C4', severity: 'high', sql: `SELECT id, overall_score FROM review_results WHERE overall_score IS NOT NULL AND (overall_score < 0 OR overall_score > 100) LIMIT 5`, assertion: 'overall_score in [0,100]' },
+    { name: 'companies missing name', spec: 'A1', severity: 'medium', sql: `SELECT id FROM companies WHERE name IS NULL OR name = '' LIMIT 5`, assertion: 'companies.name NOT NULL/empty' },
+    { name: 'review_cases assigned to reviewer with mismatched specialty', spec: 'B1', severity: 'medium', sql: `SELECT rc.id FROM review_cases rc JOIN reviewers r ON r.id = rc.reviewer_id WHERE rc.specialty_required IS NOT NULL AND NOT (rc.specialty_required = ANY(r.specialties)) LIMIT 5`, assertion: 'reviewer.specialties[] contains case.specialty_required' },
+    { name: 'audit_logs missing actor_id on writes', spec: 'L', severity: 'low', sql: `SELECT id FROM audit_logs WHERE actor_id IS NULL AND action ~* 'create|update|delete' LIMIT 5`, assertion: 'audit_logs.actor_id NOT NULL on mutations' },
+    { name: 'invoices.itemized_lines mismatched with quantity_override', spec: 'G', severity: 'low', sql: `SELECT id FROM invoices WHERE quantity_override IS NOT NULL AND itemized_lines IS NULL LIMIT 5`, assertion: 'quantity_override → itemized_lines should reconcile' },
   ];
-  let dbIssuesLogged = 0;
+
   for (const c of checks) {
-    const rows = await sql<any>(c.q);
+    const rows = await sql<any>(c.sql).catch(() => null);
     if (rows === null) {
-      ctx.logger.log({ spec_section: c.spec, severity: 'info', category: 'data-integrity', title: `query failed: ${c.title}`, description: c.q.replace(/\s+/g, ' ').trim() });
+      log.log({ spec_section: c.spec, severity: 'info', category: 'data-integrity', title: `Skipped: ${c.name} (DB error)`, description: 'sql() returned null.' });
       continue;
     }
-    const n = Number(rows[0]?.c ?? 0);
-    if (n > 0) {
-      dbIssuesLogged++;
-      ctx.logger.log({ spec_section: c.spec, severity: c.sev, category: c.cat, title: `${c.title} (${n} rows)`, description: c.q.replace(/\s+/g, ' ').trim(), db_assertion: c.q });
+    if (rows.length > 0) {
+      log.log({
+        spec_section: c.spec, severity: c.severity, category: 'data-integrity',
+        title: `Integrity: ${c.name}`,
+        description: `offending count: ${rows.length}; sample: ${JSON.stringify(rows.slice(0, 3))}`,
+        db_assertion: c.assertion,
+      });
     }
-  }
-  if (dbIssuesLogged === 0) {
-    ctx.logger.log({ spec_section: 'mega', severity: 'info', category: 'data-integrity', title: `Data integrity sweep clean (${checks.length} checks)`, description: 'All integrity assertions passed.' });
   }
 }

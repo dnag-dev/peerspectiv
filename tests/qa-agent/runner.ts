@@ -191,6 +191,32 @@ async function main() {
     harnessNotes.push(`companies count = ${cnt} (< 5); recommend running npm run db:reseed-real`);
   }
 
+  // Preflight: probe persona landing pages (catches route-group breakage).
+  const preflightLogger = new IssueLogger('preflight', 'backend');
+  for (const role of ['admin', 'client', 'reviewer'] as const) {
+    try {
+      const login = await fetch(`${BASE_URL}/api/demo/login`, { method: 'POST', headers: { 'content-type': 'application/json', cookie: 'site_gate=1' }, body: JSON.stringify({ role }) });
+      const cookies: string[] = (login.headers as any).getSetCookie?.() || [];
+      const cookieHeader = ['site_gate=1', ...cookies.map((c) => c.split(';')[0])].join('; ');
+      const landings: Record<string, string> = { admin: '/dashboard', client: '/portal', reviewer: '/reviewer/portal' };
+      const r = await fetch(`${BASE_URL}${landings[role]}`, { headers: { cookie: cookieHeader }, redirect: 'manual' });
+      if (r.status === 404) {
+        preflightLogger.log({
+          spec_section: 'harness/routing',
+          severity: 'blocker',
+          category: 'functional',
+          title: `${role} landing page ${landings[role]} returns 404`,
+          description: `With site_gate + demo_user(${role}) cookies set, GET ${landings[role]} returns 404. This breaks the entire ${role} surface and propagates as "missing content" issues across many scenarios. Likely a route-group registration or build-time failure in app/(dashboard) / app/(client).`,
+          url: `${BASE_URL}${landings[role]}`,
+        });
+      } else if (r.status >= 500) {
+        preflightLogger.log({ spec_section: 'harness/routing', severity: 'critical', category: 'functional', title: `${role} landing ${landings[role]} returned ${r.status}`, description: 'Server error on persona landing.' });
+      }
+    } catch (e: any) {
+      preflightLogger.log({ spec_section: 'harness', severity: 'medium', category: 'functional', title: `Preflight for ${role} threw`, description: e?.message || String(e) });
+    }
+  }
+
   // Self-test
   const selfLogger = new IssueLogger('harness-selftest', 'backend');
   const st = await selfTest(selfLogger);
