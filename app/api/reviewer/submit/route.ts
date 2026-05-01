@@ -19,12 +19,52 @@ interface SubmitBody {
     license_state: string;
     attested_at: string;
   };
+  // Section C.4 additions
+  mrn_number?: string;
+  reviewer_signature_text?: string;
+  // Section C.3 — full yes_no answers used for NA-aware scoring.
+  form_responses?: Record<string, { value: unknown; comment?: string }>;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: SubmitBody = await request.json();
-    const { case_id, criteria_scores, deficiencies, overall_score, narrative_final, time_spent_minutes, license_snapshot } = body;
+    const {
+      case_id,
+      criteria_scores,
+      deficiencies,
+      overall_score: overall_score_in,
+      narrative_final,
+      time_spent_minutes,
+      license_snapshot,
+      mrn_number,
+      reviewer_signature_text,
+      form_responses,
+    } = body;
+    let overall_score = overall_score_in;
+
+    // Section C.3 — yes_no scoring with N/A excluded.
+    // numerator = yes count, denominator = yes + no count.
+    if (form_responses && typeof form_responses === 'object') {
+      let yes = 0;
+      let no = 0;
+      for (const resp of Object.values(form_responses)) {
+        const v = resp?.value;
+        if (v === true || v === 'yes') yes++;
+        else if (v === false || v === 'no') no++;
+        // 'na' (or anything else) is excluded from numerator/denominator
+      }
+      const denom = yes + no;
+      if (denom > 0) {
+        const yesNoScore = Math.round((yes / denom) * 100);
+        // Average with the existing rating-based overall_score when both exist.
+        if (typeof overall_score_in === 'number' && criteria_scores?.length) {
+          overall_score = Math.round((overall_score_in + yesNoScore) / 2);
+        } else {
+          overall_score = yesNoScore;
+        }
+      }
+    }
 
     if (!case_id || !criteria_scores || overall_score == null || !narrative_final) {
       return NextResponse.json(
@@ -123,6 +163,9 @@ export async function POST(request: NextRequest) {
     const licenseNumber = license_snapshot.license_number.trim();
     const licenseState = license_snapshot.license_state.trim().toUpperCase();
 
+    const mrnSnapshot = mrn_number?.trim() || null;
+    const signatureText = reviewer_signature_text?.trim() || null;
+
     const insertedRows = await db
       .insert(reviewResults)
       .values({
@@ -139,6 +182,8 @@ export async function POST(request: NextRequest) {
         reviewerNameSnapshot,
         reviewerLicenseSnapshot: licenseNumber,
         reviewerLicenseStateSnapshot: licenseState,
+        mrnNumber: mrnSnapshot,
+        reviewerSignatureText: signatureText,
       })
       .onConflictDoUpdate({
         target: reviewResults.caseId,
@@ -155,6 +200,8 @@ export async function POST(request: NextRequest) {
           reviewerNameSnapshot,
           reviewerLicenseSnapshot: licenseNumber,
           reviewerLicenseStateSnapshot: licenseState,
+          mrnNumber: mrnSnapshot,
+          reviewerSignatureText: signatureText,
         },
       })
       .returning();
@@ -217,12 +264,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update review_cases status to completed
+    // Update review_cases status to completed (and snapshot MRN — Section C.4)
     await supabaseAdmin
       .from('review_cases')
       .update({
         status: 'completed',
         updated_at: new Date().toISOString(),
+        ...(mrnSnapshot ? { mrn_number: mrnSnapshot } : {}),
       })
       .eq('id', case_id);
 

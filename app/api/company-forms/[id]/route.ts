@@ -18,8 +18,10 @@ export async function GET(
       form_name: string;
       form_fields: unknown;
       is_active: boolean;
+      allow_ai_generated_recommendations: boolean | null;
     }>(
-      `SELECT id, company_id, specialty, form_name, form_fields, is_active
+      `SELECT id, company_id, specialty, form_name, form_fields, is_active,
+              allow_ai_generated_recommendations
        FROM company_forms WHERE id = $1 LIMIT 1`,
       [id]
     );
@@ -44,6 +46,9 @@ export async function PATCH(
     if (typeof body.form_name === 'string') updates.formName = body.form_name;
     if (typeof body.specialty === 'string') updates.specialty = body.specialty;
     if (Array.isArray(body.form_fields)) updates.formFields = body.form_fields;
+    if (typeof body.allow_ai_generated_recommendations === 'boolean') {
+      updates.allowAiGeneratedRecommendations = body.allow_ai_generated_recommendations;
+    }
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
     }

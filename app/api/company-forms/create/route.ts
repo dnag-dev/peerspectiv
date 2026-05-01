@@ -8,6 +8,11 @@ interface FormFieldInput {
   field_type: 'yes_no' | 'rating' | 'text';
   is_required?: boolean;
   display_order?: number;
+  // Section C additions
+  allow_na?: boolean;
+  default_value?: 'yes' | 'no' | 'na' | null;
+  required_text_on_non_default?: boolean;
+  ops_term?: string | null;
 }
 
 // POST /api/company-forms/create
@@ -15,13 +20,22 @@ interface FormFieldInput {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { company_id, specialty, form_name, form_fields, template_pdf_url, template_pdf_name } = body as {
+    const {
+      company_id,
+      specialty,
+      form_name,
+      form_fields,
+      template_pdf_url,
+      template_pdf_name,
+      allow_ai_generated_recommendations,
+    } = body as {
       company_id: string;
       specialty: string;
       form_name: string;
       form_fields: FormFieldInput[];
       template_pdf_url?: string;
       template_pdf_name?: string;
+      allow_ai_generated_recommendations?: boolean;
     };
 
     if (!company_id || !specialty || !form_name || !Array.isArray(form_fields) || form_fields.length === 0) {
@@ -45,13 +59,25 @@ export async function POST(request: NextRequest) {
         uniqueKey = `${key}_${suffix++}`;
       }
       seen.add(uniqueKey);
-      return {
+      const fieldType = ['yes_no', 'rating', 'text'].includes(f.field_type) ? f.field_type : 'text';
+      const out: Record<string, unknown> = {
         field_key: uniqueKey,
         field_label: f.field_label,
-        field_type: ['yes_no', 'rating', 'text'].includes(f.field_type) ? f.field_type : 'text',
+        field_type: fieldType,
         is_required: !!f.is_required,
         display_order: f.display_order ?? idx,
       };
+      // Section C metadata — only persisted when meaningful, never on non-yes_no
+      if (fieldType === 'yes_no') {
+        if (f.allow_na) out.allow_na = true;
+        const dv = f.default_value;
+        if (dv === 'yes' || dv === 'no' || (dv === 'na' && f.allow_na)) {
+          out.default_value = dv;
+        }
+        if (f.required_text_on_non_default) out.required_text_on_non_default = true;
+      }
+      if (f.ops_term) out.ops_term = f.ops_term;
+      return out;
     });
 
     const { data, error } = await supabaseAdmin
@@ -64,6 +90,7 @@ export async function POST(request: NextRequest) {
         is_active: true,
         template_pdf_url: template_pdf_url || null,
         template_pdf_name: template_pdf_name || null,
+        allow_ai_generated_recommendations: !!allow_ai_generated_recommendations,
       })
       .select('id, company_id, specialty, form_name, is_active')
       .single();

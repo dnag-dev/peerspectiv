@@ -20,6 +20,10 @@ interface FormField {
   fieldType: "yes_no" | "rating" | "text";
   isRequired: boolean;
   displayOrder: number;
+  allowNa?: boolean;
+  defaultValue?: "yes" | "no" | "na" | null;
+  requiredTextOnNonDefault?: boolean;
+  opsTerm?: string | null;
 }
 
 interface AiPrefill {
@@ -53,6 +57,8 @@ interface Props {
   aiPrefills: Record<string, AiPrefill>;
   existingResult: ExistingResult | null;
   reviewerLicense?: ReviewerLicense;
+  initialMrnNumber?: string | null;
+  allowAiNarrative?: boolean;
 }
 
 type LeftTab = "ash" | "chart";
@@ -76,6 +82,8 @@ export function ReviewerCaseSplit({
   aiPrefills,
   existingResult,
   reviewerLicense,
+  initialMrnNumber,
+  allowAiNarrative,
 }: Props) {
   const [tab, setTab] = useState<LeftTab>("ash");
   const [savedLayout, setSavedLayout] = useState<{ left: number; right: number } | null>(null);
@@ -279,7 +287,10 @@ export function ReviewerCaseSplit({
                 {(existingResult.overallScore != null || existingResult.narrativeFinal) && (
                   <div className="rounded-xl border border-ink-200 bg-paper-surface p-5">
                     {existingResult.overallScore != null && (
-                      <div className="mb-3">
+                      <div
+                        className="mb-3"
+                        title="Yes/No score = (yes − no) ÷ (yes + no), N/A excluded"
+                      >
                         <div className="text-eyebrow text-ink-500">Overall Score</div>
                         <div className="mt-1 text-h1 text-ink-900">
                           {existingResult.overallScore}
@@ -308,6 +319,8 @@ export function ReviewerCaseSplit({
                 formFields={formFields}
                 aiPrefills={aiPrefills}
                 reviewerLicense={reviewerLicense}
+                initialMrnNumber={initialMrnNumber}
+                allowAiNarrative={allowAiNarrative}
               />
             )}
           </div>

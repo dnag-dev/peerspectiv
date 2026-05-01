@@ -13,6 +13,11 @@ export interface FormField {
   fieldType: FieldType;
   isRequired: boolean;
   displayOrder: number;
+  // Section C metadata (yes_no extensions)
+  allowNa?: boolean;
+  defaultValue?: "yes" | "no" | "na" | null;
+  requiredTextOnNonDefault?: boolean;
+  opsTerm?: string | null;
 }
 
 export type Confidence = "high" | "medium" | "low";
@@ -40,6 +45,8 @@ export interface ReviewFormSubmitData {
     license_state: string;
     attested_at: string;
   };
+  mrn_number?: string;
+  reviewer_signature_text?: string;
 }
 
 export interface ReviewerLicenseInfo {
@@ -56,6 +63,10 @@ interface ReviewFormProps {
   aiPrefills?: Record<string, AIPrefill>;
   onSubmit?: (data: ReviewFormSubmitData) => Promise<void>;
   reviewerLicense?: ReviewerLicenseInfo;
+  /** Existing MRN persisted on review_cases (Section C.4). */
+  initialMrnNumber?: string | null;
+  /** company_forms.allow_ai_generated_recommendations (Section C.5). */
+  allowAiNarrative?: boolean;
 }
 
 interface FieldState {
@@ -107,8 +118,15 @@ export function ReviewForm({
   aiPrefills = {},
   onSubmit,
   reviewerLicense,
+  initialMrnNumber,
+  allowAiNarrative,
 }: ReviewFormProps) {
   const startedAt = useRef(Date.now());
+
+  // ── MRN (Section C.4) ──
+  const [mrnNumber, setMrnNumber] = useState<string>(initialMrnNumber ?? "");
+  const [aiSuggestLoading, setAiSuggestLoading] = useState(false);
+  const [aiSuggestError, setAiSuggestError] = useState<string | null>(null);
 
   // ── License attestation state (Phase 4.B — HRSA audit trail) ──
   const [licenseNumber, setLicenseNumber] = useState<string>(
@@ -164,7 +182,10 @@ export function ReviewForm({
   }, []);
 
   function isEmpty(field: FormField, value: unknown): boolean {
-    if (field.fieldType === "yes_no") return value !== true && value !== false;
+    if (field.fieldType === "yes_no") {
+      // Accept legacy booleans plus the new "na" string.
+      return value !== true && value !== false && value !== "na";
+    }
     if (field.fieldType === "rating") {
       return (
         value == null ||
@@ -190,10 +211,30 @@ export function ReviewForm({
       return;
     }
 
+    // MRN gate (Section C.4) — required, but accepts "redacted"/"N/A" verbatim.
+    if (!mrnNumber.trim()) {
+      setError("MRN Number is required (enter 'redacted' or 'N/A' if unavailable).");
+      return;
+    }
+
     const missing = new Set<string>();
     for (const f of sortedFields) {
       if (f.isRequired && isEmpty(f, state[f.fieldKey]?.value)) {
         missing.add(f.fieldKey);
+      }
+      // Section C.2: if required_text_on_non_default fires, comment must be present.
+      if (f.fieldType === "yes_no" && f.requiredTextOnNonDefault && f.defaultValue) {
+        const v = state[f.fieldKey]?.value;
+        const answered = v === true || v === false || v === "na";
+        const isDefault =
+          (v === true && f.defaultValue === "yes") ||
+          (v === false && f.defaultValue === "no") ||
+          (v === "na" && f.defaultValue === "na");
+        // NA always exempts.
+        if (answered && v !== "na" && !isDefault) {
+          const comment = state[f.fieldKey]?.comment ?? "";
+          if (!comment.trim()) missing.add(f.fieldKey);
+        }
       }
     }
     if (missing.size > 0) {
@@ -224,10 +265,17 @@ export function ReviewForm({
       attested_at: new Date().toISOString(),
     };
 
+    // Section C.4 — assemble reviewer signature text for review_results.
+    const reviewerDisplayName = reviewerLicense?.fullName?.trim() || "Reviewer";
+    const signedOn = new Date().toISOString().slice(0, 10);
+    const reviewerSignatureText = `${reviewerDisplayName}, License ${licenseSnapshot.license_state}-${licenseSnapshot.license_number}, signed ${signedOn}`;
+
     const payload: ReviewFormSubmitData = {
       form_responses,
       reviewer_comments: reviewerComments,
       license_snapshot: licenseSnapshot,
+      mrn_number: mrnNumber.trim(),
+      reviewer_signature_text: reviewerSignatureText,
     };
 
     setSubmitting(true);
@@ -287,6 +335,9 @@ export function ReviewForm({
             narrative_final: narrative.trim() || reviewerComments || "Reviewer submitted form.",
             time_spent_minutes: timeSpent,
             license_snapshot: licenseSnapshot,
+            mrn_number: mrnNumber.trim(),
+            reviewer_signature_text: reviewerSignatureText,
+            form_responses,
           }),
         });
 
@@ -346,6 +397,27 @@ export function ReviewForm({
         <p className="mt-1 text-small text-ink-500">
           Review each field below. AI prefills are shown with confidence
           indicators — override where your clinical judgment differs.
+        </p>
+      </div>
+
+      {/* ── MRN Number (Section C.4) ── */}
+      <div className="rounded-xl border border-ink-200 bg-paper-surface p-5">
+        <label className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+          MRN Number
+          <span className="rounded-full bg-cobalt-50 px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-wide text-cobalt-700">
+            required
+          </span>
+        </label>
+        <input
+          type="text"
+          data-testid="mrn-number-input"
+          value={mrnNumber}
+          onChange={(e) => setMrnNumber(e.target.value)}
+          placeholder='Enter MRN, or type "redacted" / "N/A" if unavailable'
+          className="mt-2 w-full rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm text-ink-900 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
+        />
+        <p className="mt-1 text-xs text-ink-500">
+          Snapshotted onto the review record.
         </p>
       </div>
 
@@ -548,6 +620,22 @@ export function ReviewForm({
                 >
                   No
                 </button>
+                {field.allowNa && (
+                  <button
+                    type="button"
+                    data-testid="field-toggle"
+                    data-field-key={`${field.fieldKey}_na`}
+                    data-value={fieldState.value === "na" ? "true" : "false"}
+                    onClick={() => setFieldValue(field.fieldKey, "na")}
+                    className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all ${
+                      fieldState.value === "na"
+                        ? "border-ink-400 bg-ink-100 text-ink-900"
+                        : "border-ink-200 bg-paper-surface text-ink-700 hover:bg-ink-50"
+                    }`}
+                  >
+                    N/A
+                  </button>
+                )}
               </div>
             )}
 
@@ -600,23 +688,79 @@ export function ReviewForm({
               />
             )}
 
-            {/* Optional field-level comment */}
-            <input
-              type="text"
-              value={fieldState.comment}
-              onChange={(e) => setFieldComment(field.fieldKey, e.target.value)}
-              placeholder="Add a comment (optional)"
-              className="mt-3 w-full rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-xs text-ink-700 placeholder:text-ink-400 outline-none focus:border-cobalt-700"
-            />
+            {/* Field-level comment — required when answer != default and != NA (Section C.2) */}
+            {(() => {
+              const v = fieldState.value;
+              const commentRequired =
+                field.fieldType === "yes_no" &&
+                !!field.requiredTextOnNonDefault &&
+                !!field.defaultValue &&
+                (v === true || v === false) &&
+                !(
+                  (v === true && field.defaultValue === "yes") ||
+                  (v === false && field.defaultValue === "no")
+                );
+              const placeholder = commentRequired
+                ? "Required: explain why your answer differs from the expected default"
+                : "Add a comment (optional)";
+              return (
+                <textarea
+                  value={fieldState.comment}
+                  onChange={(e) => setFieldComment(field.fieldKey, e.target.value)}
+                  rows={commentRequired ? 2 : 1}
+                  placeholder={placeholder}
+                  className={`mt-3 w-full resize-y rounded-lg border bg-paper-surface px-3 py-2 text-xs text-ink-700 placeholder:text-ink-400 outline-none focus:border-cobalt-700 ${
+                    commentRequired
+                      ? "border-amber-300 ring-1 ring-amber-100"
+                      : "border-ink-200"
+                  }`}
+                />
+              );
+            })()}
           </div>
         );
       })}
 
       {/* Reviewer overall comments */}
       <div className="rounded-xl border border-ink-200 bg-paper-surface p-5">
-        <label className="mb-2 block text-sm font-semibold text-ink-900">
-          Overall Reviewer Comments
-        </label>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <label className="block text-sm font-semibold text-ink-900">
+            Overall Reviewer Comments
+          </label>
+          {allowAiNarrative && (
+            <button
+              type="button"
+              data-testid="ai-suggest-narrative"
+              disabled={aiSuggestLoading}
+              onClick={async () => {
+                setAiSuggestError(null);
+                setAiSuggestLoading(true);
+                try {
+                  const res = await fetch("/api/reviewer/ai-suggest-narrative", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ case_id: caseId, draft: reviewerComments }),
+                  });
+                  const j = await res.json().catch(() => ({}));
+                  if (!res.ok) throw new Error(j.error || `AI request failed (${res.status})`);
+                  if (typeof j.text === "string" && j.text.trim()) {
+                    // Replace — reviewer can still edit. (Section C.5)
+                    setReviewerComments(j.text.trim());
+                  }
+                } catch (err) {
+                  setAiSuggestError(
+                    err instanceof Error ? err.message : "AI suggestion failed"
+                  );
+                } finally {
+                  setAiSuggestLoading(false);
+                }
+              }}
+              className="inline-flex items-center gap-1 rounded-md border border-cobalt-200 bg-cobalt-50/40 px-2.5 py-1 text-xs font-medium text-cobalt-700 hover:bg-cobalt-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {aiSuggestLoading ? "Generating…" : "Generate AI suggestion"}
+            </button>
+          )}
+        </div>
         <textarea
           value={reviewerComments}
           onChange={(e) => setReviewerComments(e.target.value)}
@@ -624,6 +768,9 @@ export function ReviewForm({
           className="w-full resize-y rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
           placeholder="Any additional commentary for this case..."
         />
+        {aiSuggestError && (
+          <p className="mt-2 text-xs text-critical-700">{aiSuggestError}</p>
+        )}
       </div>
 
       {error && (

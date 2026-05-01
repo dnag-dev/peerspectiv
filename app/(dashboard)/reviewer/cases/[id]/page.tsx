@@ -23,6 +23,10 @@ interface FormField {
   fieldType: "yes_no" | "rating" | "text";
   isRequired: boolean;
   displayOrder: number;
+  allowNa?: boolean;
+  defaultValue?: "yes" | "no" | "na" | null;
+  requiredTextOnNonDefault?: boolean;
+  opsTerm?: string | null;
 }
 
 interface RiskFlag {
@@ -83,6 +87,10 @@ async function loadFormFields(
           field_type: string;
           is_required?: boolean;
           display_order?: number;
+          allow_na?: boolean;
+          default_value?: "yes" | "no" | "na" | null;
+          required_text_on_non_default?: boolean;
+          ops_term?: string | null;
         }>).map((r, idx) => ({
           id: `${companyFormId}-${idx}`,
           fieldKey: r.field_key,
@@ -92,6 +100,11 @@ async function loadFormFields(
             : "text") as FormField["fieldType"],
           isRequired: !!r.is_required,
           displayOrder: r.display_order ?? idx,
+          // Section C metadata — defaults applied on read.
+          allowNa: r.allow_na ?? false,
+          defaultValue: r.default_value ?? null,
+          requiredTextOnNonDefault: r.required_text_on_non_default ?? false,
+          opsTerm: r.ops_term ?? null,
         }));
       }
     } catch {
@@ -216,6 +229,20 @@ export default async function ReviewerCasePage({
     (batchRow as unknown as { companyFormId?: string | null })?.companyFormId ??
     null;
   let formFields = await loadFormFields(specialty, companyFormId);
+
+  // Section C.5 — pull the form-level allow_ai_generated_recommendations flag.
+  let allowAiNarrative = false;
+  if (companyFormId) {
+    try {
+      const flagRows = await query<{ allow_ai_generated_recommendations: boolean | null }>(
+        `SELECT allow_ai_generated_recommendations FROM company_forms WHERE id = $1 LIMIT 1`,
+        [companyFormId]
+      );
+      allowAiNarrative = !!flagRows[0]?.allow_ai_generated_recommendations;
+    } catch {
+      // default false
+    }
+  }
 
   // Fallback: derive form fields from AI criteria_scores if form_fields table empty
   if (formFields.length === 0 && Array.isArray(analysisRow?.criteriaScores)) {
@@ -429,6 +456,8 @@ export default async function ReviewerCasePage({
               : null
           }
           reviewerLicense={reviewerLicense}
+          initialMrnNumber={(reviewCase as unknown as { mrnNumber?: string | null }).mrnNumber ?? null}
+          allowAiNarrative={allowAiNarrative}
         />
       </div>
     </div>

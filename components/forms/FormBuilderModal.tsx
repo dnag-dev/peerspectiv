@@ -11,6 +11,24 @@ export interface BuiltFormField {
   field_type: "yes_no" | "rating" | "text";
   is_required: boolean;
   display_order: number;
+  // Section C additions — all optional, defaults applied on read.
+  allow_na?: boolean;
+  default_value?: "yes" | "no" | "na" | null;
+  required_text_on_non_default?: boolean;
+  ops_term?: string | null;
+}
+
+// Read helper: fill defaults for old rows missing the new keys.
+export function withFieldDefaults(f: BuiltFormField): Required<
+  Pick<BuiltFormField, "allow_na" | "required_text_on_non_default">
+> & { default_value: BuiltFormField["default_value"]; ops_term: BuiltFormField["ops_term"] } & BuiltFormField {
+  return {
+    ...f,
+    allow_na: f.allow_na ?? false,
+    default_value: f.default_value ?? null,
+    required_text_on_non_default: f.required_text_on_non_default ?? false,
+    ops_term: f.ops_term ?? null,
+  };
 }
 
 export interface CreatedForm {
@@ -25,6 +43,21 @@ interface Props {
   companyId: string;
   defaultSpecialty?: string;
   onCreated: (form: CreatedForm) => void;
+  /** When provided, the modal opens in edit mode and PATCHes this form. */
+  editForm?: {
+    id: string;
+    form_name: string;
+    specialty: string;
+    form_fields: BuiltFormField[];
+    allow_ai_generated_recommendations?: boolean;
+  };
+  /** When provided (and editForm is not), opens in create mode with these values prefilled (used by Clone). */
+  prefill?: {
+    form_name: string;
+    specialty: string;
+    form_fields: BuiltFormField[];
+    allow_ai_generated_recommendations?: boolean;
+  };
 }
 
 type Mode = "upload" | "clone" | "scratch";
@@ -35,7 +68,8 @@ const BLANK_FIELDS: BuiltFormField[] = [
   { field_key: "narrative_final", field_label: "Review narrative", field_type: "text", is_required: true, display_order: 2 },
 ];
 
-export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecialty, onCreated }: Props) {
+export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecialty, onCreated, editForm, prefill }: Props) {
+  const isEdit = !!editForm;
   const [mode, setMode] = useState<Mode>("scratch");
   const [formName, setFormName] = useState("");
   const [specialty, setSpecialty] = useState(defaultSpecialty || "Family Medicine");
@@ -46,22 +80,48 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [allowAiNarrative, setAllowAiNarrative] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
     setError(null);
-    setFormName("");
-    setSpecialty(defaultSpecialty || "Family Medicine");
-    setFields(BLANK_FIELDS);
     setTemplatePdfUrl(null);
     setTemplatePdfName(null);
-    setMode("scratch");
+    if (editForm) {
+      setFormName(editForm.form_name);
+      setSpecialty(editForm.specialty);
+      setFields(
+        (editForm.form_fields ?? []).map((f, idx) => ({
+          ...withFieldDefaults(f),
+          display_order: idx,
+        }))
+      );
+      setAllowAiNarrative(!!editForm.allow_ai_generated_recommendations);
+      setMode("scratch");
+    } else if (prefill) {
+      setFormName(prefill.form_name);
+      setSpecialty(prefill.specialty);
+      setFields(
+        (prefill.form_fields ?? []).map((f, idx) => ({
+          ...withFieldDefaults(f),
+          display_order: idx,
+        }))
+      );
+      setAllowAiNarrative(!!prefill.allow_ai_generated_recommendations);
+      setMode("scratch");
+    } else {
+      setFormName("");
+      setSpecialty(defaultSpecialty || "Family Medicine");
+      setFields(BLANK_FIELDS);
+      setAllowAiNarrative(false);
+      setMode("scratch");
+    }
     fetch(`/api/company-forms?company_id=${companyId}`)
       .then((r) => r.json())
       .then((d) => setTemplates(d.forms ?? []))
       .catch(() => setTemplates([]));
-  }, [open, companyId, defaultSpecialty]);
+  }, [open, companyId, defaultSpecialty, editForm, prefill]);
 
   async function cloneFrom(formId: string) {
     if (!formId) return;
@@ -69,8 +129,16 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
       const r = await fetch(`/api/company-forms/${formId}`);
       const d = await r.json();
       if (Array.isArray(d.form?.form_fields)) {
-        setFields((d.form.form_fields as BuiltFormField[]).map((f, idx) => ({ ...f, display_order: idx })));
+        setFields(
+          (d.form.form_fields as BuiltFormField[]).map((f, idx) => ({
+            ...withFieldDefaults(f),
+            display_order: idx,
+          }))
+        );
         setSpecialty(d.form.specialty ?? specialty);
+        if (typeof d.form.allow_ai_generated_recommendations === "boolean") {
+          setAllowAiNarrative(d.form.allow_ai_generated_recommendations);
+        }
       }
     } catch { /* swallow */ }
   }
@@ -118,27 +186,54 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
     if (fields.some((f) => !f.field_label.trim())) { setError("Every field needs a label"); return; }
     setSubmitting(true);
     try {
-      const res = await fetch("/api/company-forms/create", {
-        method: "POST",
+      const url = isEdit ? `/api/company-forms/${editForm!.id}` : "/api/company-forms/create";
+      const method = isEdit ? "PATCH" : "POST";
+      const normalizedFields = fields.map((f, idx) => {
+        const cleaned: BuiltFormField = {
+          field_key: f.field_key,
+          field_label: f.field_label,
+          field_type: f.field_type,
+          is_required: f.is_required,
+          display_order: idx,
+        };
+        if (f.field_type === "yes_no") {
+          if (f.allow_na) cleaned.allow_na = true;
+          if (f.default_value) cleaned.default_value = f.default_value;
+          if (f.required_text_on_non_default) cleaned.required_text_on_non_default = true;
+        }
+        if (f.ops_term) cleaned.ops_term = f.ops_term;
+        return cleaned;
+      });
+      const payload = isEdit
+        ? {
+            specialty,
+            form_name: formName.trim(),
+            form_fields: normalizedFields,
+            allow_ai_generated_recommendations: allowAiNarrative,
+          }
+        : {
+            company_id: companyId,
+            specialty,
+            form_name: formName.trim(),
+            form_fields: normalizedFields,
+            template_pdf_url: templatePdfUrl,
+            template_pdf_name: templatePdfName,
+            allow_ai_generated_recommendations: allowAiNarrative,
+          };
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          company_id: companyId,
-          specialty,
-          form_name: formName.trim(),
-          form_fields: fields.map((f, idx) => ({ ...f, display_order: idx })),
-          template_pdf_url: templatePdfUrl,
-          template_pdf_name: templatePdfName,
-        }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || "Failed to create form");
+        throw new Error(body.error || (isEdit ? "Failed to save form" : "Failed to create form"));
       }
       const d = await res.json();
       onCreated({ id: d.form.id, form_name: d.form.form_name, specialty: d.form.specialty });
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create form");
+      setError(err instanceof Error ? err.message : (isEdit ? "Failed to save form" : "Failed to create form"));
     } finally {
       setSubmitting(false);
     }
@@ -160,16 +255,30 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New approved form</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit form" : "New approved form"}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Mode selector */}
-          <div className="flex gap-2">
-            {tabBtn("upload", <Upload className="h-4 w-4" />, "Upload PDF", "Use existing PDF template")}
-            {tabBtn("clone", <Copy className="h-4 w-4" />, "Clone existing", "Start from a current form")}
-            {tabBtn("scratch", <Sparkles className="h-4 w-4" />, "From scratch", "Build a new form")}
-          </div>
+          {/* Mode selector — hidden in edit mode */}
+          {!isEdit && (
+            <div className="flex gap-2">
+              {tabBtn("upload", <Upload className="h-4 w-4" />, "Upload PDF", "Use existing PDF template")}
+              {tabBtn("clone", <Copy className="h-4 w-4" />, "Clone existing", "Start from a current form")}
+              {tabBtn("scratch", <Sparkles className="h-4 w-4" />, "From scratch", "Build a new form")}
+            </div>
+          )}
+
+          <label className="flex items-center gap-2 rounded-md border border-cobalt-100 bg-cobalt-50/40 px-3 py-2 text-xs text-ink-700">
+            <input
+              type="checkbox"
+              checked={allowAiNarrative}
+              onChange={(e) => setAllowAiNarrative(e.target.checked)}
+            />
+            <span>
+              <strong className="font-medium text-ink-900">Allow reviewer to use AI-drafted narrative</strong>
+              <span className="ml-1 text-ink-500">— shows a &ldquo;Generate AI suggestion&rdquo; button next to the comments box.</span>
+            </span>
+          </label>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -281,42 +390,105 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
               </Button>
             </div>
             <div className="space-y-2">
-              {fields.map((f, i) => (
-                <div key={i} className="flex items-start gap-2 rounded-md border p-2">
-                  <div className="grid flex-1 grid-cols-12 gap-2">
-                    <input
-                      value={f.field_label}
-                      onChange={(e) => updateField(i, { field_label: e.target.value })}
-                      placeholder="Field label"
-                      className="col-span-7 rounded border px-2 py-1.5 text-sm"
-                    />
-                    <select
-                      value={f.field_type}
-                      onChange={(e) => updateField(i, { field_type: e.target.value as BuiltFormField["field_type"] })}
-                      className="col-span-3 rounded border bg-background px-2 py-1.5 text-sm"
-                    >
-                      <option value="yes_no">Yes / No</option>
-                      <option value="rating">Rating 0-100</option>
-                      <option value="text">Text</option>
-                    </select>
-                    <label className="col-span-2 flex items-center gap-1 text-xs">
-                      <input
-                        type="checkbox"
-                        checked={f.is_required}
-                        onChange={(e) => updateField(i, { is_required: e.target.checked })}
-                      />
-                      Required
-                    </label>
+              {fields.map((f, i) => {
+                const isYesNo = f.field_type === "yes_no";
+                const allowNa = !!f.allow_na;
+                const defaultVal = f.default_value ?? "";
+                return (
+                  <div key={i} className="rounded-md border p-2">
+                    <div className="flex items-start gap-2">
+                      <div className="grid flex-1 grid-cols-12 gap-2">
+                        <input
+                          value={f.field_label}
+                          onChange={(e) => updateField(i, { field_label: e.target.value })}
+                          placeholder="Field label"
+                          className="col-span-7 rounded border px-2 py-1.5 text-sm"
+                        />
+                        <select
+                          value={f.field_type}
+                          onChange={(e) => {
+                            const newType = e.target.value as BuiltFormField["field_type"];
+                            // If changing away from yes_no, drop yes_no-only metadata
+                            const patch: Partial<BuiltFormField> = { field_type: newType };
+                            if (newType !== "yes_no") {
+                              patch.allow_na = false;
+                              patch.default_value = null;
+                              patch.required_text_on_non_default = false;
+                            }
+                            updateField(i, patch);
+                          }}
+                          className="col-span-3 rounded border bg-background px-2 py-1.5 text-sm"
+                        >
+                          <option value="yes_no">Yes / No</option>
+                          <option value="rating">Rating 0-100</option>
+                          <option value="text">Text</option>
+                        </select>
+                        <label className="col-span-2 flex items-center gap-1 text-xs">
+                          <input
+                            type="checkbox"
+                            checked={f.is_required}
+                            onChange={(e) => updateField(i, { is_required: e.target.checked })}
+                          />
+                          Required
+                        </label>
+                      </div>
+                      <button
+                        onClick={() => removeField(i)}
+                        className="rounded p-1 text-muted-foreground hover:bg-critical-100 hover:text-critical-600"
+                        title="Remove field"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    {isYesNo && (
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-1 text-xs text-ink-700">
+                        <label className="flex items-center gap-1">
+                          <input
+                            type="checkbox"
+                            checked={allowNa}
+                            onChange={(e) => {
+                              const next = e.target.checked;
+                              const patch: Partial<BuiltFormField> = { allow_na: next };
+                              // If turning off NA while default is na, clear default
+                              if (!next && f.default_value === "na") patch.default_value = null;
+                              updateField(i, patch);
+                            }}
+                          />
+                          Allow N/A
+                        </label>
+                        <label className="flex items-center gap-1">
+                          <span>Default</span>
+                          <select
+                            value={defaultVal}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              updateField(i, {
+                                default_value: v === "" ? null : (v as "yes" | "no" | "na"),
+                              });
+                            }}
+                            className="rounded border bg-background px-1.5 py-0.5 text-xs"
+                          >
+                            <option value="">None</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                            <option value="na" disabled={!allowNa}>N/A</option>
+                          </select>
+                        </label>
+                        <label className="flex items-center gap-1">
+                          <input
+                            type="checkbox"
+                            checked={!!f.required_text_on_non_default}
+                            onChange={(e) =>
+                              updateField(i, { required_text_on_non_default: e.target.checked })
+                            }
+                          />
+                          Require comment when not default
+                        </label>
+                      </div>
+                    )}
                   </div>
-                  <button
-                    onClick={() => removeField(i)}
-                    className="rounded p-1 text-muted-foreground hover:bg-critical-100 hover:text-critical-600"
-                    title="Remove field"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -331,7 +503,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button size="sm" onClick={handleSave} disabled={submitting || uploading}>
             {submitting && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-            Create form
+            {isEdit ? "Save changes" : "Create form"}
           </Button>
         </div>
       </DialogContent>
