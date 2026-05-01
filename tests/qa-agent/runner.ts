@@ -70,10 +70,13 @@ async function isServerUp(): Promise<boolean> {
 
 async function startDevServer(): Promise<{ proc: any; started: boolean }> {
   if (await isServerUp()) return { proc: null, started: false };
-  console.log('Starting dev server with E2E_AUTH_BYPASS=1...');
+  console.log('Starting dev server with NEXT_PUBLIC_DEMO_MODE=1...');
   const proc = spawn('npm', ['run', 'dev'], {
     cwd: REPO_ROOT,
-    env: { ...process.env, E2E_AUTH_BYPASS: '1', DEMO_AUTH: '1' },
+    // Middleware gates demo bypass on NEXT_PUBLIC_DEMO_MODE only. Setting
+    // any other flag leaves Clerk protect() firing, which rewrites all
+    // dashboard/portal routes to /clerk_<id> and returns 404.
+    env: { ...process.env, NEXT_PUBLIC_DEMO_MODE: '1', E2E_AUTH_BYPASS: '1', DEMO_AUTH: '1' },
     stdio: 'pipe',
     detached: false,
   });

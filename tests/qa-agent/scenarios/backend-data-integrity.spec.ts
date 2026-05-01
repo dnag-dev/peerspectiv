@@ -19,7 +19,7 @@ export async function run(ctx: ScenarioCtx) {
     { name: 'review_results with overall_score outside 0-100', spec: 'C4', severity: 'high', sql: `SELECT id, overall_score FROM review_results WHERE overall_score IS NOT NULL AND (overall_score < 0 OR overall_score > 100) LIMIT 5`, assertion: 'overall_score in [0,100]' },
     { name: 'companies missing name', spec: 'A1', severity: 'medium', sql: `SELECT id FROM companies WHERE name IS NULL OR name = '' LIMIT 5`, assertion: 'companies.name NOT NULL/empty' },
     { name: 'review_cases assigned to reviewer with mismatched specialty', spec: 'B1', severity: 'medium', sql: `SELECT rc.id FROM review_cases rc JOIN reviewers r ON r.id = rc.reviewer_id WHERE rc.specialty_required IS NOT NULL AND NOT (rc.specialty_required = ANY(r.specialties)) LIMIT 5`, assertion: 'reviewer.specialties[] contains case.specialty_required' },
-    { name: 'audit_logs missing actor_id on writes', spec: 'L', severity: 'low', sql: `SELECT id FROM audit_logs WHERE actor_id IS NULL AND action ~* 'create|update|delete' LIMIT 5`, assertion: 'audit_logs.actor_id NOT NULL on mutations' },
+    { name: 'audit_logs missing user_id on writes', spec: 'L', severity: 'low', sql: `SELECT id FROM audit_logs WHERE user_id IS NULL AND action ~* 'create|update|delete' LIMIT 5`, assertion: 'audit_logs.user_id NOT NULL on mutations' },
     { name: 'invoices.itemized_lines mismatched with quantity_override', spec: 'G', severity: 'low', sql: `SELECT id FROM invoices WHERE quantity_override IS NOT NULL AND itemized_lines IS NULL LIMIT 5`, assertion: 'quantity_override → itemized_lines should reconcile' },
   ];
 

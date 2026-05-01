@@ -39,6 +39,13 @@ function stripCodeFences(input: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const ct = req.headers.get('content-type') || '';
+    if (!ct.toLowerCase().includes('multipart/form-data')) {
+      return NextResponse.json(
+        { error: 'Expected multipart/form-data', code: 'UNSUPPORTED_MEDIA_TYPE' },
+        { status: 415 }
+      );
+    }
     const formData = await req.formData();
     const file = formData.get("file");
 

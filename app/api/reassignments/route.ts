@@ -12,9 +12,28 @@ import { sendReassignmentRequestAlert } from '@/lib/email/notifications';
 
 export const dynamic = 'force-dynamic';
 
+async function getAdminUserId(req: NextRequest): Promise<string | null> {
+  try {
+    const { auth } = await import('@clerk/nextjs/server');
+    const result = auth();
+    const userId = (result as any)?.userId;
+    if (userId) return userId as string;
+  } catch {
+    /* clerk not configured */
+  }
+  const demo = req.headers.get('x-demo-user-id');
+  if (demo && demo.trim()) return demo.trim();
+  if (req.cookies.get('demo_user')?.value) return 'demo-admin';
+  return null;
+}
+
 // GET — list reassignment requests, defaults to status=open. Joined with
 // case, reviewer, provider, company for the admin queue.
 export async function GET(request: NextRequest) {
+  const userId = await getAdminUserId(request);
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') ?? 'open';

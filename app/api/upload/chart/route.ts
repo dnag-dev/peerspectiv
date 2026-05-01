@@ -11,6 +11,13 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 export async function POST(request: NextRequest) {
   try {
+    const ct = request.headers.get('content-type') || '';
+    if (!ct.toLowerCase().includes('multipart/form-data')) {
+      return NextResponse.json(
+        { error: 'Expected multipart/form-data', code: 'UNSUPPORTED_MEDIA_TYPE' },
+        { status: 415 }
+      );
+    }
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const caseId = formData.get('case_id') as string | null;

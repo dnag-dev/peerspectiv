@@ -7,7 +7,7 @@ export class ApiClient {
   cookies: Map<string, string> = new Map();
 
   private cookieHeader(): string {
-    return [...this.cookies.entries()].map(([k, v]) => `${k}=${v}`).join('; ');
+    return Array.from(this.cookies.entries()).map(([k, v]) => `${k}=${v}`).join('; ');
   }
 
   private absorb(res: Response) {
