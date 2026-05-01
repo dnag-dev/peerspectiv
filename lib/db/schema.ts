@@ -42,6 +42,11 @@ export const companies = pgTable('companies', {
   // Billing
   perReviewRate: numeric('per_review_rate', { precision: 10, scale: 2 }),
   billingCycleType: text('billing_cycle_type'),
+  // Post-Ashton review (009): cadence + delivery + invoice itemization
+  billingCycle: text('billing_cycle').default('quarterly'),
+  fiscalYearStartMonth: integer('fiscal_year_start_month').default(1),
+  deliveryPreference: text('delivery_preference').default('portal'),
+  itemizeInvoice: boolean('itemize_invoice').default(false),
   aautipaySubscriptionId: text('aautipay_subscription_id'),
   aautipaySubscriptionStatus: text('aautipay_subscription_status'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
@@ -84,6 +89,8 @@ export const reviewers = pgTable('reviewers', {
   fullName: text('full_name'),
   email: text('email').unique(),
   specialty: text('specialty'),
+  // Post-Ashton review (009): multi-specialty array (specialty kept for back-compat as specialties[0])
+  specialties: text('specialties').array().default(sql`'{}'::text[]`),
   boardCertification: text('board_certification'),
   activeCasesCount: integer('active_cases_count').default(0),
   status: text('status'),
@@ -99,6 +106,10 @@ export const reviewers = pgTable('reviewers', {
   licenseNumber: text('license_number'),
   licenseState: text('license_state'),
   licenseFileUrl: text('license_file_url'),
+  // Post-Ashton review (009): credential expiry + caseload cap + efficiency
+  credentialValidUntil: date('credential_valid_until'),
+  maxCaseLoad: integer('max_case_load').default(75),
+  avgMinutesPerChart: numeric('avg_minutes_per_chart', { precision: 8, scale: 2 }),
   w9Status: text('w9_status').default('not_collected'),
   aautipayBeneficiaryId: text('aautipay_beneficiary_id'),
   aautipayBeneficiaryStatus: text('aautipay_beneficiary_status'),
@@ -185,6 +196,15 @@ export const reviewCases = pgTable('review_cases', {
   priority: text('priority').default('normal'),
   notes: text('notes'),
   batchPeriod: text('batch_period'),
+  // Post-Ashton review (009): MRN, reassignment, patient name (admin-only), pediatric flag
+  mrnNumber: text('mrn_number'),
+  reassignmentRequested: boolean('reassignment_requested').default(false),
+  reassignmentReason: text('reassignment_reason'),
+  reassignmentRequestedAt: timestamp('reassignment_requested_at', { withTimezone: true }),
+  patientFirstName: text('patient_first_name'),
+  patientLastName: text('patient_last_name'),
+  isPediatric: boolean('is_pediatric').default(false),
+  clinicId: uuid('clinic_id'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
 });
@@ -273,6 +293,9 @@ export const reviewResults = pgTable('review_results', {
   reviewerNameSnapshot: text('reviewer_name_snapshot'),
   reviewerLicenseSnapshot: text('reviewer_license_snapshot'),
   reviewerLicenseStateSnapshot: text('reviewer_license_state_snapshot'),
+  // Post-Ashton review (009): MRN snapshot + reviewer signature block
+  mrnNumber: text('mrn_number'),
+  reviewerSignatureText: text('reviewer_signature_text'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
 });
 
@@ -493,6 +516,10 @@ export const invoices = pgTable(
     viewedAt: timestamp('viewed_at', { withTimezone: true }),
     dueDate: date('due_date'),
     notes: text('notes'),
+    // Post-Ashton review (009): override + itemization + adjustment audit
+    quantityOverride: integer('quantity_override'),
+    itemizedLines: jsonb('itemized_lines'),
+    adjustmentReason: text('adjustment_reason'),
     createdBy: text('created_by'),
     createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
     updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
@@ -573,6 +600,45 @@ export const companyForms = pgTable('company_forms', {
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   templatePdfUrl: text('template_pdf_url'),
   templatePdfName: text('template_pdf_name'),
+  // Post-Ashton review (009): allow reviewer to invoke AI-drafted narrative on this form
+  allowAiGeneratedRecommendations: boolean('allow_ai_generated_recommendations').default(false),
+});
+
+// ─── Clinics (FQHC sub-locations) — 009 ──────────────────────────────────────
+
+export const clinics = pgTable('clinics', {
+  id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+  companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  city: text('city'),
+  state: text('state'),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+});
+
+// ─── Case Reassignment Requests — 009 ────────────────────────────────────────
+
+export const caseReassignmentRequests = pgTable('case_reassignment_requests', {
+  id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+  caseId: uuid('case_id').notNull().references(() => reviewCases.id, { onDelete: 'cascade' }),
+  reviewerId: uuid('reviewer_id').references(() => reviewers.id),
+  reason: text('reason').notNull(),
+  status: text('status').notNull().default('open'),
+  resolvedBy: text('resolved_by'),
+  resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+  resolutionNote: text('resolution_note'),
+  createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+});
+
+// ─── User Roles — 009 ────────────────────────────────────────────────────────
+
+export const userRoles = pgTable('user_roles', {
+  id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+  userId: text('user_id').notNull().unique(),
+  email: text('email'),
+  role: text('role').notNull(),  // 'admin' | 'reviewer' | 'client' | 'credentialing'
+  createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
 });
 
 // ─── Aautipay event log ──────────────────────────────────────────────────────
