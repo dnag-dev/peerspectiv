@@ -11,7 +11,8 @@
     "test:pdf:report": "tsx tests/pdf/generate-report.ts",
     "test:e2e": "playwright test",
     "db:reseed-real": "node scripts/reseed-real-data.mjs",
-    "db:reseed-forms": "node scripts/reseed-form-templates.mjs"
+    "db:reseed-forms": "node scripts/reseed-form-templates.mjs",
+    "smoke": "node scripts/smoke-marketing.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",

@@ -1,42 +1,17 @@
-import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { Layers } from "lucide-react";
 import type { Batch } from "@/types";
-import { NewBatchModal, type BatchWizardCompany, type BatchWizardForm, type BatchWizardProvider } from "@/components/batches/NewBatchModal";
+import {
+  NewBatchModal,
+  type BatchWizardCompany,
+  type BatchWizardForm,
+  type BatchWizardProvider,
+} from "@/components/batches/NewBatchModal";
+import { BatchesView } from "./BatchesView";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface BatchWithCompany extends Batch {
   company_name: string | null;
-}
-
-function BatchStatusBadge({ status }: { status: string }) {
-  const variants: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-700",
-    in_progress: "bg-cobalt-100 text-cobalt-600",
-    completed: "bg-mint-100 text-cobalt-700",
-  };
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
-        variants[status] || variants.pending
-      )}
-    >
-      {status.replace("_", " ")}
-    </span>
-  );
 }
 
 async function getBatches(): Promise<BatchWithCompany[]> {
@@ -52,14 +27,6 @@ async function getBatches(): Promise<BatchWithCompany[]> {
     company_name: (batch.companies as { name: string } | null)?.name ?? null,
     companies: undefined,
   }));
-}
-
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
 }
 
 async function getWizardData(): Promise<{
@@ -109,68 +76,19 @@ export default async function BatchesPage() {
         />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Layers className="h-5 w-5" />
-            All Batches
-            <Badge variant="secondary" className="ml-2">
-              {batches.length}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {batches.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Layers className="mb-4 h-12 w-12 text-muted-foreground/50" />
-              <h3 className="text-lg font-medium">No batches yet</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Batches appear here when cases are uploaded.
-              </p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Batch Name</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Upload Date</TableHead>
-                  <TableHead className="text-center">Total Cases</TableHead>
-                  <TableHead className="text-center">Assigned</TableHead>
-                  <TableHead className="text-center">Completed</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {batches.map((batch) => (
-                  <TableRow key={batch.id}>
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/batches/${batch.id}`}
-                        className="text-cobalt-600 hover:underline"
-                      >
-                        {batch.batch_name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {batch.company_name || "-"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatDate(batch.date_uploaded)}
-                    </TableCell>
-                    <TableCell className="text-center">{batch.total_cases}</TableCell>
-                    <TableCell className="text-center">{batch.assigned_cases}</TableCell>
-                    <TableCell className="text-center">{batch.completed_cases}</TableCell>
-                    <TableCell>
-                      <BatchStatusBadge status={batch.status} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      <BatchesView
+        batches={batches.map((b) => ({
+          id: b.id,
+          batch_name: b.batch_name,
+          company_id: b.company_id ?? null,
+          company_name: b.company_name,
+          date_uploaded: b.date_uploaded,
+          total_cases: b.total_cases,
+          assigned_cases: b.assigned_cases,
+          completed_cases: b.completed_cases,
+          status: b.status,
+        }))}
+      />
     </div>
   );
 }

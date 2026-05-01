@@ -1,21 +1,9 @@
-import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddCompanyDialog } from "@/components/companies/AddCompanyDialog";
-import { CompanyActions } from "@/components/companies/CompanyActions";
-import { Building2 } from "lucide-react";
 import type { Company } from "@/types";
+import { CompaniesView } from "./CompaniesView";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface CompanyWithCounts extends Company {
   provider_count: number;
@@ -23,7 +11,6 @@ interface CompanyWithCounts extends Company {
 }
 
 async function getCompanies(): Promise<CompanyWithCounts[]> {
-  // Fetch all companies
   const { data: companies, error } = await supabaseAdmin
     .from("companies")
     .select("*")
@@ -32,13 +19,11 @@ async function getCompanies(): Promise<CompanyWithCounts[]> {
   if (error) throw error;
   if (!companies?.length) return [];
 
-  // Fetch provider counts per company
   const { data: providerCounts } = await supabaseAdmin
     .from("providers")
     .select("company_id")
     .eq("status", "active");
 
-  // Fetch active case counts per company
   const { data: caseCounts } = await supabaseAdmin
     .from("review_cases")
     .select("company_id, status")
@@ -80,76 +65,7 @@ export default async function CompaniesPage() {
         <AddCompanyDialog />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Building2 className="h-5 w-5" />
-            All Companies
-            <Badge variant="secondary" className="ml-2">
-              {companies.length}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {companies.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Building2 className="mb-4 h-12 w-12 text-muted-foreground/50" />
-              <h3 className="text-lg font-medium">No companies yet</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Get started by adding your first company.
-              </p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Company Name</TableHead>
-                  <TableHead>Contact Person</TableHead>
-                  <TableHead>Contact Email</TableHead>
-                  <TableHead className="text-center">Active Providers</TableHead>
-                  <TableHead className="text-center">Active Cases</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {companies.map((company) => (
-                  <TableRow key={company.id}>
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/companies/${company.id}`}
-                        className="text-cobalt-600 hover:underline"
-                      >
-                        {company.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {company.contact_person || "-"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {company.contact_email || "-"}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {company.provider_count}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {company.active_case_count}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={company.status === "active" ? "success" : "secondary"}>
-                        {company.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <CompanyActions company={company} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      <CompaniesView companies={companies} />
     </div>
   );
 }

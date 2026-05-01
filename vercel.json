@@ -1,1 +1,14 @@
-{}
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "peerspectiv.ai" }],
+      "destination": "https://www.peerspectiv.ai/:path*",
+      "permanent": true
+    }
+  ],
+  "crons": [
+    { "path": "/api/cron/reviewer-efficiency", "schedule": "0 2 * * *" },
+    { "path": "/api/cron/credential-expiry-warnings", "schedule": "0 3 * * *" }
+  ]
+}
