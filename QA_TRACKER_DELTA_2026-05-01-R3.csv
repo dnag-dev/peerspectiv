@@ -1,0 +1,79 @@
+test_id,status,severity_if_fail,qa_issue_id,notes
+A1,partial,,,clinics page reachable as admin via 200; CRUD not re-driven this round
+A2,partial,,,providers import endpoint reachable; CSV driven path not exercised
+A3,partial,,,NPI column visible in admin reviewers (carried from R2)
+A4,partial,,,provider single-specialty surface present
+B1,pass,,,specialty mismatches reduced to 0 by cleanup script (was 4)
+B2,partial,,,license_number/license_state present on reviewers (rjohnson MD-12345/NY persisted)
+B3,not_run,,,reviewer detail page not re-driven this round
+B4,not_run,low,QA-R3-002,caseload column visibility not re-checked (carry-over from R2)
+B5,not_run,low,QA-R3-003,set-unavailable control not re-checked
+C1,partial,,,form_responses body shape verified working
+C2,partial,,,company_form_id linkage exercised by reading form_fields
+C3,fail,critical,QA-R3-001,8y/1n/1NA -> overallScore 89 (DB integer); spec expects 88.89%; Math.round + integer column
+C3-bonus-5y5n,pass,,,returned 50 exactly
+C3-bonus-10y0n,pass,,,returned 100 exactly
+C4-license,pass,,,license_snapshot persisted to reviewer_license_snapshot/state
+C4-mrn,partial,,,mrn_number accepted and persistable; not driven in this submit
+D1,partial,,,reviewer portal reachable as rjohnson (200)
+D2,not_run,,,case detail rendering not re-driven
+E1,partial,,,review_results insertion verified via 201 response
+E2,fail,critical,QA-R3-001,overall_score column type integer; precision lost
+F1,not_run,,,export/download endpoint not driven
+F2,not_run,,,scorecard PDF not driven
+G1,partial,,,admin /credentialing/credentials returns 200
+G2,partial,,,admin /credentialing/inbox returns 200
+H1,not_run,,,corrective action auto-draft path not re-driven (fires async on submit)
+I1,not_run,,,quality scoring async path not asserted
+J1,not_run,,,batch wizard 207 not implemented
+K1,partial,,,demo login admin/client/reviewer all 200
+L1,partial,,,site_gate cookie path verified working
+M1,not_run,,,no map view feature
+N1,not_run,,,no specialty pricing feature
+CR-001,partial,,,/credentialing/credentials reachable via admin fallback
+CR-002,partial,,,/credentialing/inbox reachable via admin fallback
+CR-003,not_run,,QA-R3-004,credentialer role missing from demo-login route
+CR-004,not_run,,QA-R3-004,same
+CR-005,not_run,,QA-R3-004,same
+CR-006,not_run,,QA-R3-004,same
+CR-007,not_run,,QA-R3-004,same
+CR-008,not_run,,QA-R3-004,same
+CR-009,not_run,,QA-R3-004,same
+CR-010,not_run,,QA-R3-004,same
+CR-011,not_run,,QA-R3-004,same
+CR-012,not_run,,QA-R3-004,same
+CR-013,not_run,,QA-R3-004,same
+AU-001,pass,,,client GET /dashboard -> 307 /portal
+AU-002,pass,,,client GET /companies -> 307 /portal
+AU-003,pass,,,client GET /batches -> 307 /portal
+AU-004,pass,,,client GET /assign -> 307 /portal
+AU-005,pass,,,client GET /reviewers -> 307 /portal
+AU-006,pass,,,client GET /reports -> 307 /portal
+AU-007,pass,,,client GET /command -> 307 /portal
+AU-008,pass,,,client GET /payouts -> 307 /portal
+AU-009,pass,,,client GET /invoices -> 307 /portal
+AU-010,pass,,,client GET /credentialing/credentials -> 307 /portal
+AU-011,pass,,,client GET /credentialing/inbox -> 307 /portal
+AU-012,pass,,,client GET /reviewer/portal -> 307 /portal
+AU-013,pass,,,client GET /reviewer/cases -> 307 /portal
+AU-014,fail,critical,QA-R3-005,reviewer GET /reviewers returns 200 with admin roster page rendered (middleware.ts:252 prefix bug)
+AU-015,pass,,,reviewer GET /portal* -> 307 /reviewer/portal; reviewer blocked from other admin routes
+MC-001,not_run,,QA-R3-006,batch upload endpoint single-file only; no 207 contract
+MC-002,not_run,,QA-R3-006,same
+MC-003,not_run,,QA-R3-006,same
+MC-004,not_run,,QA-R3-006,same
+MC-005,not_run,,QA-R3-006,same
+NR-005,not_run,,QA-R3-007,specialty pricing not implemented
+NR-009,not_run,,QA-R3-008,blind review not implemented
+NR-014,not_run,,QA-R3-009,map view not implemented
+NR-015,not_run,,QA-R3-009,same
+NR-016,not_run,,QA-R3-009,same
+CROSS-PRIVACY,pass,,,client /portal/reviews HTML scan: 0 hits for patient_first_name/patient_last_name/dob
+CROSS-AUTH,fail,critical,QA-R3-005,see AU-014
+SETUP-RESEED,pass,,,db:reseed-real ran (54 companies/28 reviewers/124 providers/21 cases)
+SETUP-RJOHNSON,partial,,QA-R3-010,reseed does not include rjohnson; cleanup script upserts
+SETUP-CLEANUP,pass,,,qa-cleanup-stale-seed.mjs --apply produced expected before/after counts
+DEMO-LOGIN-ADMIN,pass,,,/api/demo/login {role:admin} -> 200
+DEMO-LOGIN-CLIENT,pass,,,/api/demo/login {role:client} -> 200
+DEMO-LOGIN-REVIEWER,pass,,,/api/demo/login {role:reviewer} -> 200
+DEMO-LOGIN-CREDENTIALER,fail,medium,QA-R3-004,role unknown -> 400 (role not in ROLES map)
