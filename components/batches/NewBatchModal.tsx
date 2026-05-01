@@ -242,6 +242,14 @@ export function NewBatchModal({
         }
       }
 
+      // If any rows failed to upload, leave the modal open so the user can
+      // see the inline warning banner. Otherwise close + navigate.
+      const hasFailures = rows.some((r) => r.status === "error");
+      if (hasFailures) {
+        setSubmitting(false);
+        return;
+      }
+
       // Navigate to the new batch
       router.push(`/batches/${batch.id}`);
       router.refresh();
@@ -456,6 +464,15 @@ export function NewBatchModal({
 
                   <label
                     htmlFor="batch-pdfs"
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleFiles(e.dataTransfer.files);
+                    }}
                     className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-ink-300 bg-ink-50 px-6 py-10 text-center hover:border-cobalt-600 hover:bg-cobalt-100"
                   >
                     <Upload className="h-6 w-6 text-ink-400" />
@@ -601,6 +618,29 @@ export function NewBatchModal({
                       {submitError}
                     </div>
                   )}
+
+                  {(() => {
+                    const failed = rows
+                      .map((r, i) => ({ r, i }))
+                      .filter((x) => x.r.status === "error");
+                    if (failed.length === 0) return null;
+                    return (
+                      <div className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                        <p className="font-medium">
+                          Batch created, but {failed.length} chart
+                          {failed.length === 1 ? "" : "s"} failed to upload:
+                        </p>
+                        <ul className="mt-1 list-disc pl-5">
+                          {failed.map(({ r, i }) => (
+                            <li key={i}>
+                              <span className="font-mono">{r.file.name}</span>
+                              {r.errorMsg ? ` — ${r.errorMsg}` : ""}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>

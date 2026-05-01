@@ -330,6 +330,15 @@ export function ClientSubmitWizard({
 
           <label
             htmlFor="client-submit-pdfs"
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleFiles(e.dataTransfer.files);
+            }}
             className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-white/20 bg-white/5 px-6 py-10 text-center hover:border-[#2563EB] hover:bg-[#2563EB]/10"
           >
             <Upload className="h-6 w-6 text-white/40" />
