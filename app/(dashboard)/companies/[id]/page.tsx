@@ -12,6 +12,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CompanyHeader } from "@/components/companies/CompanyHeader";
 import { AddProviderDialog } from "@/components/companies/AddProviderDialog";
+import { ImportProvidersDialog } from "@/components/companies/ImportProvidersDialog";
+import { LocationsSection } from "@/components/companies/LocationsSection";
 import { ProviderActions } from "@/components/companies/ProviderActions";
 import { Users } from "lucide-react";
 import type { Company, Provider } from "@/types";
@@ -93,7 +95,10 @@ export default async function CompanyDetailPage({
               {providers.length}
             </Badge>
           </CardTitle>
-          <AddProviderDialog companyId={company.id} />
+          <div className="flex gap-2">
+            <ImportProvidersDialog companyId={company.id} />
+            <AddProviderDialog companyId={company.id} />
+          </div>
         </CardHeader>
         <CardContent>
           {providers.length === 0 ? (
@@ -152,6 +157,8 @@ export default async function CompanyDetailPage({
           )}
         </CardContent>
       </Card>
+
+      <LocationsSection companyId={company.id} />
     </div>
   );
 }
