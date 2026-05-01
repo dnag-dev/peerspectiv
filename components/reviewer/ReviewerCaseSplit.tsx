@@ -59,6 +59,46 @@ interface Props {
   reviewerLicense?: ReviewerLicense;
   initialMrnNumber?: string | null;
   allowAiNarrative?: boolean;
+  /** Section F5: extracted chart text used to estimate the page a hovered
+   *  question maps to so the iframe can be scrolled to roughly that page. */
+  chartTextExtracted?: string | null;
+}
+
+// Section F5: keyword map keyed off form field_key / field_label substrings.
+// Lowercased substring match.
+const F5_KEYWORD_MAP: Record<string, RegExp> = {
+  "mental status": /mental status/i,
+  "allergies": /allergies?/i,
+  "medication list": /medication/i,
+  "medications": /medication/i,
+  "vital signs": /vital signs|\bBP\b|blood pressure/i,
+  "ros": /review of systems|\bROS\b/i,
+  "review of systems": /review of systems|\bROS\b/i,
+};
+
+function findChartPageForField(
+  fieldKey: string,
+  fieldLabel: string,
+  chartText: string | null | undefined
+): number | null {
+  if (!chartText) return null;
+  const haystackKeys = [fieldKey.toLowerCase(), fieldLabel.toLowerCase()];
+  let pattern: RegExp | null = null;
+  for (const k of Object.keys(F5_KEYWORD_MAP)) {
+    if (haystackKeys.some((h) => h.includes(k))) {
+      pattern = F5_KEYWORD_MAP[k];
+      break;
+    }
+  }
+  if (!pattern) return null;
+  const lines = chartText.split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    if (pattern.test(lines[i])) {
+      // ~50 lines per page heuristic per spec.
+      return Math.floor(i / 50) + 1;
+    }
+  }
+  return null;
 }
 
 type LeftTab = "ash" | "chart";
@@ -84,8 +124,29 @@ export function ReviewerCaseSplit({
   reviewerLicense,
   initialMrnNumber,
   allowAiNarrative,
+  chartTextExtracted,
 }: Props) {
   const [tab, setTab] = useState<LeftTab>("ash");
+  // Section F5: track the iframe's `#page=N` fragment so hover events update
+  // the URL. Initial value is the bare chartViewUrl.
+  const [chartFrameUrl, setChartFrameUrl] = useState<string | null>(
+    chartViewUrl
+  );
+  useEffect(() => {
+    setChartFrameUrl(chartViewUrl);
+  }, [chartViewUrl]);
+
+  function handleFieldHover(fieldKey: string, fieldLabel: string) {
+    if (!chartViewUrl) return;
+    const page = findChartPageForField(fieldKey, fieldLabel, chartTextExtracted);
+    if (!page) return; // no match — silently no-op
+    // Strip any existing #page= fragment, then append the new one.
+    const base = chartViewUrl.split("#")[0];
+    const next = `${base}#page=${page}`;
+    setChartFrameUrl((prev) => (prev === next ? prev : next));
+    // If the user is on the Ash Summary tab, swing them to the chart.
+    setTab((t) => (t === "chart" ? t : "chart"));
+  }
   const [savedLayout, setSavedLayout] = useState<{ left: number; right: number } | null>(null);
   const [layoutReady, setLayoutReady] = useState(false);
 
@@ -244,7 +305,8 @@ export function ReviewerCaseSplit({
                 {chartViewUrl ? (
                   <div className="mt-2 flex-1 overflow-hidden rounded-lg border border-ink-200">
                     <iframe
-                      src={chartViewUrl}
+                      key={chartFrameUrl ?? chartViewUrl}
+                      src={chartFrameUrl ?? chartViewUrl}
                       title="Medical Chart"
                       className="h-full w-full border-0 bg-white"
                     />
@@ -321,6 +383,7 @@ export function ReviewerCaseSplit({
                 reviewerLicense={reviewerLicense}
                 initialMrnNumber={initialMrnNumber}
                 allowAiNarrative={allowAiNarrative}
+                onFieldHover={chartViewUrl ? handleFieldHover : undefined}
               />
             )}
           </div>

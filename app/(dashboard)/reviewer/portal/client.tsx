@@ -22,6 +22,39 @@ interface ReviewerPortalClientProps {
   cases: ReviewCase[];
 }
 
+// Section F1: group cases by (provider_id, batch_period). Multi-chart pairs
+// render a single card with a "N charts" badge linking to a tabbed detail page.
+interface CaseGroup {
+  key: string;
+  providerId: string | null;
+  batchPeriod: string | null;
+  cases: ReviewCase[];
+}
+
+function groupCases(cases: ReviewCase[]): CaseGroup[] {
+  const groups = new Map<string, CaseGroup>();
+  for (const c of cases) {
+    // Only group when BOTH a provider and batch_period are present. Otherwise,
+    // fall back to a per-case key so the card renders solo (current behavior).
+    const groupable = c.provider_id && c.batch_period;
+    const key = groupable
+      ? `${c.provider_id}::${c.batch_period}`
+      : `solo::${c.id}`;
+    const existing = groups.get(key);
+    if (existing) {
+      existing.cases.push(c);
+    } else {
+      groups.set(key, {
+        key,
+        providerId: c.provider_id,
+        batchPeriod: c.batch_period,
+        cases: [c],
+      });
+    }
+  }
+  return Array.from(groups.values());
+}
+
 export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
   if (cases.length === 0) {
     return (
@@ -51,6 +84,8 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
     );
   }
 
+  const groups = groupCases(cases);
+
   return (
     <div className="space-y-4">
       <div>
@@ -61,16 +96,49 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {cases.map((c) => {
+        {groups.map((group) => {
+          const isMulti = group.cases.length > 1;
+          // Use the earliest due date for the group.
+          const sortedByDue = [...group.cases].sort((a, b) => {
+            if (!a.due_date) return 1;
+            if (!b.due_date) return -1;
+            return (
+              new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+            );
+          });
+          const c = sortedByDue[0];
           const days = c.due_date ? daysUntilDue(c.due_date) : null;
           const isPastDue = days != null && days < 0;
           const isUrgent = days != null && days <= 2 && days >= 0;
+          const anyInProgress = group.cases.some(
+            (g) => g.status === "in_progress"
+          );
+          const anyAiReady = group.cases.some(
+            (g) => g.ai_analysis_status === "complete"
+          );
+          const hasUrgentInGroup = group.cases.some(
+            (g) => g.priority === "urgent"
+          );
+          const hasHighInGroup = group.cases.some((g) => g.priority === "high");
+          const displayedPriority = hasUrgentInGroup
+            ? "urgent"
+            : hasHighInGroup
+              ? "high"
+              : "normal";
+
+          const href =
+            isMulti && group.providerId && group.batchPeriod
+              ? `/reviewer/cases/group/${group.providerId}/${encodeURIComponent(
+                  group.batchPeriod
+                )}`
+              : `/reviewer/cases/${c.id}`;
 
           return (
             <div
-              key={c.id}
+              key={group.key}
               data-testid="case-card"
               data-case-id={c.id}
+              data-group-size={group.cases.length}
               className="group flex flex-col rounded-lg border border-ink-200 bg-white p-4 shadow-sm transition-all hover:border-brand-blue/40 hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-2">
@@ -79,19 +147,30 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
                     <h3 className="truncate text-sm font-semibold text-ink-900">
                       {c.provider?.first_name} {c.provider?.last_name}
                     </h3>
-                    {c.priority !== "normal" && (
+                    {displayedPriority !== "normal" && (
                       <Badge
                         variant={
-                          c.priority === "urgent" ? "destructive" : "warning"
+                          displayedPriority === "urgent"
+                            ? "destructive"
+                            : "warning"
                         }
                         className="text-[10px]"
                       >
-                        {c.priority}
+                        {displayedPriority}
+                      </Badge>
+                    )}
+                    {isMulti && (
+                      <Badge
+                        variant="secondary"
+                        className="bg-cobalt-50 text-[10px] text-cobalt-700"
+                      >
+                        {group.cases.length} charts
                       </Badge>
                     )}
                   </div>
                   <p className="mt-0.5 truncate text-xs text-ink-500">
                     {c.provider?.specialty ?? "General"} · {c.company?.name}
+                    {group.batchPeriod ? ` · ${group.batchPeriod}` : ""}
                   </p>
                 </div>
               </div>
@@ -114,17 +193,20 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
                       : days === 1
                         ? "Due tomorrow"
                         : `Due ${formatShortDate(c.due_date)} (${days}d)`}
+                  {isMulti && (
+                    <span className="ml-1 text-ink-400">(earliest)</span>
+                  )}
                 </div>
               )}
 
               <div className="mt-2 flex items-center gap-1.5">
                 <Badge
-                  variant={c.status === "in_progress" ? "warning" : "secondary"}
+                  variant={anyInProgress ? "warning" : "secondary"}
                   className="text-[10px]"
                 >
-                  {c.status === "in_progress" ? "In Progress" : "Assigned"}
+                  {anyInProgress ? "In Progress" : "Assigned"}
                 </Badge>
-                {c.ai_analysis_status === "complete" && (
+                {anyAiReady && (
                   <Badge variant="ai" className="text-[10px]">
                     AI Ready
                   </Badge>
@@ -133,10 +215,10 @@ export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
 
               <div className="mt-4 border-t border-ink-100 pt-3">
                 <Link
-                  href={`/reviewer/cases/${c.id}`}
+                  href={href}
                   className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-brand-blue px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-blue/90"
                 >
-                  Start Review
+                  {isMulti ? "Open Charts" : "Start Review"}
                   <svg
                     className="h-3.5 w-3.5"
                     fill="none"

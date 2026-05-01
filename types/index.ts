@@ -76,6 +76,7 @@ export interface ReviewCase {
   specialty_required: string | null;
   priority: 'normal' | 'high' | 'urgent';
   notes: string | null;
+  batch_period: string | null;
   created_at: string;
   updated_at: string;
   provider?: Provider;

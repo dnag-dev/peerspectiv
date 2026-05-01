@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useMemo, useCallback, useRef } from "react";
+// TODO Section F8: when company.tier !== 'white_glove', gate prefill behind a
+// per-form allow_ai_prefill flag. See docs/product-roadmap.md.
+
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 
 /* ──────────────────────── Types ──────────────────────── */
 
@@ -67,6 +70,9 @@ interface ReviewFormProps {
   initialMrnNumber?: string | null;
   /** company_forms.allow_ai_generated_recommendations (Section C.5). */
   allowAiNarrative?: boolean;
+  /** Section F5: hover-to-jump callback wired up by ReviewerCaseSplit so
+   *  hovering a field label can scroll the PDF iframe to the relevant page. */
+  onFieldHover?: (fieldKey: string, fieldLabel: string) => void;
 }
 
 interface FieldState {
@@ -120,7 +126,28 @@ export function ReviewForm({
   reviewerLicense,
   initialMrnNumber,
   allowAiNarrative,
+  onFieldHover,
 }: ReviewFormProps) {
+  // Section F5: hover-to-jump toggle, persisted in localStorage. Default ON.
+  const [hoverJumpEnabled, setHoverJumpEnabled] = useState<boolean>(true);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("peerspectiv.reviewer.hoverJump");
+      if (raw === "off") setHoverJumpEnabled(false);
+    } catch {
+      // ignore
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "peerspectiv.reviewer.hoverJump",
+        hoverJumpEnabled ? "on" : "off"
+      );
+    } catch {
+      // ignore
+    }
+  }, [hoverJumpEnabled]);
   const startedAt = useRef(Date.now());
 
   // ── MRN (Section C.4) ──
@@ -391,13 +418,32 @@ export function ReviewForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Header */}
+      {/* TODO Section F8: gate prefill rendering behind allow_ai_prefill flag
+          when company.tier !== 'white_glove'. See docs/product-roadmap.md. */}
       <div className="rounded-xl border border-ink-200 bg-paper-surface p-5">
-        <div className="text-eyebrow text-ink-500">REVIEWER · ASSESSMENT</div>
-        <h2 className="mt-1 text-h2 text-ink-900">Peer Review</h2>
-        <p className="mt-1 text-small text-ink-500">
-          Review each field below. AI prefills are shown with confidence
-          indicators — override where your clinical judgment differs.
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-eyebrow text-ink-500">REVIEWER · ASSESSMENT</div>
+            <h2 className="mt-1 text-h2 text-ink-900">Peer Review</h2>
+            <p className="mt-1 text-small text-ink-500">
+              Review each field below. AI prefills are shown with confidence
+              indicators — override where your clinical judgment differs.
+            </p>
+          </div>
+          {/* Section F5: hover-to-jump toggle. */}
+          {onFieldHover && (
+            <label className="flex flex-shrink-0 items-center gap-2 text-xs text-ink-600">
+              <input
+                type="checkbox"
+                data-testid="hover-jump-toggle"
+                checked={hoverJumpEnabled}
+                onChange={(e) => setHoverJumpEnabled(e.target.checked)}
+                className="h-4 w-4 rounded border-ink-300 text-cobalt-700 focus:ring-cobalt-200"
+              />
+              Highlight on hover
+            </label>
+          )}
+        </div>
       </div>
 
       {/* ── MRN Number (Section C.4) ── */}
@@ -514,6 +560,11 @@ export function ReviewForm({
             key={field.id}
             data-testid="form-field"
             data-field-key={field.fieldKey}
+            onMouseEnter={
+              hoverJumpEnabled && onFieldHover
+                ? () => onFieldHover(field.fieldKey, field.fieldLabel)
+                : undefined
+            }
             className={`rounded-xl border bg-paper-surface p-5 transition-colors ${
               isMissing
                 ? "border-critical-100 ring-1 ring-critical-100"
@@ -532,6 +583,8 @@ export function ReviewForm({
                     </span>
                   )}
                 </label>
+                {/* TODO Section F8: gate this prefill block behind
+                    allow_ai_prefill when company.tier !== 'white_glove'. */}
                 {prefill && (
                   <div className="mt-1.5 flex flex-wrap items-center gap-2">
                     <span

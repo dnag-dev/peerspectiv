@@ -1,7 +1,8 @@
 import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
+import { reviewers } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Clock, FileText, CheckCircle2 } from "lucide-react";
+import { DollarSign, Clock, FileText, CheckCircle2, Timer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
@@ -108,6 +109,30 @@ export default async function ReviewerEarningsPage() {
 
   const data: Row[] = ((rows as any).rows ?? rows) as Row[];
 
+  // Section F7: Avg time per chart KPI. Pull from reviewers.avg_minutes_per_chart
+  // for the (single) reviewer surfaced in the rows. Demo mode may have multiple
+  // reviewers — render the average across whichever rows we have, or a single
+  // value when one reviewer dominates.
+  const reviewerIds = Array.from(new Set(data.map((r) => r.reviewer_id))).filter(
+    Boolean
+  );
+  let avgMinutesPerChart: number | null = null;
+  if (reviewerIds.length > 0) {
+    const reviewerRows = await db
+      .select({
+        id: reviewers.id,
+        avgMinutesPerChart: reviewers.avgMinutesPerChart,
+      })
+      .from(reviewers);
+    const matching = reviewerRows.filter((r) => reviewerIds.includes(r.id));
+    const numeric = matching
+      .map((r) => (r.avgMinutesPerChart != null ? Number(r.avgMinutesPerChart) : null))
+      .filter((n): n is number => n != null && Number.isFinite(n));
+    if (numeric.length > 0) {
+      avgMinutesPerChart = numeric.reduce((a, b) => a + b, 0) / numeric.length;
+    }
+  }
+
   // Totals
   let totalMinutes = 0;
   let earnedCompleted = 0;
@@ -150,7 +175,7 @@ export default async function ReviewerEarningsPage() {
       </div>
 
       {/* Summary tiles */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
@@ -200,6 +225,25 @@ export default async function ReviewerEarningsPage() {
           <CardContent>
             <p className="text-2xl font-bold text-cobalt-700">{formatMoney(paid)}</p>
             <p className="text-xs text-muted-foreground">Settled payouts</p>
+          </CardContent>
+        </Card>
+
+        {/* Section F7: Avg time per chart KPI from reviewers.avg_minutes_per_chart. */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+              <Timer className="h-4 w-4" /> Avg time per chart
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-ink-900">
+              {avgMinutesPerChart != null
+                ? `${avgMinutesPerChart.toFixed(1)}m`
+                : "—"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Rolling average across submitted reviews
+            </p>
           </CardContent>
         </Card>
       </div>

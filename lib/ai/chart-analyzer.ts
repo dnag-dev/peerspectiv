@@ -1,3 +1,6 @@
+// TODO Section F8: when company.tier !== 'white_glove', gate prefill behind a per-form
+// allow_ai_prefill flag. See docs/product-roadmap.md.
+
 import { callClaude } from './anthropic';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import { getSignedChartUrl } from '@/lib/storage';
