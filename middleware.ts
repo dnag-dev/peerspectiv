@@ -262,6 +262,15 @@ export default async function middleware(request: NextRequest) {
       // (admin route) and let reviewer-role users hit the admin roster page.
       return NextResponse.redirect(new URL('/reviewer/portal', request.url));
     }
+    if (
+      demo.role === 'credentialer' &&
+      !pathname.startsWith('/credentialing/') &&
+      pathname !== '/credentialing' &&
+      !pathname.startsWith('/api/')
+    ) {
+      // Section B6 — credentialer is scoped to /credentialing/* only.
+      return NextResponse.redirect(new URL('/credentialing/credentials', request.url));
+    }
 
     return NextResponse.next();
   }

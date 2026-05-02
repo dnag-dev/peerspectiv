@@ -194,6 +194,40 @@ async function main() {
   }
   console.log(` ${reviewerOk} inserted.`);
 
+  // ─── Demo personas (must round-trip with /api/demo/login) ───
+  // The demo-login route hard-codes these emails; if the seed doesn't
+  // include them, the harness + a real persona login lands on a
+  // non-existent reviewer row. Add them here so reseed is canonical.
+  console.log('Upserting demo personas (rjohnson)...');
+  const rjohnsonId = uuid();
+  await sql.query(
+    `insert into reviewers
+      (id, full_name, email, specialty, specialties,
+       board_certification, license_number, license_state,
+       credential_valid_until, max_case_load, rate_type, rate_amount,
+       active_cases_count, total_reviews_completed, status, availability_status)
+     values ($1, 'Dr. Richard Johnson', 'rjohnson@peerspectiv.com',
+             'Family Medicine', ARRAY['Family Medicine','Pediatrics']::text[],
+             'ABFM', 'MD-12345', 'NY',
+             (CURRENT_DATE + interval '2 years')::date, 75,
+             'per_report', 100, 0, 0, 'active', 'available')
+     on conflict (email) do update set
+       full_name = excluded.full_name,
+       specialty = excluded.specialty,
+       specialties = excluded.specialties,
+       license_number = excluded.license_number,
+       license_state = excluded.license_state,
+       credential_valid_until = excluded.credential_valid_until,
+       max_case_load = excluded.max_case_load,
+       rate_type = excluded.rate_type,
+       rate_amount = excluded.rate_amount,
+       status = excluded.status,
+       availability_status = excluded.availability_status`,
+    [rjohnsonId]
+  );
+  reviewerIds.push({ id: rjohnsonId, specialty: 'Family Medicine' });
+  console.log(' rjohnson upserted.');
+
   // ─── Providers ───
   console.log('Inserting providers...');
   let providerOk = 0;

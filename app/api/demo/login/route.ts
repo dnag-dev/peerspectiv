@@ -23,6 +23,13 @@ const ROLES: Record<string, { email: string; name: string; landing: string }> = 
     name: 'Dr. Richard Johnson',
     landing: '/reviewer/portal',
   },
+  // Section B6 — credentialing role. Read-only on /credentialing/* pages,
+  // cannot reach /companies, /reviewers, /payouts, /invoices.
+  credentialer: {
+    email: 'credentialing@peerspectiv.com',
+    name: 'Renée Cole',
+    landing: '/credentialing/credentials',
+  },
 };
 
 export async function POST(request: NextRequest) {
