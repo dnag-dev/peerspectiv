@@ -31,6 +31,13 @@ const DEMO_USERS = [
     blurb: 'Reviewer queue + AI-prefilled split-screen review.',
     accent: '#F59E0B',
   },
+  {
+    role: 'credentialer' as const,
+    label: 'Continue as Credentialing (Renée)',
+    email: 'credentialing@peerspectiv.com',
+    blurb: 'Credentials + new-reviewer inbox. Scoped, no admin access.',
+    accent: '#A855F7',
+  },
 ];
 
 export default function LoginPage() {
@@ -48,7 +55,7 @@ export default function LoginPage() {
     }
   }, [showDemo]);
 
-  async function loginAsDemo(role: 'admin' | 'client' | 'reviewer') {
+  async function loginAsDemo(role: 'admin' | 'client' | 'reviewer' | 'credentialer') {
     setLoading(role);
     try {
       const res = await fetch('/api/demo/login', {
