@@ -246,6 +246,9 @@ export default async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
+    // TODO: same trap as the reviewer rule below — startsWith('/portal') would
+    // match a hypothetical '/portals' admin route. No live bug today, but if
+    // anyone adds /portals* tighten this to "=== '/portal' || startsWith('/portal/')".
     if (demo.role === 'client' && !pathname.startsWith('/portal') && !pathname.startsWith('/api/')) {
       return NextResponse.redirect(new URL('/portal', request.url));
     }

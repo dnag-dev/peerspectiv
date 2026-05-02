@@ -246,8 +246,9 @@ export const aiAnalyses = pgTable('ai_analyses', {
   chartSummary: text('chart_summary'),
   criteriaScores: jsonb('criteria_scores'),
   deficiencies: jsonb('deficiencies'),
-  // numeric(5,2) so 88.89 round-trips exactly. Was integer (lossy).
-  overallScore: numeric('overall_score', { precision: 5, scale: 2 }),
+  // numeric(5,2) so 88.89 round-trips exactly. mode:'number' makes drizzle
+  // coerce string ↔ number at the boundary so consumers don't need Number().
+  overallScore: numeric('overall_score', { precision: 5, scale: 2, mode: 'number' }),
   documentationScore: integer('documentation_score'),
   clinicalAppropriatenessScore: integer('clinical_appropriateness_score'),
   careCoordinationScore: integer('care_coordination_score'),
@@ -277,8 +278,9 @@ export const reviewResults = pgTable('review_results', {
   reviewerId: uuid('reviewer_id').references(() => reviewers.id),
   criteriaScores: jsonb('criteria_scores'),
   deficiencies: jsonb('deficiencies'),
-  // numeric(5,2) so 88.89 round-trips exactly. Was integer (lossy).
-  overallScore: numeric('overall_score', { precision: 5, scale: 2 }),
+  // numeric(5,2) so 88.89 round-trips exactly. mode:'number' makes drizzle
+  // coerce string ↔ number at the boundary so consumers don't need Number().
+  overallScore: numeric('overall_score', { precision: 5, scale: 2, mode: 'number' }),
   narrativeFinal: text('narrative_final'),
   aiAgreementPercentage: numeric('ai_agreement_percentage', {
     precision: 5,
