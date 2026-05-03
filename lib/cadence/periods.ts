@@ -81,7 +81,7 @@ export function formatCadenceLabel(period: CadencePeriod): string {
   return `${MONTH_ABBR[sMonth]} ${sYear}${SPAN_SEP}${MONTH_ABBR[eMonth]} ${eYear}`;
 }
 
-interface CompanyCadenceRow {
+interface CompanyCadenceRow extends Record<string, unknown> {
   fiscal_year_start_month: number | null;
   cadence_period_type: string | null;
   cadence_period_months: number | null;
