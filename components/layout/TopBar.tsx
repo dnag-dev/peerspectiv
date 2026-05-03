@@ -6,12 +6,18 @@ import { useMobileNav } from "./MobileNavContext";
 import { NotificationBell } from "./NotificationBell";
 
 const pageTitles: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/companies": "Companies",
-  "/batches":   "Batches",
-  "/assign":    "AI Assignment Queue",
-  "/peers": "Peers",
+  "/dashboard":   "Dashboard",
+  "/cases":       "Reviews",
+  "/companies":   "Companies",
+  "/batches":     "Batches",
+  "/assign":      "AI Assignment Queue",
+  "/assignments": "Assignments",
+  "/peers":       "Peers",
+  "/forms":       "Forms",
+  "/tags":        "Tags",
+  "/settings":    "Settings",
   "/peer/portal":   "My Queue",
+  "/peer/profile":  "Profile",
   "/peer/earnings": "Earnings",
   "/payouts":   "Payouts",
   "/reports":   "Reports",
