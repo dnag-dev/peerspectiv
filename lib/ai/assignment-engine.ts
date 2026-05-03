@@ -1,5 +1,7 @@
 import { callClaude } from './anthropic';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { reviewCases, reviewers, providers, companies } from '@/lib/db/schema';
+import { and, eq } from 'drizzle-orm';
 import type { AssignmentResult } from '@/types';
 
 const ASSIGNMENT_SYSTEM_PROMPT = `You are an intelligent case assignment engine for a medical peer review company called Peerspectiv.
@@ -54,11 +56,14 @@ interface ReviewerRow {
 
 export async function suggestAssignments(batchId: string): Promise<AssignmentResult> {
   // Fetch unassigned cases in this batch
-  const { data: cases } = await supabaseAdmin
-    .from('review_cases')
-    .select('id, specialty_required, provider:providers(first_name, last_name), company:companies(name)')
-    .eq('batch_id', batchId)
-    .eq('status', 'unassigned');
+  const cases = await db.query.reviewCases.findMany({
+    where: and(eq(reviewCases.batchId, batchId), eq(reviewCases.status, 'unassigned')),
+    columns: { id: true, specialtyRequired: true },
+    with: {
+      provider: { columns: { firstName: true, lastName: true } },
+      company: { columns: { name: true } },
+    },
+  });
 
   if (!cases || cases.length === 0) {
     return { assignments: [], unassignable: [], summary: 'No unassigned cases found in this batch.' };
@@ -66,13 +71,23 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
 
   // Fetch active reviewers (exclude unavailable). We pull all and filter
   // capacity/credential in JS so we can also build the unassignable reasons.
-  const { data: reviewersRaw } = await supabaseAdmin
-    .from('reviewers')
-    .select('id, full_name, specialty, specialties, active_cases_count, max_case_load, avg_minutes_per_chart, total_reviews_completed, board_certification, credential_valid_until')
-    .eq('status', 'active')
-    .eq('availability_status', 'available');
+  const reviewersRaw = await db
+    .select({
+      id: reviewers.id,
+      full_name: reviewers.fullName,
+      specialty: reviewers.specialty,
+      specialties: reviewers.specialties,
+      active_cases_count: reviewers.activeCasesCount,
+      max_case_load: reviewers.maxCaseLoad,
+      avg_minutes_per_chart: reviewers.avgMinutesPerChart,
+      total_reviews_completed: reviewers.totalReviewsCompleted,
+      board_certification: reviewers.boardCertification,
+      credential_valid_until: reviewers.credentialValidUntil,
+    })
+    .from(reviewers)
+    .where(and(eq(reviewers.status, 'active'), eq(reviewers.availabilityStatus, 'available')));
 
-  const allReviewers = (reviewersRaw ?? []) as ReviewerRow[];
+  const allReviewers = reviewersRaw as ReviewerRow[];
   const today = new Date().toISOString().slice(0, 10);
 
   // Credentialed + capacity filter
@@ -84,10 +99,7 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
     return active < cap;
   });
 
-  // Sort preference-first:
-  //  1. lowest active_cases_count
-  //  2. lowest avg_minutes_per_chart (nulls last)
-  //  3. highest total_reviews_completed
+  // Sort preference-first
   const sorted = [...eligible].sort((a, b) => {
     const aa = Number(a.active_cases_count ?? 0);
     const bb = Number(b.active_cases_count ?? 0);
@@ -100,11 +112,11 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
     return bt - at;
   });
 
-  const casesForAI = cases.map((c: any) => ({
+  const casesForAI = cases.map((c) => ({
     id: c.id,
-    specialty_required: c.specialty_required,
-    provider_name: c.provider ? `${(c.provider as any).first_name} ${(c.provider as any).last_name}` : 'Unknown',
-    company_name: (c.company as any)?.name || 'Unknown',
+    specialty_required: c.specialtyRequired,
+    provider_name: c.provider ? `${c.provider.firstName} ${c.provider.lastName}` : 'Unknown',
+    company_name: c.company?.name || 'Unknown',
   }));
 
   const reviewersForAI = sorted.map((r) => ({
@@ -122,7 +134,6 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
     board_certification: r.board_certification,
   }));
 
-  // Spreading hint: cap any one reviewer at min(remaining-cap, ceil(N/M)).
   const N = cases.length;
   const M = Math.max(1, reviewersForAI.length);
   const evenShare = Math.ceil(N / M);
@@ -132,13 +143,12 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
 
   let result: AssignmentResult;
   if (reviewersForAI.length === 0) {
-    // Short-circuit: every case unassignable.
     const reason = allReviewers.length === 0
       ? 'No reviewers available'
       : 'All reviewers blocked (missing/expired credential or at capacity)';
     return {
       assignments: [],
-      unassignable: cases.map((c: any) => ({ case_id: c.id, reason })),
+      unassignable: cases.map((c) => ({ case_id: c.id, reason })),
       summary: reason,
     };
   } else {
@@ -149,8 +159,6 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
   }
 
   // Annotate unassignable with capacity reason for any over-cap reviewers
-  // that the AI may have skipped silently. We surface a "Reviewer at capacity"
-  // hint for any specialty match that would have been blocked by capacity.
   const overCap = allReviewers.filter((r) => {
     const active = Number(r.active_cases_count ?? 0);
     const cap = Number(r.max_case_load ?? 75);
@@ -159,7 +167,7 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
   if (overCap.length > 0 && result.unassignable) {
     for (const u of result.unassignable) {
       if (!u.reason || /no reviewer/i.test(u.reason)) {
-        const targetCase = cases.find((c: any) => c.id === u.case_id) as any;
+        const targetCase = cases.find((c) => c.id === u.case_id);
         if (targetCase) {
           const matched = overCap.find((r) => {
             const specs = Array.isArray(r.specialties) && r.specialties.length > 0
@@ -167,7 +175,7 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
               : r.specialty
                 ? [r.specialty]
                 : [];
-            return specs.includes(targetCase.specialty_required);
+            return specs.includes(targetCase.specialtyRequired ?? '');
           });
           if (matched) {
             u.reason = `Reviewer at capacity (${matched.full_name})`;
@@ -179,14 +187,14 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
 
   // Write proposed assignments to DB
   for (const assignment of result.assignments) {
-    await supabaseAdmin
-      .from('review_cases')
-      .update({
-        reviewer_id: assignment.reviewer_id,
+    await db
+      .update(reviewCases)
+      .set({
+        reviewerId: assignment.reviewer_id,
         status: 'pending_approval',
-        updated_at: new Date().toISOString(),
+        updatedAt: new Date(),
       })
-      .eq('id', assignment.case_id);
+      .where(eq(reviewCases.id, assignment.case_id));
   }
 
   return result;
@@ -196,49 +204,47 @@ export async function approveAssignment(caseId: string): Promise<void> {
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + 7);
 
-  await supabaseAdmin
-    .from('review_cases')
-    .update({
+  await db
+    .update(reviewCases)
+    .set({
       status: 'assigned',
-      assigned_at: new Date().toISOString(),
-      due_date: dueDate.toISOString(),
-      updated_at: new Date().toISOString(),
+      assignedAt: new Date(),
+      dueDate,
+      updatedAt: new Date(),
     })
-    .eq('id', caseId);
+    .where(eq(reviewCases.id, caseId));
 
   // Increment reviewer active cases
-  const { data: caseData } = await supabaseAdmin
-    .from('review_cases')
-    .select('reviewer_id')
-    .eq('id', caseId)
-    .single();
+  const [caseData] = await db
+    .select({ reviewerId: reviewCases.reviewerId })
+    .from(reviewCases)
+    .where(eq(reviewCases.id, caseId))
+    .limit(1);
 
-  if (caseData?.reviewer_id) {
-    const { data: reviewerData } = await supabaseAdmin
-      .from('reviewers')
-      .select('active_cases_count')
-      .eq('id', caseData.reviewer_id)
-      .single();
+  if (caseData?.reviewerId) {
+    const [reviewerData] = await db
+      .select({ activeCasesCount: reviewers.activeCasesCount })
+      .from(reviewers)
+      .where(eq(reviewers.id, caseData.reviewerId))
+      .limit(1);
 
     if (reviewerData) {
-      await supabaseAdmin
-        .from('reviewers')
-        .update({ active_cases_count: (reviewerData.active_cases_count || 0) + 1 })
-        .eq('id', caseData.reviewer_id);
+      await db
+        .update(reviewers)
+        .set({ activeCasesCount: (reviewerData.activeCasesCount || 0) + 1 })
+        .where(eq(reviewers.id, caseData.reviewerId));
     }
   }
 }
 
 export async function approveAllAssignments(batchId?: string): Promise<number> {
-  const query = supabaseAdmin
-    .from('review_cases')
-    .select('id')
-    .eq('status', 'pending_approval');
+  const conditions = [eq(reviewCases.status, 'pending_approval')];
+  if (batchId) conditions.push(eq(reviewCases.batchId, batchId));
 
-  if (batchId) query.eq('batch_id', batchId);
-
-  const { data: cases } = await query;
-  if (!cases) return 0;
+  const cases = await db
+    .select({ id: reviewCases.id })
+    .from(reviewCases)
+    .where(and(...conditions));
 
   for (const c of cases) {
     await approveAssignment(c.id);

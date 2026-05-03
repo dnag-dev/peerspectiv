@@ -1,5 +1,7 @@
 import { callClaude } from './anthropic';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { reviewCases, companies, reviewers } from '@/lib/db/schema';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 
 export async function parseCommand(commandText: string): Promise<{
   intent: string;
@@ -9,17 +11,17 @@ export async function parseCommand(commandText: string): Promise<{
   data?: unknown;
 }> {
   // Gather context
-  const { count: activeCases } = await supabaseAdmin
-    .from('review_cases')
-    .select('*', { count: 'exact', head: true })
-    .in('status', ['assigned', 'in_progress', 'unassigned', 'pending_approval']);
+  const [{ count: activeCases }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(reviewCases)
+    .where(inArray(reviewCases.status, ['assigned', 'in_progress', 'unassigned', 'pending_approval']));
 
-  const { data: companies } = await supabaseAdmin
-    .from('companies')
-    .select('name')
-    .eq('status', 'active');
+  const companyRows = await db
+    .select({ name: companies.name })
+    .from(companies)
+    .where(eq(companies.status, 'active'));
 
-  const companyNames = companies?.map((c: any) => c.name).join(', ') || 'None';
+  const companyNames = companyRows.map((c) => c.name).join(', ') || 'None';
 
   const systemPrompt = `You are Peerspectiv's AI command center. You help the operations manager run their peer review business through natural language.
 
@@ -76,56 +78,75 @@ async function executeIntent(intent: string, parameters: Record<string, unknown>
       const statuses = ['unassigned', 'pending_approval', 'assigned', 'in_progress', 'completed', 'past_due'];
       const results: Record<string, number> = {};
       for (const s of statuses) {
-        const { count } = await supabaseAdmin
-          .from('review_cases')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', s);
+        const [{ count }] = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(reviewCases)
+          .where(eq(reviewCases.status, s));
         results[s] = count || 0;
       }
       return results;
     }
 
     case 'list_past_due': {
-      const { data } = await supabaseAdmin
-        .from('review_cases')
-        .select('id, due_date, specialty_required, reviewer:reviewers(full_name), company:companies(name), provider:providers(first_name, last_name)')
-        .eq('status', 'past_due')
-        .order('due_date', { ascending: true });
+      const data = await db.query.reviewCases.findMany({
+        where: eq(reviewCases.status, 'past_due'),
+        orderBy: asc(reviewCases.dueDate),
+        columns: { id: true, dueDate: true, specialtyRequired: true },
+        with: {
+          reviewer: { columns: { fullName: true } },
+          company: { columns: { name: true } },
+          provider: { columns: { firstName: true, lastName: true } },
+        },
+      });
       return data;
     }
 
     case 'list_cases': {
-      let query = supabaseAdmin
-        .from('review_cases')
-        .select('id, status, due_date, specialty_required, reviewer:reviewers(full_name), company:companies(name), provider:providers(first_name, last_name)')
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (parameters.status) query = query.eq('status', parameters.status as string);
-      const { data } = await query;
+      const conditions = [];
+      if (parameters.status) conditions.push(eq(reviewCases.status, parameters.status as string));
+      const data = await db.query.reviewCases.findMany({
+        where: conditions.length ? and(...conditions) : undefined,
+        orderBy: desc(reviewCases.createdAt),
+        limit: 20,
+        columns: { id: true, status: true, dueDate: true, specialtyRequired: true },
+        with: {
+          reviewer: { columns: { fullName: true } },
+          company: { columns: { name: true } },
+          provider: { columns: { firstName: true, lastName: true } },
+        },
+      });
       return data;
     }
 
     case 'reviewer_performance': {
-      const { data } = await supabaseAdmin
-        .from('reviewers')
-        .select('full_name, specialty, active_cases_count, ai_agreement_score, total_reviews_completed, status')
-        .order('ai_agreement_score', { ascending: true });
+      const data = await db
+        .select({
+          full_name: reviewers.fullName,
+          specialty: reviewers.specialty,
+          active_cases_count: reviewers.activeCasesCount,
+          ai_agreement_score: reviewers.aiAgreementScore,
+          total_reviews_completed: reviewers.totalReviewsCompleted,
+          status: reviewers.status,
+        })
+        .from(reviewers)
+        .orderBy(asc(reviewers.aiAgreementScore));
       return data;
     }
 
     case 'company_summary': {
-      const { data } = await supabaseAdmin
-        .from('review_cases')
-        .select('status, company:companies(name)')
-        .order('created_at', { ascending: false });
+      const data = await db.query.reviewCases.findMany({
+        orderBy: desc(reviewCases.createdAt),
+        columns: { status: true },
+        with: { company: { columns: { name: true } } },
+      });
 
       // Group by company
       const summary: Record<string, Record<string, number>> = {};
-      data?.forEach((c: any) => {
+      data?.forEach((c) => {
         const name = c.company?.name || 'Unknown';
         if (!summary[name]) summary[name] = {};
-        summary[name][c.status] = (summary[name][c.status] || 0) + 1;
+        const status = c.status as string;
+        summary[name][status] = (summary[name][status] || 0) + 1;
       });
       return summary;
     }

@@ -2,7 +2,9 @@
 // allow_ai_prefill flag. See docs/product-roadmap.md.
 
 import { callClaude } from './anthropic';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { reviewCases, aiAnalyses } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { getSignedChartUrl } from '@/lib/storage';
 import { extractTextFromPDF } from '@/lib/pdf/extractor';
 import { auditLog } from '@/lib/utils/audit';
@@ -107,28 +109,30 @@ export async function analyzeChart(caseId: string): Promise<void> {
   const startTime = Date.now();
 
   // Update status to processing
-  await supabaseAdmin
-    .from('review_cases')
-    .update({ ai_analysis_status: 'processing', updated_at: new Date().toISOString() })
-    .eq('id', caseId);
+  await db
+    .update(reviewCases)
+    .set({ aiAnalysisStatus: 'processing', updatedAt: new Date() })
+    .where(eq(reviewCases.id, caseId));
 
   try {
     // Fetch case info
-    const { data: caseData, error: caseError } = await supabaseAdmin
-      .from('review_cases')
-      .select('*, provider:providers(first_name, last_name, specialty), company:companies(name)')
-      .eq('id', caseId)
-      .single();
+    const caseData = await db.query.reviewCases.findFirst({
+      where: eq(reviewCases.id, caseId),
+      with: {
+        provider: { columns: { firstName: true, lastName: true, specialty: true } },
+        company: { columns: { name: true } },
+      },
+    });
 
-    if (caseError || !caseData) throw new Error('Case not found');
+    if (!caseData) throw new Error('Case not found');
 
     let chartText: string;
     let pageCount = 0;
     let extractionMethod: 'pdf-parse' | 'claude-native' | 'failed' | 'sample' = 'sample';
 
-    if (caseData.chart_file_path) {
-      // Download and extract PDF (pdf-parse first, falls back to claude-native vision)
-      const signedUrl = await getSignedChartUrl(caseData.chart_file_path);
+    if (caseData.chartFilePath) {
+      // Download and extract PDF
+      const signedUrl = await getSignedChartUrl(caseData.chartFilePath);
       const response = await fetch(signedUrl);
       const buffer = Buffer.from(await response.arrayBuffer());
       const extracted = await extractTextFromPDF(buffer);
@@ -141,7 +145,7 @@ export async function analyzeChart(caseId: string): Promise<void> {
       pageCount = 4;
     }
 
-    const specialty = (caseData.provider as any)?.specialty || caseData.specialty_required || 'Family Medicine';
+    const specialty = caseData.provider?.specialty || caseData.specialtyRequired || 'Family Medicine';
 
     const userPrompt = `Provider specialty being reviewed: ${specialty}
 Review type: Clinical Quality Peer Review
@@ -162,33 +166,53 @@ ${chartText}
     const analysis = JSON.parse(jsonMatch[0]);
 
     // Store analysis
-    await supabaseAdmin.from('ai_analyses').upsert({
-      case_id: caseId,
-      chart_summary: analysis.chart_summary,
-      criteria_scores: analysis.criteria_scores,
-      deficiencies: analysis.deficiencies,
-      overall_score: analysis.overall_score,
-      documentation_score: analysis.documentation_score,
-      clinical_appropriateness_score: analysis.clinical_appropriateness_score,
-      care_coordination_score: analysis.care_coordination_score,
-      narrative_draft: analysis.narrative_draft,
-      tokens_used: null,
-      model_used: 'claude-sonnet-4-5',
-      processing_time_ms: processingTime,
-      chart_text_extracted: chartText.slice(0, 50000),
-      extraction_method: extractionMethod,
-    }, { onConflict: 'case_id' });
+    await db
+      .insert(aiAnalyses)
+      .values({
+        caseId,
+        chartSummary: analysis.chart_summary,
+        criteriaScores: analysis.criteria_scores,
+        deficiencies: analysis.deficiencies,
+        overallScore: analysis.overall_score,
+        documentationScore: analysis.documentation_score,
+        clinicalAppropriatenessScore: analysis.clinical_appropriateness_score,
+        careCoordinationScore: analysis.care_coordination_score,
+        narrativeDraft: analysis.narrative_draft,
+        tokensUsed: null,
+        modelUsed: 'claude-sonnet-4-5',
+        processingTimeMs: processingTime,
+        chartTextExtracted: chartText.slice(0, 50000),
+        extractionMethod,
+      })
+      .onConflictDoUpdate({
+        target: aiAnalyses.caseId,
+        set: {
+          chartSummary: analysis.chart_summary,
+          criteriaScores: analysis.criteria_scores,
+          deficiencies: analysis.deficiencies,
+          overallScore: analysis.overall_score,
+          documentationScore: analysis.documentation_score,
+          clinicalAppropriatenessScore: analysis.clinical_appropriateness_score,
+          careCoordinationScore: analysis.care_coordination_score,
+          narrativeDraft: analysis.narrative_draft,
+          tokensUsed: null,
+          modelUsed: 'claude-sonnet-4-5',
+          processingTimeMs: processingTime,
+          chartTextExtracted: chartText.slice(0, 50000),
+          extractionMethod,
+        },
+      });
 
     // Update case status
-    await supabaseAdmin
-      .from('review_cases')
-      .update({
-        ai_analysis_status: 'complete',
-        ai_processed_at: new Date().toISOString(),
-        chart_pages: pageCount,
-        updated_at: new Date().toISOString(),
+    await db
+      .update(reviewCases)
+      .set({
+        aiAnalysisStatus: 'complete',
+        aiProcessedAt: new Date(),
+        chartPages: pageCount,
+        updatedAt: new Date(),
       })
-      .eq('id', caseId);
+      .where(eq(reviewCases.id, caseId));
 
     await auditLog({
       action: 'ai_analysis_complete',
@@ -198,10 +222,10 @@ ${chartText}
     });
   } catch (err) {
     console.log('[ERROR] AI analysis failed for case:', caseId);
-    await supabaseAdmin
-      .from('review_cases')
-      .update({ ai_analysis_status: 'failed', updated_at: new Date().toISOString() })
-      .eq('id', caseId);
+    await db
+      .update(reviewCases)
+      .set({ aiAnalysisStatus: 'failed', updatedAt: new Date() })
+      .where(eq(reviewCases.id, caseId));
   }
 }
 
