@@ -4,7 +4,7 @@ import { reviewCases, batches, peers } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { isAssignable, type PeerState } from '@/lib/peers/state-machine';
 import { approveAssignment, approveAllAssignments } from '@/lib/ai/assignment-engine';
-import { sendPeerAssignment } from '@/lib/email/notifications';
+import { sendCaseAssignedAlert } from '@/lib/email/notifications';
 import { auditLog } from '@/lib/utils/audit';
 import { calculateProjectedCompletion } from '@/lib/utils/completion';
 
@@ -56,24 +56,27 @@ export async function POST(request: NextRequest) {
     if (approve_all && batch_id) {
       const count = await approveAllAssignments(batch_id);
 
-      // Send emails to all newly assigned peers in the batch
+      // Send emails to all newly assigned peers in the batch (Phase 5.4 SA-091).
       const assignedCases = await db.query.reviewCases.findMany({
         where: and(eq(reviewCases.batchId, batch_id), eq(reviewCases.status, 'assigned')),
         columns: { id: true, specialtyRequired: true, dueDate: true },
-        with: { peer: { columns: { fullName: true, email: true } } },
+        with: {
+          peer: { columns: { fullName: true, email: true } },
+          provider: { columns: { firstName: true, lastName: true } },
+        },
       });
 
       for (const c of assignedCases) {
         const peer = c.peer;
         if (peer?.email) {
-          sendPeerAssignment({
-            peerEmail: peer.email,
-            peerName: peer.fullName ?? '',
-            caseId: c.id,
-            specialty: c.specialtyRequired || 'General',
-            dueDate: c.dueDate ? new Date(c.dueDate).toLocaleDateString() : 'TBD',
-            portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/peer/case/${c.id}`,
-          }).catch(() => {});
+          const providerName = c.provider
+            ? `${c.provider.firstName ?? ''} ${c.provider.lastName ?? ''}`.trim() || 'Unknown'
+            : 'Unknown';
+          sendCaseAssignedAlert(
+            { fullName: peer.fullName, email: peer.email },
+            { id: c.id, specialtyRequired: c.specialtyRequired, dueDate: c.dueDate },
+            providerName
+          ).catch(() => {});
         }
       }
 
@@ -117,7 +120,10 @@ export async function POST(request: NextRequest) {
       const caseData = await db.query.reviewCases.findFirst({
         where: eq(reviewCases.id, case_id),
         columns: { id: true, batchId: true, specialtyRequired: true, dueDate: true },
-        with: { peer: { columns: { fullName: true, email: true } } },
+        with: {
+          peer: { columns: { fullName: true, email: true } },
+          provider: { columns: { firstName: true, lastName: true } },
+        },
       });
 
       // Recalculate projected completion for this case's batch
@@ -146,14 +152,15 @@ export async function POST(request: NextRequest) {
       if (caseData) {
         const peer = caseData.peer;
         if (peer?.email) {
-          sendPeerAssignment({
-            peerEmail: peer.email,
-            peerName: peer.fullName ?? '',
-            caseId: case_id,
-            specialty: caseData.specialtyRequired || 'General',
-            dueDate: caseData.dueDate ? new Date(caseData.dueDate).toLocaleDateString() : 'TBD',
-            portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/peer/case/${case_id}`,
-          }).catch(() => {});
+          const providerName = caseData.provider
+            ? `${caseData.provider.firstName ?? ''} ${caseData.provider.lastName ?? ''}`.trim() || 'Unknown'
+            : 'Unknown';
+          // Phase 5.4 SA-091 — never block the approval response on email send.
+          sendCaseAssignedAlert(
+            { fullName: peer.fullName, email: peer.email },
+            { id: case_id, specialtyRequired: caseData.specialtyRequired, dueDate: caseData.dueDate },
+            providerName
+          ).catch(() => {});
         }
       }
 

@@ -10,6 +10,7 @@
   "crons": [
     { "path": "/api/cron/reviewer-efficiency", "schedule": "0 2 * * *" },
     { "path": "/api/cron/license-expiry", "schedule": "0 6 * * *" },
-    { "path": "/api/cron/cycle-completion", "schedule": "0 6 * * *" }
+    { "path": "/api/cron/cycle-completion", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/past-due-reminders", "schedule": "0 9 * * *" }
   ]
 }
