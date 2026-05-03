@@ -6,7 +6,7 @@ import { sendCredentialingAlert } from '@/lib/email/notifications';
 export const dynamic = 'force-dynamic';
 
 /**
- * Public reviewer onboarding intake. Inserts an inactive reviewer row and
+ * Public peer onboarding intake. Inserts an inactive peer row and
  * fires the credentialing notification — no auth required.
  */
 export async function POST(request: NextRequest) {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
           licenseNumber: license_number,
           licenseState: license_state,
           maxCaseLoad: mcl,
-          // No credential_valid_until → reviewer remains blocked from assignment
+          // No credential_valid_until → peer remains blocked from assignment
           // until credentialing fills it in.
           status: 'inactive',
           availabilityStatus: 'available',
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     const bodyHtml = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color:#0F2044;">New Reviewer Application</h2>
+        <h2 style="color:#0F2044;">New Peer Application</h2>
         <p><strong>${full_name}</strong> (${email}) submitted the public onboarding form.</p>
         <ul>
           <li>Specialties: ${specs.join(', ')}</li>
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       peerName: full_name,
       email,
       specialties: specs,
-      subject: `New reviewer application: ${full_name}`,
+      subject: `New peer application: ${full_name}`,
       bodyHtml,
     }).catch((err) => {
       console.error('[API] sendCredentialingAlert (onboard) failed:', err);

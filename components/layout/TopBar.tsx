@@ -10,7 +10,7 @@ const pageTitles: Record<string, string> = {
   "/companies": "Companies",
   "/batches":   "Batches",
   "/assign":    "AI Assignment Queue",
-  "/peers": "Reviewers",
+  "/peers": "Peers",
   "/peer/portal":   "My Queue",
   "/peer/earnings": "Earnings",
   "/payouts":   "Payouts",

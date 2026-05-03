@@ -36,7 +36,7 @@ interface AssignmentRow {
   mrn_number: string;
   is_pediatric: boolean;
   pediatric_mismatch: boolean;
-  reviewer_name: string;
+  peer_name: string;
   encounter_date: string | null;
   overall_score: number | null;
   deficiencies_count: number;
@@ -146,7 +146,7 @@ export function AssignmentResultsTab({ companies }: Props) {
     const head = [
       [
         "MRN",
-        "Reviewer",
+        "Peer",
         "Encounter Date",
         "Overall Score",
         "Deficiencies",
@@ -156,7 +156,7 @@ export function AssignmentResultsTab({ companies }: Props) {
     ];
     const body = results.map((r) => [
       r.mrn_number + (r.pediatric_mismatch ? " ⚠ Pediatric" : ""),
-      r.reviewer_name,
+      r.peer_name,
       formatDate(r.encounter_date),
       r.overall_score != null ? r.overall_score.toFixed(1) : "--",
       String(r.deficiencies_count),
@@ -276,7 +276,7 @@ export function AssignmentResultsTab({ companies }: Props) {
                 <TableHeader>
                   <TableRow>
                     <TableHead>MRN</TableHead>
-                    <TableHead>Reviewer</TableHead>
+                    <TableHead>Peer</TableHead>
                     <TableHead>Encounter Date</TableHead>
                     <TableHead className="text-right">Overall Score</TableHead>
                     <TableHead className="text-right">Deficiencies</TableHead>
@@ -302,10 +302,10 @@ export function AssignmentResultsTab({ companies }: Props) {
                             href={`/peers/${row.peer_id}`}
                             className="text-brand-navy hover:underline"
                           >
-                            {row.reviewer_name}
+                            {row.peer_name}
                           </Link>
                         ) : (
-                          row.reviewer_name
+                          row.peer_name
                         )}
                       </TableCell>
                       <TableCell>{formatDate(row.encounter_date)}</TableCell>

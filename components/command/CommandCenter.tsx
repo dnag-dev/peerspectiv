@@ -34,7 +34,7 @@ interface Message {
 
 const QUICK_COMMANDS = [
   "Past-due cases?",
-  "Reviewer rankings",
+  "Peer rankings",
   "Assign new batch",
   "Generate QAPI report",
   "Dashboard stats",

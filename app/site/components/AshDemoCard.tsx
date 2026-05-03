@@ -46,7 +46,7 @@ export function AshDemoCard({
                 Who&apos;s overdue this week?
               </div>
               <div className="rounded-md bg-cobalt-50 px-3 py-2 text-ink-800">
-                3 cases past due across 2 reviewers. Dr. Patel has 2 (Hunter Health
+                3 cases past due across 2 peers. Dr. Patel has 2 (Hunter Health
                 batch B-241), Dr. Liu has 1 (Aira batch B-238). Want me to draft
                 a nudge?
               </div>

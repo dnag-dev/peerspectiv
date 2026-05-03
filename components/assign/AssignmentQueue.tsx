@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ReviewerPickerModal } from "@/components/assign/PeerPickerModal";
+import { PeerPickerModal } from "@/components/assign/PeerPickerModal";
 import { ConfirmApproveModal } from "@/components/assign/ConfirmApproveModal";
 import {
   Loader2,
@@ -218,9 +218,9 @@ export function AssignmentQueue({
                 <MatchRing value={confidence} />
               </div>
 
-              {/* Reviewer row */}
+              {/* Peer row */}
               <div className="flex items-center gap-2.5 py-3 border-y border-ink-100 mb-3 flex-shrink-0">
-                <ReviewerAvatar initials={peerInitials} availability={availability} />
+                <PeerAvatar initials={peerInitials} availability={availability} />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-ink-900 truncate">
                     {c.peer.full_name}
@@ -276,7 +276,7 @@ export function AssignmentQueue({
               </footer>
 
               {/* Modals */}
-              <ReviewerPickerModal
+              <PeerPickerModal
                 open={pickerOpenForCase === c.id}
                 onOpenChange={(open) =>
                   setPickerOpenForCase(open ? c.id : null)
@@ -284,7 +284,7 @@ export function AssignmentQueue({
                 specialty={neededSpecialty === "—" ? null : neededSpecialty}
                 currentPeerId={c.peer.id}
                 onPick={(newPeerId) => handleReassign(c.id, newPeerId)}
-                title="Reassign reviewer"
+                title="Reassign peer"
               />
               <ConfirmApproveModal
                 open={confirmOpenForCase === c.id}
@@ -366,7 +366,7 @@ function MatchRing({ value }: { value: number }) {
   );
 }
 
-function ReviewerAvatar({
+function PeerAvatar({
   initials,
   availability,
 }: {

@@ -32,7 +32,7 @@ const DEFAULT_KEYS: Array<{
 }> = [
   {
     key: "default_due_days",
-    description: "Default reviewer turnaround (days) when batch has none.",
+    description: "Default peer turnaround (days) when batch has none.",
     defaultValue: 7,
   },
   {

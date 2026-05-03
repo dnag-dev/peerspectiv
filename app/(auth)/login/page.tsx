@@ -14,7 +14,7 @@ const DEMO_USERS = [
     role: 'admin' as const,
     label: 'Continue as Admin (Ashton)',
     email: 'admin@peerspectiv.com',
-    blurb: 'Full access — pipeline, batches, reviewers, finance.',
+    blurb: 'Full access — pipeline, batches, peers, finance.',
     accent: '#2563EB',
   },
   {
@@ -35,7 +35,7 @@ const DEMO_USERS = [
     role: 'credentialer' as const,
     label: 'Continue as Credentialing (Renée)',
     email: 'credentialing@peerspectiv.com',
-    blurb: 'Credentials + new-reviewer inbox. Scoped, no admin access.',
+    blurb: 'Credentials + new-peer inbox. Scoped, no admin access.',
     accent: '#A855F7',
   },
 ];

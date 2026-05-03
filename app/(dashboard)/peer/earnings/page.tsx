@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
 
-// Demo portal doesn't tie to a specific reviewer login, so the earnings page
-// mirrors the queue page and shows every reviewer's cases. When we wire real
-// auth we'll filter by the current reviewer's id here.
+// Demo portal doesn't tie to a specific peer login, so the earnings page
+// mirrors the queue page and shows every peer's cases. When we wire real
+// auth we'll filter by the current peer's id here.
 
 type Row = {
   case_id: string;
@@ -18,7 +18,7 @@ type Row = {
   specialty: string | null;
   company: string | null;
   peer_id: string;
-  reviewer_name: string;
+  peer_name: string;
   rate_type: string;
   rate_amount: string;
   time_spent_minutes: number | null;
@@ -62,10 +62,10 @@ const PAYOUT_STYLE: Record<string, string> = {
   paid: "bg-mint-100 text-cobalt-700",
 };
 
-export default async function ReviewerEarningsPage() {
-  // Pull every case + its reviewer rate + time spent + most-recent payout
+export default async function PeerEarningsPage() {
+  // Pull every case + its peer rate + time spent + most-recent payout
   // status (if any). LEFT JOIN review_results for the minutes; LEFT JOIN the
-  // most recent reviewer_payouts row by period to surface payout state.
+  // most recent peer_payouts row by period to surface payout state.
   const rows = await db.execute<Row>(sql`
     SELECT
       rc.id           AS case_id,
@@ -73,16 +73,16 @@ export default async function ReviewerEarningsPage() {
       (p.first_name || ' ' || p.last_name) AS patient,
       COALESCE(rc.specialty_required, p.specialty) AS specialty,
       c.name          AS company,
-      r.id            AS reviewer_id,
-      r.full_name     AS reviewer_name,
+      r.id            AS peer_id,
+      r.full_name     AS peer_name,
       COALESCE(r.rate_type, 'per_minute') AS rate_type,
       COALESCE(r.rate_amount, 1)::text    AS rate_amount,
       rr.time_spent_minutes,
       rr.submitted_at,
       (
         SELECT rp.status
-        FROM reviewer_payouts rp
-        WHERE rp.reviewer_id = r.id
+        FROM peer_payouts rp
+        WHERE rp.peer_id = r.id
           AND rr.submitted_at IS NOT NULL
           AND rr.submitted_at::date BETWEEN rp.period_start AND rp.period_end
         ORDER BY rp.created_at DESC
@@ -90,7 +90,7 @@ export default async function ReviewerEarningsPage() {
       ) AS payout_status
     FROM review_cases rc
     JOIN providers p  ON p.id = rc.provider_id
-    JOIN reviewers r  ON r.id = rc.reviewer_id
+    JOIN peers r  ON r.id = rc.peer_id
     LEFT JOIN companies c ON c.id = rc.company_id
     LEFT JOIN review_results rr ON rr.case_id = rc.id
     WHERE rc.status IN ('assigned','in_progress','completed','past_due')
@@ -109,10 +109,10 @@ export default async function ReviewerEarningsPage() {
 
   const data: Row[] = ((rows as any).rows ?? rows) as Row[];
 
-  // Section F7: Avg time per chart KPI. Pull from reviewers.avg_minutes_per_chart
-  // for the (single) reviewer surfaced in the rows. Demo mode may have multiple
-  // reviewers — render the average across whichever rows we have, or a single
-  // value when one reviewer dominates.
+  // Section F7: Avg time per chart KPI. Pull from peers.avg_minutes_per_chart
+  // for the (single) peer surfaced in the rows. Demo mode may have multiple
+  // peers — render the average across whichever rows we have, or a single
+  // value when one peer dominates.
   const peerIds = Array.from(new Set(data.map((r) => r.peer_id))).filter(
     Boolean
   );
@@ -228,7 +228,7 @@ export default async function ReviewerEarningsPage() {
           </CardContent>
         </Card>
 
-        {/* Section F7: Avg time per chart KPI from reviewers.avg_minutes_per_chart. */}
+        {/* Section F7: Avg time per chart KPI from peers.avg_minutes_per_chart. */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">

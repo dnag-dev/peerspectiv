@@ -45,11 +45,11 @@ Postgres schema (read-only). Always use these EXACT table + column names. Do NOT
 
 companies (id uuid, name, status, created_at, updated_at)
 providers (id uuid, first_name, last_name, specialty, npi, company_id uuid → companies, active, created_at)
-reviewers (id uuid, full_name, email, specialty, board_certification, active_cases_count, status, total_reviews_completed, ai_agreement_score numeric, availability_status, unavailable_from, unavailable_until, unavailable_reason, rate_type, rate_amount numeric, created_at)
+peers (id uuid, full_name, email, specialty, board_certification, active_cases_count, status, total_reviews_completed, ai_agreement_score numeric, availability_status, unavailable_from, unavailable_until, unavailable_reason, rate_type, rate_amount numeric, created_at)
 batches (id uuid, batch_name, company_id → companies, date_uploaded, total_cases, assigned_cases, completed_cases, status, specialty, projected_completion, created_at)
-review_cases (id uuid, batch_id → batches, provider_id → providers, reviewer_id → reviewers, company_id → companies, assigned_at, due_date, status, encounter_date date, chart_file_name, specialty_required, created_at, updated_at)
-review_results (id uuid, case_id → review_cases, reviewer_id → reviewers, overall_score int, quality_score int, deficiencies jsonb, submitted_at, time_spent_minutes int, narrative_final, created_at)
-reviewer_payouts (id uuid, reviewer_id → reviewers, period_start date, period_end date, unit_type, units numeric, rate_amount numeric, amount numeric, status, approved_at, paid_at, created_at)
+review_cases (id uuid, batch_id → batches, provider_id → providers, reviewer_id → peers, company_id → companies, assigned_at, due_date, status, encounter_date date, chart_file_name, specialty_required, created_at, updated_at)
+review_results (id uuid, case_id → review_cases, reviewer_id → peers, overall_score int, quality_score int, deficiencies jsonb, submitted_at, time_spent_minutes int, narrative_final, created_at)
+reviewer_payouts (id uuid, reviewer_id → peers, period_start date, period_end date, unit_type, units numeric, rate_amount numeric, amount numeric, status, approved_at, paid_at, created_at)
 corrective_actions (id uuid, case_id → review_cases, company_id, provider_id, status, description, due_date, created_at)
 notifications (id uuid, user_id, type, message, read, created_at)
 contracts (id uuid, company_id, status, sent_at, signed_at, created_at)
@@ -98,12 +98,12 @@ Today: ${todayIso}`;
     return `You are Ash, the compliance intelligence assistant for ${companyName} on the Peerspectiv platform. You help quality directors and CMOs understand their peer review compliance data. You can ONLY see data for ${companyName} — never reference other clients. You have access to: compliance scores, provider performance, review status, corrective actions, risk trends. Current reporting period: ${currentQuarter}. Be helpful, clear, and translate data into plain English recommendations.`;
   }
 
-  // reviewer
-  const peerName = context?.peerName || 'the reviewer';
+  // peer
+  const peerName = context?.peerName || 'the peer';
   const currentCase = context?.currentCase || {};
-  return `You are Ash, the clinical review assistant for peer reviewers on the Peerspectiv platform. You are assisting Dr. ${peerName}. You can ONLY reference the case currently open: ${JSON.stringify(
+  return `You are Ash, the clinical review assistant for peer peers on the Peerspectiv platform. You are assisting Dr. ${peerName}. You can ONLY reference the case currently open: ${JSON.stringify(
     currentCase
-  )}. Help the reviewer understand the chart contents, interpret AI pre-fills, and complete the review form accurately. Never suggest how to score — only explain what the chart says and what criteria mean.`;
+  )}. Help the peer understand the chart contents, interpret AI pre-fills, and complete the review form accurately. Never suggest how to score — only explain what the chart says and what criteria mean.`;
 }
 
 export async function POST(req: NextRequest) {
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
   }
   if (!portal || !['admin', 'client', 'peer'].includes(portal)) {
     return NextResponse.json(
-      { error: 'portal must be admin, client, or reviewer' },
+      { error: 'portal must be admin, client, or peer' },
       { status: 400 }
     );
   }

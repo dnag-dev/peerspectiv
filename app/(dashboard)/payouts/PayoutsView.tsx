@@ -29,7 +29,7 @@ type Status = 'pending' | 'approved' | 'paid';
 interface PayoutRow {
   id: string | null;
   peer_id: string;
-  reviewer_name: string;
+  peer_name: string;
   specialty: string;
   period_start: string;
   period_end: string;
@@ -80,7 +80,7 @@ function formatMonth(ym: string): string {
 }
 
 type SortKey =
-  | 'reviewer_name'
+  | 'peer_name'
   | 'specialty'
   | 'units'
   | 'rate_amount'
@@ -105,7 +105,7 @@ export function PayoutsView() {
   const [searchQ, setSearchQ] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sortKey, setSortKey] = useState<SortKey>('reviewer_name');
+  const [sortKey, setSortKey] = useState<SortKey>('peer_name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
   const load = useCallback(async () => {
@@ -244,7 +244,7 @@ export function PayoutsView() {
       if (statusFilter !== 'all' && r.status !== statusFilter) return false;
       if (!q) return true;
       return (
-        r.reviewer_name.toLowerCase().includes(q) ||
+        r.peer_name.toLowerCase().includes(q) ||
         (r.specialty ?? '').toLowerCase().includes(q)
       );
     });
@@ -256,9 +256,9 @@ export function PayoutsView() {
       let av: number | string = '';
       let bv: number | string = '';
       switch (sortKey) {
-        case 'reviewer_name':
-          av = a.reviewer_name.toLowerCase();
-          bv = b.reviewer_name.toLowerCase();
+        case 'peer_name':
+          av = a.peer_name.toLowerCase();
+          bv = b.peer_name.toLowerCase();
           break;
         case 'specialty':
           av = (a.specialty ?? '').toLowerCase();
@@ -375,7 +375,7 @@ export function PayoutsView() {
               <Input
                 value={searchQ}
                 onChange={(e) => setSearchQ(e.target.value)}
-                placeholder="Search reviewer, specialty…"
+                placeholder="Search peer, specialty…"
                 className="pl-9"
               />
             </div>
@@ -473,7 +473,7 @@ export function PayoutsView() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
-              <SortHead label="Reviewer" k="reviewer_name" />
+              <SortHead label="Peer" k="peer_name" />
               <SortHead label="Specialty" k="specialty" />
               <SortHead label="Units" k="units" />
               <SortHead label="Rate" k="rate_amount" />
@@ -507,7 +507,7 @@ export function PayoutsView() {
                     key={r.id ?? r.peer_id}
                     className="border-b border-ink-100 hover:bg-ink-50"
                   >
-                    <td className="px-4 py-3 font-medium text-ink-900">{r.reviewer_name}</td>
+                    <td className="px-4 py-3 font-medium text-ink-900">{r.peer_name}</td>
                     <td className="px-4 py-3 text-ink-600">{r.specialty}</td>
                     <td className="px-4 py-3 text-ink-700">
                       {r.units.toLocaleString()} {UNIT_LABEL[r.unit_type]}

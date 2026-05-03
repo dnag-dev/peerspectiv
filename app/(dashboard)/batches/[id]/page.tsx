@@ -225,7 +225,7 @@ export default async function BatchDetailPage({
                 <TableRow>
                   <TableHead>Provider</TableHead>
                   <TableHead>Specialty</TableHead>
-                  <TableHead>Reviewer</TableHead>
+                  <TableHead>Peer</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead>AI Analysis</TableHead>

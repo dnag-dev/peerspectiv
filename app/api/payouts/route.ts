@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     const month = searchParams.get('month') ?? undefined; // YYYY-MM
     const { start, end } = monthBounds(month);
 
-    // 1. All reviewers with rate config
+    // 1. All peers with rate config
     const peerRows = await db
       .select({
         id: peers.id,
@@ -94,23 +94,23 @@ export async function GET(request: NextRequest) {
         )
       );
 
-    const existingByReviewer = new Map<string, typeof existing[number]>();
+    const existingByPeer = new Map<string, typeof existing[number]>();
     for (const p of existing) {
-      existingByReviewer.set(p.peerId, p);
+      existingByPeer.set(p.peerId, p);
     }
 
-    // 4. Group results by reviewer
-    const resultsByReviewer = new Map<string, ResultRow[]>();
+    // 4. Group results by peer
+    const resultsByPeer = new Map<string, ResultRow[]>();
     for (const r of resultRows) {
       if (!r.peer_id) continue;
-      const arr = resultsByReviewer.get(r.peer_id) ?? [];
+      const arr = resultsByPeer.get(r.peer_id) ?? [];
       arr.push(r);
-      resultsByReviewer.set(r.peer_id, arr);
+      resultsByPeer.set(r.peer_id, arr);
     }
 
     // 5. Build output: persisted payout OR computed pending preview
     const rows = peerRows.map((rev) => {
-      const persisted = existingByReviewer.get(rev.id);
+      const persisted = existingByPeer.get(rev.id);
       const rt: RateType = (rev.rate_type as RateType) ?? 'per_minute';
       const rate = Number(rev.rate_amount ?? 0);
 
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
         return {
           id: persisted.id,
           peer_id: rev.id,
-          reviewer_name: rev.full_name,
+          peer_name: rev.full_name,
           specialty: rev.specialty ?? '—',
           period_start: persisted.periodStart,
           period_end: persisted.periodEnd,
@@ -133,14 +133,14 @@ export async function GET(request: NextRequest) {
         };
       }
 
-      const revResults = resultsByReviewer.get(rev.id) ?? [];
+      const revResults = resultsByPeer.get(rev.id) ?? [];
       const units = computeUnits(rt, revResults);
       const amount = Math.round(units * rate * 100) / 100;
 
       return {
         id: null,
         peer_id: rev.id,
-        reviewer_name: rev.full_name,
+        peer_name: rev.full_name,
         specialty: rev.specialty ?? '—',
         period_start: start,
         period_end: end,
@@ -164,7 +164,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST: persist a pending payout (snapshot computed values).
- * Body: { reviewer_id, period_start, period_end }
+ * Body: { peer_id, period_start, period_end }
  * Optional: { units, rate_amount, unit_type } to override.
  */
 export async function POST(request: NextRequest) {
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
     };
     if (!peer_id || !period_start || !period_end) {
       return NextResponse.json(
-        { error: 'reviewer_id, period_start, period_end required' },
+        { error: 'peer_id, period_start, period_end required' },
         { status: 400 }
       );
     }
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (!rev) {
-      return NextResponse.json({ error: 'Reviewer not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Peer not found' }, { status: 404 });
     }
 
     const results = await db

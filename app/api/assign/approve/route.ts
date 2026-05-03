@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Optional reassign: swap reviewer_id before approval. Used by manual reviewer picker.
+    // Optional reassign: swap reviewer_id before approval. Used by manual peer picker.
     if (case_id && reassign_to) {
       await db
         .update(reviewCases)
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     if (approve_all && batch_id) {
       const count = await approveAllAssignments(batch_id);
 
-      // Send emails to all newly assigned reviewers in the batch
+      // Send emails to all newly assigned peers in the batch
       const assignedCases = await db.query.reviewCases.findMany({
         where: and(eq(reviewCases.batchId, batch_id), eq(reviewCases.status, 'assigned')),
         columns: { id: true, specialtyRequired: true, dueDate: true },

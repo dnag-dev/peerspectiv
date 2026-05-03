@@ -39,7 +39,7 @@ export async function sendEmail(params: {
 }
 
 /**
- * Notify the credentialing inbox about a newly created reviewer (or expiring
+ * Notify the credentialing inbox about a newly created peer (or expiring
  * credential). Falls back to console.log when RESEND_API_KEY is unset, matching
  * the leads endpoint pattern.
  */
@@ -63,10 +63,10 @@ export async function sendCredentialingAlert(params: {
     params.bodyHtml ??
     `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color:#0F2044;">New Reviewer Awaiting Credentialing</h2>
+        <h2 style="color:#0F2044;">New Peer Awaiting Credentialing</h2>
         <p><strong>${params.peerName}</strong> (${params.email}) was added and is currently inactive.</p>
         <p>Specialties: ${params.specialties.join(', ') || '—'}</p>
-        <p>Please review credentials and set the expiry date to activate the reviewer.</p>
+        <p>Please review credentials and set the expiry date to activate the peer.</p>
         <a href="${editUrl}"
            style="background:#1E4DB7;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:16px;">
           Open Credentialing
@@ -98,7 +98,7 @@ export async function sendCredentialingAlert(params: {
 }
 
 /**
- * Notify the admin inbox when a reviewer requests reassignment of a case.
+ * Notify the admin inbox when a peer requests reassignment of a case.
  * Falls back to console.log when RESEND_API_KEY is unset (matches sendCredentialingAlert).
  */
 export async function sendReassignmentRequestAlert(params: {
@@ -115,7 +115,7 @@ export async function sendReassignmentRequestAlert(params: {
   const subject = `Reassignment requested: case ${params.caseId.slice(0, 8)}`;
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color:#0F2044;">Reviewer requested reassignment</h2>
+      <h2 style="color:#0F2044;">Peer requested reassignment</h2>
       <p><strong>${params.peerName}</strong>${
         params.peerEmail ? ` (${params.peerEmail})` : ''
       } has asked to be reassigned from case <code>${params.caseId}</code>${

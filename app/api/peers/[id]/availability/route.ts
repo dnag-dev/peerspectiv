@@ -4,7 +4,7 @@ import { peers } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { auditLog } from '@/lib/utils/audit';
 
-// PATCH — Set reviewer as unavailable
+// PATCH — Set peer as unavailable
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -40,7 +40,7 @@ export async function PATCH(
   }
 }
 
-// POST — Mark reviewer as available (reset all fields)
+// POST — Mark peer as available (reset all fields)
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }

@@ -28,7 +28,7 @@ import { useClerkSession } from "./useClerkSession";
 
 /**
  * Practitioner-spec unified sidebar. One component, three personas — admin
- * and reviewer use the built-in nav arrays here; client portal renders this
+ * and peer use the built-in nav arrays here; client portal renders this
  * via <ClientSidebar>, which passes its own grouped nav array + persona role.
  *
  * Visual contract:
@@ -223,7 +223,7 @@ export function SidebarShell({
   );
 }
 
-/* ---------- Default export: admin + reviewer wrapper ---------- */
+/* ---------- Default export: admin + peer wrapper ---------- */
 
 function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
   return [
@@ -232,7 +232,7 @@ function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
     { label: "Batches",        href: "/batches",    icon: FolderOpen },
     { label: "Assign",         href: "/assign",     icon: UserCheck },
     { label: "Reassignments",  href: "/reassignments", icon: ArrowUpDown, badge: openReassignmentCount },
-    { label: "Reviewers",      href: "/peers",  icon: ClipboardCheck },
+    { label: "Peers",      href: "/peers",  icon: ClipboardCheck },
     { label: "Credentials",    href: "/credentials", icon: ShieldCheck },
     { label: "Forms",          href: "/forms",      icon: FileText },
     { label: "Payouts",        href: "/payouts",    icon: DollarSign },

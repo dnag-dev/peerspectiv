@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 /**
  * PATCH /api/payouts/[id]
  *
- * Status transition. When transitioning to 'approved' AND the reviewer is
+ * Status transition. When transitioning to 'approved' AND the peer is
  * paymentReady, we attempt aautipay.createPayoutApproval. The internal
  * status flip ALWAYS succeeds — Aautipay failure is logged to
  * aautipay_events and stored on the payout row (externalFailReason),
@@ -80,17 +80,17 @@ export async function PATCH(
         .limit(1);
 
       if (!peer?.payment_ready) {
-        // No Aautipay attempt — reviewer hasn't completed onboarding.
+        // No Aautipay attempt — peer hasn't completed onboarding.
         aautipayResult = 'skipped';
         aautipayMessage =
-          'Reviewer not paymentReady — internal approval recorded, no external payout initiated.';
+          'Peer not paymentReady — internal approval recorded, no external payout initiated.';
       } else {
         // Attempt Aautipay payout. Wrap in try/catch — internal status stays approved.
         try {
           const result = (await aautipay.createPayoutApproval({
             customer_payout_id: payout.id,
             amount: Number(payout.amount),
-            payout_reason: `Peerspectiv reviewer payout ${payout.period_start} → ${payout.period_end}`,
+            payout_reason: `Peerspectiv peer payout ${payout.period_start} → ${payout.period_end}`,
             beneficiary_id: peer.aautipay_beneficiary_id ?? '',
             destination_id: peer.aautipay_bank_account_id ?? '',
             country_code: 'US',

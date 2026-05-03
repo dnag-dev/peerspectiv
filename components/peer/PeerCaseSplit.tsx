@@ -40,7 +40,7 @@ interface ExistingResult {
   narrativeFinal: string | null;
 }
 
-interface ReviewerLicense {
+interface PeerLicense {
   fullName: string | null;
   credential?: string | null;
   licenseNumber: string | null;
@@ -57,7 +57,7 @@ interface Props {
   formFields: FormField[];
   aiPrefills: Record<string, AiPrefill>;
   existingResult: ExistingResult | null;
-  peerLicense?: ReviewerLicense;
+  peerLicense?: PeerLicense;
   initialMrnNumber?: string | null;
   allowAiNarrative?: boolean;
   /** Section F5: extracted chart text used to estimate the page a hovered
@@ -363,7 +363,7 @@ export function PeerCaseSplit({
                     )}
                     {existingResult.narrativeFinal && (
                       <div>
-                        <div className="text-eyebrow text-ink-500">Reviewer Narrative</div>
+                        <div className="text-eyebrow text-ink-500">Peer Narrative</div>
                         <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-ink-700">
                           {existingResult.narrativeFinal}
                         </p>

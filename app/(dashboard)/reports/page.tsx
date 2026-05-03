@@ -59,7 +59,7 @@ export default async function ReportsPage() {
         <TabsList>
           <TabsTrigger value="assignments">Assignment Results</TabsTrigger>
           <TabsTrigger value="qapi">QAPI Report</TabsTrigger>
-          <TabsTrigger value="scorecard">Reviewer Scorecard</TabsTrigger>
+          <TabsTrigger value="scorecard">Peer Scorecard</TabsTrigger>
           <TabsTrigger value="pdf">PDF Generator</TabsTrigger>
           <TabsTrigger value="saved">Saved</TabsTrigger>
         </TabsList>

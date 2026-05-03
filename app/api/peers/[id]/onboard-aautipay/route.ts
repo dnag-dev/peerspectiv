@@ -7,11 +7,11 @@ import { aautipay, type CreateCustomerInput } from '@/lib/aautipay/client';
 /**
  * POST /api/peers/[id]/onboard-aautipay
  *
- * Reviewer KYC + bank onboarding. Captures the form payload regardless of
+ * Peer KYC + bank onboarding. Captures the form payload regardless of
  * Aautipay availability (failure is logged to aautipay_events for retry),
  * so admins never lose collected data.
  *
- * On success → updates reviewer row with beneficiary/bank ids and flips
+ * On success → updates peer row with beneficiary/bank ids and flips
  * paymentReady eligibility once Aautipay reports verified status.
  */
 

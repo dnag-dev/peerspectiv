@@ -12,10 +12,10 @@ interface GroupParams {
 }
 
 // Section F1: tabbed detail page for a (provider, batch_period) pair when more
-// than one chart is assigned to the same reviewer for that provider in that
+// than one chart is assigned to the same peer for that provider in that
 // quarter. Each tab embeds the existing per-case detail content via the
 // extracted renderPeerCaseDetail() helper.
-export default async function ReviewerCaseGroupPage({ params }: GroupParams) {
+export default async function PeerCaseGroupPage({ params }: GroupParams) {
   const { providerId, batchPeriod: batchPeriodRaw } = await params;
   const batchPeriod = decodeURIComponent(batchPeriodRaw);
 

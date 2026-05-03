@@ -82,7 +82,7 @@ export const providersRelations = relations(providers, ({ one, many }) => ({
   reviewCases: many(reviewCases),
 }));
 
-// ─── Reviewers ───────────────────────────────────────────────────────────────
+// ─── Peers ───────────────────────────────────────────────────────────────
 
 export const peers = pgTable('peers', {
   id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
@@ -293,11 +293,11 @@ export const reviewResults = pgTable('review_results', {
     sql`now()`
   ),
   timeSpentMinutes: integer('time_spent_minutes'),
-  // Reviewer license snapshot (HRSA audit) — captured at submission
+  // Peer license snapshot (HRSA audit) — captured at submission
   peerNameSnapshot: text('reviewer_name_snapshot'),
   peerLicenseSnapshot: text('reviewer_license_snapshot'),
   peerLicenseStateSnapshot: text('reviewer_license_state_snapshot'),
-  // Post-Ashton review (009): MRN snapshot + reviewer signature block
+  // Post-Ashton review (009): MRN snapshot + peer signature block
   mrnNumber: text('mrn_number'),
   peerSignatureText: text('reviewer_signature_text'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
@@ -604,7 +604,7 @@ export const companyForms = pgTable('company_forms', {
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   templatePdfUrl: text('template_pdf_url'),
   templatePdfName: text('template_pdf_name'),
-  // Post-Ashton review (009): allow reviewer to invoke AI-drafted narrative on this form
+  // Post-Ashton review (009): allow peer to invoke AI-drafted narrative on this form
   allowAiGeneratedRecommendations: boolean('allow_ai_generated_recommendations').default(false),
 });
 

@@ -207,7 +207,7 @@ export default async function AssignPage({
         </div>
         <h1 className="text-h1 text-ink-900">AI assignment queue</h1>
         <p className="mt-1 text-small text-ink-500">
-          Review and approve Ash&apos;s reviewer assignments before they go live.
+          Review and approve Ash&apos;s peer assignments before they go live.
         </p>
       </div>
 

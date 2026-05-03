@@ -2,11 +2,11 @@ import { db, toSnake } from "@/lib/db";
 import { reviewCases } from "@/lib/db/schema";
 import { asc, inArray } from "drizzle-orm";
 import type { ReviewCase } from "@/types";
-import { ReviewerPortalClient } from "./client";
+import { PeerPortalClient } from "./client";
 
 export const dynamic = "force-dynamic";
 
-export default async function ReviewerPortalPage() {
+export default async function PeerPortalPage() {
   let cases: ReviewCase[] = [];
   try {
     const rows = await db.query.reviewCases.findMany({
@@ -28,8 +28,8 @@ export default async function ReviewerPortalPage() {
       };
     }) as ReviewCase[];
   } catch (err) {
-    console.error("[ReviewerPortal] Failed to fetch cases:", err);
+    console.error("[PeerPortal] Failed to fetch cases:", err);
   }
 
-  return <ReviewerPortalClient cases={cases} />;
+  return <PeerPortalClient cases={cases} />;
 }

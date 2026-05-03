@@ -271,11 +271,11 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
     <>
       <div className="flex items-center justify-between">
         <div className="text-sm text-ink-500">
-          {peers.length} reviewer{peers.length === 1 ? '' : 's'}
+          {peers.length} peer{peers.length === 1 ? '' : 's'}
         </div>
         <Button onClick={() => setAddOpen(true)}>
           <Plus className="h-4 w-4" />
-          Add Reviewer
+          Add Peer
         </Button>
       </div>
 
@@ -319,7 +319,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
             </Select>
           </div>
           <p className="mt-3 text-xs text-ink-500">
-            Showing <strong>{visible.length}</strong> of {peers.length} reviewers
+            Showing <strong>{visible.length}</strong> of {peers.length} peers
           </p>
         </CardContent>
       </Card>
@@ -341,7 +341,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
             {visible.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-4 py-8 text-center text-ink-400">
-                  {peers.length === 0 ? 'No reviewers found.' : 'No reviewers match your filters.'}
+                  {peers.length === 0 ? 'No peers found.' : 'No peers match your filters.'}
                 </td>
               </tr>
             )}
@@ -397,7 +397,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
         onClose={() => setAddOpen(false)}
         onSuccess={() => {
           setAddOpen(false);
-          // refresh server data to include the new reviewer
+          // refresh server data to include the new peer
           router.refresh();
         }}
       />
@@ -407,7 +407,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
           open={unavailOpen}
           onClose={() => setUnavailOpen(false)}
           peerId={selected.id}
-          peerName={selected.full_name ?? 'Reviewer'}
+          peerName={selected.full_name ?? 'Peer'}
           onSuccess={(status) => handleUnavailSuccess(selected.id, status)}
         />
       )}

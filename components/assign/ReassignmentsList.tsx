@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowUpDown, X } from "lucide-react";
-import { ReviewerPickerModal } from "@/components/assign/PeerPickerModal";
+import { PeerPickerModal } from "@/components/assign/PeerPickerModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -51,7 +51,7 @@ export function ReassignmentsList({ rows }: Props) {
       const res = await fetch(`/api/reassignments/${requestId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "resolved", new_reviewer_id: newPeerId }),
+        body: JSON.stringify({ status: "resolved", new_peer_id: newPeerId }),
       });
       if (!res.ok) throw new Error("Failed to resolve");
       startTransition(() => router.refresh());
@@ -122,7 +122,7 @@ export function ReassignmentsList({ rows }: Props) {
                     )}
                   </div>
                   <div className="text-xs text-ink-600">
-                    Reviewer:{" "}
+                    Peer:{" "}
                     <span className="font-medium text-ink-800">
                       {r.peerName ?? "Unknown"}
                     </span>
@@ -144,7 +144,7 @@ export function ReassignmentsList({ rows }: Props) {
                     ) : (
                       <ArrowUpDown className="h-3 w-3" />
                     )}
-                    Pick new reviewer
+                    Pick new peer
                   </button>
                   <button
                     type="button"
@@ -166,7 +166,7 @@ export function ReassignmentsList({ rows }: Props) {
       </div>
 
       {currentPickerRow && (
-        <ReviewerPickerModal
+        <PeerPickerModal
           open={!!pickerOpen}
           onOpenChange={(o) => setPickerOpen(o ? pickerOpen : null)}
           specialty={currentPickerRow.specialty}
@@ -174,7 +174,7 @@ export function ReassignmentsList({ rows }: Props) {
           onPick={(newPeerId) =>
             handlePick(currentPickerRow.id, newPeerId)
           }
-          title="Reassign to new reviewer"
+          title="Reassign to new peer"
         />
       )}
 
@@ -199,7 +199,7 @@ export function ReassignmentsList({ rows }: Props) {
             onChange={(e) => setDismissNote(e.target.value)}
             rows={3}
             className="w-full rounded-md border border-ink-200 bg-paper-surface px-3 py-2 text-sm focus:border-cobalt-600 focus:outline-none"
-            placeholder="e.g. Followed up with reviewer; they'll keep the case."
+            placeholder="e.g. Followed up with peer; they'll keep the case."
           />
           <div className="mt-4 flex justify-end gap-2">
             <Button

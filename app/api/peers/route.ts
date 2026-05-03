@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     const mcl = max_case_load != null ? Math.max(1, Number(max_case_load) || 75) : 75;
 
-    // No credential expiry → keep reviewer inactive until credentialing reviews.
+    // No credential expiry → keep peer inactive until credentialing reviews.
     const initialStatus = credential_valid_until ? 'active' : 'inactive';
 
     let row;
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.error('[API] POST /api/peers error:', err);
       return NextResponse.json(
-        { error: 'Failed to create reviewer', code: 'DB_ERROR' },
+        { error: 'Failed to create peer', code: 'DB_ERROR' },
         { status: 500 }
       );
     }

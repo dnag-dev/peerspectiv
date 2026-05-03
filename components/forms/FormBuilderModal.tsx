@@ -275,7 +275,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
               onChange={(e) => setAllowAiNarrative(e.target.checked)}
             />
             <span>
-              <strong className="font-medium text-ink-900">Allow reviewer to use AI-drafted narrative</strong>
+              <strong className="font-medium text-ink-900">Allow peer to use AI-drafted narrative</strong>
               <span className="ml-1 text-ink-500">— shows a &ldquo;Generate AI suggestion&rdquo; button next to the comments box.</span>
             </span>
           </label>
@@ -351,7 +351,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileSelected(f); }}
               />
               <p className="mt-2 text-xs text-muted-foreground">
-                Reviewers will see the PDF alongside the questions below.
+                Peers will see the PDF alongside the questions below.
               </p>
             </div>
           )}

@@ -71,7 +71,7 @@ export function RequestReassignmentButton({ caseId, alreadyRequested = false }: 
             <DialogTitle>Request reassignment</DialogTitle>
             <p className="text-xs text-muted-foreground">
               Tell admin why this case should be reassigned. They&apos;ll pick a new
-              reviewer or follow up with you.
+              peer or follow up with you.
             </p>
           </DialogHeader>
           <div className="space-y-2">

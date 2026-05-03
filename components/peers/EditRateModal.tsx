@@ -1,6 +1,6 @@
 'use client';
 
-// Despite the filename this is the full reviewer editor (name, email,
+// Despite the filename this is the full peer editor (name, email,
 // specialties, board cert, license, credential expiry, caseload, rate).
 // Kept the file name to avoid a rename churn across the codebase — the
 // export is also aliased as `EditPeerModal`.
@@ -35,7 +35,7 @@ interface Props {
   onClose: () => void;
   peer: Peer;
   // Kept for back-compat with any caller still passing these explicitly —
-  // they override the values pulled from `reviewer`.
+  // they override the values pulled from `peer`.
   peerId?: string;
   peerName?: string;
   currentRateType?: RateType;
@@ -108,7 +108,7 @@ export function EditRateModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset fields whenever the modal is (re)opened for a different reviewer.
+  // Reset fields whenever the modal is (re)opened for a different peer.
   useEffect(() => {
     if (!open) return;
     setFullName(peer.full_name ?? '');
@@ -169,7 +169,7 @@ export function EditRateModal({
       }
       onSuccess(payload);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update reviewer');
+      setError(err instanceof Error ? err.message : 'Failed to update peer');
     } finally {
       setSubmitting(false);
     }
@@ -181,7 +181,7 @@ export function EditRateModal({
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Reviewer</DialogTitle>
+          <DialogTitle>Edit Peer</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">

@@ -8,8 +8,8 @@ import { auditLog } from '@/lib/utils/audit';
 export const dynamic = 'force-dynamic';
 
 /**
- * Daily cron — emails credentialing for any reviewer whose credential is
- * expiring in 30 days, or has just expired. Each (reviewer, kind) pair is
+ * Daily cron — emails credentialing for any peer whose credential is
+ * expiring in 30 days, or has just expired. Each (peer, kind) pair is
  * sent once: dedupe via audit_logs (action = 'credential_warning').
  */
 export async function GET(request: NextRequest) {
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       else if (cv === in30Iso) kind = 'warn30';
       if (!kind) continue;
 
-      // Dedupe: have we already sent this kind for this reviewer + expiry date?
+      // Dedupe: have we already sent this kind for this peer + expiry date?
       const prior = await db
         .select({ id: auditLogs.id, metadata: auditLogs.metadata })
         .from(auditLogs)
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
           <p>Credential expiry on file: <strong>${cv}</strong>.</p>
           ${
             kind === 'expired'
-              ? '<p>This reviewer is now blocked from new assignments until renewed.</p>'
+              ? '<p>This peer is now blocked from new assignments until renewed.</p>'
               : '<p>Please renew before the expiry date to avoid assignment interruptions.</p>'
           }
           <a href="${process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.peerspectiv.ai'}/credentials"
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
 
       await sendCredentialingAlert({
         peerId: r.id,
-        peerName: r.fullName ?? 'Reviewer',
+        peerName: r.fullName ?? 'Peer',
         email: r.email ?? '',
         specialties: specs,
         subject,

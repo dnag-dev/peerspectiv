@@ -159,7 +159,7 @@ export async function PATCH(
 
     if (!row) {
       return NextResponse.json(
-        { error: 'Reviewer not found', code: 'NOT_FOUND' },
+        { error: 'Peer not found', code: 'NOT_FOUND' },
         { status: 404 }
       );
     }

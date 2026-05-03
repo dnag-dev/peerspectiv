@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       metadata: { flagged_count: caseIds.length, case_ids: caseIds },
     });
 
-    // Auto-return reviewers whose unavailable_until has passed
+    // Auto-return peers whose unavailable_until has passed
     const today = new Date().toISOString().split('T')[0];
     const expiredPeers = await db
       .select({ id: peers.id, fullName: peers.fullName })
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
         userId: null,
         type: 'reviewer_returned',
         title: `${peer.fullName} is now available`,
-        body: `Reviewer ${peer.fullName} has been automatically marked as available (leave period ended).`,
+        body: `Peer ${peer.fullName} has been automatically marked as available (leave period ended).`,
         entityType: 'peer',
         entityId: peer.id,
       });

@@ -128,10 +128,10 @@ export interface AIAnalysis {
   created_at: string;
 }
 
-export interface ReviewerChange {
+export interface PeerChange {
   criterion: string;
   ai_score: number;
-  reviewer_score: number;
+  peer_score: number;
   reason: string;
 }
 
@@ -144,7 +144,7 @@ export interface ReviewResult {
   overall_score: number | null;
   narrative_final: string | null;
   ai_agreement_percentage: number | null;
-  reviewer_changes: ReviewerChange[] | null;
+  peer_changes: PeerChange[] | null;
   quality_score: number | null;
   quality_notes: string | null;
   submitted_at: string;
@@ -176,7 +176,7 @@ export interface NLCommandHistory {
 export interface AssignmentSuggestion {
   case_id: string;
   peer_id: string;
-  reviewer_name: string;
+  peer_name: string;
   specialty_match: string;
   rationale: string;
   confidence: number;

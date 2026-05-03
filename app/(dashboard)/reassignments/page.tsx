@@ -60,7 +60,7 @@ export default async function ReassignmentsPage() {
         </div>
         <h1 className="text-h1 text-ink-900">Reassignment requests</h1>
         <p className="mt-1 text-small text-ink-500">
-          Reviewers who&apos;ve asked to be taken off a case. Pick a new reviewer or
+          Peers who&apos;ve asked to be taken off a case. Pick a new peer or
           dismiss with a note.
         </p>
       </div>
@@ -70,7 +70,7 @@ export default async function ReassignmentsPage() {
           <Inbox className="mb-3 h-10 w-10 text-ink-400" />
           <h3 className="text-h3 text-ink-900">No open reassignment requests</h3>
           <p className="mt-1 max-w-sm text-small text-ink-500">
-            When a reviewer asks to be taken off a case, it&apos;ll show up here.
+            When a peer asks to be taken off a case, it&apos;ll show up here.
           </p>
         </div>
       ) : (

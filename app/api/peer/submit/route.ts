@@ -13,7 +13,7 @@ import {
   correctiveActions,
 } from '@/lib/db/schema';
 import { generateCorrectiveActionPlan } from '@/lib/ai/report-generator';
-import type { CriterionScore, Deficiency, ReviewerChange } from '@/types';
+import type { CriterionScore, Deficiency, PeerChange } from '@/types';
 
 interface SubmitBody {
   case_id: string;
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate AI agreement percentage and build reviewer_changes
     let aiAgreementPercentage: number | null = null;
-    let peerChanges: ReviewerChange[] = [];
+    let peerChanges: PeerChange[] = [];
 
     if (aiAnalysis?.criteriaScores && Array.isArray(aiAnalysis.criteriaScores)) {
       const aiScores = aiAnalysis.criteriaScores as CriterionScore[];
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
             peerChanges.push({
               criterion: peerScore.criterion,
               ai_score: aiScore.score,
-              reviewer_score: peerScore.score,
+              peer_score: peerScore.score,
               reason: peerScore.rationale || 'No reason provided',
             });
           }
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
       aiAgreementPercentage = total > 0 ? Math.round((agreements / total) * 100) : null;
     }
 
-    // Resolve reviewer full name for the snapshot
+    // Resolve peer full name for the snapshot
     let peerNameSnapshot: string | null = null;
     if (caseData.peerId) {
       const [peerRow] = await db
@@ -282,7 +282,7 @@ export async function POST(request: NextRequest) {
       console.error('[API] retention extend failed for case:', case_id, retentionErr);
     }
 
-    // Decrement reviewer active_cases_count
+    // Decrement peer active_cases_count
     if (caseData.peerId) {
       const [peer] = await db
         .select({ activeCasesCount: peers.activeCasesCount })

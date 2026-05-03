@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
         mrn_number: c.mrnNumber ?? "—",
         is_pediatric: isPediatric,
         pediatric_mismatch: pediatricMismatch,
-        reviewer_name: peer?.fullName ?? "Unassigned",
+        peer_name: peer?.fullName ?? "Unassigned",
         encounter_date: c.encounterDate,
         overall_score: result?.overallScore ?? null,
         deficiencies_count: Array.isArray(deficiencies) ? deficiencies.length : 0,

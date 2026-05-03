@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const batch_id = searchParams.get('batch_id');
-    const peer_id = searchParams.get('reviewer_id');
+    const peer_id = searchParams.get('peer_id');
     const company_id = searchParams.get('company_id');
 
     const conditions = [];

@@ -4,7 +4,7 @@ import { peers } from '@/lib/db/schema';
 import { and, asc, eq } from 'drizzle-orm';
 
 // GET /api/peers/available?specialty=Family%20Medicine
-// Returns active + available reviewers matching the given specialty,
+// Returns active + available peers matching the given specialty,
 // sorted by active_cases_count ascending (least-loaded first).
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

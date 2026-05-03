@@ -68,7 +68,7 @@ export function BatchActions({ batchId, hasUnassigned }: BatchActionsProps) {
           <DialogHeader>
             <DialogTitle>AI-Powered Assignment</DialogTitle>
             <DialogDescription>
-              The AI will analyze unassigned cases in this batch and suggest optimal reviewer matches
+              The AI will analyze unassigned cases in this batch and suggest optimal peer matches
               based on specialty, workload, and past performance.
             </DialogDescription>
           </DialogHeader>

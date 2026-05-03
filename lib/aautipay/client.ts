@@ -301,7 +301,7 @@ export const aautipay = {
   },
 
   /**
-   * Create beneficiary (reviewer KYC + bank). Used during reviewer onboarding.
+   * Create beneficiary (peer KYC + bank). Used during peer onboarding.
    */
   async createCustomer(input: CreateCustomerInput) {
     return authFetch(`/plugin/create-customer`, {

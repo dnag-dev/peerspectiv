@@ -6,42 +6,42 @@ import type { AssignmentResult } from '@/types';
 
 const ASSIGNMENT_SYSTEM_PROMPT = `You are an intelligent case assignment engine for a medical peer review company called Peerspectiv.
 
-Your task is to assign each unassigned case to the most appropriate peer reviewer.
+Your task is to assign each unassigned case to the most appropriate peer.
 
 Rules:
 1. Specialty MUST match. Never assign a Family Medicine case to a Cardiologist.
-2. Workload balance: prefer reviewers with fewer active cases.
-3. Efficiency-aware: prefer reviewers with lower avg_minutes_per_chart when available.
-4. Capacity: never assign beyond a reviewer's max_case_load (active_cases_count + new <= max_case_load).
-5. Spread cases evenly across specialty-matched reviewers when multiple qualify.
+2. Workload balance: prefer peers with fewer active cases.
+3. Efficiency-aware: prefer peers with lower avg_minutes_per_chart when available.
+4. Capacity: never assign beyond a peer's max_case_load (active_cases_count + new <= max_case_load).
+5. Spread cases evenly across specialty-matched peers when multiple qualify.
 
 You will receive:
 - A list of cases (id, specialty_required, provider_name, company_name)
-- A list of reviewers (id, full_name, specialties, active_cases_count, max_case_load, avg_minutes_per_chart, total_reviews_completed, board_certification)
-  Reviewers are pre-sorted preferred-first (low workload, fast, experienced).
+- A list of peers (id, full_name, specialties, active_cases_count, max_case_load, avg_minutes_per_chart, total_reviews_completed, board_certification)
+  Peers are pre-sorted preferred-first (low workload, fast, experienced).
 
 Return ONLY valid JSON in this exact format:
 {
   "assignments": [
     {
       "case_id": "...",
-      "reviewer_id": "...",
-      "reviewer_name": "...",
+      "peer_id": "...",
+      "peer_name": "...",
       "specialty_match": "...",
-      "rationale": "One sentence explaining why this reviewer was chosen",
+      "rationale": "One sentence explaining why this peer was chosen",
       "confidence": 95
     }
   ],
   "unassignable": [
     {
       "case_id": "...",
-      "reason": "No reviewer available for this specialty"
+      "reason": "No peer available for this specialty"
     }
   ],
   "summary": "Brief plain-English summary of the assignments made"
 }`;
 
-interface ReviewerRow {
+interface PeerRow {
   id: string;
   full_name: string | null;
   specialty: string | null;
@@ -69,9 +69,9 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
     return { assignments: [], unassignable: [], summary: 'No unassigned cases found in this batch.' };
   }
 
-  // Fetch active reviewers (exclude unavailable). We pull all and filter
+  // Fetch active peers (exclude unavailable). We pull all and filter
   // capacity/credential in JS so we can also build the unassignable reasons.
-  const reviewersRaw = await db
+  const peersRaw = await db
     .select({
       id: peers.id,
       full_name: peers.fullName,
@@ -87,7 +87,7 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
     .from(peers)
     .where(and(eq(peers.status, 'active'), eq(peers.availabilityStatus, 'available')));
 
-  const allPeers = reviewersRaw as ReviewerRow[];
+  const allPeers = peersRaw as PeerRow[];
   const today = new Date().toISOString().slice(0, 10);
 
   // Credentialed + capacity filter
@@ -119,7 +119,7 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
     company_name: c.company?.name || 'Unknown',
   }));
 
-  const reviewersForAI = sorted.map((r) => ({
+  const peersForAI = sorted.map((r) => ({
     id: r.id,
     full_name: r.full_name,
     specialties: Array.isArray(r.specialties) && r.specialties.length > 0
@@ -135,17 +135,17 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
   }));
 
   const N = cases.length;
-  const M = Math.max(1, reviewersForAI.length);
+  const M = Math.max(1, peersForAI.length);
   const evenShare = Math.ceil(N / M);
-  const spreadingHint = `\n\nSpreading rule: aim to assign each reviewer no more than min(max_case_load - active_cases_count, ${evenShare}) cases from this batch before moving to the next reviewer.`;
+  const spreadingHint = `\n\nSpreading rule: aim to assign each peer no more than min(max_case_load - active_cases_count, ${evenShare}) cases from this batch before moving to the next peer.`;
 
-  const userPrompt = `Cases to assign:\n${JSON.stringify(casesForAI, null, 2)}\n\nAvailable reviewers (preferred first):\n${JSON.stringify(reviewersForAI, null, 2)}${spreadingHint}`;
+  const userPrompt = `Cases to assign:\n${JSON.stringify(casesForAI, null, 2)}\n\nAvailable peers (preferred first):\n${JSON.stringify(peersForAI, null, 2)}${spreadingHint}`;
 
   let result: AssignmentResult;
-  if (reviewersForAI.length === 0) {
+  if (peersForAI.length === 0) {
     const reason = allPeers.length === 0
-      ? 'No reviewers available'
-      : 'All reviewers blocked (missing/expired credential or at capacity)';
+      ? 'No peers available'
+      : 'All peers blocked (missing/expired credential or at capacity)';
     return {
       assignments: [],
       unassignable: cases.map((c) => ({ case_id: c.id, reason })),
@@ -158,7 +158,7 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
     result = JSON.parse(jsonMatch[0]);
   }
 
-  // Annotate unassignable with capacity reason for any over-cap reviewers
+  // Annotate unassignable with capacity reason for any over-cap peers
   const overCap = allPeers.filter((r) => {
     const active = Number(r.active_cases_count ?? 0);
     const cap = Number(r.max_case_load ?? 75);
@@ -166,7 +166,7 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
   });
   if (overCap.length > 0 && result.unassignable) {
     for (const u of result.unassignable) {
-      if (!u.reason || /no reviewer/i.test(u.reason)) {
+      if (!u.reason || /no peer/i.test(u.reason)) {
         const targetCase = cases.find((c) => c.id === u.case_id);
         if (targetCase) {
           const matched = overCap.find((r) => {
@@ -178,7 +178,7 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
             return specs.includes(targetCase.specialtyRequired ?? '');
           });
           if (matched) {
-            u.reason = `Reviewer at capacity (${matched.full_name})`;
+            u.reason = `Peer at capacity (${matched.full_name})`;
           }
         }
       }
@@ -214,7 +214,7 @@ export async function approveAssignment(caseId: string): Promise<void> {
     })
     .where(eq(reviewCases.id, caseId));
 
-  // Increment reviewer active cases
+  // Increment peer active cases
   const [caseData] = await db
     .select({ peerId: reviewCases.peerId })
     .from(reviewCases)

@@ -4,7 +4,7 @@ import { ShieldCheck, Inbox } from 'lucide-react';
 
 /**
  * Minimal layout for the credentialing role. Renders a stripped-down sidebar
- * with just Credentials + New Reviewer Inbox links — no Ash, no full admin
+ * with just Credentials + New Peer Inbox links — no Ash, no full admin
  * sidebar.
  */
 export default function CredentialingLayout({
@@ -43,7 +43,7 @@ export default function CredentialingLayout({
             className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-cobalt-100 hover:bg-cobalt-700/40 hover:text-white"
           >
             <Inbox className="h-[18px] w-[18px]" />
-            New Reviewer Inbox
+            New Peer Inbox
           </Link>
         </nav>
       </aside>

@@ -18,7 +18,7 @@ function formatShortDate(date: string): string {
   });
 }
 
-interface ReviewerPortalClientProps {
+interface PeerPortalClientProps {
   cases: ReviewCase[];
 }
 
@@ -55,7 +55,7 @@ function groupCases(cases: ReviewCase[]): CaseGroup[] {
   return Array.from(groups.values());
 }
 
-export function ReviewerPortalClient({ cases }: ReviewerPortalClientProps) {
+export function PeerPortalClient({ cases }: PeerPortalClientProps) {
   if (cases.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24">

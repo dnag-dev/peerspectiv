@@ -96,7 +96,7 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
       reset();
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add reviewer');
+      setError(err instanceof Error ? err.message : 'Failed to add peer');
     } finally {
       setSubmitting(false);
     }
@@ -108,7 +108,7 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Reviewer</DialogTitle>
+          <DialogTitle>Add New Peer</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
@@ -209,7 +209,7 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
                 className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
               />
               <p className="mt-1 text-xs text-ink-500">
-                Leave blank to keep reviewer inactive until set.
+                Leave blank to keep peer inactive until set.
               </p>
             </div>
             <div>
@@ -276,7 +276,7 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
               Cancel
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Adding...' : 'Add Reviewer'}
+              {submitting ? 'Adding...' : 'Add Peer'}
             </Button>
           </div>
         </form>

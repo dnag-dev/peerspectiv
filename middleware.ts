@@ -47,7 +47,7 @@ const APP_PATHS = new Set<string>([
   'reviewers',
   'settings',
   'tags',
-  // Public reviewer onboarding form (no auth required)
+  // Public peer onboarding form (no auth required)
   'onboard',
   'credentialing',
 ]);
@@ -257,7 +257,7 @@ export default async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // TODO: same trap as the reviewer rule below — startsWith('/portal') would
+    // TODO: same trap as the peer rule below — startsWith('/portal') would
     // match a hypothetical '/portals' admin route. No live bug today, but if
     // anyone adds /portals* tighten this to "=== '/portal' || startsWith('/portal/')".
     if (demo.role === 'client' && !pathname.startsWith('/portal') && !pathname.startsWith('/api/')) {
@@ -270,7 +270,7 @@ export default async function middleware(request: NextRequest) {
       !pathname.startsWith('/api/')
     ) {
       // Tightened from startsWith('/peer') which prefix-matched /reviewers
-      // (admin route) and let reviewer-role users hit the admin roster page.
+      // (admin route) and let peer-role users hit the admin roster page.
       return NextResponse.redirect(new URL('/peer/portal', request.url));
     }
     if (

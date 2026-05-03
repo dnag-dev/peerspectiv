@@ -84,7 +84,7 @@ export function PeerScorecardTab() {
       const autoTable = autoTableModule.default ?? autoTableModule;
       const doc = new jsPDF({ orientation: "landscape" });
       doc.setFontSize(16);
-      doc.text("Reviewer Scorecard", 14, 18);
+      doc.text("Peer Scorecard", 14, 18);
       doc.setFontSize(10);
       doc.text(`Period: ${periodStart} — ${periodEnd}`, 14, 25);
       doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 31);
@@ -92,7 +92,7 @@ export function PeerScorecardTab() {
         startY: 36,
         head: [
           [
-            "Reviewer",
+            "Peer",
             "Cases",
             "Turnaround (d)",
             "AI Agreement %",
@@ -114,7 +114,7 @@ export function PeerScorecardTab() {
         headStyles: { fillColor: [30, 77, 183] },
         styles: { fontSize: 9 },
       });
-      doc.save(`reviewer-scorecard-${periodStart}-to-${periodEnd}.pdf`);
+      doc.save(`peer-scorecard-${periodStart}-to-${periodEnd}.pdf`);
     } finally {
       setGenerating(false);
     }
@@ -190,7 +190,7 @@ export function PeerScorecardTab() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Reviewer</TableHead>
+              <TableHead>Peer</TableHead>
               <TableHead className="text-right">Cases</TableHead>
               <TableHead className="text-right">Turnaround (d)</TableHead>
               <TableHead className="text-right">AI Agreement %</TableHead>
@@ -203,7 +203,7 @@ export function PeerScorecardTab() {
             {rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
-                  {loading ? "Loading..." : "No reviewer data for this period."}
+                  {loading ? "Loading..." : "No peer data for this period."}
                 </TableCell>
               </TableRow>
             ) : (

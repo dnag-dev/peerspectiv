@@ -85,7 +85,7 @@ export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           credential_valid_until: editValue || null,
-          // If we're setting an expiry, also flip to active so the reviewer can
+          // If we're setting an expiry, also flip to active so the peer can
           // receive assignments. (This mirrors the create-time default in POST.)
           ...(editValue ? { status: 'active' } : {}),
         }),
@@ -124,7 +124,7 @@ export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
 
       <BucketCard
         title="Missing credential"
-        description="No expiry on file. These reviewers are blocked from assignment."
+        description="No expiry on file. These peers are blocked from assignment."
         rows={grouped.missing}
         badge={<Badge className="bg-ink-100 text-ink-800 border-0">Missing</Badge>}
         editingId={editingId}
@@ -214,7 +214,7 @@ function BucketCard(props: {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-y border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
-                  <th className="px-4 py-2 text-left">Reviewer</th>
+                  <th className="px-4 py-2 text-left">Peer</th>
                   <th className="px-4 py-2 text-left">Specialties</th>
                   <th className="px-4 py-2 text-left">License</th>
                   <th className="px-4 py-2 text-left">Expiry</th>

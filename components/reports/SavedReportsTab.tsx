@@ -23,7 +23,7 @@ const TEMPLATE_LABEL: Record<string, string> = {
   assignment_results: "Assignment Results",
   invoice: "Invoice",
   question_analytics: "Question Analytics",
-  reviewer_scorecard: "Reviewer Scorecard",
+  reviewer_scorecard: "Peer Scorecard",
 };
 
 export function SavedReportsTab({

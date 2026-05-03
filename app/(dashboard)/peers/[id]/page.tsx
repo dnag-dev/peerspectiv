@@ -120,7 +120,7 @@ async function getPeerDetail(id: string) {
   return { peer, cases, results };
 }
 
-export default async function ReviewerDetailPage({
+export default async function PeerDetailPage({
   params,
 }: {
   params: { id: string };
@@ -149,7 +149,7 @@ export default async function ReviewerDetailPage({
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/peers" className="flex items-center gap-1 hover:text-foreground">
           <ArrowLeft className="h-4 w-4" />
-          Reviewers
+          Peers
         </Link>
       </div>
 
@@ -162,7 +162,7 @@ export default async function ReviewerDetailPage({
             </div>
             <div className="space-y-1">
               <h1 className="text-2xl font-bold tracking-tight">
-                {peer.full_name || "Unnamed Reviewer"}
+                {peer.full_name || "Unnamed Peer"}
               </h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 {peer.email && (

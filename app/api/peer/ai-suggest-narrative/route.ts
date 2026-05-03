@@ -8,7 +8,7 @@ import { callClaude } from '@/lib/ai/anthropic';
 // Body: { case_id: string; draft?: string }
 // Returns: { text: string }
 //
-// Section C.5 — drafts a 3–5 sentence first-person reviewer narrative grounded
+// Section C.5 — drafts a 3–5 sentence first-person peer narrative grounded
 // in the existing AI chart analysis. Conservative tone, no invention.
 export async function POST(request: NextRequest) {
   try {

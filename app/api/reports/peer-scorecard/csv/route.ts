@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 
     const rows = await fetchPeerScorecard(periodStart, periodEnd);
     const headers = [
-      "Reviewer",
+      "Peer",
       "Cases Reviewed",
       "Avg Turnaround (days)",
       "AI Agreement %",
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="reviewer-scorecard-${periodStart}-to-${periodEnd}.csv"`,
+        "Content-Disposition": `attachment; filename="peer-scorecard-${periodStart}-to-${periodEnd}.csv"`,
       },
     });
   } catch (err) {

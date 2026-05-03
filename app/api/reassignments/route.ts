@@ -28,7 +28,7 @@ async function getAdminUserId(req: NextRequest): Promise<string | null> {
 }
 
 // GET — list reassignment requests, defaults to status=open. Joined with
-// case, reviewer, provider, company for the admin queue.
+// case, peer, provider, company for the admin queue.
 export async function GET(request: NextRequest) {
   const userId = await getAdminUserId(request);
   if (!userId) {
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
         caseStatus: reviewCases.status,
         dueDate: reviewCases.dueDate,
         specialtyRequired: reviewCases.specialtyRequired,
-        // reviewer
+        // peer
         peerName: peers.fullName,
         peerEmail: peers.email,
         // provider
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST — reviewer submits a reassignment request.
+// POST — peer submits a reassignment request.
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Look up the case to derive reviewer_id (the case already records the
-    // assigned reviewer). Mirrors /api/peer/submit which trusts the case.
+    // assigned peer). Mirrors /api/peer/submit which trusts the case.
     const [caseRow] = await db
       .select({
         id: reviewCases.id,
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
       .where(eq(reviewCases.id, case_id));
 
     // Hydrate names for the email (best-effort, errors suppressed)
-    let peerName = 'Unknown reviewer';
+    let peerName = 'Unknown peer';
     let peerEmail: string | null = null;
     let providerName: string | null = null;
     try {

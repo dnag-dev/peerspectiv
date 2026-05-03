@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { User, Award, Stethoscope, BarChart3 } from "lucide-react";
 import type { Peer } from "@/types";
 
-interface ReviewerCardProps {
+interface PeerCardProps {
   peer: Peer;
   confidence?: number;
   rationale?: string;
@@ -26,12 +26,12 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
   );
 }
 
-export function ReviewerCard({
+export function PeerCard({
   peer,
   confidence,
   rationale,
   compact = false,
-}: ReviewerCardProps) {
+}: PeerCardProps) {
   if (compact) {
     return (
       <div className="flex items-center gap-2">

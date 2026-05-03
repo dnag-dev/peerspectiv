@@ -5,7 +5,7 @@ import { asc } from "drizzle-orm";
 
 export async function GET() {
   try {
-    // Fetch reviewers
+    // Fetch peers
     const peerRows = await db
       .select({
         id: peers.id,
@@ -18,7 +18,7 @@ export async function GET() {
       .from(peers)
       .orderBy(asc(peers.fullName));
 
-    // Compute average quality_score per reviewer from review_results
+    // Compute average quality_score per peer from review_results
     const qualityRows = await db
       .select({
         peer_id: reviewResults.peerId,

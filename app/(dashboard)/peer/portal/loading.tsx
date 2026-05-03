@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function ReviewerPortalLoading() {
+export default function PeerPortalLoading() {
   return (
     <div className="flex h-[calc(100vh-7rem)] overflow-hidden rounded-lg border border-ink-200 bg-white shadow-sm">
       {/* Left panel skeleton */}

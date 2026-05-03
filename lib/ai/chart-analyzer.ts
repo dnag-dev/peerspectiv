@@ -9,7 +9,7 @@ import { getSignedChartUrl } from '@/lib/storage';
 import { extractTextFromPDF } from '@/lib/pdf/extractor';
 import { auditLog } from '@/lib/utils/audit';
 
-const CHART_ANALYSIS_SYSTEM_PROMPT = `You are a board-certified physician and medical quality reviewer for Federally Qualified Health Centers (FQHCs). You are reviewing a medical encounter chart for a clinical peer review required by HRSA standards.
+const CHART_ANALYSIS_SYSTEM_PROMPT = `You are a board-certified physician and medical quality peer for Federally Qualified Health Centers (FQHCs). You are reviewing a medical encounter chart for a clinical peer review required by HRSA standards.
 
 Your task is to analyze the provided medical chart text and produce a complete, structured peer review according to the FQHC standard review template.
 
@@ -100,7 +100,7 @@ Analyze this chart and return ONLY valid JSON in exactly this structure. Do not 
   "clinical_appropriateness_score": 0,
   "care_coordination_score": 0,
 
-  "narrative_draft": "A professional 3-5 paragraph peer review narrative written in the style of a board-certified physician. Write this as the reviewer, in first person: 'I reviewed the chart for...'"
+  "narrative_draft": "A professional 3-5 paragraph peer review narrative written in the style of a board-certified physician. Write this as the peer, in first person: 'I reviewed the chart for...'"
 }
 
 Scoring guide: 4=Exceeds Standard, 3=Meets Standard, 2=Partially Meets, 1=Does Not Meet, 0=N/A`;

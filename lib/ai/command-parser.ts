@@ -29,14 +29,14 @@ You have access to these capabilities (respond with the action to take):
 
 QUERY actions (return data):
 - "dashboard_stats" - overall KPIs
-- "list_cases" - with filters (status, company, reviewer, date_range)
+- "list_cases" - with filters (status, company, peer, date_range)
 - "list_past_due" - past due cases with details
-- "reviewer_performance" - reviewer scores and stats
+- "reviewer_performance" - peer scores and stats
 - "company_summary" - cases by company
 
 ACTION actions (perform operations):
 - "assign_batch" - trigger AI assignment for a batch_id
-- "reassign_case" - move a case to a different reviewer
+- "reassign_case" - move a case to a different peer
 - "generate_report" - create QAPI report for company + date range
 
 Parse the user's command and respond with ONLY valid JSON:
@@ -59,7 +59,7 @@ Current context:
     return {
       intent: 'unknown',
       parameters: {},
-      plain_english_response: "I couldn't understand that command. Try asking about past-due cases, reviewer rankings, or batch assignments.",
+      plain_english_response: "I couldn't understand that command. Try asking about past-due cases, peer rankings, or batch assignments.",
       needs_confirmation: false,
     };
   }

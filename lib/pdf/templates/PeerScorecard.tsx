@@ -2,7 +2,7 @@
 import { Document, Page, View, Text } from '@react-pdf/renderer';
 import { styles, colors } from '../theme';
 
-export interface ReviewerScorecardPdfData {
+export interface PeerScorecardPdfData {
   rangeStart: string;
   rangeEnd: string;
   generatedAt?: string;
@@ -28,7 +28,7 @@ function fmtMoney(v: number): string {
   return `$${v.toFixed(2)}`;
 }
 
-export function ReviewerScorecardPdf({ data }: { data: ReviewerScorecardPdfData }) {
+export function PeerScorecardPdf({ data }: { data: PeerScorecardPdfData }) {
   return (
     <Document>
       <Page size="LETTER" orientation="landscape" style={styles.page} wrap>
@@ -36,7 +36,7 @@ export function ReviewerScorecardPdf({ data }: { data: ReviewerScorecardPdfData 
           <View>
             <Text style={styles.brand}>Peerspectiv</Text>
             <Text style={styles.eyebrow}>QUALITY REPORT</Text>
-            <Text style={styles.reportTitle}>Reviewer Scorecard</Text>
+            <Text style={styles.reportTitle}>Peer Scorecard</Text>
             <Text style={styles.dateRange}>
               {data.rangeStart} — {data.rangeEnd}
             </Text>
@@ -57,7 +57,7 @@ export function ReviewerScorecardPdf({ data }: { data: ReviewerScorecardPdfData 
             marginTop: 12,
           }}
         >
-          <Text style={[{ flex: 2, fontSize: 9, fontWeight: 700 }, cellPad]}>Reviewer</Text>
+          <Text style={[{ flex: 2, fontSize: 9, fontWeight: 700 }, cellPad]}>Peer</Text>
           <Text style={[{ flex: 1, fontSize: 9, fontWeight: 700, textAlign: 'right' }, cellPad]}>
             Cases
           </Text>
@@ -112,7 +112,7 @@ export function ReviewerScorecardPdf({ data }: { data: ReviewerScorecardPdfData 
 
         {data.rows.length === 0 && (
           <Text style={{ fontSize: 11, color: colors.ink500, textAlign: 'center', marginTop: 40 }}>
-            No reviewer data for the selected period.
+            No peer data for the selected period.
           </Text>
         )}
       </Page>

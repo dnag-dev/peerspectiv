@@ -6,7 +6,7 @@ import { caseReassignmentRequests, reviewCases, peers } from '@/lib/db/schema';
 export const dynamic = 'force-dynamic';
 
 // PATCH — admin resolves or dismisses a reassignment request.
-// Body: { status: 'resolved' | 'dismissed', new_reviewer_id?: string, resolution_note?: string }
+// Body: { status: 'resolved' | 'dismissed', new_peer_id?: string, resolution_note?: string }
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -14,9 +14,9 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json().catch(() => ({}));
-    const { status, new_reviewer_id, resolution_note } = body as {
+    const { status, new_peer_id, resolution_note } = body as {
       status?: 'resolved' | 'dismissed';
-      new_reviewer_id?: string;
+      new_peer_id?: string;
       resolution_note?: string;
     };
 
@@ -43,15 +43,15 @@ export async function PATCH(
 
     let finalNote = resolution_note?.trim() || null;
 
-    // If resolving via picking a new reviewer, swap reviewer on the case +
+    // If resolving via picking a new peer, swap peer on the case +
     // adjust active_cases_count (decrement old, increment new) to mirror the
     // existing reassign path in /api/assign/approve.
-    if (status === 'resolved' && new_reviewer_id) {
-      // Look up new reviewer name for the resolution note
+    if (status === 'resolved' && new_peer_id) {
+      // Look up new peer name for the resolution note
       const [newPeer] = await db
         .select({ fullName: peers.fullName })
         .from(peers)
-        .where(eq(peers.id, new_reviewer_id))
+        .where(eq(peers.id, new_peer_id))
         .limit(1);
 
       const oldPeerId = reqRow.peerId;
@@ -59,13 +59,13 @@ export async function PATCH(
       await db
         .update(reviewCases)
         .set({
-          peerId: new_reviewer_id,
+          peerId: new_peer_id,
           reassignmentRequested: false,
           updatedAt: new Date(),
         })
         .where(eq(reviewCases.id, reqRow.caseId));
 
-      if (oldPeerId && oldPeerId !== new_reviewer_id) {
+      if (oldPeerId && oldPeerId !== new_peer_id) {
         await db
           .update(peers)
           .set({
@@ -80,10 +80,10 @@ export async function PATCH(
           activeCasesCount: sql`COALESCE(${peers.activeCasesCount}, 0) + 1`,
           updatedAt: new Date(),
         })
-        .where(eq(peers.id, new_reviewer_id));
+        .where(eq(peers.id, new_peer_id));
 
       if (!finalNote) {
-        finalNote = `Reassigned to ${newPeer?.fullName ?? 'new reviewer'}`;
+        finalNote = `Reassigned to ${newPeer?.fullName ?? 'new peer'}`;
       }
     } else {
       // Dismiss or resolve without picking — just clear the flag on the case.

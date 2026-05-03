@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2, ArrowUpDown, Inbox, Search } from "lucide-react";
-import { ReviewerPickerModal } from "@/components/assign/PeerPickerModal";
+import { PeerPickerModal } from "@/components/assign/PeerPickerModal";
 
 export interface AssignedRow {
   id: string;
@@ -94,7 +94,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search provider, reviewer, batch…"
+            placeholder="Search provider, peer, batch…"
             className="w-full rounded-md border border-ink-200 bg-paper-surface py-1.5 pl-8 pr-3 text-sm placeholder:text-ink-400 focus:border-cobalt-600 focus:outline-none"
           />
         </div>
@@ -115,7 +115,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
           onChange={(e) => setPeerId(e.target.value)}
           className="rounded-md border border-ink-200 bg-paper-surface py-1.5 px-2 text-sm focus:border-cobalt-600 focus:outline-none"
         >
-          <option value="">All reviewers</option>
+          <option value="">All peers</option>
           {peers.map((r) => (
             <option key={r.id} value={r.id}>
               {r.full_name}
@@ -160,7 +160,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
             <thead className="bg-ink-50 text-eyebrow text-ink-500">
               <tr>
                 <Th>Provider</Th>
-                <Th>Reviewer</Th>
+                <Th>Peer</Th>
                 <Th>Specialty</Th>
                 <Th>Status</Th>
                 <Th>Due date</Th>
@@ -229,7 +229,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
 
       {/* Picker modal */}
       {currentPickerCase && (
-        <ReviewerPickerModal
+        <PeerPickerModal
           open={!!pickerOpen}
           onOpenChange={(o) => setPickerOpen(o ? pickerOpen : null)}
           specialty={
@@ -239,7 +239,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
           }
           currentPeerId={currentPickerCase.peer?.id ?? null}
           onPick={(newPeerId) => handleReassign(currentPickerCase.id, newPeerId)}
-          title="Reassign reviewer"
+          title="Reassign peer"
         />
       )}
     </div>

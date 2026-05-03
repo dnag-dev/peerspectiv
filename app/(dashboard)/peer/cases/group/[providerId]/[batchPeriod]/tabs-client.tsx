@@ -17,7 +17,7 @@ interface Props {
 
 // Section F1: Radix-tabs strip + per-tab content. Each tab renders the full
 // case detail server-rendered upstream — submission flows are unchanged
-// because each tab embeds the standard per-case ReviewerCaseSplit form.
+// because each tab embeds the standard per-case PeerCaseSplit form.
 export function GroupCaseTabs({ tabs }: Props) {
   const defaultValue = tabs[0]?.id ?? "";
   return (

@@ -60,11 +60,11 @@ export const home = {
   },
   trust: {
     title: 'Built with operators at FQHCs and the firms reviewing them.',
-    items: ['HRSA-aligned', 'License-attested reviewers', 'Audit-ready PDF reports', 'SOC 2 in progress'],
+    items: ['HRSA-aligned', 'License-attested peers', 'Audit-ready PDF reports', 'SOC 2 in progress'],
   },
   audienceSplit: {
     title: 'One platform, two surfaces.',
-    sub: 'Clients see their review progress. Reviewers see their queue. Admins see everything.',
+    sub: 'Clients see their review progress. Peers see their queue. Admins see everything.',
     fqhc: {
       title: 'For FQHCs',
       body:
@@ -74,7 +74,7 @@ export const home = {
     firms: {
       title: 'For Review Firms',
       body:
-        'AI-suggested reviewer assignment, license attestation snapshots on every result, and a single dashboard across all your client FQHCs.',
+        'AI-suggested peer assignment, license attestation snapshots on every result, and a single dashboard across all your client FQHCs.',
       href: '/firms',
     },
   },
@@ -84,12 +84,12 @@ export const home = {
       {
         title: 'AI-assisted assignment',
         body:
-          'Suggest the right reviewer based on specialty, license state, and current load. Auto-skip reviewers on PTO. Approve in one click.',
+          'Suggest the right peer based on specialty, license state, and current load. Auto-skip peers on PTO. Approve in one click.',
       },
       {
         title: 'License attestation, snapshotted',
         body:
-          'Every submitted result captures the reviewer name, license number, and license state at the moment of submission — frozen for audit.',
+          'Every submitted result captures the peer name, license number, and license state at the moment of submission — frozen for audit.',
       },
       {
         title: 'Audit-ready PDFs',
@@ -102,9 +102,9 @@ export const home = {
     eyebrow: 'Meet Ash',
     title: 'Your operations co-pilot.',
     sub:
-      'Ash is the in-app assistant that knows your batches, your reviewers, and your overdue cases. Ask it anything from "who is overdue?" to "draft a status email for Hunter Health".',
+      'Ash is the in-app assistant that knows your batches, your peers, and your overdue cases. Ask it anything from "who is overdue?" to "draft a status email for Hunter Health".',
     bullets: [
-      'Live context: batches, reviewers, cases, settings',
+      'Live context: batches, peers, cases, settings',
       'Role-aware: admins see everything; clients only see their portfolio',
       'No hallucinated case data — Ash refuses what it can\'t verify',
     ],
@@ -112,7 +112,7 @@ export const home = {
   problem: {
     title: 'The old way: a spreadsheet and three email threads.',
     sub:
-      'Peer review at most FQHCs is run from a workbook nobody trusts, with reviewer assignments tracked in a side channel. That breaks down at scale. Peerspectiv replaces it with a single system of record.',
+      'Peer review at most FQHCs is run from a workbook nobody trusts, with peer assignments tracked in a side channel. That breaks down at scale. Peerspectiv replaces it with a single system of record.',
   },
   cta: {
     title: 'Ready to see it on your data?',
@@ -127,18 +127,18 @@ export const platform = {
     eyebrow: 'Platform',
     title: 'Everything peer review needs. Nothing it doesn\'t.',
     sub:
-      'A single workspace for clients, reviewers, and the firm running the program. Built on the same patterns the best operations teams already use.',
+      'A single workspace for clients, peers, and the firm running the program. Built on the same patterns the best operations teams already use.',
   },
   sections: [
     {
       title: 'Intake to assignment',
       body:
-        'Drop a CSV or sync from your EHR. Cases land in a batch with deadlines, specialties, and any prior reviewer history. AI suggests the best reviewer match; an admin approves with one click.',
+        'Drop a CSV or sync from your EHR. Cases land in a batch with deadlines, specialties, and any prior peer history. AI suggests the best peer match; an admin approves with one click.',
     },
     {
-      title: 'Reviewer experience',
+      title: 'Peer experience',
       body:
-        'Reviewers see only their queue, with the patient chart, criteria scorecard, and deficiency picker on one screen. Auto-save. License attestation captured on every submit.',
+        'Peers see only their queue, with the patient chart, criteria scorecard, and deficiency picker on one screen. Auto-save. License attestation captured on every submit.',
     },
     {
       title: 'Client portal',
@@ -164,7 +164,7 @@ export const fqhc = {
     'Per-provider compliance ring updated as results land',
     'Projected completion date per batch — know when you\'ll be done',
     'Quality Certificate PDF for board / HRSA presentation',
-    'Reviewer license attestations frozen on every result',
+    'Peer license attestations frozen on every result',
     'Tags and saved reports for repeated audit pulls',
   ],
 };
@@ -174,11 +174,11 @@ export const firms = {
     eyebrow: 'For Review Firms',
     title: 'Run more clients with the same team.',
     sub:
-      'If your firm reviews for multiple FQHCs, Peerspectiv replaces the spreadsheet, the inbox, and the side-channel reviewer chat with one system.',
+      'If your firm reviews for multiple FQHCs, Peerspectiv replaces the spreadsheet, the inbox, and the side-channel peer chat with one system.',
   },
   bullets: [
     'AI assignment that respects specialty, license state, and load',
-    'Reviewer availability blocking — no more assignments to reviewers on PTO',
+    'Peer availability blocking — no more assignments to peers on PTO',
     'Single admin dashboard across all client FQHCs',
     'Settings as code — default due days, alert email, invoice cadence',
     'Audit log on every case state change',
@@ -190,7 +190,7 @@ export const pricing = {
     eyebrow: 'Pricing',
     title: 'Priced to make the spreadsheet look expensive.',
     sub:
-      'Two tiers. No per-reviewer seat tax. Ash is included on every plan. Talk to us if you need an enterprise contract — we won\'t make it weird.',
+      'Two tiers. No per-peer seat tax. Ash is included on every plan. Talk to us if you need an enterprise contract — we won\'t make it weird.',
   },
   tiers: [
     {
@@ -200,7 +200,7 @@ export const pricing = {
       features: [
         'Up to 250 cases / month',
         'All reports & PDFs',
-        'Reviewer attestation snapshots',
+        'Peer attestation snapshots',
         'Ash (operations co-pilot)',
         'Email support',
       ],
@@ -234,7 +234,7 @@ export const security = {
     {
       title: 'Data isolation',
       body:
-        'Every query is scoped by company. Clients only ever see their own portfolio. Reviewers only see cases assigned to them.',
+        'Every query is scoped by company. Clients only ever see their own portfolio. Peers only see cases assigned to them.',
     },
     {
       title: 'Encryption',
@@ -244,12 +244,12 @@ export const security = {
     {
       title: 'Audit trail',
       body:
-        'Every case state change, every reviewer assignment, every report generation is logged with actor, timestamp, and payload.',
+        'Every case state change, every peer assignment, every report generation is logged with actor, timestamp, and payload.',
     },
     {
       title: 'Access control',
       body:
-        'Role-based access enforced in middleware AND in every API route. Admin, client, reviewer — three roles, no overlap.',
+        'Role-based access enforced in middleware AND in every API route. Admin, client, peer — three roles, no overlap.',
     },
   ],
 };
@@ -270,7 +270,7 @@ export const company = {
     {
       title: 'Clinical respect',
       body:
-        'Reviewers are professionals. The reviewer surface is fast, focused, and never gets in the way.',
+        'Peers are professionals. The peer surface is fast, focused, and never gets in the way.',
     },
     {
       title: 'Operator-led',
@@ -318,7 +318,7 @@ export const blog = {
       title: 'License attestation 101 (and why snapshotting matters)',
       date: '2026-03-15',
       excerpt:
-        'Capturing the reviewer\'s license at the moment of submission isn\'t a nice-to-have — it\'s what saves you in an audit two years later.',
+        'Capturing the peer\'s license at the moment of submission isn\'t a nice-to-have — it\'s what saves you in an audit two years later.',
     },
   ],
 };

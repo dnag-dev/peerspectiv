@@ -43,7 +43,7 @@ interface AiPrefill {
   pageReference?: string;
 }
 
-// Load reviewer id either from Clerk or fall back to first available reviewer (demo mode).
+// Load peer id either from Clerk or fall back to first available peer (demo mode).
 async function resolvePeerId(): Promise<string | null> {
   const isDemoMode =
     !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
@@ -57,7 +57,7 @@ async function resolvePeerId(): Promise<string | null> {
         // user_profiles isn't modeled in the Drizzle schema — use raw SQL.
         const rows = await db
           .execute<{ id: string }>(
-            sql`SELECT id FROM reviewers WHERE email = (SELECT email FROM user_profiles WHERE clerk_user_id = ${userId} LIMIT 1) LIMIT 1`
+            sql`SELECT id FROM peers WHERE email = (SELECT email FROM user_profiles WHERE clerk_user_id = ${userId} LIMIT 1) LIMIT 1`
           )
           .catch(() => ({ rows: [] as { id: string }[] }) as any);
         const list = (rows as any).rows ?? rows;
@@ -313,10 +313,10 @@ export async function renderPeerCaseDetail(caseId: string) {
     };
   }
 
-  // 6) Reviewer id
+  // 6) Peer id
   const peerId = reviewCase.peerId ?? (await resolvePeerId()) ?? "";
 
-  // 6b) Reviewer license info (HRSA attestation prefill)
+  // 6b) Peer license info (HRSA attestation prefill)
   let peerLicense:
     | { fullName: string | null; credential: string | null; licenseNumber: string | null; licenseState: string | null }
     | undefined;
@@ -480,7 +480,7 @@ export async function renderPeerCaseDetail(caseId: string) {
   );
 }
 
-export default async function ReviewerCasePage({
+export default async function PeerCasePage({
   params,
 }: {
   params: Promise<{ id: string }>;

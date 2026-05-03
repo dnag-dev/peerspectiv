@@ -7,7 +7,7 @@ import { auditLog } from '@/lib/utils/audit';
 // PATCH /api/batches/[id]
 // Body: { company_form_id?: string }
 // When company_form_id is swapped, cascade to all review_cases in the batch
-// so the reviewer always sees the currently-attached form.
+// so the peer always sees the currently-attached form.
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

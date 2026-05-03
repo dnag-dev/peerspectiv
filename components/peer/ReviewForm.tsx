@@ -52,7 +52,7 @@ export interface ReviewFormSubmitData {
   reviewer_signature_text?: string;
 }
 
-export interface ReviewerLicenseInfo {
+export interface PeerLicenseInfo {
   fullName: string | null;
   credential?: string | null;
   licenseNumber: string | null;
@@ -65,12 +65,12 @@ interface ReviewFormProps {
   formFields: FormField[];
   aiPrefills?: Record<string, AIPrefill>;
   onSubmit?: (data: ReviewFormSubmitData) => Promise<void>;
-  peerLicense?: ReviewerLicenseInfo;
+  peerLicense?: PeerLicenseInfo;
   /** Existing MRN persisted on review_cases (Section C.4). */
   initialMrnNumber?: string | null;
   /** company_forms.allow_ai_generated_recommendations (Section C.5). */
   allowAiNarrative?: boolean;
-  /** Section F5: hover-to-jump callback wired up by ReviewerCaseSplit so
+  /** Section F5: hover-to-jump callback wired up by PeerCaseSplit so
    *  hovering a field label can scroll the PDF iframe to the relevant page. */
   onFieldHover?: (fieldKey: string, fieldLabel: string) => void;
 }
@@ -292,8 +292,8 @@ export function ReviewForm({
       attested_at: new Date().toISOString(),
     };
 
-    // Section C.4 — assemble reviewer signature text for review_results.
-    const peerDisplayName = peerLicense?.fullName?.trim() || "Reviewer";
+    // Section C.4 — assemble peer signature text for review_results.
+    const peerDisplayName = peerLicense?.fullName?.trim() || "Peer";
     const signedOn = new Date().toISOString().slice(0, 10);
     const peerSignatureText = `${peerDisplayName}, License ${licenseSnapshot.license_state}-${licenseSnapshot.license_number}, signed ${signedOn}`;
 
@@ -359,7 +359,7 @@ export function ReviewForm({
             criteria_scores: criteriaScores,
             deficiencies: [],
             overall_score: overallScore,
-            narrative_final: narrative.trim() || peerComments || "Reviewer submitted form.",
+            narrative_final: narrative.trim() || peerComments || "Peer submitted form.",
             time_spent_minutes: timeSpent,
             license_snapshot: licenseSnapshot,
             mrn_number: mrnNumber.trim(),
@@ -480,7 +480,7 @@ export function ReviewForm({
             <h3 className="mt-1 text-base font-semibold text-ink-900">
               You are reviewing this case as:{" "}
               <span className="text-cobalt-800">
-                {peerLicense?.fullName ?? "Reviewer"}
+                {peerLicense?.fullName ?? "Peer"}
                 {peerLicense?.credential ? `, ${peerLicense.credential}` : ""}
               </span>
             </h3>
@@ -774,11 +774,11 @@ export function ReviewForm({
         );
       })}
 
-      {/* Reviewer overall comments */}
+      {/* Peer overall comments */}
       <div className="rounded-xl border border-ink-200 bg-paper-surface p-5">
         <div className="mb-2 flex items-center justify-between gap-2">
           <label className="block text-sm font-semibold text-ink-900">
-            Overall Reviewer Comments
+            Overall Peer Comments
           </label>
           {allowAiNarrative && (
             <button
@@ -797,7 +797,7 @@ export function ReviewForm({
                   const j = await res.json().catch(() => ({}));
                   if (!res.ok) throw new Error(j.error || `AI request failed (${res.status})`);
                   if (typeof j.text === "string" && j.text.trim()) {
-                    // Replace — reviewer can still edit. (Section C.5)
+                    // Replace — peer can still edit. (Section C.5)
                     setPeerComments(j.text.trim());
                   }
                 } catch (err) {
@@ -836,7 +836,7 @@ export function ReviewForm({
       <div className="sticky bottom-4 relative z-30 rounded-xl border border-ink-200 bg-paper-surface/95 p-4 shadow-sm backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <div className="text-code text-ink-500">
-            Case: {caseId.slice(0, 8)}… · Reviewer: {peerId.slice(0, 8)}…
+            Case: {caseId.slice(0, 8)}… · Peer: {peerId.slice(0, 8)}…
           </div>
           <button
             type="submit"
