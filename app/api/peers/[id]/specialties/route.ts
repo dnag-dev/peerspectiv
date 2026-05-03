@@ -57,6 +57,54 @@ export async function POST(
   }
 }
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const body = (await request.json()) as {
+      specialty?: string;
+      verified_status?: 'verified' | 'not_verified' | 'pending';
+    };
+    const specialty = (body.specialty ?? '').trim();
+    const verified_status = body.verified_status;
+    if (!specialty || !verified_status) {
+      return NextResponse.json(
+        { error: 'specialty and verified_status are required', code: 'VALIDATION_ERROR' },
+        { status: 400 }
+      );
+    }
+    if (!['verified', 'not_verified', 'pending'].includes(verified_status)) {
+      return NextResponse.json(
+        { error: 'verified_status must be verified | not_verified | pending', code: 'VALIDATION_ERROR' },
+        { status: 400 }
+      );
+    }
+
+    await db
+      .update(peerSpecialties)
+      .set({
+        verifiedStatus: verified_status,
+        verifiedAt: verified_status === 'verified' ? new Date() : null,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(peerSpecialties.peerId, params.id),
+          eq(peerSpecialties.specialty, specialty)
+        )
+      );
+
+    return NextResponse.json({ data: { peerId: params.id, specialty, verified_status } });
+  } catch (err) {
+    console.error('[API] PATCH /api/peers/[id]/specialties error:', err);
+    return NextResponse.json(
+      { error: 'Internal server error', code: 'INTERNAL_ERROR' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
