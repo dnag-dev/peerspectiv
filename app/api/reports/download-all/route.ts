@@ -1,0 +1,200 @@
+/**
+ * Phase 3.7 — Download All (SA-094, SA-131, CL-041).
+ *
+ * POST { company_id, cadence_period_label, range_start, range_end }
+ *  → ZIP containing:
+ *      {Company}_Per_Provider_Sample_{Period}.pdf  (one provider sample if any)
+ *      {Company}_Question_Analytics_{Period}.pdf
+ *      {Company}_Specialty_Highlights_{Period}.pdf
+ *      {Company}_Provider_Highlights_{Period}.pdf
+ *      {Company}_Quality_Certificate_{Period}.pdf
+ *      {Company}_Invoice_{Period}.pdf  (Phase 7 will plug in real per-specialty pricing)
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import archiver from 'archiver';
+import { Readable } from 'stream';
+import { db } from '@/lib/db';
+import { sql } from 'drizzle-orm';
+import { assertReportAccess, type Role } from '@/lib/reports/persona-guard';
+import * as perProvider from '@/lib/reports/types/per-provider-review-answers';
+import * as questionAnalytics from '@/lib/reports/types/question-analytics';
+import * as specialtyHighlights from '@/lib/reports/types/specialty-highlights';
+import * as providerHighlights from '@/lib/reports/types/provider-highlights';
+import * as qualityCertificate from '@/lib/reports/types/quality-certificate';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 120;
+
+interface Body {
+  company_id: string;
+  cadence_period_label: string;
+  range_start: string;
+  range_end: string;
+}
+
+function sanitize(s: string): string {
+  return s.replace(/[^A-Za-z0-9_.-]+/g, '_').replace(/_+/g, '_');
+}
+
+async function getCompanyName(companyId: string): Promise<string> {
+  const result = await db.execute<{ name: string }>(sql`
+    SELECT name FROM companies WHERE id = ${companyId} LIMIT 1
+  `);
+  const rows =
+    ((result as { rows?: Array<{ name: string }> }).rows as Array<{ name: string }> | undefined) ??
+    (result as any);
+  return rows?.[0]?.name ?? 'Company';
+}
+
+/** Lightweight invoice stub; Phase 7 will replace with real per-specialty pricing. */
+async function buildInvoiceStub(
+  companyName: string,
+  period: string
+): Promise<Buffer> {
+  const { default: jsPDF } = await import('jspdf');
+  const doc = new jsPDF();
+  doc.setFontSize(20);
+  doc.text('Invoice (stub)', 14, 22);
+  doc.setFontSize(11);
+  doc.text(`Bill to: ${companyName}`, 14, 36);
+  doc.text(`Period: ${period}`, 14, 44);
+  doc.text(
+    'Phase 7 will replace this with real per-specialty pricing from the cadence.',
+    14,
+    60,
+    { maxWidth: 180 }
+  );
+  return Buffer.from(doc.output('arraybuffer'));
+}
+
+export async function POST(req: NextRequest) {
+  let body: Body;
+  try {
+    body = (await req.json()) as Body;
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+  const { company_id, cadence_period_label, range_start, range_end } = body;
+  if (!company_id || !cadence_period_label || !range_start || !range_end) {
+    return NextResponse.json(
+      { error: 'company_id, cadence_period_label, range_start, range_end all required' },
+      { status: 400 }
+    );
+  }
+
+  const role = (req.headers.get('x-demo-role') as Role | null) ?? 'admin';
+  const userCompany = req.headers.get('x-demo-company-id') ?? undefined;
+  // Download-all is a per-company bundle. Treat as quality_certificate for
+  // gate purposes (admins + clients of own company).
+  try {
+    assertReportAccess(
+      role,
+      'quality_certificate',
+      { companyId: company_id },
+      { companyId: userCompany }
+    );
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Forbidden' },
+      { status: 403 }
+    );
+  }
+
+  try {
+    const companyName = await getCompanyName(company_id);
+    const safeCo = sanitize(companyName);
+    const safePeriod = sanitize(cadence_period_label);
+
+    const filenameZip = `${safeCo}_${safePeriod}_All_Reports.zip`;
+
+    // Generate all PDFs in parallel.
+    const [qa, sh, ph, qc] = await Promise.all([
+      questionAnalytics.generate({
+        companyId: company_id,
+        rangeStart: range_start,
+        rangeEnd: range_end,
+        cadencePeriodLabel: cadence_period_label,
+      }),
+      specialtyHighlights.generate({
+        companyId: company_id,
+        rangeStart: range_start,
+        rangeEnd: range_end,
+        cadencePeriodLabel: cadence_period_label,
+      }),
+      providerHighlights.generate({
+        companyId: company_id,
+        rangeStart: range_start,
+        rangeEnd: range_end,
+        cadencePeriodLabel: cadence_period_label,
+      }),
+      qualityCertificate.generate({
+        companyId: company_id,
+        cadencePeriodLabel: cadence_period_label,
+        rangeStart: range_start,
+        rangeEnd: range_end,
+      }),
+    ]);
+
+    // Pick first available review_results in the period for the per-provider sample.
+    const sampleResult = await db.execute<{ id: string }>(sql`
+      SELECT rr.id FROM review_results rr
+      INNER JOIN review_cases rc ON rc.id = rr.case_id
+      WHERE rc.company_id = ${company_id}
+        AND rr.submitted_at::date >= ${range_start}::date
+        AND rr.submitted_at::date <= ${range_end}::date
+      ORDER BY rr.submitted_at DESC
+      LIMIT 1
+    `);
+    const sampleRows =
+      ((sampleResult as { rows?: Array<{ id: string }> }).rows as Array<{ id: string }> | undefined) ??
+      (sampleResult as any);
+    const sampleResultId: string | undefined = sampleRows?.[0]?.id;
+
+    let perProviderPdf: Buffer | null = null;
+    if (sampleResultId) {
+      try {
+        perProviderPdf = await perProvider.generate({ resultId: sampleResultId });
+      } catch (e) {
+        console.warn('[download-all] per_provider sample failed:', e);
+      }
+    }
+
+    const invoicePdf = await buildInvoiceStub(companyName, cadence_period_label);
+
+    // Build the ZIP via streaming archiver.
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.append(qa, { name: `${safeCo}_Question_Analytics_${safePeriod}.pdf` });
+    archive.append(sh, { name: `${safeCo}_Specialty_Highlights_${safePeriod}.pdf` });
+    archive.append(ph, { name: `${safeCo}_Provider_Highlights_${safePeriod}.pdf` });
+    archive.append(qc, { name: `${safeCo}_Quality_Certificate_${safePeriod}.pdf` });
+    if (perProviderPdf) {
+      archive.append(perProviderPdf, {
+        name: `${safeCo}_Per_Provider_Sample_${safePeriod}.pdf`,
+      });
+    }
+    archive.append(invoicePdf, { name: `${safeCo}_Invoice_${safePeriod}.pdf` });
+    archive.finalize();
+
+    // Collect to a single buffer (60s budget; archives are small).
+    const chunks: Buffer[] = [];
+    for await (const chunk of archive as unknown as Readable) {
+      chunks.push(chunk as Buffer);
+    }
+    const zipBuf = Buffer.concat(chunks);
+
+    return new NextResponse(zipBuf as any, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/zip',
+        'Content-Disposition': `attachment; filename="${filenameZip}"`,
+        'Cache-Control': 'no-store',
+      },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[api/reports/download-all] failed:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
