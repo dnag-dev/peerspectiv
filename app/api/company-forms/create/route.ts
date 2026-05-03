@@ -14,6 +14,9 @@ interface FormFieldInput {
   default_value?: 'yes' | 'no' | 'na' | null;
   required_text_on_non_default?: boolean;
   ops_term?: string | null;
+  // Phase 6.1 — per-question scoring metadata
+  default_answer?: 'yes' | 'no' | 'A' | 'B' | 'C' | null;
+  is_critical?: boolean;
 }
 
 // POST /api/company-forms/create
@@ -29,6 +32,8 @@ export async function POST(request: NextRequest) {
       template_pdf_url,
       template_pdf_name,
       allow_ai_generated_recommendations,
+      scoring_system,
+      pass_fail_threshold,
     } = body as {
       company_id: string;
       specialty: string;
@@ -37,6 +42,8 @@ export async function POST(request: NextRequest) {
       template_pdf_url?: string;
       template_pdf_name?: string;
       allow_ai_generated_recommendations?: boolean;
+      scoring_system?: 'yes_no_na' | 'abc_na' | 'pass_fail';
+      pass_fail_threshold?: unknown;
     };
 
     if (!company_id || !specialty || !form_name || !Array.isArray(form_fields) || form_fields.length === 0) {
@@ -78,8 +85,24 @@ export async function POST(request: NextRequest) {
         if (f.required_text_on_non_default) out.required_text_on_non_default = true;
       }
       if (f.ops_term) out.ops_term = f.ops_term;
+      // Phase 6.1 — per-question default_answer (depends on scoring_system) and
+      // is_critical (only meaningful for pass_fail scoring).
+      const da = f.default_answer;
+      if (da === 'yes' || da === 'no' || da === 'A' || da === 'B' || da === 'C') {
+        out.default_answer = da;
+      }
+      if (f.is_critical) out.is_critical = true;
       return out;
     });
+
+    const scoring: 'yes_no_na' | 'abc_na' | 'pass_fail' =
+      scoring_system === 'abc_na' || scoring_system === 'pass_fail'
+        ? scoring_system
+        : 'yes_no_na';
+    const passFail =
+      scoring === 'pass_fail' && pass_fail_threshold && typeof pass_fail_threshold === 'object'
+        ? pass_fail_threshold
+        : null;
 
     let row;
     try {
@@ -94,6 +117,8 @@ export async function POST(request: NextRequest) {
           templatePdfUrl: template_pdf_url || null,
           templatePdfName: template_pdf_name || null,
           allowAiGeneratedRecommendations: !!allow_ai_generated_recommendations,
+          scoringSystem: scoring,
+          passFailThreshold: passFail as any,
         })
         .returning({
           id: companyForms.id,
