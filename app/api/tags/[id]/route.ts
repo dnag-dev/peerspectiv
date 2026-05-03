@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { tags, tagAssociations } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { tags, tagAssociations, caseTags } from '@/lib/db/schema';
+import { eq, sql } from 'drizzle-orm';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -39,6 +39,22 @@ export async function DELETE(
 ) {
   const { id } = await params;
   try {
+    // Phase 6.3 — block delete when case_tags references this tag.
+    const used = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(caseTags)
+      .where(eq(caseTags.tagId, id));
+    const caseCount = used[0]?.n ?? 0;
+    if (caseCount > 0) {
+      return NextResponse.json(
+        {
+          error: `Cannot delete: ${caseCount} case(s) still tagged with this tag.`,
+          code: 'IN_USE',
+          case_count: caseCount,
+        },
+        { status: 409 }
+      );
+    }
     // associations cascade via FK — but explicit clean for safety in case
     // the FK is missing in some env.
     await db.delete(tagAssociations).where(eq(tagAssociations.tagId, id));

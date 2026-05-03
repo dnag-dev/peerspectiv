@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { tags } from '@/lib/db/schema';
-import { desc } from 'drizzle-orm';
+import { tags, caseTags } from '@/lib/db/schema';
+import { desc, sql, eq } from 'drizzle-orm';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,13 +10,33 @@ export const dynamic = 'force-dynamic';
  * GET  /api/tags          → list all tags ordered by usage_count desc
  * POST /api/tags { name, color?, description? } → create
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const rows = await db
-      .select()
-      .from(tags)
-      .orderBy(desc(tags.usageCount), desc(tags.createdAt));
-    return NextResponse.json({ tags: rows });
+    const url = new URL(req.url);
+    const scope = url.searchParams.get('scope');
+    const baseQuery = db
+      .select({
+        id: tags.id,
+        name: tags.name,
+        color: tags.color,
+        description: tags.description,
+        usageCount: tags.usageCount,
+        createdBy: tags.createdBy,
+        createdAt: tags.createdAt,
+        scope: tags.scope,
+        companyId: tags.companyId,
+        periodLabel: tags.periodLabel,
+        // Phase 6.3 — live count of cases referencing this tag (preferred over
+        // tags.usage_count which only tracks tag_associations).
+        caseCount: sql<number>`(
+          SELECT COUNT(*)::int FROM case_tags ct WHERE ct.tag_id = ${tags.id}
+        )`,
+      })
+      .from(tags);
+    const rows = scope
+      ? await baseQuery.where(eq(tags.scope, scope)).orderBy(desc(tags.createdAt))
+      : await baseQuery.orderBy(desc(tags.usageCount), desc(tags.createdAt));
+    return NextResponse.json({ tags: rows, data: rows });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[tags] GET failed:', message);
@@ -27,10 +47,13 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, color, description } = body as {
+    const { name, color, description, scope, company_id, period_label } = body as {
       name?: string;
       color?: string;
       description?: string;
+      scope?: string;
+      company_id?: string;
+      period_label?: string;
     };
     if (!name?.trim()) {
       return NextResponse.json(
@@ -38,6 +61,8 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    const finalScope =
+      scope === 'cadence' || scope === 'global' ? scope : 'global';
     const createdBy =
       req.headers.get('x-demo-user-id')?.trim() || 'admin-demo';
     const [row] = await db
@@ -47,9 +72,12 @@ export async function POST(req: NextRequest) {
         color: color?.trim() || 'cobalt',
         description: description?.trim() || null,
         createdBy,
+        scope: finalScope,
+        companyId: finalScope === 'cadence' ? company_id ?? null : null,
+        periodLabel: finalScope === 'cadence' ? period_label ?? null : null,
       })
       .returning();
-    return NextResponse.json({ tag: row }, { status: 201 });
+    return NextResponse.json({ tag: row, data: row }, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     // unique-violation friendly message
