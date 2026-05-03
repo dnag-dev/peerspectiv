@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db, toSnake } from "@/lib/db";
-import { peers, reviewCases, reviewResults } from "@/lib/db/schema";
+import { peers, peerSpecialties, reviewCases, reviewResults } from "@/lib/db/schema";
 import { asc, desc, eq } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -115,7 +115,15 @@ async function getPeerDetail(id: string) {
     if (snake.case) snake.review_cases = snake.case;
     return snake;
   });
+  // Phase 1.3: hydrate specialties from peer_specialties join
+  const specRows = await db
+    .select({ specialty: peerSpecialties.specialty })
+    .from(peerSpecialties)
+    .where(eq(peerSpecialties.peerId, id));
+  const specs = specRows.map((s) => s.specialty);
   const peer = toSnake<any>(peerRow);
+  peer.specialties = specs;
+  peer.specialty = specs[0] ?? null;
 
   return { peer, cases, results };
 }

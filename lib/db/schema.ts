@@ -49,6 +49,10 @@ export const companies = pgTable('companies', {
   itemizeInvoice: boolean('itemize_invoice').default(false),
   aautipaySubscriptionId: text('aautipay_subscription_id'),
   aautipaySubscriptionStatus: text('aautipay_subscription_status'),
+  // Phase 1.3: cadence + delivery channel
+  cadencePeriodType: text('cadence_period_type').notNull().default('quarterly'),
+  cadencePeriodMonths: integer('cadence_period_months'),
+  deliveryMethod: text('delivery_method').notNull().default('portal'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
 });
@@ -88,9 +92,8 @@ export const peers = pgTable('peers', {
   id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
   fullName: text('full_name'),
   email: text('email').unique(),
-  specialty: text('specialty'),
-  // Post-Ashton review (009): multi-specialty array (specialty kept for back-compat as specialties[0])
-  specialties: text('specialties').array().default(sql`'{}'::text[]`),
+  // Phase 1.3: specialty + specialties[] dropped in migration 013; use peer_specialties join.
+  npi: text('npi'),
   boardCertification: text('board_certification'),
   activeCasesCount: integer('active_cases_count').default(0),
   status: text('status'),
@@ -116,6 +119,11 @@ export const peers = pgTable('peers', {
   aautipayBankAccountId: text('aautipay_bank_account_id'),
   aautipayBankStatus: text('aautipay_bank_status'),
   paymentReady: boolean('payment_ready').default(false),
+  // Phase 1.3: lifecycle state machine (replaces ad-hoc status field for transitions)
+  state: text('state').notNull().default('pending_credentialing'),
+  stateChangedAt: timestamp('state_changed_at', { withTimezone: true }),
+  stateChangedBy: text('state_changed_by'),
+  stateChangeReason: text('state_change_reason'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
 });
@@ -205,6 +213,13 @@ export const reviewCases = pgTable('review_cases', {
   patientLastName: text('patient_last_name'),
   isPediatric: boolean('is_pediatric').default(false),
   clinicId: uuid('clinic_id'),
+  // Phase 1.3
+  mrnSource: text('mrn_source'),
+  cadencePeriodLabel: text('cadence_period_label'),
+  assignmentSource: text('assignment_source').default('manual'),
+  returnedByPeerAt: timestamp('returned_by_peer_at', { withTimezone: true }),
+  returnedReason: text('returned_reason'),
+  manualOverrides: text('manual_overrides').array().default(sql`'{}'::text[]`),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
 });
@@ -300,6 +315,9 @@ export const reviewResults = pgTable('review_results', {
   // Post-Ashton review (009): MRN snapshot + peer signature block
   mrnNumber: text('mrn_number'),
   peerSignatureText: text('reviewer_signature_text'),
+  // Phase 1.3
+  scoringBreakdown: jsonb('scoring_breakdown'),
+  scoringEngineVersion: text('scoring_engine_version'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
 });
 
@@ -537,11 +555,17 @@ export const invoices = pgTable(
 
 export const tags = pgTable('tags', {
   id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
-  name: text('name').notNull().unique(),
+  // Phase 1.3: dropped UNIQUE on (name) — uniqueness is now scope-conditional
+  // (see partial indexes uniq_tag_global / uniq_tag_cadence in migration 014).
+  name: text('name').notNull(),
   color: text('color').default('cobalt'),
   description: text('description'),
   usageCount: integer('usage_count').default(0),
   createdBy: text('created_by'),
+  // Phase 1.3 — scope/company/period for cadence-scoped tags
+  scope: text('scope').notNull().default('global'),
+  companyId: uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }),
+  periodLabel: text('period_label'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
 });
 
@@ -606,6 +630,9 @@ export const companyForms = pgTable('company_forms', {
   templatePdfName: text('template_pdf_name'),
   // Post-Ashton review (009): allow peer to invoke AI-drafted narrative on this form
   allowAiGeneratedRecommendations: boolean('allow_ai_generated_recommendations').default(false),
+  // Phase 1.3
+  scoringSystem: text('scoring_system').notNull().default('yes_no_na'),
+  passFailThreshold: jsonb('pass_fail_threshold'),
 });
 
 // ─── Clinics (FQHC sub-locations) — 009 ──────────────────────────────────────
@@ -661,5 +688,137 @@ export const aautipayEvents = pgTable(
   },
   (t) => ({
     eventExternalIdx: index('aautipay_events_event_external_idx').on(t.eventType, t.externalId),
+  })
+);
+
+// ─── Phase 1.3 — peer specialties + state machine + credentialing ────────────
+
+export const specialtyTaxonomy = pgTable('specialty_taxonomy', {
+  id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+  name: text('name').notNull().unique(),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().default(sql`now()`),
+});
+
+export const peerSpecialties = pgTable(
+  'peer_specialties',
+  {
+    id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+    peerId: uuid('peer_id').notNull().references(() => peers.id, { onDelete: 'cascade' }),
+    specialty: text('specialty').notNull(),
+    verifiedStatus: text('verified_status').notNull().default('pending'),
+    verifiedBy: text('verified_by'),
+    verifiedAt: timestamp('verified_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().default(sql`now()`),
+  },
+  (t) => ({
+    peerSpecialtyUniq: uniqueIndex('peer_specialties_peer_specialty_uniq').on(t.peerId, t.specialty),
+    peerIdx: index('idx_peer_specialties_peer').on(t.peerId),
+    specialtyIdx: index('idx_peer_specialties_specialty').on(t.specialty),
+  })
+);
+
+export const peerSpecialtiesRelations = relations(peerSpecialties, ({ one }) => ({
+  peer: one(peers, {
+    fields: [peerSpecialties.peerId],
+    references: [peers.id],
+  }),
+}));
+
+export const peerInviteTokens = pgTable('peer_invite_tokens', {
+  id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+  peerEmail: text('peer_email').notNull(),
+  token: text('token').notNull().unique(),
+  invitedBy: text('invited_by'),
+  invitedAt: timestamp('invited_at', { withTimezone: true }).notNull().default(sql`now()`),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+  peerId: uuid('peer_id').references(() => peers.id, { onDelete: 'set null' }),
+  submissionData: jsonb('submission_data'),
+  submissionStatus: text('submission_status').notNull().default('invited'),
+  reviewedBy: text('reviewed_by'),
+  reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+  rejectionReason: text('rejection_reason'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
+});
+
+export const peerStateAudit = pgTable('peer_state_audit', {
+  id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+  peerId: uuid('peer_id').notNull().references(() => peers.id, { onDelete: 'cascade' }),
+  fromState: text('from_state'),
+  toState: text('to_state').notNull(),
+  changedBy: text('changed_by'),
+  changeReason: text('change_reason'),
+  changedAt: timestamp('changed_at', { withTimezone: true }).notNull().default(sql`now()`),
+});
+
+export const credentialerUsers = pgTable('credentialer_users', {
+  id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+  clerkUserId: text('clerk_user_id').unique(),
+  email: text('email').notNull().unique(),
+  fullName: text('full_name'),
+  perPeerRate: numeric('per_peer_rate', { precision: 10, scale: 2 }).notNull().default('100.00'),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().default(sql`now()`),
+});
+
+export const peerCredentialingLog = pgTable('peer_credentialing_log', {
+  id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+  peerId: uuid('peer_id').notNull().references(() => peers.id, { onDelete: 'cascade' }),
+  credentialerId: uuid('credentialer_id').references(() => credentialerUsers.id, { onDelete: 'set null' }),
+  action: text('action').notNull(),
+  validUntilOld: date('valid_until_old'),
+  validUntilNew: date('valid_until_new'),
+  documentUrl: text('document_url'),
+  notes: text('notes'),
+  rateAtAction: numeric('rate_at_action', { precision: 10, scale: 2 }),
+  performedAt: timestamp('performed_at', { withTimezone: true }).notNull().default(sql`now()`),
+});
+
+export const licenseNotificationLog = pgTable(
+  'license_notification_log',
+  {
+    id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+    peerId: uuid('peer_id').notNull().references(() => peers.id, { onDelete: 'cascade' }),
+    threshold: text('threshold').notNull(),
+    licenseExpiryDate: date('license_expiry_date').notNull(),
+    sentTo: text('sent_to'),
+    sentAt: timestamp('sent_at', { withTimezone: true }).notNull().default(sql`now()`),
+    emailId: text('email_id'),
+  },
+  (t) => ({
+    peerThresholdExpiryUniq: uniqueIndex('license_notif_peer_threshold_expiry_uniq').on(
+      t.peerId, t.threshold, t.licenseExpiryDate
+    ),
+  })
+);
+
+export const caseTags = pgTable('case_tags', {
+  caseId: uuid('case_id').references(() => reviewCases.id, { onDelete: 'cascade' }).notNull(),
+  tagId: uuid('tag_id').references(() => tags.id, { onDelete: 'cascade' }).notNull(),
+  taggedBy: text('tagged_by'),
+  taggedAt: timestamp('tagged_at', { withTimezone: true }).notNull().default(sql`now()`),
+  source: text('source'),
+});
+
+export const companySpecialtyRates = pgTable(
+  'company_specialty_rates',
+  {
+    id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
+    companyId: uuid('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
+    specialty: text('specialty').notNull(),
+    rateAmount: numeric('rate_amount', { precision: 10, scale: 2 }).notNull(),
+    isDefault: boolean('is_default').default(false),
+    effectiveFrom: date('effective_from').notNull().default(sql`CURRENT_DATE`),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().default(sql`now()`),
+  },
+  (t) => ({
+    companySpecialtyUniq: uniqueIndex('company_specialty_rates_company_specialty_uniq').on(
+      t.companyId, t.specialty
+    ),
   })
 );

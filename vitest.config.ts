@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    include: ['tests/pdf/**/*.test.ts', 'tests/api/**/*.test.ts'],
+    include: ['tests/pdf/**/*.test.ts', 'tests/api/**/*.test.ts', 'lib/**/*.test.ts'],
     testTimeout: 120000,
     hookTimeout: 60000,
   },

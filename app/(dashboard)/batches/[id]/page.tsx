@@ -90,7 +90,7 @@ async function getBatchDetail(id: string): Promise<BatchDetail | null> {
     orderBy: asc(reviewCases.createdAt),
     with: {
       provider: { columns: { id: true, firstName: true, lastName: true, specialty: true } },
-      peer: { columns: { id: true, fullName: true, email: true, specialty: true } },
+      peer: { columns: { id: true, fullName: true, email: true } },
     },
   });
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, toCamel, toSnake } from '@/lib/db';
-import { peers } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { peers, peerSpecialties } from '@/lib/db/schema';
+import { eq, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,7 +63,9 @@ export async function PATCH(
       update.email = v;
     }
 
-    // Multi-specialty: if specialties[] provided, also write specialty=specialties[0]
+    // Phase 1.3: specialties live in peer_specialties join table.
+    // We collect the desired list here and apply it after the main update below.
+    let nextSpecialties: string[] | null = null;
     if (Array.isArray(specialties)) {
       const cleaned = specialties.map((s) => s.trim()).filter(Boolean);
       if (cleaned.length === 0) {
@@ -72,8 +74,7 @@ export async function PATCH(
           { status: 400 }
         );
       }
-      update.specialties = cleaned;
-      update.specialty = cleaned[0];
+      nextSpecialties = cleaned;
     } else if (specialty != null) {
       const v = specialty.trim();
       if (!v) {
@@ -82,7 +83,7 @@ export async function PATCH(
           { status: 400 }
         );
       }
-      update.specialty = v;
+      nextSpecialties = [v];
     }
 
     if (board_certification !== undefined) {
@@ -147,15 +148,22 @@ export async function PATCH(
       update.rate_amount = String(ra);
     }
 
-    if (Object.keys(update).length === 0) {
+    if (Object.keys(update).length === 0 && nextSpecialties == null) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
 
-    const [row] = await db
-      .update(peers)
-      .set(toCamel(update))
-      .where(eq(peers.id, params.id))
-      .returning();
+    let row: typeof peers.$inferSelect | undefined;
+    if (Object.keys(update).length > 0) {
+      const updated = await db
+        .update(peers)
+        .set(toCamel(update))
+        .where(eq(peers.id, params.id))
+        .returning();
+      row = updated[0];
+    } else {
+      const found = await db.select().from(peers).where(eq(peers.id, params.id)).limit(1);
+      row = found[0];
+    }
 
     if (!row) {
       return NextResponse.json(
@@ -164,7 +172,26 @@ export async function PATCH(
       );
     }
 
-    return NextResponse.json({ data: toSnake(row) });
+    // Phase 1.3 — sync peer_specialties join table to the requested list.
+    if (nextSpecialties) {
+      await db.delete(peerSpecialties).where(eq(peerSpecialties.peerId, params.id));
+      for (const s of nextSpecialties) {
+        await db
+          .insert(peerSpecialties)
+          .values({ peerId: params.id, specialty: s, verifiedStatus: 'verified' })
+          .onConflictDoNothing();
+      }
+    }
+
+    // Decorate response with the current specialties (back-compat)
+    const specRows = await db
+      .select({ specialty: peerSpecialties.specialty })
+      .from(peerSpecialties)
+      .where(eq(peerSpecialties.peerId, params.id));
+    const specs = specRows.map((r) => r.specialty);
+    const out = { ...toSnake<Record<string, unknown>>(row), specialties: specs, specialty: specs[0] ?? null };
+
+    return NextResponse.json({ data: out });
   } catch (err) {
     console.error('[API] PATCH /api/peers/[id] error:', err);
     return NextResponse.json(

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { db, toSnake } from "@/lib/db";
 import { reviewCases, peers as peersTable } from "@/lib/db/schema";
-import { and, asc, eq, gte, inArray } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, sql } from "drizzle-orm";
 import { Card, CardContent } from "@/components/ui/card";
 import { AssignmentQueue } from "@/components/assign/AssignmentQueue";
 import { AssignTabsNav } from "@/components/assign/AssignTabsNav";
@@ -25,7 +25,7 @@ async function getPendingCases(): Promise<PendingCase[]> {
       orderBy: asc(reviewCases.createdAt),
       with: {
         provider: { columns: { id: true, firstName: true, lastName: true, specialty: true, npi: true, email: true } },
-        peer: { columns: { id: true, fullName: true, email: true, specialty: true, boardCertification: true, activeCasesCount: true, totalReviewsCompleted: true, aiAgreementScore: true, status: true } },
+        peer: { columns: { id: true, fullName: true, email: true, boardCertification: true, activeCasesCount: true, totalReviewsCompleted: true, aiAgreementScore: true, status: true } },
         company: { columns: { id: true, name: true, contactPerson: true, contactEmail: true } },
       },
     });
@@ -54,23 +54,36 @@ async function getAlternatePeers(
 
   if (specialtySet.size === 0) return result;
 
+  // Phase 1.3: query via peer_specialties join (specialty col dropped from peers)
+  const specialtyArr = Array.from(specialtySet);
   const peerRows = await db
-    .select()
+    .select({
+      peer: peersTable,
+      specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = ${peersTable.id} order by specialty), '{}'::text[])`,
+    })
     .from(peersTable)
     .where(
       and(
         eq(peersTable.status, "active"),
-        inArray(peersTable.specialty, Array.from(specialtySet))
+        sql`exists (select 1 from peer_specialties where peer_id = ${peersTable.id} and specialty = ANY(${specialtyArr}))`
       )
     )
     .orderBy(asc(peersTable.activeCasesCount))
     .limit(50);
 
-  const peers = peerRows.map((r) => toSnake(r)) as Peer[];
+  const peers = peerRows.map((r) => {
+    const snake = toSnake<any>(r.peer);
+    snake.specialties = r.specialties ?? [];
+    snake.specialty = (r.specialties && r.specialties[0]) ?? null;
+    return snake;
+  }) as Peer[];
   for (const c of cases) {
     const neededSpecialty = c.specialty_required || c.provider.specialty;
     result[c.id] = peers.filter(
-      (r) => r.id !== c.peer.id && r.specialty === neededSpecialty
+      (r) =>
+        r.id !== c.peer.id &&
+        Array.isArray((r as any).specialties) &&
+        (r as any).specialties.includes(neededSpecialty)
     );
   }
 

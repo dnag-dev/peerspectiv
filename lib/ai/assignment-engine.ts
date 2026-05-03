@@ -1,7 +1,7 @@
 import { callClaude } from './anthropic';
 import { db } from '@/lib/db';
 import { reviewCases, peers, providers, companies } from '@/lib/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import type { AssignmentResult } from '@/types';
 
 const ASSIGNMENT_SYSTEM_PROMPT = `You are an intelligent case assignment engine for a medical peer review company called Peerspectiv.
@@ -75,8 +75,8 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
     .select({
       id: peers.id,
       full_name: peers.fullName,
-      specialty: peers.specialty,
-      specialties: peers.specialties,
+      specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
+      specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty), '{}'::text[])`,
       active_cases_count: peers.activeCasesCount,
       max_case_load: peers.maxCaseLoad,
       avg_minutes_per_chart: peers.avgMinutesPerChart,

@@ -1,6 +1,6 @@
 import { db, toSnake } from '@/lib/db';
 import { peers } from '@/lib/db/schema';
-import { asc } from 'drizzle-orm';
+import { asc, sql } from 'drizzle-orm';
 import { CredentialsView } from './CredentialsView';
 
 export const dynamic = 'force-dynamic';
@@ -11,8 +11,8 @@ export default async function CredentialsPage() {
       id: peers.id,
       fullName: peers.fullName,
       email: peers.email,
-      specialty: peers.specialty,
-      specialties: peers.specialties,
+      specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
+      specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty), '{}'::text[])`,
       credentialValidUntil: peers.credentialValidUntil,
       status: peers.status,
       licenseNumber: peers.licenseNumber,

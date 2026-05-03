@@ -79,7 +79,7 @@ async function getCaseDetail(id: string): Promise<CaseDetail | null> {
     where: eq(reviewCasesTable.id, id),
     with: {
       provider: { columns: { id: true, firstName: true, lastName: true, specialty: true, npi: true, email: true } },
-      peer: { columns: { id: true, fullName: true, email: true, specialty: true, boardCertification: true, activeCasesCount: true, totalReviewsCompleted: true, aiAgreementScore: true, status: true } },
+      peer: { columns: { id: true, fullName: true, email: true, boardCertification: true, activeCasesCount: true, totalReviewsCompleted: true, aiAgreementScore: true, status: true } },
       company: { columns: { id: true, name: true, contactPerson: true, contactEmail: true } },
       batch: { columns: { id: true, batchName: true, status: true } },
       aiAnalysis: {

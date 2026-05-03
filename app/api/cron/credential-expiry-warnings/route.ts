@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { peers, auditLogs } from '@/lib/db/schema';
-import { and, eq, isNotNull } from 'drizzle-orm';
+import { and, eq, isNotNull, sql } from 'drizzle-orm';
 import { sendCredentialingAlert } from '@/lib/email/notifications';
 import { auditLog } from '@/lib/utils/audit';
 
@@ -31,8 +31,8 @@ export async function GET(request: NextRequest) {
         id: peers.id,
         fullName: peers.fullName,
         email: peers.email,
-        specialties: peers.specialties,
-        specialty: peers.specialty,
+        specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty), '{}'::text[])`,
+        specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
         credentialValidUntil: peers.credentialValidUntil,
       })
       .from(peers)
