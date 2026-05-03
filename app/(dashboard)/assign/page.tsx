@@ -1,19 +1,19 @@
 import Link from "next/link";
 import { db, toSnake } from "@/lib/db";
-import { reviewCases, reviewers as reviewersTable } from "@/lib/db/schema";
+import { reviewCases, peers as reviewersTable } from "@/lib/db/schema";
 import { and, asc, eq, gte, inArray } from "drizzle-orm";
 import { Card, CardContent } from "@/components/ui/card";
 import { AssignmentQueue } from "@/components/assign/AssignmentQueue";
 import { AssignTabsNav } from "@/components/assign/AssignTabsNav";
 import { AssignedTab, type AssignedRow } from "@/components/assign/AssignedTab";
 import { Layers, Inbox } from "lucide-react";
-import type { ReviewCase, Reviewer, Provider, Company } from "@/types";
+import type { ReviewCase, Peer, Provider, Company } from "@/types";
 
 export const dynamic = 'force-dynamic';
 
 interface PendingCase extends ReviewCase {
   provider: NonNullable<ReviewCase["provider"]>;
-  reviewer: NonNullable<ReviewCase["reviewer"]>;
+  peer: NonNullable<ReviewCase["peer"]>;
   company: NonNullable<ReviewCase["company"]>;
 }
 
@@ -25,7 +25,7 @@ async function getPendingCases(): Promise<PendingCase[]> {
       orderBy: asc(reviewCases.createdAt),
       with: {
         provider: { columns: { id: true, firstName: true, lastName: true, specialty: true, npi: true, email: true } },
-        reviewer: { columns: { id: true, fullName: true, email: true, specialty: true, boardCertification: true, activeCasesCount: true, totalReviewsCompleted: true, aiAgreementScore: true, status: true } },
+        peer: { columns: { id: true, fullName: true, email: true, specialty: true, boardCertification: true, activeCasesCount: true, totalReviewsCompleted: true, aiAgreementScore: true, status: true } },
         company: { columns: { id: true, name: true, contactPerson: true, contactEmail: true } },
       },
     });
@@ -41,15 +41,15 @@ async function getPendingCases(): Promise<PendingCase[]> {
 
 async function getAlternateReviewers(
   cases: PendingCase[]
-): Promise<Record<string, Reviewer[]>> {
-  const result: Record<string, Reviewer[]> = {};
+): Promise<Record<string, Peer[]>> {
+  const result: Record<string, Peer[]> = {};
 
   const specialtySet = new Set<string>();
   const currentReviewerIds = new Set<string>();
   for (const c of cases) {
     const spec = c.specialty_required || c.provider.specialty;
     if (spec) specialtySet.add(spec);
-    currentReviewerIds.add(c.reviewer.id);
+    currentReviewerIds.add(c.peer.id);
   }
 
   if (specialtySet.size === 0) return result;
@@ -66,11 +66,11 @@ async function getAlternateReviewers(
     .orderBy(asc(reviewersTable.activeCasesCount))
     .limit(50);
 
-  const reviewers = reviewerRows.map((r) => toSnake(r)) as Reviewer[];
+  const peers = reviewerRows.map((r) => toSnake(r)) as Peer[];
   for (const c of cases) {
     const neededSpecialty = c.specialty_required || c.provider.specialty;
-    result[c.id] = reviewers.filter(
-      (r) => r.id !== c.reviewer.id && r.specialty === neededSpecialty
+    result[c.id] = peers.filter(
+      (r) => r.id !== c.peer.id && r.specialty === neededSpecialty
     );
   }
 
@@ -111,7 +111,7 @@ async function getAssignedRows(): Promise<AssignedRow[]> {
       },
       with: {
         provider: { columns: { id: true, firstName: true, lastName: true, specialty: true } },
-        reviewer: { columns: { id: true, fullName: true } },
+        peer: { columns: { id: true, fullName: true } },
         company: { columns: { id: true, name: true } },
         batch: { columns: { id: true, batchName: true } },
       },
@@ -136,7 +136,7 @@ async function getAssignedRows(): Promise<AssignedRow[]> {
           specialty: c.provider.specialty,
         }
       : null,
-    reviewer: c.reviewer
+    peer: c.reviewer
       ? { id: c.reviewer.id, full_name: c.reviewer.fullName }
       : null,
     company: c.company ? { id: c.company.id, name: c.company.name } : null,
@@ -185,15 +185,15 @@ export default async function AssignPage({
   const specialtySet = new Set<string>();
   for (const r of assignedRows) {
     if (r.company?.id && r.company.name) companyMap.set(r.company.id, r.company.name);
-    if (r.reviewer?.id && r.reviewer.full_name)
-      reviewerMap.set(r.reviewer.id, r.reviewer.full_name);
+    if (r.peer?.id && r.peer.full_name)
+      reviewerMap.set(r.peer.id, r.peer.full_name);
     const s = r.specialty_required ?? r.provider?.specialty;
     if (s) specialtySet.add(s);
   }
   const companies = Array.from(companyMap, ([id, name]) => ({ id, name })).sort((a, b) =>
     a.name.localeCompare(b.name)
   );
-  const reviewers = Array.from(reviewerMap, ([id, full_name]) => ({ id, full_name })).sort(
+  const peers = Array.from(reviewerMap, ([id, full_name]) => ({ id, full_name })).sort(
     (a, b) => a.full_name.localeCompare(b.full_name)
   );
   const specialties = Array.from(specialtySet).sort();
@@ -273,7 +273,7 @@ export default async function AssignPage({
         <AssignedTab
           rows={assignedRows}
           companies={companies}
-          reviewers={reviewers}
+          peers={peers}
           specialties={specialties}
         />
       )}

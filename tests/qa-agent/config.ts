@@ -10,7 +10,7 @@ export type Role = 'admin' | 'client' | 'reviewer';
 export const PERSONAS: Record<Role, { email: string; name: string; landing: string }> = {
   admin: { email: 'admin@peerspectiv.com', name: 'Ashton Williams', landing: '/dashboard' },
   client: { email: 'kelli@horizonhealth.org', name: 'Kelli Ramirez', landing: '/portal' },
-  reviewer: { email: 'rjohnson@peerspectiv.com', name: 'Dr. Richard Johnson', landing: '/reviewer/portal' },
+  peer: { email: 'rjohnson@peerspectiv.com', name: 'Dr. Richard Johnson', landing: '/reviewer/portal' },
 };
 
 export const RUN_ID = (() => {

@@ -18,7 +18,7 @@ const ROLES: Record<string, { email: string; name: string; landing: string }> = 
     name: 'Kelli Ramirez',
     landing: '/portal',
   },
-  reviewer: {
+  peer: {
     email: 'rjohnson@peerspectiv.com',
     name: 'Dr. Richard Johnson',
     landing: '/reviewer/portal',

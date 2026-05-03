@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { reviewers, auditLogs } from '@/lib/db/schema';
+import { peers, auditLogs } from '@/lib/db/schema';
 import { and, eq, isNotNull } from 'drizzle-orm';
 import { sendCredentialingAlert } from '@/lib/email/notifications';
 import { auditLog } from '@/lib/utils/audit';
@@ -28,15 +28,15 @@ export async function GET(request: NextRequest) {
 
     const reviewerRows = await db
       .select({
-        id: reviewers.id,
-        fullName: reviewers.fullName,
-        email: reviewers.email,
-        specialties: reviewers.specialties,
-        specialty: reviewers.specialty,
-        credentialValidUntil: reviewers.credentialValidUntil,
+        id: peers.id,
+        fullName: peers.fullName,
+        email: peers.email,
+        specialties: peers.specialties,
+        specialty: peers.specialty,
+        credentialValidUntil: peers.credentialValidUntil,
       })
-      .from(reviewers)
-      .where(isNotNull(reviewers.credentialValidUntil));
+      .from(peers)
+      .where(isNotNull(peers.credentialValidUntil));
 
     let sentExpiring = 0;
     let sentExpired = 0;
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
       `;
 
       await sendCredentialingAlert({
-        reviewerId: r.id,
+        peerId: r.id,
         reviewerName: r.fullName ?? 'Reviewer',
         email: r.email ?? '',
         specialties: specs,

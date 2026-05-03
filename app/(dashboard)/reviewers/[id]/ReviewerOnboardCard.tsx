@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CreditCard, ShieldCheck, AlertTriangle, Loader2 } from "lucide-react";
 
 interface Props {
-  reviewerId: string;
+  peerId: string;
   paymentReady: boolean | null;
   beneficiaryStatus: string | null;
   bankStatus: string | null;
@@ -21,7 +21,7 @@ interface Props {
 }
 
 export function ReviewerOnboardCard({
-  reviewerId,
+  peerId,
   paymentReady,
   beneficiaryStatus,
   bankStatus,
@@ -64,7 +64,7 @@ export function ReviewerOnboardCard({
     setResult(null);
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/reviewers/${reviewerId}/onboard-aautipay`, {
+      const res = await fetch(`/api/reviewers/${peerId}/onboard-aautipay`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

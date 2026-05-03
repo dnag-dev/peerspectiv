@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, toSnake } from '@/lib/db';
-import { reviewers } from '@/lib/db/schema';
+import { peers } from '@/lib/db/schema';
 import { sendCredentialingAlert } from '@/lib/email/notifications';
 
 export const dynamic = 'force-dynamic';
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     let row;
     try {
       [row] = await db
-        .insert(reviewers)
+        .insert(peers)
         .values({
           fullName: full_name,
           email,
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     // Fire-and-forget credentialing notification.
     void sendCredentialingAlert({
-      reviewerId: row.id,
+      peerId: row.id,
       reviewerName: row.fullName ?? full_name,
       email: row.email ?? email,
       specialties: specs,

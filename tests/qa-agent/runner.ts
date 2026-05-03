@@ -201,7 +201,7 @@ async function main() {
       const login = await fetch(`${BASE_URL}/api/demo/login`, { method: 'POST', headers: { 'content-type': 'application/json', cookie: 'site_gate=1' }, body: JSON.stringify({ role }) });
       const cookies: string[] = (login.headers as any).getSetCookie?.() || [];
       const cookieHeader = ['site_gate=1', ...cookies.map((c) => c.split(';')[0])].join('; ');
-      const landings: Record<string, string> = { admin: '/dashboard', client: '/portal', reviewer: '/reviewer/portal' };
+      const landings: Record<string, string> = { admin: '/dashboard', client: '/portal', peer: '/reviewer/portal' };
       const r = await fetch(`${BASE_URL}${landings[role]}`, { headers: { cookie: cookieHeader }, redirect: 'manual' });
       if (r.status === 404) {
         preflightLogger.log({

@@ -10,17 +10,17 @@ import {
   AlertTriangle,
   ArrowUpDown,
 } from "lucide-react";
-import type { ReviewCase, Reviewer } from "@/types";
+import type { ReviewCase, Peer } from "@/types";
 
 interface PendingCase extends ReviewCase {
   provider: NonNullable<ReviewCase["provider"]>;
-  reviewer: NonNullable<ReviewCase["reviewer"]>;
+  peer: NonNullable<ReviewCase["peer"]>;
   company: NonNullable<ReviewCase["company"]>;
 }
 
 interface AssignmentQueueProps {
   pendingCases: PendingCase[];
-  alternateReviewers: Record<string, Reviewer[]>;
+  alternateReviewers: Record<string, Peer[]>;
 }
 
 export function AssignmentQueue({
@@ -141,12 +141,12 @@ export function AssignmentQueue({
 
           const neededSpecialty =
             c.specialty_required || c.provider.specialty || "—";
-          const activeCases = c.reviewer.active_cases_count ?? 0;
-          const totalReviews = c.reviewer.total_reviews_completed ?? 0;
+          const activeCases = c.peer.active_cases_count ?? 0;
+          const totalReviews = c.peer.total_reviews_completed ?? 0;
           const isThinRationale =
             !rationale || rationale.trim().toLowerCase() === "specialty match";
           const displayRationale = isThinRationale
-            ? `Dr. ${c.reviewer.full_name} matches ${neededSpecialty}, has ${activeCases} active case${
+            ? `Dr. ${c.peer.full_name} matches ${neededSpecialty}, has ${activeCases} active case${
                 activeCases === 1 ? "" : "s"
               }${activeCases === 0 ? " (lowest available)" : ""}, ${totalReviews} total reviews completed.`
             : rationale!;
@@ -157,7 +157,7 @@ export function AssignmentQueue({
               ? "high"
               : "standard";
 
-          const reviewerInitials = c.reviewer.full_name
+          const reviewerInitials = c.peer.full_name
             .split(" ")
             .map((n) => n[0])
             .filter(Boolean)
@@ -166,7 +166,7 @@ export function AssignmentQueue({
             .toUpperCase();
 
           const availability: "available" | "busy" | "unavailable" =
-            c.reviewer.status !== "active"
+            c.peer.status !== "active"
               ? "unavailable"
               : activeCases >= 8
                 ? "busy"
@@ -223,10 +223,10 @@ export function AssignmentQueue({
                 <ReviewerAvatar initials={reviewerInitials} availability={availability} />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-ink-900 truncate">
-                    {c.reviewer.full_name}
+                    {c.peer.full_name}
                   </div>
                   <div className="font-mono text-[10px] text-ink-500 truncate">
-                    {c.reviewer.specialty ?? neededSpecialty} · {totalReviews} reviews · {activeCases} active
+                    {c.peer.specialty ?? neededSpecialty} · {totalReviews} reviews · {activeCases} active
                   </div>
                 </div>
               </div>
@@ -282,7 +282,7 @@ export function AssignmentQueue({
                   setPickerOpenForCase(open ? c.id : null)
                 }
                 specialty={neededSpecialty === "—" ? null : neededSpecialty}
-                currentReviewerId={c.reviewer.id}
+                currentReviewerId={c.peer.id}
                 onPick={(newReviewerId) => handleReassign(c.id, newReviewerId)}
                 title="Reassign reviewer"
               />
@@ -291,7 +291,7 @@ export function AssignmentQueue({
                 onOpenChange={(open) =>
                   setConfirmOpenForCase(open ? c.id : null)
                 }
-                reviewerName={c.reviewer.full_name}
+                reviewerName={c.peer.full_name}
                 companyId={c.company.id}
                 specialty={neededSpecialty === "—" ? null : neededSpecialty}
                 defaultFormId={

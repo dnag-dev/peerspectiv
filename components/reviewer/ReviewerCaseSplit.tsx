@@ -53,7 +53,7 @@ interface Props {
   chartSummary: string | null;
   riskFlags: RiskFlag[];
   caseId: string;
-  reviewerId: string;
+  peerId: string;
   formFields: FormField[];
   aiPrefills: Record<string, AiPrefill>;
   existingResult: ExistingResult | null;
@@ -112,13 +112,13 @@ const SEV_META = {
   low:    { dot: "bg-cobalt-600",   text: "text-cobalt-700",   bg: "bg-cobalt-50",   border: "border-cobalt-100",   label: "LOW"  },
 };
 
-export function ReviewerCaseSplit({
+export function PeerCaseSplit({
   chartViewUrl,
   chartFileName,
   chartSummary,
   riskFlags,
   caseId,
-  reviewerId,
+  peerId,
   formFields,
   aiPrefills,
   existingResult,
@@ -378,7 +378,7 @@ export function ReviewerCaseSplit({
             ) : (
               <ReviewForm
                 caseId={caseId}
-                reviewerId={reviewerId}
+                peerId={peerId}
                 formFields={formFields}
                 aiPrefills={aiPrefills}
                 reviewerLicense={reviewerLicense}

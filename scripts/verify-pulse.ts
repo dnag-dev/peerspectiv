@@ -8,7 +8,7 @@ interface Target { folder: 'admin' | 'reviewer' | 'cmo' | 'auth'; url: string; }
 
 const PERSONAS = {
   admin:    { email: 'admin@peerspectiv.com',     name: 'Ashton Williams',     landing: '/dashboard' },
-  reviewer: { email: 'rjohnson@peerspectiv.com',  name: 'Dr. Richard Johnson', landing: '/reviewer/portal' },
+  peer: { email: 'rjohnson@peerspectiv.com',  name: 'Dr. Richard Johnson', landing: '/reviewer/portal' },
   cmo:      { email: 'kelli@horizonhealth.org',   name: 'Kelli Ramirez',       landing: '/portal' },
 };
 

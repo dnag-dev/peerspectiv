@@ -6,12 +6,12 @@ import {
   providers,
   companies,
   batches,
-  reviewers,
+  peers,
   reviewResults,
   companyForms,
 } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
-import { ReviewerCaseSplit } from "@/components/reviewer/ReviewerCaseSplit";
+import { PeerCaseSplit } from "@/components/reviewer/ReviewerCaseSplit";
 import { RequestReassignmentButton } from "@/components/reviewer/RequestReassignmentButton";
 import { auth } from "@clerk/nextjs/server";
 
@@ -68,7 +68,7 @@ async function resolveReviewerId(): Promise<string | null> {
     }
   }
 
-  const firstReviewer = await db.select().from(reviewers).limit(1);
+  const firstReviewer = await db.select().from(peers).limit(1);
   return firstReviewer[0]?.id ?? null;
 }
 
@@ -314,22 +314,22 @@ export async function renderReviewerCaseDetail(caseId: string) {
   }
 
   // 6) Reviewer id
-  const reviewerId = reviewCase.reviewerId ?? (await resolveReviewerId()) ?? "";
+  const peerId = reviewCase.peerId ?? (await resolveReviewerId()) ?? "";
 
   // 6b) Reviewer license info (HRSA attestation prefill)
   let reviewerLicense:
     | { fullName: string | null; credential: string | null; licenseNumber: string | null; licenseState: string | null }
     | undefined;
-  if (reviewerId) {
+  if (peerId) {
     const [reviewerRow] = await db
       .select({
-        fullName: reviewers.fullName,
-        boardCertification: reviewers.boardCertification,
-        licenseNumber: reviewers.licenseNumber,
-        licenseState: reviewers.licenseState,
+        fullName: peers.fullName,
+        boardCertification: peers.boardCertification,
+        licenseNumber: peers.licenseNumber,
+        licenseState: peers.licenseState,
       })
-      .from(reviewers)
-      .where(eq(reviewers.id, reviewerId))
+      .from(peers)
+      .where(eq(peers.id, peerId))
       .limit(1);
     if (reviewerRow) {
       reviewerLicense = {
@@ -452,13 +452,13 @@ export async function renderReviewerCaseDetail(caseId: string) {
 
       {/* ─── Resizable split: [Ash|Chart tabs] · [Review form] ─── */}
       <div className="flex min-h-0 flex-1 p-4 lg:p-6">
-        <ReviewerCaseSplit
+        <PeerCaseSplit
           chartViewUrl={chartViewUrl}
           chartFileName={reviewCase.chartFileName ?? null}
           chartSummary={analysisRow?.chartSummary ?? null}
           riskFlags={riskFlags}
           caseId={caseId}
-          reviewerId={reviewerId}
+          peerId={peerId}
           formFields={formFields}
           aiPrefills={aiPrefills}
           existingResult={

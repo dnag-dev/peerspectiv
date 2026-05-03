@@ -10,13 +10,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const batch_id = searchParams.get('batch_id');
-    const reviewer_id = searchParams.get('reviewer_id');
+    const peer_id = searchParams.get('reviewer_id');
     const company_id = searchParams.get('company_id');
 
     const conditions = [];
     if (status) conditions.push(eq(reviewCases.status, status));
     if (batch_id) conditions.push(eq(reviewCases.batchId, batch_id));
-    if (reviewer_id) conditions.push(eq(reviewCases.reviewerId, reviewer_id));
+    if (peer_id) conditions.push(eq(reviewCases.peerId, peer_id));
     if (company_id) conditions.push(eq(reviewCases.companyId, company_id));
 
     const data = await db.query.reviewCases.findMany({
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       orderBy: desc(reviewCases.createdAt),
       with: {
         provider: { columns: { id: true, firstName: true, lastName: true, specialty: true, npi: true } },
-        reviewer: { columns: { id: true, fullName: true, email: true, specialty: true } },
+        peer: { columns: { id: true, fullName: true, email: true, specialty: true } },
         company: { columns: { id: true, name: true } },
         batch: { columns: { id: true, batchName: true } },
       },
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       provider_id,
       batch_id,
       company_id,
-      reviewer_id,
+      peer_id,
       batch_period,
       encounter_date,
       specialty_required,
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
           providerId: provider_id ?? null,
           batchId: batch_id ?? null,
           companyId: company_id ?? null,
-          reviewerId: reviewer_id ?? null,
+          peerId: peer_id ?? null,
           batchPeriod: batch_period ?? null,
           encounterDate: encounter_date ?? null,
           specialtyRequired: specialty_required ?? null,

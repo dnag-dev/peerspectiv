@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { reviewCases, reviewers, notifications } from '@/lib/db/schema';
+import { reviewCases, peers, notifications } from '@/lib/db/schema';
 import { and, eq, inArray, isNotNull, lt, lte, ne } from 'drizzle-orm';
 import { auditLog } from '@/lib/utils/audit';
 
@@ -51,20 +51,20 @@ export async function GET(request: NextRequest) {
     // Auto-return reviewers whose unavailable_until has passed
     const today = new Date().toISOString().split('T')[0];
     const expiredReviewers = await db
-      .select({ id: reviewers.id, fullName: reviewers.fullName })
-      .from(reviewers)
+      .select({ id: peers.id, fullName: peers.fullName })
+      .from(peers)
       .where(
         and(
-          ne(reviewers.availabilityStatus, 'available'),
-          lte(reviewers.unavailableUntil, today),
-          isNotNull(reviewers.unavailableUntil)
+          ne(peers.availabilityStatus, 'available'),
+          lte(peers.unavailableUntil, today),
+          isNotNull(peers.unavailableUntil)
         )
       );
 
     const returnedIds: string[] = [];
-    for (const reviewer of expiredReviewers) {
+    for (const peer of expiredReviewers) {
       await db
-        .update(reviewers)
+        .update(peers)
         .set({
           availabilityStatus: 'available',
           unavailableFrom: null,
@@ -72,18 +72,18 @@ export async function GET(request: NextRequest) {
           unavailableReason: null,
           updatedAt: new Date(),
         })
-        .where(eq(reviewers.id, reviewer.id));
+        .where(eq(peers.id, peer.id));
 
       await db.insert(notifications).values({
         userId: null,
         type: 'reviewer_returned',
-        title: `${reviewer.fullName} is now available`,
-        body: `Reviewer ${reviewer.fullName} has been automatically marked as available (leave period ended).`,
+        title: `${peer.fullName} is now available`,
+        body: `Reviewer ${peer.fullName} has been automatically marked as available (leave period ended).`,
         entityType: 'reviewer',
-        entityId: reviewer.id,
+        entityId: peer.id,
       });
 
-      returnedIds.push(reviewer.id);
+      returnedIds.push(peer.id);
     }
 
     return NextResponse.json({ flagged: caseIds.length, reviewers_returned: returnedIds.length });

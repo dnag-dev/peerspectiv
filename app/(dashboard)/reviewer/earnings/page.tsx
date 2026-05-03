@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
-import { reviewers } from "@/lib/db/schema";
+import { peers } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Clock, FileText, CheckCircle2, Timer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ type Row = {
   patient: string;
   specialty: string | null;
   company: string | null;
-  reviewer_id: string;
+  peer_id: string;
   reviewer_name: string;
   rate_type: string;
   rate_amount: string;
@@ -113,17 +113,17 @@ export default async function ReviewerEarningsPage() {
   // for the (single) reviewer surfaced in the rows. Demo mode may have multiple
   // reviewers — render the average across whichever rows we have, or a single
   // value when one reviewer dominates.
-  const reviewerIds = Array.from(new Set(data.map((r) => r.reviewer_id))).filter(
+  const reviewerIds = Array.from(new Set(data.map((r) => r.peer_id))).filter(
     Boolean
   );
   let avgMinutesPerChart: number | null = null;
   if (reviewerIds.length > 0) {
     const reviewerRows = await db
       .select({
-        id: reviewers.id,
-        avgMinutesPerChart: reviewers.avgMinutesPerChart,
+        id: peers.id,
+        avgMinutesPerChart: peers.avgMinutesPerChart,
       })
-      .from(reviewers);
+      .from(peers);
     const matching = reviewerRows.filter((r) => reviewerIds.includes(r.id));
     const numeric = matching
       .map((r) => (r.avgMinutesPerChart != null ? Number(r.avgMinutesPerChart) : null))

@@ -97,7 +97,7 @@ const PUBLIC_PATHS = [
 const ROLE_LANDING: Record<string, string> = {
   admin: '/dashboard',
   client: '/portal',
-  reviewer: '/reviewer/portal',
+  peer: '/reviewer/portal',
 };
 
 function isPublic(pathname: string): boolean {

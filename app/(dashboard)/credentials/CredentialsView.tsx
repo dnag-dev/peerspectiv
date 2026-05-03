@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-interface Reviewer {
+interface Peer {
   id: string;
   full_name: string | null;
   email: string | null;
@@ -20,7 +20,7 @@ interface Reviewer {
 
 type Bucket = 'missing' | 'expired' | 'expiring' | 'valid';
 
-function specialtiesText(r: Reviewer): string {
+function specialtiesText(r: Peer): string {
   if (Array.isArray(r.specialties) && r.specialties.length > 0) {
     return r.specialties.join(', ');
   }
@@ -33,7 +33,7 @@ function dayDiff(fromIso: string, toIso: string): number {
   return Math.round((a - b) / 86400000);
 }
 
-function bucketize(r: Reviewer, today: string): Bucket {
+function bucketize(r: Peer, today: string): Bucket {
   if (!r.credential_valid_until) return 'missing';
   const cv = String(r.credential_valid_until).slice(0, 10);
   if (cv < today) return 'expired';
@@ -42,9 +42,9 @@ function bucketize(r: Reviewer, today: string): Bucket {
   return 'valid';
 }
 
-export function CredentialsView({ reviewers: initial }: { reviewers: Reviewer[] }) {
+export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
   const router = useRouter();
-  const [reviewers, setReviewers] = useState<Reviewer[]>(initial);
+  const [peers, setReviewers] = useState<Peer[]>(initial);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -53,30 +53,30 @@ export function CredentialsView({ reviewers: initial }: { reviewers: Reviewer[] 
   const today = new Date().toISOString().slice(0, 10);
 
   const grouped = useMemo(() => {
-    const buckets: Record<Bucket, Reviewer[]> = {
+    const buckets: Record<Bucket, Peer[]> = {
       missing: [],
       expired: [],
       expiring: [],
       valid: [],
     };
-    for (const r of reviewers) buckets[bucketize(r, today)].push(r);
+    for (const r of peers) buckets[bucketize(r, today)].push(r);
     // Sort within bucket: soonest expiring first
-    const cmp = (a: Reviewer, b: Reviewer) => {
+    const cmp = (a: Peer, b: Peer) => {
       const av = a.credential_valid_until ?? '9999-12-31';
       const bv = b.credential_valid_until ?? '9999-12-31';
       return String(av).localeCompare(String(bv));
     };
     for (const k of Object.keys(buckets) as Bucket[]) buckets[k].sort(cmp);
     return buckets;
-  }, [reviewers, today]);
+  }, [peers, today]);
 
-  function startEdit(r: Reviewer) {
+  function startEdit(r: Peer) {
     setEditingId(r.id);
     setEditValue(r.credential_valid_until ? String(r.credential_valid_until).slice(0, 10) : '');
     setError(null);
   }
 
-  async function saveEdit(r: Reviewer) {
+  async function saveEdit(r: Peer) {
     setSavingId(r.id);
     setError(null);
     try {
@@ -184,15 +184,15 @@ export function CredentialsView({ reviewers: initial }: { reviewers: Reviewer[] 
 function BucketCard(props: {
   title: string;
   description: string;
-  rows: Reviewer[];
+  rows: Peer[];
   badge: React.ReactNode;
   editingId: string | null;
   editValue: string;
   savingId: string | null;
-  onStartEdit: (r: Reviewer) => void;
+  onStartEdit: (r: Peer) => void;
   onChangeValue: (v: string) => void;
   onCancel: () => void;
-  onSave: (r: Reviewer) => void;
+  onSave: (r: Peer) => void;
 }) {
   const { title, description, rows, badge, editingId, editValue, savingId } = props;
 

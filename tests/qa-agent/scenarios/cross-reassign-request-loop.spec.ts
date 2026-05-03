@@ -16,7 +16,7 @@ export async function run(ctx: ScenarioCtx) {
   for (const r of open) {
     if (r.status === 'open') {
       // The case should still have its original reviewer
-      const c = await sql<{ reviewer_id: string }>(`SELECT reviewer_id FROM review_cases WHERE id=$1`, [r.case_id]);
+      const c = await sql<{ peer_id: string }>(`SELECT reviewer_id FROM review_cases WHERE id=$1`, [r.case_id]);
       if (c && c.length === 0) {
         log.log({ spec_section: 'E1', severity: 'medium', category: 'data-integrity', title: 'reassignment_request points to nonexistent case', description: `request id=${r.id} case_id=${r.case_id}`, db_assertion: 'FK case_id valid' });
       }

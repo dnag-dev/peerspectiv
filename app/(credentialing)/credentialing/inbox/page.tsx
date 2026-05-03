@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { db } from '@/lib/db';
-import { reviewers } from '@/lib/db/schema';
+import { peers } from '@/lib/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,20 +10,20 @@ export const dynamic = 'force-dynamic';
 export default async function NewReviewerInboxPage() {
   const list = await db
     .select({
-      id: reviewers.id,
-      full_name: reviewers.fullName,
-      email: reviewers.email,
-      specialty: reviewers.specialty,
-      specialties: reviewers.specialties,
-      license_number: reviewers.licenseNumber,
-      license_state: reviewers.licenseState,
-      credential_valid_until: reviewers.credentialValidUntil,
-      created_at: reviewers.createdAt,
-      board_certification: reviewers.boardCertification,
+      id: peers.id,
+      full_name: peers.fullName,
+      email: peers.email,
+      specialty: peers.specialty,
+      specialties: peers.specialties,
+      license_number: peers.licenseNumber,
+      license_state: peers.licenseState,
+      credential_valid_until: peers.credentialValidUntil,
+      created_at: peers.createdAt,
+      board_certification: peers.boardCertification,
     })
-    .from(reviewers)
-    .where(eq(reviewers.status, 'inactive'))
-    .orderBy(desc(reviewers.createdAt));
+    .from(peers)
+    .where(eq(peers.status, 'inactive'))
+    .orderBy(desc(peers.createdAt));
 
   return (
     <div className="space-y-6">

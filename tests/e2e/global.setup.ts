@@ -7,7 +7,7 @@ dotenv.config({ path: path.join(__dirname, '..', '..', '.env.local') });
 
 const ADMIN = 'tests/.auth/admin.json';
 const CLIENT = 'tests/.auth/client.json';
-const REVIEWER = 'tests/.auth/reviewer.json';
+const PEER = 'tests/.auth/reviewer.json';
 
 setup('global clerk setup', async () => {
   await clerkSetup();
@@ -41,5 +41,5 @@ setup('authenticate as client', async ({ page }) => {
 
 setup('authenticate as reviewer', async ({ page }) => {
   await signInAs(page, 'rjohnson@peerspectiv.com');
-  await page.context().storageState({ path: REVIEWER });
+  await page.context().storageState({ path: PEER });
 });

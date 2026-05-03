@@ -16,12 +16,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SetUnavailableModal } from '@/components/reviewers/SetUnavailableModal';
-import { AddReviewerModal } from '@/components/reviewers/AddReviewerModal';
+import { AddPeerModal } from '@/components/reviewers/AddReviewerModal';
 import { EditRateModal } from '@/components/reviewers/EditRateModal';
 
 type RateType = 'per_minute' | 'per_report' | 'per_hour';
 
-interface Reviewer {
+interface Peer {
   id: string;
   full_name: string | null;
   email: string | null;
@@ -40,7 +40,7 @@ interface Reviewer {
   max_case_load: number | null;
 }
 
-function formatSpecialties(r: Reviewer): string {
+function formatSpecialties(r: Peer): string {
   if (Array.isArray(r.specialties) && r.specialties.length > 0) {
     return r.specialties.join(', ');
   }
@@ -76,13 +76,13 @@ type SortKey =
   | 'availability_status';
 type SortDir = 'asc' | 'desc';
 
-export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }) {
+export function ReviewersTable({ peers: initial }: { peers: Peer[] }) {
   const router = useRouter();
-  const [reviewers, setReviewers] = useState(initial);
+  const [peers, setReviewers] = useState(initial);
   const [unavailOpen, setUnavailOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
-  const [selected, setSelected] = useState<Reviewer | null>(null);
+  const [selected, setSelected] = useState<Peer | null>(null);
 
   const [searchQ, setSearchQ] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState<string>('all');
@@ -92,7 +92,7 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
 
   const specialties = useMemo(() => {
     const s = new Set<string>();
-    for (const r of reviewers) {
+    for (const r of peers) {
       if (Array.isArray(r.specialties) && r.specialties.length > 0) {
         for (const sp of r.specialties) s.add(sp);
       } else if (r.specialty) {
@@ -100,20 +100,20 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
       }
     }
     return Array.from(s).sort();
-  }, [reviewers]);
+  }, [peers]);
 
   const availabilities = useMemo(() => {
     const s = new Set<string>();
-    for (const r of reviewers) {
+    for (const r of peers) {
       const a = r.availability_status || 'available';
       s.add(a);
     }
     return Array.from(s).sort();
-  }, [reviewers]);
+  }, [peers]);
 
   const filtered = useMemo(() => {
     const q = searchQ.trim().toLowerCase();
-    return reviewers.filter((r) => {
+    return peers.filter((r) => {
       if (specialtyFilter !== 'all') {
         const specs = Array.isArray(r.specialties) && r.specialties.length > 0
           ? r.specialties
@@ -130,7 +130,7 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
         (r.specialty ?? '').toLowerCase().includes(q)
       );
     });
-  }, [reviewers, specialtyFilter, availFilter, searchQ]);
+  }, [peers, specialtyFilter, availFilter, searchQ]);
 
   const visible = useMemo(() => {
     const arr = [...filtered];
@@ -205,16 +205,16 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
     );
   }
 
-  function openUnavail(r: Reviewer) {
+  function openUnavail(r: Peer) {
     setSelected(r);
     setUnavailOpen(true);
   }
-  function openEdit(r: Reviewer) {
+  function openEdit(r: Peer) {
     setSelected(r);
     setRateOpen(true);
   }
 
-  async function markAvailable(r: Reviewer) {
+  async function markAvailable(r: Peer) {
     const res = await fetch(`/api/reviewers/${r.id}/availability`, { method: 'POST' });
     if (res.ok) {
       setReviewers((prev) =>
@@ -223,9 +223,9 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
     }
   }
 
-  function handleUnavailSuccess(reviewerId: string, status: string) {
+  function handleUnavailSuccess(peerId: string, status: string) {
     setReviewers((prev) =>
-      prev.map((x) => (x.id === reviewerId ? { ...x, availability_status: status } : x))
+      prev.map((x) => (x.id === peerId ? { ...x, availability_status: status } : x))
     );
     setUnavailOpen(false);
   }
@@ -271,7 +271,7 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
     <>
       <div className="flex items-center justify-between">
         <div className="text-sm text-ink-500">
-          {reviewers.length} reviewer{reviewers.length === 1 ? '' : 's'}
+          {peers.length} reviewer{peers.length === 1 ? '' : 's'}
         </div>
         <Button onClick={() => setAddOpen(true)}>
           <Plus className="h-4 w-4" />
@@ -319,7 +319,7 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
             </Select>
           </div>
           <p className="mt-3 text-xs text-ink-500">
-            Showing <strong>{visible.length}</strong> of {reviewers.length} reviewers
+            Showing <strong>{visible.length}</strong> of {peers.length} reviewers
           </p>
         </CardContent>
       </Card>
@@ -341,7 +341,7 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
             {visible.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-4 py-8 text-center text-ink-400">
-                  {reviewers.length === 0 ? 'No reviewers found.' : 'No reviewers match your filters.'}
+                  {peers.length === 0 ? 'No reviewers found.' : 'No reviewers match your filters.'}
                 </td>
               </tr>
             )}
@@ -392,7 +392,7 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
         </table>
       </div>
 
-      <AddReviewerModal
+      <AddPeerModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
         onSuccess={() => {
@@ -406,7 +406,7 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
         <SetUnavailableModal
           open={unavailOpen}
           onClose={() => setUnavailOpen(false)}
-          reviewerId={selected.id}
+          peerId={selected.id}
           reviewerName={selected.full_name ?? 'Reviewer'}
           onSuccess={(status) => handleUnavailSuccess(selected.id, status)}
         />
@@ -416,7 +416,7 @@ export function ReviewersTable({ reviewers: initial }: { reviewers: Reviewer[] }
         <EditRateModal
           open={rateOpen}
           onClose={() => setRateOpen(false)}
-          reviewer={selected}
+          peer={selected}
           boardCertification={selected.board_certification}
           currentRateType={(selected.rate_type as RateType) ?? 'per_minute'}
           currentRateAmount={Number(selected.rate_amount ?? 1)}

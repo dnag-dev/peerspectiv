@@ -1,9 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { User, Award, Stethoscope, BarChart3 } from "lucide-react";
-import type { Reviewer } from "@/types";
+import type { Peer } from "@/types";
 
 interface ReviewerCardProps {
-  reviewer: Reviewer;
+  peer: Peer;
   confidence?: number;
   rationale?: string;
   compact?: boolean;
@@ -27,7 +27,7 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
 }
 
 export function ReviewerCard({
-  reviewer,
+  peer,
   confidence,
   rationale,
   compact = false,
@@ -39,8 +39,8 @@ export function ReviewerCard({
           <User className="h-4 w-4 text-cobalt-600" />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium">{reviewer.full_name}</p>
-          <p className="text-xs text-muted-foreground">{reviewer.specialty}</p>
+          <p className="truncate text-sm font-medium">{peer.full_name}</p>
+          <p className="text-xs text-muted-foreground">{peer.specialty}</p>
         </div>
         {confidence !== undefined && (
           <ConfidenceBadge confidence={confidence} />
@@ -57,10 +57,10 @@ export function ReviewerCard({
             <User className="h-5 w-5 text-cobalt-600" />
           </div>
           <div>
-            <p className="text-sm font-semibold">{reviewer.full_name}</p>
+            <p className="text-sm font-semibold">{peer.full_name}</p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Stethoscope className="h-3 w-3" />
-              {reviewer.specialty}
+              {peer.specialty}
             </div>
           </div>
         </div>
@@ -70,25 +70,25 @@ export function ReviewerCard({
       </div>
 
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-        {reviewer.board_certification && (
+        {peer.board_certification && (
           <span className="flex items-center gap-1">
             <Award className="h-3 w-3" />
-            {reviewer.board_certification}
+            {peer.board_certification}
           </span>
         )}
         <span className="flex items-center gap-1">
           <BarChart3 className="h-3 w-3" />
-          {reviewer.total_reviews_completed} reviews
+          {peer.total_reviews_completed} reviews
         </span>
-        {reviewer.ai_agreement_score !== null && (
+        {peer.ai_agreement_score !== null && (
           <span className="flex items-center gap-1">
             <Badge variant="ai" className="text-[10px] px-1.5 py-0">
-              AI Agreement {reviewer.ai_agreement_score}%
+              AI Agreement {peer.ai_agreement_score}%
             </Badge>
           </span>
         )}
         <span>
-          Active cases: {reviewer.active_cases_count}
+          Active cases: {peer.active_cases_count}
         </span>
       </div>
 

@@ -44,7 +44,7 @@ export async function sendEmail(params: {
  * the leads endpoint pattern.
  */
 export async function sendCredentialingAlert(params: {
-  reviewerId: string;
+  peerId: string;
   reviewerName: string;
   email: string;
   specialties: string[];
@@ -78,7 +78,7 @@ export async function sendCredentialingAlert(params: {
     console.log('[credentialing] (no RESEND_API_KEY — printing to log)', {
       to,
       subject,
-      reviewer: params.reviewerName,
+      peer: params.reviewerName,
     });
     return { delivery: 'log' };
   }
@@ -136,7 +136,7 @@ export async function sendReassignmentRequestAlert(params: {
       to,
       subject,
       caseId: params.caseId,
-      reviewer: params.reviewerName,
+      peer: params.reviewerName,
     });
     return { delivery: 'log' };
   }

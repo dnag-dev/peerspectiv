@@ -67,7 +67,7 @@ const probes: Probe[] = [
 export async function run(ctx: ScenarioCtx) {
   const log = ctx.logger;
   // One client per role (reused for cookie persistence)
-  const clients: Record<string, ApiClient> = { none: new ApiClient(), admin: new ApiClient(), client: new ApiClient(), reviewer: new ApiClient() };
+  const clients: Record<string, ApiClient> = { none: new ApiClient(), admin: new ApiClient(), client: new ApiClient(), peer: new ApiClient() };
   for (const k of Object.keys(clients)) clients[k].cookies.set('site_gate', '1');
   await clients.admin.loginAs('admin');
   await clients.client.loginAs('client');

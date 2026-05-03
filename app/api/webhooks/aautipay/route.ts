@@ -4,8 +4,8 @@ import { db } from '@/lib/db';
 import {
   aautipayEvents,
   invoices,
-  reviewerPayouts,
-  reviewers,
+  peerPayouts,
+  peers,
   auditLogs,
 } from '@/lib/db/schema';
 import { aautipay, type AautipayWebhookPayload } from '@/lib/aautipay/client';
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
         const status = await aautipay.getPayoutStatus(externalId);
         const s = status.data;
         await db
-          .update(reviewerPayouts)
+          .update(peerPayouts)
           .set({
             aautipayPayoutStatus: s.status,
             externalPayoutCompletedAt: s.status === 'payout_paid' ? new Date() : null,
@@ -97,31 +97,31 @@ export async function POST(req: NextRequest) {
                   : 'approved',
             paidAt: s.status === 'payout_paid' ? new Date() : null,
           })
-          .where(eq(reviewerPayouts.aautipayPayoutId, externalId));
+          .where(eq(peerPayouts.aautipayPayoutId, externalId));
         break;
       }
       case 'beneficiary': {
         const status = await aautipay.getBeneficiaryStatus(externalId);
         const s = status.data;
         await db
-          .update(reviewers)
+          .update(peers)
           .set({
             aautipayBeneficiaryStatus: s.status,
             paymentReady: s.status === 'beneficiary_account_verified',
           })
-          .where(eq(reviewers.aautipayBeneficiaryId, externalId));
+          .where(eq(peers.aautipayBeneficiaryId, externalId));
         break;
       }
       case 'bank_account': {
         const data = await aautipay.getBankAccountStatus(externalId);
         const status = (data as { data?: { status?: string } }).data?.status ?? null;
         await db
-          .update(reviewers)
+          .update(peers)
           .set({
             aautipayBankStatus: status,
             paymentReady: status === 'beneficiary_bank_account_verified',
           })
-          .where(eq(reviewers.aautipayBankAccountId, externalId));
+          .where(eq(peers.aautipayBankAccountId, externalId));
         break;
       }
       case 'refund': {

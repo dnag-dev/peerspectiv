@@ -28,7 +28,7 @@ type Status = 'pending' | 'approved' | 'paid';
 
 interface PayoutRow {
   id: string | null;
-  reviewer_id: string;
+  peer_id: string;
   reviewer_name: string;
   specialty: string;
   period_start: string;
@@ -177,7 +177,7 @@ export function PayoutsView() {
   }
 
   async function approve(r: PayoutRow) {
-    setActingId(`approve-${r.reviewer_id}`);
+    setActingId(`approve-${r.peer_id}`);
     try {
       let payoutId = r.id;
       if (!payoutId) {
@@ -186,7 +186,7 @@ export function PayoutsView() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            reviewer_id: r.reviewer_id,
+            peer_id: r.peer_id,
             period_start: r.period_start,
             period_end: r.period_end,
           }),
@@ -500,11 +500,11 @@ export function PayoutsView() {
             {!loading &&
               visibleRows.map((r) => {
                 const colors = STATUS_COLORS[r.status];
-                const approveKey = `approve-${r.reviewer_id}`;
+                const approveKey = `approve-${r.peer_id}`;
                 const payKey = `pay-${r.id}`;
                 return (
                   <tr
-                    key={r.id ?? r.reviewer_id}
+                    key={r.id ?? r.peer_id}
                     className="border-b border-ink-100 hover:bg-ink-50"
                   >
                     <td className="px-4 py-3 font-medium text-ink-900">{r.reviewer_name}</td>

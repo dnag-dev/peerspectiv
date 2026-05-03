@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import {
   caseReassignmentRequests,
   reviewCases,
-  reviewers,
+  peers,
   providers,
   companies,
 } from '@/lib/db/schema';
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       .select({
         id: caseReassignmentRequests.id,
         caseId: caseReassignmentRequests.caseId,
-        reviewerId: caseReassignmentRequests.reviewerId,
+        peerId: caseReassignmentRequests.peerId,
         reason: caseReassignmentRequests.reason,
         status: caseReassignmentRequests.status,
         createdAt: caseReassignmentRequests.createdAt,
@@ -53,8 +53,8 @@ export async function GET(request: NextRequest) {
         dueDate: reviewCases.dueDate,
         specialtyRequired: reviewCases.specialtyRequired,
         // reviewer
-        reviewerName: reviewers.fullName,
-        reviewerEmail: reviewers.email,
+        reviewerName: peers.fullName,
+        reviewerEmail: peers.email,
         // provider
         providerFirstName: providers.firstName,
         providerLastName: providers.lastName,
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
       })
       .from(caseReassignmentRequests)
       .leftJoin(reviewCases, eq(caseReassignmentRequests.caseId, reviewCases.id))
-      .leftJoin(reviewers, eq(caseReassignmentRequests.reviewerId, reviewers.id))
+      .leftJoin(peers, eq(caseReassignmentRequests.peerId, peers.id))
       .leftJoin(providers, eq(reviewCases.providerId, providers.id))
       .leftJoin(companies, eq(reviewCases.companyId, companies.id))
       .where(eq(caseReassignmentRequests.status, status));
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     const [caseRow] = await db
       .select({
         id: reviewCases.id,
-        reviewerId: reviewCases.reviewerId,
+        peerId: reviewCases.peerId,
         providerId: reviewCases.providerId,
       })
       .from(reviewCases)
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
       .insert(caseReassignmentRequests)
       .values({
         caseId: case_id,
-        reviewerId: caseRow.reviewerId ?? null,
+        peerId: caseRow.peerId ?? null,
         reason: trimmed,
         status: 'open',
       })
@@ -143,11 +143,11 @@ export async function POST(request: NextRequest) {
     let reviewerEmail: string | null = null;
     let providerName: string | null = null;
     try {
-      if (caseRow.reviewerId) {
+      if (caseRow.peerId) {
         const [r] = await db
-          .select({ fullName: reviewers.fullName, email: reviewers.email })
-          .from(reviewers)
-          .where(eq(reviewers.id, caseRow.reviewerId))
+          .select({ fullName: peers.fullName, email: peers.email })
+          .from(peers)
+          .where(eq(peers.id, caseRow.peerId))
           .limit(1);
         reviewerName = r?.fullName ?? reviewerName;
         reviewerEmail = r?.email ?? null;

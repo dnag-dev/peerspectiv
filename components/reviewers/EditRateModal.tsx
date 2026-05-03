@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 
 type RateType = 'per_minute' | 'per_report' | 'per_hour';
 
-interface Reviewer {
+interface Peer {
   id: string;
   full_name: string | null;
   email: string | null;
@@ -33,10 +33,10 @@ interface Reviewer {
 interface Props {
   open: boolean;
   onClose: () => void;
-  reviewer: Reviewer;
+  peer: Peer;
   // Kept for back-compat with any caller still passing these explicitly —
   // they override the values pulled from `reviewer`.
-  reviewerId?: string;
+  peerId?: string;
   reviewerName?: string;
   currentRateType?: RateType;
   currentRateAmount?: number;
@@ -71,7 +71,7 @@ const RATE_TYPES = [
   { value: 'per_hour' as const, label: 'Per hour', suffix: '$/hour' },
 ];
 
-function initialSpecialties(r: Reviewer): string[] {
+function initialSpecialties(r: Peer): string[] {
   if (Array.isArray(r.specialties) && r.specialties.length > 0) {
     return r.specialties;
   }
@@ -82,28 +82,28 @@ function initialSpecialties(r: Reviewer): string[] {
 export function EditRateModal({
   open,
   onClose,
-  reviewer,
+  peer,
   boardCertification,
   currentRateType,
   currentRateAmount,
   onSuccess,
 }: Props) {
-  const id = reviewer.id;
-  const [fullName, setFullName] = useState(reviewer.full_name ?? '');
-  const [email, setEmail] = useState(reviewer.email ?? '');
-  const [specialties, setSpecialties] = useState<string[]>(initialSpecialties(reviewer));
+  const id = peer.id;
+  const [fullName, setFullName] = useState(peer.full_name ?? '');
+  const [email, setEmail] = useState(peer.email ?? '');
+  const [specialties, setSpecialties] = useState<string[]>(initialSpecialties(peer));
   const [boardCert, setBoardCert] = useState(boardCertification ?? '');
-  const [licenseNumber, setLicenseNumber] = useState(reviewer.license_number ?? '');
-  const [licenseState, setLicenseState] = useState(reviewer.license_state ?? '');
+  const [licenseNumber, setLicenseNumber] = useState(peer.license_number ?? '');
+  const [licenseState, setLicenseState] = useState(peer.license_state ?? '');
   const [credentialValidUntil, setCredentialValidUntil] = useState(
-    reviewer.credential_valid_until ? String(reviewer.credential_valid_until).slice(0, 10) : ''
+    peer.credential_valid_until ? String(peer.credential_valid_until).slice(0, 10) : ''
   );
-  const [maxCaseLoad, setMaxCaseLoad] = useState(String(reviewer.max_case_load ?? 75));
+  const [maxCaseLoad, setMaxCaseLoad] = useState(String(peer.max_case_load ?? 75));
   const [rateType, setRateType] = useState<RateType>(
-    (currentRateType ?? (reviewer.rate_type as RateType)) ?? 'per_minute'
+    (currentRateType ?? (peer.rate_type as RateType)) ?? 'per_minute'
   );
   const [rateAmount, setRateAmount] = useState(
-    String(currentRateAmount ?? Number(reviewer.rate_amount ?? 1))
+    String(currentRateAmount ?? Number(peer.rate_amount ?? 1))
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,22 +111,22 @@ export function EditRateModal({
   // Reset fields whenever the modal is (re)opened for a different reviewer.
   useEffect(() => {
     if (!open) return;
-    setFullName(reviewer.full_name ?? '');
-    setEmail(reviewer.email ?? '');
-    setSpecialties(initialSpecialties(reviewer));
+    setFullName(peer.full_name ?? '');
+    setEmail(peer.email ?? '');
+    setSpecialties(initialSpecialties(peer));
     setBoardCert(boardCertification ?? '');
-    setLicenseNumber(reviewer.license_number ?? '');
-    setLicenseState(reviewer.license_state ?? '');
+    setLicenseNumber(peer.license_number ?? '');
+    setLicenseState(peer.license_state ?? '');
     setCredentialValidUntil(
-      reviewer.credential_valid_until
-        ? String(reviewer.credential_valid_until).slice(0, 10)
+      peer.credential_valid_until
+        ? String(peer.credential_valid_until).slice(0, 10)
         : ''
     );
-    setMaxCaseLoad(String(reviewer.max_case_load ?? 75));
-    setRateType(((currentRateType ?? (reviewer.rate_type as RateType)) ?? 'per_minute'));
-    setRateAmount(String(currentRateAmount ?? Number(reviewer.rate_amount ?? 1)));
+    setMaxCaseLoad(String(peer.max_case_load ?? 75));
+    setRateType(((currentRateType ?? (peer.rate_type as RateType)) ?? 'per_minute'));
+    setRateAmount(String(currentRateAmount ?? Number(peer.rate_amount ?? 1)));
     setError(null);
-  }, [open, reviewer, boardCertification, currentRateType, currentRateAmount]);
+  }, [open, peer, boardCertification, currentRateType, currentRateAmount]);
 
   function toggleSpecialty(s: string) {
     setSpecialties((prev) =>
@@ -353,4 +353,4 @@ export function EditRateModal({
 }
 
 // Alias so callers can import under the clearer name.
-export { EditRateModal as EditReviewerModal };
+export { EditRateModal as EditPeerModal };

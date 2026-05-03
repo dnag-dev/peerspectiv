@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import {
   caseReassignmentRequests,
   reviewCases,
-  reviewers,
+  peers,
   providers,
   companies,
 } from '@/lib/db/schema';
@@ -17,12 +17,12 @@ async function getOpenRequests(): Promise<ReassignmentRow[]> {
     .select({
       id: caseReassignmentRequests.id,
       caseId: caseReassignmentRequests.caseId,
-      reviewerId: caseReassignmentRequests.reviewerId,
+      peerId: caseReassignmentRequests.peerId,
       reason: caseReassignmentRequests.reason,
       status: caseReassignmentRequests.status,
       createdAt: caseReassignmentRequests.createdAt,
       specialtyRequired: reviewCases.specialtyRequired,
-      reviewerName: reviewers.fullName,
+      reviewerName: peers.fullName,
       providerFirstName: providers.firstName,
       providerLastName: providers.lastName,
       providerSpecialty: providers.specialty,
@@ -30,7 +30,7 @@ async function getOpenRequests(): Promise<ReassignmentRow[]> {
     })
     .from(caseReassignmentRequests)
     .leftJoin(reviewCases, eq(caseReassignmentRequests.caseId, reviewCases.id))
-    .leftJoin(reviewers, eq(caseReassignmentRequests.reviewerId, reviewers.id))
+    .leftJoin(peers, eq(caseReassignmentRequests.peerId, peers.id))
     .leftJoin(providers, eq(reviewCases.providerId, providers.id))
     .leftJoin(companies, eq(reviewCases.companyId, companies.id))
     .where(eq(caseReassignmentRequests.status, 'open'));
@@ -38,7 +38,7 @@ async function getOpenRequests(): Promise<ReassignmentRow[]> {
   return rows.map((r) => ({
     id: r.id,
     caseId: r.caseId,
-    reviewerId: r.reviewerId,
+    peerId: r.peerId,
     reason: r.reason,
     createdAt: r.createdAt ? r.createdAt.toISOString() : null,
     specialty: r.specialtyRequired ?? r.providerSpecialty ?? null,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { reviewers } from '@/lib/db/schema';
+import { peers } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { auditLog } from '@/lib/utils/audit';
 
@@ -15,7 +15,7 @@ export async function PATCH(
     const { availability_status, unavailable_from, unavailable_until, unavailable_reason } = body;
 
     await db
-      .update(reviewers)
+      .update(peers)
       .set({
         availabilityStatus: availability_status,
         unavailableFrom: unavailable_from,
@@ -23,7 +23,7 @@ export async function PATCH(
         unavailableReason: unavailable_reason,
         updatedAt: new Date(),
       })
-      .where(eq(reviewers.id, id));
+      .where(eq(peers.id, id));
 
     await auditLog({
       action: 'reviewer_set_unavailable',
@@ -49,7 +49,7 @@ export async function POST(
     const { id } = params;
 
     await db
-      .update(reviewers)
+      .update(peers)
       .set({
         availabilityStatus: 'available',
         unavailableFrom: null,
@@ -57,7 +57,7 @@ export async function POST(
         unavailableReason: null,
         updatedAt: new Date(),
       })
-      .where(eq(reviewers.id, id));
+      .where(eq(peers.id, id));
 
     await auditLog({
       action: 'reviewer_marked_available',

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { caseReassignmentRequests, reviewCases, reviewers } from '@/lib/db/schema';
+import { caseReassignmentRequests, reviewCases, peers } from '@/lib/db/schema';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,17 +49,17 @@ export async function PATCH(
     if (status === 'resolved' && new_reviewer_id) {
       // Look up new reviewer name for the resolution note
       const [newReviewer] = await db
-        .select({ fullName: reviewers.fullName })
-        .from(reviewers)
-        .where(eq(reviewers.id, new_reviewer_id))
+        .select({ fullName: peers.fullName })
+        .from(peers)
+        .where(eq(peers.id, new_reviewer_id))
         .limit(1);
 
-      const oldReviewerId = reqRow.reviewerId;
+      const oldReviewerId = reqRow.peerId;
 
       await db
         .update(reviewCases)
         .set({
-          reviewerId: new_reviewer_id,
+          peerId: new_reviewer_id,
           reassignmentRequested: false,
           updatedAt: new Date(),
         })
@@ -67,20 +67,20 @@ export async function PATCH(
 
       if (oldReviewerId && oldReviewerId !== new_reviewer_id) {
         await db
-          .update(reviewers)
+          .update(peers)
           .set({
-            activeCasesCount: sql`GREATEST(0, COALESCE(${reviewers.activeCasesCount}, 0) - 1)`,
+            activeCasesCount: sql`GREATEST(0, COALESCE(${peers.activeCasesCount}, 0) - 1)`,
             updatedAt: new Date(),
           })
-          .where(eq(reviewers.id, oldReviewerId));
+          .where(eq(peers.id, oldReviewerId));
       }
       await db
-        .update(reviewers)
+        .update(peers)
         .set({
-          activeCasesCount: sql`COALESCE(${reviewers.activeCasesCount}, 0) + 1`,
+          activeCasesCount: sql`COALESCE(${peers.activeCasesCount}, 0) + 1`,
           updatedAt: new Date(),
         })
-        .where(eq(reviewers.id, new_reviewer_id));
+        .where(eq(peers.id, new_reviewer_id));
 
       if (!finalNote) {
         finalNote = `Reassigned to ${newReviewer?.fullName ?? 'new reviewer'}`;

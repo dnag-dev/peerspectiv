@@ -4,7 +4,7 @@ import { asc, eq, sql } from "drizzle-orm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssignmentResultsTab } from "@/components/reports/AssignmentResultsTab";
 import { QAPIReportTab } from "@/components/reports/QAPIReportTab";
-import { ReviewerScorecardTab } from "@/components/reports/ReviewerScorecardTab";
+import { PeerScorecardTab } from "@/components/reports/ReviewerScorecardTab";
 import { PdfGeneratorTab } from "@/components/reports/PdfGeneratorTab";
 import { SavedReportsTab } from "@/components/reports/SavedReportsTab";
 
@@ -73,7 +73,7 @@ export default async function ReportsPage() {
         </TabsContent>
 
         <TabsContent value="scorecard">
-          <ReviewerScorecardTab />
+          <PeerScorecardTab />
         </TabsContent>
 
         <TabsContent value="pdf">

@@ -66,7 +66,7 @@ interface SidebarShellProps {
 
 const ROLE_CHIP: Record<SidebarRole, { label: string; cls: string }> = {
   admin:      { label: "ADMIN",    cls: "bg-cobalt-100 text-cobalt-800" },
-  reviewer:   { label: "REVIEWER", cls: "bg-mint-100 text-mint-700" },
+  peer:   { label: "REVIEWER", cls: "bg-mint-100 text-mint-700" },
   cmo:        { label: "CMO",      cls: "bg-cobalt-100 text-cobalt-800" },
   quality:    { label: "QUALITY",  cls: "bg-cobalt-100 text-cobalt-800" },
   operations: { label: "OPS",      cls: "bg-cobalt-100 text-cobalt-800" },
@@ -244,7 +244,7 @@ function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
   ];
 }
 
-const reviewerNavItems: SidebarNavItem[] = [
+const peerNavItems: SidebarNavItem[] = [
   { label: "My Queue", href: "/reviewer/portal",   icon: ClipboardCheck },
   { label: "Earnings", href: "/reviewer/earnings", icon: DollarSign },
 ];
@@ -256,7 +256,7 @@ export function Sidebar({ openReassignmentCount = 0 }: { openReassignmentCount?:
 
   const isReviewer = pathname === "/reviewer" || pathname.startsWith("/reviewer/");
   const role: SidebarRole = isReviewer ? "reviewer" : "admin";
-  const navItems = isReviewer ? reviewerNavItems : buildAdminNavItems(openReassignmentCount);
+  const navItems = isReviewer ? peerNavItems : buildAdminNavItems(openReassignmentCount);
 
   const session = useClerkSession({
     fallbackName: isReviewer ? "Dr. Richard Johnson" : "Ashton Williams",

@@ -3,7 +3,7 @@ import { TopBar } from '@/components/layout/TopBar';
 import { MobileNavProvider } from '@/components/layout/MobileNavContext';
 import { AshChat } from '@/components/ash/AshChat';
 import { db } from '@/lib/db';
-import { reviewCases, reviewers, caseReassignmentRequests } from '@/lib/db/schema';
+import { reviewCases, peers, caseReassignmentRequests } from '@/lib/db/schema';
 import { eq, ne, sql } from 'drizzle-orm';
 
 async function getAdminContext() {
@@ -20,8 +20,8 @@ async function getAdminContext() {
 
     const [unavailableRow] = await db
       .select({ count: sql<number>`count(*)::int` })
-      .from(reviewers)
-      .where(ne(reviewers.availabilityStatus, 'available'));
+      .from(peers)
+      .where(ne(peers.availabilityStatus, 'available'));
 
     const [reassignRow] = await db
       .select({ count: sql<number>`count(*)::int` })

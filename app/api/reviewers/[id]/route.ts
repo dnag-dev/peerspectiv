@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, toCamel, toSnake } from '@/lib/db';
-import { reviewers } from '@/lib/db/schema';
+import { peers } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
@@ -152,9 +152,9 @@ export async function PATCH(
     }
 
     const [row] = await db
-      .update(reviewers)
+      .update(peers)
       .set(toCamel(update))
-      .where(eq(reviewers.id, params.id))
+      .where(eq(peers.id, params.id))
       .returning();
 
     if (!row) {

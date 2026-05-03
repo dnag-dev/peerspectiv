@@ -22,7 +22,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   specialty: string | null;
   currentReviewerId?: string | null;
-  onPick: (reviewerId: string) => void | Promise<void>;
+  onPick: (peerId: string) => void | Promise<void>;
   title?: string;
 }
 
@@ -35,7 +35,7 @@ export function ReviewerPickerModal({
   title = "Pick a reviewer",
 }: Props) {
   const [loading, setLoading] = useState(false);
-  const [reviewers, setReviewers] = useState<PickerReviewer[]>([]);
+  const [peers, setReviewers] = useState<PickerReviewer[]>([]);
   const [pickingId, setPickingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -77,14 +77,14 @@ export function ReviewerPickerModal({
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Loading reviewers...
           </div>
-        ) : reviewers.length === 0 ? (
+        ) : peers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center text-sm text-muted-foreground">
             <AlertCircle className="mb-2 h-8 w-8 text-muted-foreground/50" />
             No reviewers available for this specialty.
           </div>
         ) : (
           <div className="max-h-[60vh] space-y-2 overflow-y-auto">
-            {reviewers.map((r) => {
+            {peers.map((r) => {
               const isCurrent = r.id === currentReviewerId;
               const isUnavailable = r.availability_status !== "available";
               const isPicking = pickingId === r.id;

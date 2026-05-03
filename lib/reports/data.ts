@@ -590,7 +590,7 @@ export async function fetchQualityCertificateData(input: {
 // ─── Peer Earnings Summary ────────────────────────────────────────────────
 
 export async function fetchPeerEarningsSummaryData(input: {
-  reviewerId: string;
+  peerId: string;
   rangeStart: string;
   rangeEnd: string;
 }): Promise<PeerEarningsSummaryData> {
@@ -602,13 +602,13 @@ export async function fetchPeerEarningsSummaryData(input: {
   const reviewerRows = rowsOf<ReviewerRow>(
     await db.execute(sql`
       SELECT full_name, email, rate_amount
-      FROM reviewers WHERE id = ${input.reviewerId} LIMIT 1
+      FROM reviewers WHERE id = ${input.peerId} LIMIT 1
     `)
   );
-  const reviewer = reviewerRows[0];
-  const reviewerName = reviewer?.full_name ?? 'Unknown reviewer';
-  const reviewerEmail = reviewer?.email ?? undefined;
-  const fallbackRate = reviewer?.rate_amount ? Number(reviewer.rate_amount) : 1.0;
+  const peer = reviewerRows[0];
+  const reviewerName = peer?.full_name ?? 'Unknown reviewer';
+  const reviewerEmail = peer?.email ?? undefined;
+  const fallbackRate = peer?.rate_amount ? Number(peer.rate_amount) : 1.0;
 
   type LineRow = {
     submitted_at: string;
@@ -626,7 +626,7 @@ export async function fetchPeerEarningsSummaryData(input: {
       FROM review_results rr
       INNER JOIN review_cases rc ON rc.id = rr.case_id
       INNER JOIN providers     p  ON p.id  = rc.provider_id
-      WHERE rr.reviewer_id = ${input.reviewerId}
+      WHERE rr.reviewer_id = ${input.peerId}
         AND rr.submitted_at::date >= ${input.rangeStart}::date
         AND rr.submitted_at::date <= ${input.rangeEnd}::date
       ORDER BY rr.submitted_at ASC
@@ -653,7 +653,7 @@ export async function fetchPeerEarningsSummaryData(input: {
     await db.execute(sql`
       SELECT COALESCE(SUM(amount), 0)::float AS ytd
       FROM reviewer_payouts
-      WHERE reviewer_id = ${input.reviewerId}
+      WHERE reviewer_id = ${input.peerId}
         AND period_start >= ${yearStart}::date
     `)
   );
@@ -674,7 +674,7 @@ export async function fetchPeerEarningsSummaryData(input: {
 // ─── Reviewer Scorecard ───────────────────────────────────────────────────
 
 export interface ReviewerScorecardRow {
-  reviewer_id: string;
+  peer_id: string;
   full_name: string;
   cases_reviewed: number;
   avg_turnaround_days: number | null;
@@ -689,7 +689,7 @@ export async function fetchReviewerScorecard(
   periodEnd: string
 ): Promise<ReviewerScorecardRow[]> {
   type Row = {
-    reviewer_id: string;
+    peer_id: string;
     full_name: string;
     avg_minutes_per_chart: string | null;
     cases_reviewed: number;
@@ -734,7 +734,7 @@ export async function fetchReviewerScorecard(
 
   const rawRows = ((result as { rows?: Row[] }).rows ?? (result as unknown as Row[])) as Row[];
   return rawRows.map((r) => ({
-    reviewer_id: r.reviewer_id,
+    peer_id: r.peer_id,
     full_name: r.full_name,
     cases_reviewed: Number(r.cases_reviewed ?? 0),
     avg_turnaround_days:

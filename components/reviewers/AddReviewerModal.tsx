@@ -30,7 +30,7 @@ const RATE_TYPES = [
   { value: 'per_hour', label: 'Per hour', placeholder: '60.00', suffix: '$/hour' },
 ] as const;
 
-export function AddReviewerModal({ open, onClose, onSuccess }: Props) {
+export function AddPeerModal({ open, onClose, onSuccess }: Props) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [specialties, setSpecialties] = useState<string[]>([SPECIALTIES[0]]);

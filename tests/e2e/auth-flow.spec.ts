@@ -14,7 +14,7 @@ const PW = 'P33rspeCtiv!Ash2026#Demo';
 const accounts = {
   admin:    { email: 'admin@peerspectiv.com',     landing: /\/dashboard|\/login/, role: 'admin' },
   client:   { email: 'kelli@horizonhealth.org',   landing: /\/portal/,            role: 'client' },
-  reviewer: { email: 'rjohnson@peerspectiv.com',  landing: /\/reviewer/,          role: 'reviewer' },
+  peer: { email: 'rjohnson@peerspectiv.com',  landing: /\/reviewer/,          role: 'reviewer' },
 };
 
 async function signInAndCommit(page: any, email: string) {
@@ -66,7 +66,7 @@ test.describe('Auth flow — real Clerk', () => {
   });
 
   test('reviewer: sign in → can reach reviewer portal → sign out', async ({ page }) => {
-    await signInAndCommit(page, accounts.reviewer.email);
+    await signInAndCommit(page, accounts.peer.email);
     await page.goto('/reviewer/portal');
     await page.waitForLoadState('networkidle');
     expect(page.url()).not.toContain('/login');
@@ -96,7 +96,7 @@ test.describe('Auth flow — real Clerk', () => {
     expect(page.url()).toContain('/login');
 
     // Reviewer in (same browser context — proves logout actually killed admin session)
-    await signInAndCommit(page, accounts.reviewer.email);
+    await signInAndCommit(page, accounts.peer.email);
     await page.goto('/reviewer/portal');
     await page.waitForLoadState('networkidle');
     expect(page.url()).not.toContain('/login');

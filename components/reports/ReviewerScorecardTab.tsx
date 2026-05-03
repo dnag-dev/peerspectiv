@@ -19,7 +19,7 @@ import {
 /* ------------------------------------------------------------------ */
 
 interface ScorecardRow {
-  reviewer_id: string;
+  peer_id: string;
   full_name: string;
   cases_reviewed: number;
   avg_turnaround_days: number | null;
@@ -40,7 +40,7 @@ function todayIso(): string {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function ReviewerScorecardTab() {
+export function PeerScorecardTab() {
   const [periodStart, setPeriodStart] = useState(ytdStart());
   const [periodEnd, setPeriodEnd] = useState(todayIso());
   const [rows, setRows] = useState<ScorecardRow[]>([]);
@@ -208,7 +208,7 @@ export function ReviewerScorecardTab() {
               </TableRow>
             ) : (
               rows.map((r) => (
-                <TableRow key={r.reviewer_id}>
+                <TableRow key={r.peer_id}>
                   <TableCell className="font-medium">{r.full_name}</TableCell>
                   <TableCell className="text-right">{r.cases_reviewed}</TableCell>
                   <TableCell className="text-right">

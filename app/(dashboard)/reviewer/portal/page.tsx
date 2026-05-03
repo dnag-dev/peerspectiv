@@ -14,7 +14,7 @@ export default async function ReviewerPortalPage() {
       orderBy: asc(reviewCases.dueDate),
       with: {
         provider: true,
-        reviewer: true,
+        peer: true,
         company: true,
         aiAnalysis: true,
       },

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { reviewers, reviewResults } from "@/lib/db/schema";
+import { peers, reviewResults } from "@/lib/db/schema";
 import { asc } from "drizzle-orm";
 
 export async function GET() {
@@ -8,20 +8,20 @@ export async function GET() {
     // Fetch reviewers
     const reviewerRows = await db
       .select({
-        id: reviewers.id,
-        full_name: reviewers.fullName,
-        specialty: reviewers.specialty,
-        total_reviews_completed: reviewers.totalReviewsCompleted,
-        ai_agreement_score: reviewers.aiAgreementScore,
-        status: reviewers.status,
+        id: peers.id,
+        full_name: peers.fullName,
+        specialty: peers.specialty,
+        total_reviews_completed: peers.totalReviewsCompleted,
+        ai_agreement_score: peers.aiAgreementScore,
+        status: peers.status,
       })
-      .from(reviewers)
-      .orderBy(asc(reviewers.fullName));
+      .from(peers)
+      .orderBy(asc(peers.fullName));
 
     // Compute average quality_score per reviewer from review_results
     const qualityRows = await db
       .select({
-        reviewer_id: reviewResults.reviewerId,
+        peer_id: reviewResults.peerId,
         quality_score: reviewResults.qualityScore,
       })
       .from(reviewResults);
@@ -29,11 +29,11 @@ export async function GET() {
     // Build a map: reviewer_id -> avg quality_score
     const qualityMap = new Map<string, { sum: number; count: number }>();
     for (const row of qualityRows) {
-      if (row.reviewer_id && row.quality_score != null) {
-        const entry = qualityMap.get(row.reviewer_id) ?? { sum: 0, count: 0 };
+      if (row.peer_id && row.quality_score != null) {
+        const entry = qualityMap.get(row.peer_id) ?? { sum: 0, count: 0 };
         entry.sum += row.quality_score;
         entry.count += 1;
-        qualityMap.set(row.reviewer_id, entry);
+        qualityMap.set(row.peer_id, entry);
       }
     }
 

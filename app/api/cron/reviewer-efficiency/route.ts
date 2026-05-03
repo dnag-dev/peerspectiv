@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const reviewers = await db.execute<{ id: string }>(sql`SELECT id FROM reviewers`);
-    const list = (reviewers as any).rows ?? reviewers;
+    const peers = await db.execute<{ id: string }>(sql`SELECT id FROM reviewers`);
+    const list = (peers as any).rows ?? peers;
 
     let updated = 0;
     let skipped = 0;

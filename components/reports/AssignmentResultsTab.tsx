@@ -31,7 +31,7 @@ import type { Company } from "@/types";
 interface AssignmentRow {
   id: string;
   provider_id: string | null;
-  reviewer_id: string | null;
+  peer_id: string | null;
   provider_name: string;
   mrn_number: string;
   is_pediatric: boolean;
@@ -297,9 +297,9 @@ export function AssignmentResultsTab({ companies }: Props) {
                         )}
                       </TableCell>
                       <TableCell>
-                        {row.reviewer_id ? (
+                        {row.peer_id ? (
                           <Link
-                            href={`/reviewers/${row.reviewer_id}`}
+                            href={`/reviewers/${row.peer_id}`}
                             className="text-brand-navy hover:underline"
                           >
                             {row.reviewer_name}

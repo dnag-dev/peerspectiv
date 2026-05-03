@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { reviewerPayouts } from '@/lib/db/schema';
+import { peerPayouts } from '@/lib/db/schema';
 import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
@@ -28,13 +28,13 @@ export async function POST(request: NextRequest) {
     }
 
     const pending = await db
-      .select({ id: reviewerPayouts.id, amount: reviewerPayouts.amount })
-      .from(reviewerPayouts)
+      .select({ id: peerPayouts.id, amount: peerPayouts.amount })
+      .from(peerPayouts)
       .where(
         and(
-          eq(reviewerPayouts.status, 'pending'),
-          gte(reviewerPayouts.periodStart, period_start),
-          lte(reviewerPayouts.periodEnd, period_end)
+          eq(peerPayouts.status, 'pending'),
+          gte(peerPayouts.periodStart, period_start),
+          lte(peerPayouts.periodEnd, period_end)
         )
       );
 
@@ -49,9 +49,9 @@ export async function POST(request: NextRequest) {
     }
 
     await db
-      .update(reviewerPayouts)
+      .update(peerPayouts)
       .set({ status: 'approved', approvedAt: new Date() })
-      .where(inArray(reviewerPayouts.id, ids));
+      .where(inArray(peerPayouts.id, ids));
 
     return NextResponse.json({
       count: ids.length,

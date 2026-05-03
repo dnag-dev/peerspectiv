@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db, toSnake } from "@/lib/db";
-import { reviewers, reviewCases, reviewResults } from "@/lib/db/schema";
+import { peers, reviewCases, reviewResults } from "@/lib/db/schema";
 import { asc, desc, eq } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,13 +62,13 @@ function initials(name: string | null | undefined) {
 async function getReviewerDetail(id: string) {
   const [reviewerRow] = await db
     .select()
-    .from(reviewers)
-    .where(eq(reviewers.id, id))
+    .from(peers)
+    .where(eq(peers.id, id))
     .limit(1);
   if (!reviewerRow) return null;
 
   const casesRaw = await db.query.reviewCases.findMany({
-    where: eq(reviewCases.reviewerId, id),
+    where: eq(reviewCases.peerId, id),
     orderBy: asc(reviewCases.dueDate),
     columns: {
       id: true,
@@ -86,7 +86,7 @@ async function getReviewerDetail(id: string) {
   });
 
   const resultsRaw = await db.query.reviewResults.findMany({
-    where: eq(reviewResults.reviewerId, id),
+    where: eq(reviewResults.peerId, id),
     orderBy: desc(reviewResults.submittedAt),
     columns: {
       id: true,
@@ -115,9 +115,9 @@ async function getReviewerDetail(id: string) {
     if (snake.case) snake.review_cases = snake.case;
     return snake;
   });
-  const reviewer = toSnake<any>(reviewerRow);
+  const peer = toSnake<any>(reviewerRow);
 
-  return { reviewer, cases, results };
+  return { peer, cases, results };
 }
 
 export default async function ReviewerDetailPage({
@@ -127,7 +127,7 @@ export default async function ReviewerDetailPage({
 }) {
   const data = await getReviewerDetail(params.id);
   if (!data) notFound();
-  const { reviewer, cases, results } = data;
+  const { peer, cases, results } = data;
 
   const activeCases = cases.filter(
     (c: any) => c.status === "assigned" || c.status === "in_progress"
@@ -140,7 +140,7 @@ export default async function ReviewerDetailPage({
   const avgHours = avgMinutes ? (avgMinutes / 60).toFixed(1) : "0";
   const earningsEstimate = completedCount * ESTIMATED_RATE_PER_CASE;
 
-  const availability = reviewer.availability_status || "available";
+  const availability = peer.availability_status || "available";
   const availClass = AVAILABILITY_STYLES[availability] || AVAILABILITY_STYLES.inactive;
 
   return (
@@ -158,37 +158,37 @@ export default async function ReviewerDetailPage({
         <CardContent className="flex items-start justify-between gap-6 pt-6">
           <div className="flex items-start gap-4">
             <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-brand-navy text-lg font-semibold text-white">
-              {initials(reviewer.full_name)}
+              {initials(peer.full_name)}
             </div>
             <div className="space-y-1">
               <h1 className="text-2xl font-bold tracking-tight">
-                {reviewer.full_name || "Unnamed Reviewer"}
+                {peer.full_name || "Unnamed Reviewer"}
               </h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                {reviewer.email && (
+                {peer.email && (
                   <span className="flex items-center gap-1">
                     <Mail className="h-3.5 w-3.5" />
-                    {reviewer.email}
+                    {peer.email}
                   </span>
                 )}
-                {reviewer.specialty && (
+                {peer.specialty && (
                   <span className="flex items-center gap-1">
                     <Stethoscope className="h-3.5 w-3.5" />
-                    {reviewer.specialty}
+                    {peer.specialty}
                   </span>
                 )}
-                {reviewer.board_certification && (
-                  <span>Board: {reviewer.board_certification}</span>
+                {peer.board_certification && (
+                  <span>Board: {peer.board_certification}</span>
                 )}
               </div>
               <div className="flex items-center gap-2 pt-2">
                 <Badge className={cn("border-0", availClass)}>
                   {availability.replace("_", " ")}
                 </Badge>
-                {availability !== "available" && reviewer.unavailable_until && (
+                {availability !== "available" && peer.unavailable_until && (
                   <span className="text-xs text-muted-foreground">
-                    Returns {formatDate(reviewer.unavailable_until)}
-                    {reviewer.unavailable_reason && ` · ${reviewer.unavailable_reason}`}
+                    Returns {formatDate(peer.unavailable_until)}
+                    {peer.unavailable_reason && ` · ${peer.unavailable_reason}`}
                   </span>
                 )}
               </div>
@@ -393,16 +393,16 @@ export default async function ReviewerDetailPage({
 
       {/* Aautipay Onboarding */}
       <ReviewerOnboardCard
-        reviewerId={reviewer.id}
-        paymentReady={reviewer.payment_ready ?? false}
-        beneficiaryStatus={reviewer.aautipay_beneficiary_status ?? null}
-        bankStatus={reviewer.aautipay_bank_status ?? null}
-        w9Status={reviewer.w9_status ?? null}
+        peerId={peer.id}
+        paymentReady={peer.payment_ready ?? false}
+        beneficiaryStatus={peer.aautipay_beneficiary_status ?? null}
+        bankStatus={peer.aautipay_bank_status ?? null}
+        w9Status={peer.w9_status ?? null}
         defaults={{
-          firstName: reviewer.full_name?.split(" ")[0] ?? null,
+          firstName: peer.full_name?.split(" ")[0] ?? null,
           lastName:
-            reviewer.full_name?.split(" ").slice(1).join(" ") ?? null,
-          email: reviewer.email ?? null,
+            peer.full_name?.split(" ").slice(1).join(" ") ?? null,
+          email: peer.email ?? null,
         }}
       />
 
@@ -418,15 +418,15 @@ export default async function ReviewerDetailPage({
           <CardContent className="space-y-1 text-sm">
             <div>
               <span className="text-muted-foreground">Reason: </span>
-              {reviewer.unavailable_reason || "—"}
+              {peer.unavailable_reason || "—"}
             </div>
             <div>
               <span className="text-muted-foreground">From: </span>
-              {formatDate(reviewer.unavailable_from)}
+              {formatDate(peer.unavailable_from)}
             </div>
             <div>
               <span className="text-muted-foreground">Until: </span>
-              {formatDate(reviewer.unavailable_until)}
+              {formatDate(peer.unavailable_until)}
             </div>
           </CardContent>
         </Card>

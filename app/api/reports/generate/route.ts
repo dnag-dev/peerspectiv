@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
         filters,
         savedReportId,
         invoiceId,
-        reviewerId,
+        peerId,
         period,
         signedByName,
         signedByTitle,
@@ -152,16 +152,16 @@ export async function POST(request: NextRequest) {
             break;
           }
           case 'peer_earnings_summary': {
-            if (!reviewerId || !rangeStart || !rangeEnd) {
+            if (!peerId || !rangeStart || !rangeEnd) {
               throw new Error('reviewerId, rangeStart, rangeEnd required');
             }
             const data = await fetchPeerEarningsSummaryData({
-              reviewerId,
+              peerId,
               rangeStart,
               rangeEnd,
             });
             pdfBuffer = await renderPdfToBuffer(PeerEarningsSummaryPdf({ data }) as any);
-            filename = `peer-earnings-${reviewerId}-${rangeStart}-${rangeEnd}.pdf`;
+            filename = `peer-earnings-${peerId}-${rangeStart}-${rangeEnd}.pdf`;
             break;
           }
           default:

@@ -61,7 +61,7 @@ export interface ReviewerLicenseInfo {
 
 interface ReviewFormProps {
   caseId: string;
-  reviewerId: string;
+  peerId: string;
   formFields: FormField[];
   aiPrefills?: Record<string, AIPrefill>;
   onSubmit?: (data: ReviewFormSubmitData) => Promise<void>;
@@ -119,7 +119,7 @@ function valuesEqual(a: unknown, b: unknown): boolean {
 
 export function ReviewForm({
   caseId,
-  reviewerId,
+  peerId,
   formFields,
   aiPrefills = {},
   onSubmit,
@@ -836,7 +836,7 @@ export function ReviewForm({
       <div className="sticky bottom-4 relative z-30 rounded-xl border border-ink-200 bg-paper-surface/95 p-4 shadow-sm backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <div className="text-code text-ink-500">
-            Case: {caseId.slice(0, 8)}… · Reviewer: {reviewerId.slice(0, 8)}…
+            Case: {caseId.slice(0, 8)}… · Reviewer: {peerId.slice(0, 8)}…
           </div>
           <button
             type="submit"

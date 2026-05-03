@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 export interface ReassignmentRow {
   id: string;
   caseId: string;
-  reviewerId: string | null;
+  peerId: string | null;
   reason: string;
   createdAt: string | null;
   specialty: string | null;
@@ -170,7 +170,7 @@ export function ReassignmentsList({ rows }: Props) {
           open={!!pickerOpen}
           onOpenChange={(o) => setPickerOpen(o ? pickerOpen : null)}
           specialty={currentPickerRow.specialty}
-          currentReviewerId={currentPickerRow.reviewerId ?? null}
+          currentReviewerId={currentPickerRow.peerId ?? null}
           onPick={(newReviewerId) =>
             handlePick(currentPickerRow.id, newReviewerId)
           }

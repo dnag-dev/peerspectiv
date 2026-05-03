@@ -1,6 +1,6 @@
 import { callClaude } from './anthropic';
 import { db } from '@/lib/db';
-import { reviewCases, reviewers, providers, companies } from '@/lib/db/schema';
+import { reviewCases, peers, providers, companies } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import type { AssignmentResult } from '@/types';
 
@@ -73,19 +73,19 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
   // capacity/credential in JS so we can also build the unassignable reasons.
   const reviewersRaw = await db
     .select({
-      id: reviewers.id,
-      full_name: reviewers.fullName,
-      specialty: reviewers.specialty,
-      specialties: reviewers.specialties,
-      active_cases_count: reviewers.activeCasesCount,
-      max_case_load: reviewers.maxCaseLoad,
-      avg_minutes_per_chart: reviewers.avgMinutesPerChart,
-      total_reviews_completed: reviewers.totalReviewsCompleted,
-      board_certification: reviewers.boardCertification,
-      credential_valid_until: reviewers.credentialValidUntil,
+      id: peers.id,
+      full_name: peers.fullName,
+      specialty: peers.specialty,
+      specialties: peers.specialties,
+      active_cases_count: peers.activeCasesCount,
+      max_case_load: peers.maxCaseLoad,
+      avg_minutes_per_chart: peers.avgMinutesPerChart,
+      total_reviews_completed: peers.totalReviewsCompleted,
+      board_certification: peers.boardCertification,
+      credential_valid_until: peers.credentialValidUntil,
     })
-    .from(reviewers)
-    .where(and(eq(reviewers.status, 'active'), eq(reviewers.availabilityStatus, 'available')));
+    .from(peers)
+    .where(and(eq(peers.status, 'active'), eq(peers.availabilityStatus, 'available')));
 
   const allReviewers = reviewersRaw as ReviewerRow[];
   const today = new Date().toISOString().slice(0, 10);
@@ -190,7 +190,7 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
     await db
       .update(reviewCases)
       .set({
-        reviewerId: assignment.reviewer_id,
+        peerId: assignment.peer_id,
         status: 'pending_approval',
         updatedAt: new Date(),
       })
@@ -216,23 +216,23 @@ export async function approveAssignment(caseId: string): Promise<void> {
 
   // Increment reviewer active cases
   const [caseData] = await db
-    .select({ reviewerId: reviewCases.reviewerId })
+    .select({ peerId: reviewCases.peerId })
     .from(reviewCases)
     .where(eq(reviewCases.id, caseId))
     .limit(1);
 
-  if (caseData?.reviewerId) {
+  if (caseData?.peerId) {
     const [reviewerData] = await db
-      .select({ activeCasesCount: reviewers.activeCasesCount })
-      .from(reviewers)
-      .where(eq(reviewers.id, caseData.reviewerId))
+      .select({ activeCasesCount: peers.activeCasesCount })
+      .from(peers)
+      .where(eq(peers.id, caseData.peerId))
       .limit(1);
 
     if (reviewerData) {
       await db
-        .update(reviewers)
+        .update(peers)
         .set({ activeCasesCount: (reviewerData.activeCasesCount || 0) + 1 })
-        .where(eq(reviewers.id, caseData.reviewerId));
+        .where(eq(peers.id, caseData.peerId));
     }
   }
 }

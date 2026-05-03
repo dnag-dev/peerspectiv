@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     if (case_id && reassign_to) {
       await db
         .update(reviewCases)
-        .set({ reviewerId: reassign_to, updatedAt: new Date() })
+        .set({ peerId: reassign_to, updatedAt: new Date() })
         .where(eq(reviewCases.id, case_id));
     }
     // Optional form override: record which company-approved form applies.
@@ -47,15 +47,15 @@ export async function POST(request: NextRequest) {
       const assignedCases = await db.query.reviewCases.findMany({
         where: and(eq(reviewCases.batchId, batch_id), eq(reviewCases.status, 'assigned')),
         columns: { id: true, specialtyRequired: true, dueDate: true },
-        with: { reviewer: { columns: { fullName: true, email: true } } },
+        with: { peer: { columns: { fullName: true, email: true } } },
       });
 
       for (const c of assignedCases) {
-        const reviewer = c.reviewer;
-        if (reviewer?.email) {
+        const peer = c.reviewer;
+        if (peer?.email) {
           sendReviewerAssignment({
-            reviewerEmail: reviewer.email,
-            reviewerName: reviewer.fullName ?? '',
+            reviewerEmail: peer.email,
+            reviewerName: peer.fullName ?? '',
             caseId: c.id,
             specialty: c.specialtyRequired || 'General',
             dueDate: c.dueDate ? new Date(c.dueDate).toLocaleDateString() : 'TBD',
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       const caseData = await db.query.reviewCases.findFirst({
         where: eq(reviewCases.id, case_id),
         columns: { id: true, batchId: true, specialtyRequired: true, dueDate: true },
-        with: { reviewer: { columns: { fullName: true, email: true } } },
+        with: { peer: { columns: { fullName: true, email: true } } },
       });
 
       // Recalculate projected completion for this case's batch
@@ -131,11 +131,11 @@ export async function POST(request: NextRequest) {
       }
 
       if (caseData) {
-        const reviewer = caseData.reviewer;
-        if (reviewer?.email) {
+        const peer = caseData.reviewer;
+        if (peer?.email) {
           sendReviewerAssignment({
-            reviewerEmail: reviewer.email,
-            reviewerName: reviewer.fullName ?? '',
+            reviewerEmail: peer.email,
+            reviewerName: peer.fullName ?? '',
             caseId: case_id,
             specialty: caseData.specialtyRequired || 'General',
             dueDate: caseData.dueDate ? new Date(caseData.dueDate).toLocaleDateString() : 'TBD',

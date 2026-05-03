@@ -14,22 +14,22 @@ export interface AssignedRow {
   batch_id: string | null;
   batch_name: string | null;
   provider: { id: string; first_name: string | null; last_name: string | null; specialty: string | null } | null;
-  reviewer: { id: string; full_name: string | null } | null;
+  peer: { id: string; full_name: string | null } | null;
   company: { id: string; name: string | null } | null;
 }
 
 interface Props {
   rows: AssignedRow[];
   companies: { id: string; name: string }[];
-  reviewers: { id: string; full_name: string }[];
+  peers: { id: string; full_name: string }[];
   specialties: string[];
 }
 
-export function AssignedTab({ rows, companies, reviewers, specialties }: Props) {
+export function AssignedTab({ rows, companies, peers, specialties }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [companyId, setCompanyId] = useState<string>("");
-  const [reviewerId, setReviewerId] = useState<string>("");
+  const [peerId, setReviewerId] = useState<string>("");
   const [specialty, setSpecialty] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState<string>("");
@@ -40,14 +40,14 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
     const q = search.trim().toLowerCase();
     return rows.filter((r) => {
       if (companyId && r.company?.id !== companyId) return false;
-      if (reviewerId && r.reviewer?.id !== reviewerId) return false;
+      if (peerId && r.peer?.id !== peerId) return false;
       if (specialty && (r.specialty_required ?? r.provider?.specialty) !== specialty) return false;
       if (statusFilter !== "all" && r.status !== statusFilter) return false;
       if (q) {
         const blob = [
           r.provider?.first_name,
           r.provider?.last_name,
-          r.reviewer?.full_name,
+          r.peer?.full_name,
           r.company?.name,
           r.batch_name,
           r.specialty_required,
@@ -59,7 +59,7 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
       }
       return true;
     });
-  }, [rows, companyId, reviewerId, specialty, statusFilter, search]);
+  }, [rows, companyId, peerId, specialty, statusFilter, search]);
 
   async function handleReassign(caseId: string, newReviewerId: string) {
     setReassigning((p) => new Set(p).add(caseId));
@@ -111,12 +111,12 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
           ))}
         </select>
         <select
-          value={reviewerId}
+          value={peerId}
           onChange={(e) => setReviewerId(e.target.value)}
           className="rounded-md border border-ink-200 bg-paper-surface py-1.5 px-2 text-sm focus:border-cobalt-600 focus:outline-none"
         >
           <option value="">All reviewers</option>
-          {reviewers.map((r) => (
+          {peers.map((r) => (
             <option key={r.id} value={r.id}>
               {r.full_name}
             </option>
@@ -186,7 +186,7 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
                         <div className="text-[11px] text-ink-500">{r.company.name}</div>
                       )}
                     </Td>
-                    <Td>{r.reviewer?.full_name ?? "—"}</Td>
+                    <Td>{r.peer?.full_name ?? "—"}</Td>
                     <Td>{specLabel}</Td>
                     <Td>
                       <StatusPill status={r.status} />
@@ -237,7 +237,7 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
             currentPickerCase.provider?.specialty ??
             null
           }
-          currentReviewerId={currentPickerCase.reviewer?.id ?? null}
+          currentReviewerId={currentPickerCase.peer?.id ?? null}
           onPick={(newReviewerId) => handleReassign(currentPickerCase.id, newReviewerId)}
           title="Reassign reviewer"
         />

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { reviewers, aautipayEvents } from '@/lib/db/schema';
+import { peers, aautipayEvents } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { aautipay, type CreateCustomerInput } from '@/lib/aautipay/client';
 
@@ -40,7 +40,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: reviewerId } = await params;
+  const { id: peerId } = await params;
   let body: OnboardBody;
   try {
     body = (await req.json()) as OnboardBody;
@@ -68,7 +68,7 @@ export async function POST(
     .insert(aautipayEvents)
     .values({
       eventType: 'reviewer_onboard_request',
-      externalId: reviewerId,
+      externalId: peerId,
       rawPayload: body as unknown as object,
       status: 'received',
     })
@@ -81,7 +81,7 @@ export async function POST(
     business_type: 'individual',
     personal_info: [
       {
-        customer_id: reviewerId,
+        customer_id: peerId,
         first_name: body.first_name,
         last_name: body.last_name,
         email: body.email,
@@ -99,7 +99,7 @@ export async function POST(
     ],
     bank_info: {
       bank_name: body.bank_name,
-      customer_bank_id: `${reviewerId}-bank`,
+      customer_bank_id: `${peerId}-bank`,
       name: body.account_holder_name ?? `${body.first_name} ${body.last_name}`,
       account_number: body.account_number,
       bank_code: body.bank_code,
@@ -126,7 +126,7 @@ export async function POST(
     const bankStatus = result?.data?.bank_status ?? 'pending';
 
     await db
-      .update(reviewers)
+      .update(peers)
       .set({
         aautipayBeneficiaryId: beneficiaryId,
         aautipayBeneficiaryStatus: beneficiaryStatus,
@@ -135,7 +135,7 @@ export async function POST(
         w9Status: 'collected',
         // paymentReady stays false until Aautipay webhook confirms verified
       })
-      .where(eq(reviewers.id, reviewerId));
+      .where(eq(peers.id, peerId));
 
     await db
       .update(aautipayEvents)
@@ -158,9 +158,9 @@ export async function POST(
     // Mark KYC as collected internally so admin knows we have the data
     // even though Aautipay didn't accept it. paymentReady stays false.
     await db
-      .update(reviewers)
+      .update(peers)
       .set({ w9Status: 'collected_pending_aautipay' })
-      .where(eq(reviewers.id, reviewerId));
+      .where(eq(peers.id, peerId));
 
     await db
       .update(aautipayEvents)

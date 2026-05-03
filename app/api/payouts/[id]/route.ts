@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, toSnake } from '@/lib/db';
-import { reviewers, reviewerPayouts, aautipayEvents } from '@/lib/db/schema';
+import { peers, peerPayouts, aautipayEvents } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { aautipay } from '@/lib/aautipay/client';
 
@@ -40,17 +40,17 @@ export async function PATCH(
     let payout;
     try {
       [payout] = await db
-        .update(reviewerPayouts)
+        .update(peerPayouts)
         .set(update)
-        .where(eq(reviewerPayouts.id, id))
+        .where(eq(peerPayouts.id, id))
         .returning({
-          id: reviewerPayouts.id,
-          reviewer_id: reviewerPayouts.reviewerId,
-          amount: reviewerPayouts.amount,
-          status: reviewerPayouts.status,
-          period_start: reviewerPayouts.periodStart,
-          period_end: reviewerPayouts.periodEnd,
-          aautipay_payout_id: reviewerPayouts.aautipayPayoutId,
+          id: peerPayouts.id,
+          peer_id: peerPayouts.peerId,
+          amount: peerPayouts.amount,
+          status: peerPayouts.status,
+          period_start: peerPayouts.periodStart,
+          period_end: peerPayouts.periodEnd,
+          aautipay_payout_id: peerPayouts.aautipayPayoutId,
         });
     } catch (err) {
       console.error('[payouts] patch error:', err);
@@ -67,19 +67,19 @@ export async function PATCH(
     let aautipayMessage: string | null = null;
 
     if (status === 'approved' && !payout.aautipay_payout_id) {
-      const [reviewer] = await db
+      const [peer] = await db
         .select({
-          full_name: reviewers.fullName,
-          email: reviewers.email,
-          payment_ready: reviewers.paymentReady,
-          aautipay_beneficiary_id: reviewers.aautipayBeneficiaryId,
-          aautipay_bank_account_id: reviewers.aautipayBankAccountId,
+          full_name: peers.fullName,
+          email: peers.email,
+          payment_ready: peers.paymentReady,
+          aautipay_beneficiary_id: peers.aautipayBeneficiaryId,
+          aautipay_bank_account_id: peers.aautipayBankAccountId,
         })
-        .from(reviewers)
-        .where(eq(reviewers.id, payout.reviewer_id))
+        .from(peers)
+        .where(eq(peers.id, payout.peer_id))
         .limit(1);
 
-      if (!reviewer?.payment_ready) {
+      if (!peer?.payment_ready) {
         // No Aautipay attempt — reviewer hasn't completed onboarding.
         aautipayResult = 'skipped';
         aautipayMessage =
@@ -91,8 +91,8 @@ export async function PATCH(
             customer_payout_id: payout.id,
             amount: Number(payout.amount),
             payout_reason: `Peerspectiv reviewer payout ${payout.period_start} → ${payout.period_end}`,
-            beneficiary_id: reviewer.aautipay_beneficiary_id ?? '',
-            destination_id: reviewer.aautipay_bank_account_id ?? '',
+            beneficiary_id: peer.aautipay_beneficiary_id ?? '',
+            destination_id: peer.aautipay_bank_account_id ?? '',
             country_code: 'US',
             currency: 'USD',
           })) as {
@@ -104,13 +104,13 @@ export async function PATCH(
           const externalStatus = result?.data?.status ?? 'submitted';
 
           await db
-            .update(reviewerPayouts)
+            .update(peerPayouts)
             .set({
               aautipayPayoutId: externalPayoutId,
               aautipayPayoutStatus: externalStatus,
               externalPayoutInitiatedAt: new Date(),
             })
-            .where(eq(reviewerPayouts.id, payout.id));
+            .where(eq(peerPayouts.id, payout.id));
 
           await db.insert(aautipayEvents).values({
             eventType: 'payout',
@@ -126,12 +126,12 @@ export async function PATCH(
           console.error('[payouts] Aautipay createPayoutApproval failed:', message);
 
           await db
-            .update(reviewerPayouts)
+            .update(peerPayouts)
             .set({
               externalFailReason: message,
               externalPayoutInitiatedAt: new Date(),
             })
-            .where(eq(reviewerPayouts.id, payout.id));
+            .where(eq(peerPayouts.id, payout.id));
 
           await db.insert(aautipayEvents).values({
             eventType: 'payout',

@@ -19,13 +19,13 @@ import { PDFUploader } from "@/components/batches/PDFUploader";
 import { BatchFormSection } from "@/components/batches/BatchFormSection";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, FileStack, Calendar, Building2, Hash } from "lucide-react";
-import type { Batch, ReviewCase, Provider, Reviewer } from "@/types";
+import type { Batch, ReviewCase, Provider, Peer } from "@/types";
 
 export const dynamic = 'force-dynamic';
 
 interface CaseWithRelations extends Omit<ReviewCase, 'provider' | 'reviewer'> {
   provider?: Provider | null;
-  reviewer?: Reviewer | null;
+  peer?: Peer | null;
 }
 
 interface BatchDetail extends Batch {
@@ -90,7 +90,7 @@ async function getBatchDetail(id: string): Promise<BatchDetail | null> {
     orderBy: asc(reviewCases.createdAt),
     with: {
       provider: { columns: { id: true, firstName: true, lastName: true, specialty: true } },
-      reviewer: { columns: { id: true, fullName: true, email: true, specialty: true } },
+      peer: { columns: { id: true, fullName: true, email: true, specialty: true } },
     },
   });
 
@@ -246,8 +246,8 @@ export default async function BatchDetailPage({
                         "-"}
                     </TableCell>
                     <TableCell>
-                      {reviewCase.reviewer ? (
-                        <span>{reviewCase.reviewer.full_name}</span>
+                      {reviewCase.peer ? (
+                        <span>{reviewCase.peer.full_name}</span>
                       ) : (
                         <span className="text-muted-foreground italic">Unassigned</span>
                       )}

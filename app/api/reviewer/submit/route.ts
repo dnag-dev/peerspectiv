@@ -7,7 +7,7 @@ import {
   retentionSchedule,
   reviewResults,
   reviewCases,
-  reviewers,
+  peers,
   batches,
   aiAnalyses,
   correctiveActions,
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     const [caseData] = await db
       .select({
         id: reviewCases.id,
-        reviewerId: reviewCases.reviewerId,
+        peerId: reviewCases.peerId,
         status: reviewCases.status,
       })
       .from(reviewCases)
@@ -153,11 +153,11 @@ export async function POST(request: NextRequest) {
 
     // Resolve reviewer full name for the snapshot
     let reviewerNameSnapshot: string | null = null;
-    if (caseData.reviewerId) {
+    if (caseData.peerId) {
       const [reviewerRow] = await db
-        .select({ fullName: reviewers.fullName })
-        .from(reviewers)
-        .where(eq(reviewers.id, caseData.reviewerId))
+        .select({ fullName: peers.fullName })
+        .from(peers)
+        .where(eq(peers.id, caseData.peerId))
         .limit(1);
       reviewerNameSnapshot = reviewerRow?.fullName ?? null;
     }
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
       .insert(reviewResults)
       .values({
         caseId: case_id,
-        reviewerId: caseData.reviewerId,
+        peerId: caseData.peerId,
         criteriaScores: criteria_scores,
         deficiencies: deficienciesArr,
         overallScore: overall_score,
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
       .onConflictDoUpdate({
         target: reviewResults.caseId,
         set: {
-          reviewerId: caseData.reviewerId,
+          peerId: caseData.peerId,
           criteriaScores: criteria_scores,
           deficiencies: deficienciesArr,
           overallScore: overall_score,
@@ -283,21 +283,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Decrement reviewer active_cases_count
-    if (caseData.reviewerId) {
-      const [reviewer] = await db
-        .select({ activeCasesCount: reviewers.activeCasesCount })
-        .from(reviewers)
-        .where(eq(reviewers.id, caseData.reviewerId))
+    if (caseData.peerId) {
+      const [peer] = await db
+        .select({ activeCasesCount: peers.activeCasesCount })
+        .from(peers)
+        .where(eq(peers.id, caseData.peerId))
         .limit(1);
 
-      if (reviewer) {
+      if (peer) {
         await db
-          .update(reviewers)
+          .update(peers)
           .set({
-            activeCasesCount: Math.max(0, (reviewer.activeCasesCount || 0) - 1),
+            activeCasesCount: Math.max(0, (peer.activeCasesCount || 0) - 1),
             updatedAt: new Date(),
           })
-          .where(eq(reviewers.id, caseData.reviewerId));
+          .where(eq(peers.id, caseData.peerId));
       }
     }
 

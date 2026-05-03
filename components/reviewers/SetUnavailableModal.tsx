@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 interface Props {
   open: boolean;
   onClose: () => void;
-  reviewerId: string;
+  peerId: string;
   reviewerName: string;
   onSuccess: (status: string) => void;
 }
@@ -24,7 +24,7 @@ const REASONS = [
   { value: 'other', label: 'Other' },
 ];
 
-export function SetUnavailableModal({ open, onClose, reviewerId, reviewerName, onSuccess }: Props) {
+export function SetUnavailableModal({ open, onClose, peerId, reviewerName, onSuccess }: Props) {
   const [reason, setReason] = useState('vacation');
   const [fromDate, setFromDate] = useState('');
   const [untilDate, setUntilDate] = useState('');
@@ -43,7 +43,7 @@ export function SetUnavailableModal({ open, onClose, reviewerId, reviewerName, o
     };
 
     try {
-      const res = await fetch(`/api/reviewers/${reviewerId}/availability`, {
+      const res = await fetch(`/api/reviewers/${peerId}/availability`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
