@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db, toSnake } from "@/lib/db";
+import { reviewCases as reviewCasesTable, auditLogs as auditLogsTable } from "@/lib/db/schema";
+import { desc, eq } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -73,61 +75,52 @@ function formatDateTime(dateStr: string) {
 }
 
 async function getCaseDetail(id: string): Promise<CaseDetail | null> {
-  const { data, error } = await supabaseAdmin
-    .from("review_cases")
-    .select(
-      `
-      *,
-      provider:providers(id, first_name, last_name, specialty, npi, email),
-      reviewer:reviewers(id, full_name, email, specialty, board_certification, active_cases_count, total_reviews_completed, ai_agreement_score, status),
-      company:companies(id, name, contact_person, contact_email),
-      batch:batches(id, batch_name, status),
-      ai_analysis:ai_analyses(
-        id, chart_summary, criteria_scores, deficiencies,
-        overall_score, documentation_score,
-        clinical_appropriateness_score, care_coordination_score,
-        narrative_draft, model_used, processing_time_ms, tokens_used, created_at
-      ),
-      review_result:review_results(
-        id, criteria_scores, deficiencies, overall_score,
-        narrative_final, ai_agreement_percentage, reviewer_changes,
-        quality_score, quality_notes, submitted_at, time_spent_minutes
-      )
-    `
-    )
-    .eq("id", id)
-    .single();
+  const data = await db.query.reviewCases.findFirst({
+    where: eq(reviewCasesTable.id, id),
+    with: {
+      provider: { columns: { id: true, firstName: true, lastName: true, specialty: true, npi: true, email: true } },
+      reviewer: { columns: { id: true, fullName: true, email: true, specialty: true, boardCertification: true, activeCasesCount: true, totalReviewsCompleted: true, aiAgreementScore: true, status: true } },
+      company: { columns: { id: true, name: true, contactPerson: true, contactEmail: true } },
+      batch: { columns: { id: true, batchName: true, status: true } },
+      aiAnalysis: {
+        columns: {
+          id: true, chartSummary: true, criteriaScores: true, deficiencies: true,
+          overallScore: true, documentationScore: true,
+          clinicalAppropriatenessScore: true, careCoordinationScore: true,
+          narrativeDraft: true, modelUsed: true, processingTimeMs: true, tokensUsed: true, createdAt: true,
+        },
+      },
+      reviewResult: {
+        columns: {
+          id: true, criteriaScores: true, deficiencies: true, overallScore: true,
+          narrativeFinal: true, aiAgreementPercentage: true, reviewerChanges: true,
+          qualityScore: true, qualityNotes: true, submittedAt: true, timeSpentMinutes: true,
+        },
+      },
+    },
+  });
 
-  if (error || !data) return null;
+  if (!data) return null;
 
-  // Supabase returns arrays for one-to-many; pick first element for one-to-one relations
-  const aiAnalysisRaw = data.ai_analysis;
-  const reviewResultRaw = data.review_result;
-
+  const snake = toSnake<any>(data);
+  // Drizzle relational query exposes the one-to-one as `case`/`reviewResult`.
+  // Snake-case yields `review_result` and `ai_analysis` automatically.
   return {
-    ...data,
-    provider: data.provider as unknown as Provider | null,
-    reviewer: data.reviewer as unknown as Reviewer | null,
-    company: data.company as unknown as Company | null,
-    batch: data.batch as unknown as Batch | null,
-    ai_analysis: Array.isArray(aiAnalysisRaw)
-      ? (aiAnalysisRaw[0] as AIAnalysis) ?? null
-      : (aiAnalysisRaw as unknown as AIAnalysis | null),
-    review_result: Array.isArray(reviewResultRaw)
-      ? (reviewResultRaw[0] as ReviewResult) ?? null
-      : (reviewResultRaw as unknown as ReviewResult | null),
+    ...snake,
+    ai_analysis: snake.ai_analysis ?? null,
+    review_result: snake.review_result ?? null,
   } as CaseDetail;
 }
 
 async function getAuditLogs(caseId: string): Promise<AuditLog[]> {
-  const { data } = await supabaseAdmin
-    .from("audit_logs")
-    .select("*")
-    .eq("resource_id", caseId)
-    .order("created_at", { ascending: false })
+  const data = await db
+    .select()
+    .from(auditLogsTable)
+    .where(eq(auditLogsTable.resourceId, caseId))
+    .orderBy(desc(auditLogsTable.createdAt))
     .limit(50);
 
-  return (data || []) as AuditLog[];
+  return data.map((d) => toSnake(d)) as AuditLog[];
 }
 
 export default async function CaseDetailPage({

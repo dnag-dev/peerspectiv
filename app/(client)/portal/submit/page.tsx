@@ -1,7 +1,6 @@
 import { db } from "@/lib/db";
-import { companies, providers } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { query } from "@/lib/supabase/server";
+import { companies, providers, companyForms } from "@/lib/db/schema";
+import { and, asc, eq } from "drizzle-orm";
 import { ClientSubmitWizard } from "@/components/portal/ClientSubmitWizard";
 
 export const dynamic = "force-dynamic";
@@ -31,17 +30,15 @@ async function getCompanyContext() {
     .from(providers)
     .where(eq(providers.companyId, company.id));
 
-  const forms = await query<{
-    id: string;
-    specialty: string;
-    form_name: string;
-  }>(
-    `SELECT id, specialty, form_name
-     FROM company_forms
-     WHERE company_id = $1 AND is_active = true
-     ORDER BY specialty ASC`,
-    [company.id]
-  );
+  const forms = await db
+    .select({
+      id: companyForms.id,
+      specialty: companyForms.specialty,
+      form_name: companyForms.formName,
+    })
+    .from(companyForms)
+    .where(and(eq(companyForms.companyId, company.id), eq(companyForms.isActive, true)))
+    .orderBy(asc(companyForms.specialty));
 
   return {
     company: { id: company.id as string, name: company.name as string },

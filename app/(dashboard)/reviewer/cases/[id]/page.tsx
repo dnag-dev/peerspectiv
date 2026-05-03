@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { query } from "@/lib/supabase/server";
 import {
   reviewCases,
   aiAnalyses,
@@ -9,8 +8,9 @@ import {
   batches,
   reviewers,
   reviewResults,
+  companyForms,
 } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { ReviewerCaseSplit } from "@/components/reviewer/ReviewerCaseSplit";
 import { RequestReassignmentButton } from "@/components/reviewer/RequestReassignmentButton";
 import { auth } from "@clerk/nextjs/server";
@@ -54,11 +54,14 @@ async function resolveReviewerId(): Promise<string | null> {
     try {
       const { userId } = await auth();
       if (userId) {
-        const rows = await query<{ id: string }>(
-          "SELECT id FROM reviewers WHERE email = (SELECT email FROM user_profiles WHERE clerk_user_id = $1 LIMIT 1) LIMIT 1",
-          [userId]
-        ).catch(() => []);
-        if (rows[0]?.id) return rows[0].id;
+        // user_profiles isn't modeled in the Drizzle schema — use raw SQL.
+        const rows = await db
+          .execute<{ id: string }>(
+            sql`SELECT id FROM reviewers WHERE email = (SELECT email FROM user_profiles WHERE clerk_user_id = ${userId} LIMIT 1) LIMIT 1`
+          )
+          .catch(() => ({ rows: [] as { id: string }[] }) as any);
+        const list = (rows as any).rows ?? rows;
+        if (list[0]?.id) return list[0].id as string;
       }
     } catch {
       // fall through to demo
@@ -76,10 +79,11 @@ async function loadFormFields(
   // Prefer the company-approved form (company_forms.form_fields jsonb)
   if (companyFormId) {
     try {
-      const rows = await query<{ form_fields: unknown }>(
-        `SELECT form_fields FROM company_forms WHERE id = $1 LIMIT 1`,
-        [companyFormId]
-      );
+      const rows = await db
+        .select({ form_fields: companyForms.formFields })
+        .from(companyForms)
+        .where(eq(companyForms.id, companyFormId))
+        .limit(1);
       const fields = rows[0]?.form_fields;
       if (Array.isArray(fields) && fields.length > 0) {
         return (fields as Array<{
@@ -115,20 +119,25 @@ async function loadFormFields(
 
   // Legacy fallback: global form_fields table filtered by specialty
   try {
-    const rows = await query<{
+    const result = await db.execute<{
       id: string;
       field_key: string;
       field_label: string;
       field_type: string;
       is_required: boolean;
       display_order: number;
-    }>(
-      `SELECT id, field_key, field_label, field_type, is_required, display_order
+    }>(sql`SELECT id, field_key, field_label, field_type, is_required, display_order
        FROM form_fields
-       WHERE ($1::text IS NULL OR specialty = $1 OR specialty IS NULL)
-       ORDER BY display_order ASC`,
-      [specialty]
-    );
+       WHERE (${specialty}::text IS NULL OR specialty = ${specialty} OR specialty IS NULL)
+       ORDER BY display_order ASC`);
+    const rows = ((result as any).rows ?? result) as Array<{
+      id: string;
+      field_key: string;
+      field_label: string;
+      field_type: string;
+      is_required: boolean;
+      display_order: number;
+    }>;
     return rows.map((r) => ({
       id: r.id,
       fieldKey: r.field_key,
@@ -232,10 +241,11 @@ export async function renderReviewerCaseDetail(caseId: string) {
   let allowAiNarrative = false;
   if (companyFormId) {
     try {
-      const flagRows = await query<{ allow_ai_generated_recommendations: boolean | null }>(
-        `SELECT allow_ai_generated_recommendations FROM company_forms WHERE id = $1 LIMIT 1`,
-        [companyFormId]
-      );
+      const flagRows = await db
+        .select({ allow_ai_generated_recommendations: companyForms.allowAiGeneratedRecommendations })
+        .from(companyForms)
+        .where(eq(companyForms.id, companyFormId))
+        .limit(1);
       allowAiNarrative = !!flagRows[0]?.allow_ai_generated_recommendations;
     } catch {
       // default false
