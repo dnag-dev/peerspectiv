@@ -22,6 +22,10 @@ export interface FormField {
   defaultValue?: "yes" | "no" | "na" | null;
   requiredTextOnNonDefault?: boolean;
   opsTerm?: string | null;
+  // Phase 6.2 — per-question form default (rendered as a low-confidence
+  // "default" badge when AI has no prefill for this field).
+  defaultAnswer?: "yes" | "no" | "A" | "B" | "C" | null;
+  isCritical?: boolean;
 }
 
 export type Confidence = "high" | "medium" | "low";
@@ -190,15 +194,51 @@ export function ReviewForm({
     [formFields]
   );
 
+  // Phase 6.2 — prefill priority: AI value (when present) → form default_answer
+  // → empty. The "source" map drives a per-field badge ("AI" / "default" / "").
+  function defaultAnswerToValue(
+    f: FormField
+  ): unknown {
+    const da = f.defaultAnswer;
+    if (!da) return undefined;
+    if (f.fieldType === "yes_no") {
+      if (da === "yes") return true;
+      if (da === "no") return false;
+    }
+    // For A/B/C scoring (rendered as field_type yes_no in the UI today) we
+    // just stash the letter as the value — peer can flip it.
+    if (da === "A" || da === "B" || da === "C") return da;
+    return undefined;
+  }
+
+  const initialSources = useMemo(() => {
+    const out: Record<string, "ai" | "default" | "empty"> = {};
+    for (const f of sortedFields) {
+      if (aiPrefills[f.fieldKey] !== undefined) out[f.fieldKey] = "ai";
+      else if (defaultAnswerToValue(f) !== undefined) out[f.fieldKey] = "default";
+      else out[f.fieldKey] = "empty";
+    }
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortedFields, aiPrefills]);
+
   const [state, setState] = useState<Record<string, FieldState>>(() => {
     const s: Record<string, FieldState> = {};
     for (const f of sortedFields) {
       const prefill = aiPrefills[f.fieldKey];
-      s[f.fieldKey] = {
-        value: prefill?.value ?? (f.fieldType === "yes_no" ? null : ""),
-        comment: "",
-        touched: false,
-      };
+      let value: unknown;
+      if (prefill !== undefined) {
+        value = prefill.value;
+      } else {
+        const fromDefault = defaultAnswerToValue(f);
+        value =
+          fromDefault !== undefined
+            ? fromDefault
+            : f.fieldType === "yes_no"
+              ? null
+              : "";
+      }
+      s[f.fieldKey] = { value, comment: "", touched: false };
     }
     return s;
   });
@@ -597,6 +637,20 @@ export function ReviewForm({
                 </label>
                 {/* TODO Section F8: gate this prefill block behind
                     allow_ai_prefill when company.tier !== 'white_glove'. */}
+                {/* Phase 6.2 — when there's no AI prefill but the form supplies a
+                    default_answer, show a low-confidence "default" badge so the
+                    peer knows the value is a placeholder to verify. */}
+                {!prefill && initialSources[field.fieldKey] === "default" && (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                    <span
+                      data-testid="default-badge"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-ink-200 bg-ink-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-600"
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-ink-400" />
+                      default — please verify
+                    </span>
+                  </div>
+                )}
                 {prefill && (
                   <div className="mt-1.5 flex flex-wrap items-center gap-2">
                     <span

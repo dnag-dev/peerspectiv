@@ -97,6 +97,8 @@ async function loadFormFields(
           default_value?: "yes" | "no" | "na" | null;
           required_text_on_non_default?: boolean;
           ops_term?: string | null;
+          default_answer?: "yes" | "no" | "A" | "B" | "C" | null;
+          is_critical?: boolean;
         }>).map((r, idx) => ({
           id: `${companyFormId}-${idx}`,
           fieldKey: r.field_key,
@@ -111,6 +113,9 @@ async function loadFormFields(
           defaultValue: r.default_value ?? null,
           requiredTextOnNonDefault: r.required_text_on_non_default ?? false,
           opsTerm: r.ops_term ?? null,
+          // Phase 6.2 — per-question form-default fallback used when AI prefill is absent.
+          defaultAnswer: r.default_answer ?? null,
+          isCritical: r.is_critical ?? false,
         }));
       }
     } catch {
