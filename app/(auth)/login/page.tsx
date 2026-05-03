@@ -25,10 +25,10 @@ const DEMO_USERS = [
     accent: '#22C55E',
   },
   {
-    role: 'reviewer' as const,
-    label: 'Continue as Reviewer (Dr. Johnson)',
+    role: 'peer' as const,
+    label: 'Continue as Peer (Dr. Johnson)',
     email: 'rjohnson@peerspectiv.com',
-    blurb: 'Reviewer queue + AI-prefilled split-screen review.',
+    blurb: 'Peer queue + AI-prefilled split-screen review.',
     accent: '#F59E0B',
   },
   {
@@ -55,7 +55,7 @@ export default function LoginPage() {
     }
   }, [showDemo]);
 
-  async function loginAsDemo(role: 'admin' | 'client' | 'reviewer' | 'credentialer') {
+  async function loginAsDemo(role: 'admin' | 'client' | 'peer' | 'credentialer') {
     setLoading(role);
     try {
       const res = await fetch('/api/demo/login', {

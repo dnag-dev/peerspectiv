@@ -14,7 +14,7 @@ const PW = 'P33rspeCtiv!Ash2026#Demo';
 const accounts = {
   admin:    { email: 'admin@peerspectiv.com',     landing: /\/dashboard|\/login/, role: 'admin' },
   client:   { email: 'kelli@horizonhealth.org',   landing: /\/portal/,            role: 'client' },
-  peer: { email: 'rjohnson@peerspectiv.com',  landing: /\/peer/,          role: 'reviewer' },
+  peer: { email: 'rjohnson@peerspectiv.com',  landing: /\/peer/,          role: 'peer' },
 };
 
 async function signInAndCommit(page: any, email: string) {
