@@ -95,6 +95,8 @@ async function getCaseDetail(id: string): Promise<CaseDetail | null> {
           id: true, criteriaScores: true, deficiencies: true, overallScore: true,
           narrativeFinal: true, aiAgreementPercentage: true, peerChanges: true,
           qualityScore: true, qualityNotes: true, submittedAt: true, timeSpentMinutes: true,
+          peerNameSnapshot: true, peerLicenseSnapshot: true, peerLicenseStateSnapshot: true,
+          mrnNumber: true, peerSignatureText: true,
         },
       },
     },
@@ -277,6 +279,59 @@ export default async function CaseDetailPage({
                 <TriggerAnalysisButton caseId={reviewCase.id} />
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* PR-037 — System Attestation snapshot on completed reviews. */}
+      {reviewCase.review_result && (
+        <Card data-testid="completed-attestation">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Shield className="h-5 w-5 text-cobalt-700" />
+              System Attestation
+              <Badge variant="secondary" className="text-[10px]">HRSA audit</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div>
+                <dt className="text-xs text-muted-foreground">MRN</dt>
+                <dd className="mt-1 font-mono">
+                  {(reviewCase.review_result as any).mrn_number ?? reviewCase.mrn_number ?? "—"}
+                  {((reviewCase as any).mrn_source ?? null) && (
+                    <span className="ml-2 text-[10px] uppercase text-ink-500">
+                      ({(reviewCase as any).mrn_source})
+                    </span>
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Peer Name</dt>
+                <dd className="mt-1">
+                  {(reviewCase.review_result as any).peer_name_snapshot ??
+                    reviewCase.peer?.full_name ??
+                    "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">License</dt>
+                <dd className="mt-1 font-mono">
+                  {(reviewCase.review_result as any).peer_license_state_snapshot
+                    ? `${(reviewCase.review_result as any).peer_license_state_snapshot}-`
+                    : ""}
+                  {(reviewCase.review_result as any).peer_license_snapshot ?? "—"}
+                </dd>
+              </div>
+              {(reviewCase.review_result as any).peer_signature_text && (
+                <div className="sm:col-span-3">
+                  <dt className="text-xs text-muted-foreground">Signature</dt>
+                  <dd className="mt-1 font-mono text-xs">
+                    {(reviewCase.review_result as any).peer_signature_text}
+                  </dd>
+                </div>
+              )}
+            </dl>
           </CardContent>
         </Card>
       )}
