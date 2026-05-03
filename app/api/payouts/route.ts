@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, toSnake } from '@/lib/db';
-import { peers, reviewResults, peerPayouts } from '@/lib/db/schema';
-import { and, asc, eq, gte, lte, sql } from 'drizzle-orm';
+import { peers, reviewResults, peerPayouts, reviewCases } from '@/lib/db/schema';
+import { and, asc, eq, gte, lte, ne, or, isNull, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,7 +68,9 @@ export async function GET(request: NextRequest) {
       .from(peers)
       .orderBy(asc(peers.fullName));
 
-    // 2. All completed results in this period
+    // 2. All completed results in this period.
+    // Phase 5.2 — defensively exclude any result whose case got flipped to
+    // 'returned_by_peer' (peers don't earn for cases they returned).
     const resultRows = await db
       .select({
         peer_id: reviewResults.peerId,
@@ -76,10 +78,12 @@ export async function GET(request: NextRequest) {
         time_spent_minutes: reviewResults.timeSpentMinutes,
       })
       .from(reviewResults)
+      .leftJoin(reviewCases, eq(reviewResults.caseId, reviewCases.id))
       .where(
         and(
           gte(reviewResults.submittedAt, new Date(`${start}T00:00:00Z`)),
-          lte(reviewResults.submittedAt, new Date(`${end}T23:59:59Z`))
+          lte(reviewResults.submittedAt, new Date(`${end}T23:59:59Z`)),
+          or(isNull(reviewCases.status), ne(reviewCases.status, 'returned_by_peer'))
         )
       );
 
@@ -199,11 +203,13 @@ export async function POST(request: NextRequest) {
         time_spent_minutes: reviewResults.timeSpentMinutes,
       })
       .from(reviewResults)
+      .leftJoin(reviewCases, eq(reviewResults.caseId, reviewCases.id))
       .where(
         and(
           eq(reviewResults.peerId, peer_id),
           gte(reviewResults.submittedAt, new Date(`${period_start}T00:00:00Z`)),
-          lte(reviewResults.submittedAt, new Date(`${period_end}T23:59:59Z`))
+          lte(reviewResults.submittedAt, new Date(`${period_end}T23:59:59Z`)),
+          or(isNull(reviewCases.status), ne(reviewCases.status, 'returned_by_peer'))
         )
       );
 

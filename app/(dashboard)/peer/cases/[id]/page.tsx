@@ -13,6 +13,7 @@ import {
 import { eq, sql } from "drizzle-orm";
 import { PeerCaseSplit } from "@/components/peer/PeerCaseSplit";
 import { RequestReassignmentButton } from "@/components/peer/RequestReassignmentButton";
+import { ReturnCaseButton } from "@/components/peer/ReturnCaseButton";
 import { auth } from "@clerk/nextjs/server";
 
 export const dynamic = "force-dynamic";
@@ -433,6 +434,7 @@ export async function renderPeerCaseDetail(caseId: string) {
               </div>
             </div>
             <div className="ml-auto flex items-center gap-2">
+              <ReturnCaseButton caseId={caseId} />
               <RequestReassignmentButton
                 caseId={caseId}
                 alreadyRequested={
