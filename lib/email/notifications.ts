@@ -14,6 +14,8 @@ export async function sendEmail(params: {
   subject: string;
   html: string;
   from?: string;
+  /** Phase 8.2 — optional file attachments (e.g. report ZIP). */
+  attachments?: Array<{ filename: string; content: Buffer | string }>;
 }): Promise<{ id?: string; skipped?: boolean } | void> {
   const from = params.from ?? 'Peerspectiv <notifications@peerspectiv.com>';
 
@@ -21,6 +23,7 @@ export async function sendEmail(params: {
     console.log('[email] RESEND_API_KEY not set — logging instead:', {
       to: params.to,
       subject: params.subject,
+      attachments: params.attachments?.map((a) => a.filename),
     });
     return { skipped: true };
   }
@@ -31,7 +34,10 @@ export async function sendEmail(params: {
       to: params.to,
       subject: params.subject,
       html: params.html,
-    });
+      ...(params.attachments && params.attachments.length > 0
+        ? { attachments: params.attachments }
+        : {}),
+    } as any);
     return { id: (res as any)?.data?.id };
   } catch (err) {
     console.log('[email] send failed for:', params.to, err);
