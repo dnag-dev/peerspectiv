@@ -97,7 +97,7 @@ const PUBLIC_PATHS = [
 const ROLE_LANDING: Record<string, string> = {
   admin: '/dashboard',
   client: '/portal',
-  peer: '/reviewer/portal',
+  peer: '/peer/portal',
 };
 
 function isPublic(pathname: string): boolean {
@@ -254,13 +254,13 @@ export default async function middleware(request: NextRequest) {
     }
     if (
       demo.role === 'reviewer' &&
-      !pathname.startsWith('/reviewer/') &&
-      pathname !== '/reviewer' &&
+      !pathname.startsWith('/peer/') &&
+      pathname !== '/peer' &&
       !pathname.startsWith('/api/')
     ) {
-      // Tightened from startsWith('/reviewer') which prefix-matched /reviewers
+      // Tightened from startsWith('/peer') which prefix-matched /reviewers
       // (admin route) and let reviewer-role users hit the admin roster page.
-      return NextResponse.redirect(new URL('/reviewer/portal', request.url));
+      return NextResponse.redirect(new URL('/peer/portal', request.url));
     }
     if (
       demo.role === 'credentialer' &&

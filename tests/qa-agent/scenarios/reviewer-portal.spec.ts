@@ -1,5 +1,5 @@
 /**
- * C1 — Reviewer /reviewer/portal: queue cards, multi-chart grouping.
+ * C1 — Reviewer /peer/portal: queue cards, multi-chart grouping.
  */
 import { withPage, ScenarioCtx } from './_shared';
 import { snap, loadOk } from '../scenario-helpers';
@@ -11,17 +11,17 @@ export async function run(ctx: ScenarioCtx) {
   const log = ctx.logger;
   await withPage(ctx, 'reviewer', async (page) => {
     log.resetHarvest();
-    const { status, bodyText } = await loadOk(page, '/reviewer/portal');
+    const { status, bodyText } = await loadOk(page, '/peer/portal');
     if (status === 404) {
-      log.log({ spec_section: 'C1', severity: 'medium', category: 'not-yet-built', title: '/reviewer/portal 404', description: 'Page missing.' });
+      log.log({ spec_section: 'C1', severity: 'medium', category: 'not-yet-built', title: '/peer/portal 404', description: 'Page missing.' });
       return;
     }
     if (status >= 500) {
-      log.log({ spec_section: 'C1', severity: 'critical', category: 'functional', title: `/reviewer/portal ${status}`, description: 'Server error.', screenshot: await snap(page, meta.name, '5xx') });
+      log.log({ spec_section: 'C1', severity: 'critical', category: 'functional', title: `/peer/portal ${status}`, description: 'Server error.', screenshot: await snap(page, meta.name, '5xx') });
       return;
     }
     if (!/queue|case|chart|review/i.test(bodyText)) {
-      log.log({ spec_section: 'C1', severity: 'medium', category: 'functional', title: '/reviewer/portal missing queue keywords', description: 'No queue/case/chart/review text.', url: page.url(), screenshot: await snap(page, meta.name, 'shape') });
+      log.log({ spec_section: 'C1', severity: 'medium', category: 'functional', title: '/peer/portal missing queue keywords', description: 'No queue/case/chart/review text.', url: page.url(), screenshot: await snap(page, meta.name, 'shape') });
     }
     // DB sanity: reviewer rjohnson has cases?
     const cases = await sql<{ c: string }>(

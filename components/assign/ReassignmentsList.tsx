@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowUpDown, X } from "lucide-react";
-import { ReviewerPickerModal } from "@/components/assign/ReviewerPickerModal";
+import { ReviewerPickerModal } from "@/components/assign/PeerPickerModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 

@@ -21,7 +21,7 @@ const ROLES: Record<string, { email: string; name: string; landing: string }> = 
   peer: {
     email: 'rjohnson@peerspectiv.com',
     name: 'Dr. Richard Johnson',
-    landing: '/reviewer/portal',
+    landing: '/peer/portal',
   },
   // Section B6 — credentialing role. Read-only on /credentialing/* pages,
   // cannot reach /companies, /reviewers, /payouts, /invoices.

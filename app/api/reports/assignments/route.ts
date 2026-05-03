@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     let rows = data.map((c) => {
       const result = c.reviewResult;
       const deficiencies = result?.deficiencies;
-      const peer = c.reviewer;
+      const peer = c.peer;
       const reviewerSpecialties = peer?.specialties ?? [];
       const isPediatric = c.isPediatric === true;
       const pediatricMismatch =
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       return {
         id: c.id,
         provider_id: c.providerId,
-        peer_id: c.reviewerId,
+        peer_id: c.peerId,
         provider_name: c.provider
           ? `${c.provider.firstName} ${c.provider.lastName}`
           : "Unassigned",

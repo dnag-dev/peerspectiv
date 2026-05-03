@@ -71,8 +71,8 @@ test.describe('REVIEWER role — reviewer portal + review workflow', () => {
     await signIn(page, 'reviewer');
   });
 
-  test('reviewer: /reviewer/portal renders queue', async ({ page }) => {
-    await page.goto('/reviewer/portal');
+  test('reviewer: /peer/portal renders queue', async ({ page }) => {
+    await page.goto('/peer/portal');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('h1,h2').first()).toBeVisible();
     // Either shows case cards or an empty-state message
@@ -81,14 +81,14 @@ test.describe('REVIEWER role — reviewer portal + review workflow', () => {
     expect(hasCards + hasEmptyMsg).toBeGreaterThan(0);
   });
 
-  test('reviewer: /reviewer/cases/[id] renders split-screen', async ({ page }) => {
-    await page.goto(`/reviewer/cases/${CASE}`);
+  test('reviewer: /peer/cases/[id] renders split-screen', async ({ page }) => {
+    await page.goto(`/peer/cases/${CASE}`);
     await page.waitForLoadState('networkidle');
     await expect(page.locator('text=/Chart Summary|Case Information|Review Form/i').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('reviewer: Ash available', async ({ page }) => {
-    await page.goto('/reviewer/portal');
+    await page.goto('/peer/portal');
     await expect(page.locator('[aria-label="Ask Ash"]')).toBeVisible({ timeout: 15000 });
   });
 });

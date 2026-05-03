@@ -299,7 +299,7 @@ export function AssignmentResultsTab({ companies }: Props) {
                       <TableCell>
                         {row.peer_id ? (
                           <Link
-                            href={`/reviewers/${row.peer_id}`}
+                            href={`/peers/${row.peer_id}`}
                             className="text-brand-navy hover:underline"
                           >
                             {row.reviewer_name}

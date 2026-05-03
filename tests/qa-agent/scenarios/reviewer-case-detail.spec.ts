@@ -21,7 +21,7 @@ export async function run(ctx: ScenarioCtx) {
       log.log({ spec_section: 'C2', severity: 'info', category: 'functional', title: 'No active case for rjohnson — cannot exercise detail page', description: 'Fixture has no assigned cases for the demo reviewer.' });
       return;
     }
-    const { status, bodyText } = await loadOk(page, `/reviewer/cases/${c[0].id}`);
+    const { status, bodyText } = await loadOk(page, `/peer/cases/${c[0].id}`);
     if (status === 404) {
       log.log({ spec_section: 'C2', severity: 'medium', category: 'not-yet-built', title: 'Reviewer case detail 404', description: `case id=${c[0].id}` });
       return;

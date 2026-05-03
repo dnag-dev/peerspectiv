@@ -38,7 +38,7 @@ import { useClerkSession } from "./useClerkSession";
  *  - Footer: demo-mode pill ABOVE user card; user card has color-coded role chip
  */
 
-export type SidebarRole = "admin" | "reviewer" | "cmo" | "quality" | "operations";
+export type SidebarRole = "admin" | "peer" | "cmo" | "quality" | "operations";
 
 export interface SidebarNavItem {
   label: string;
@@ -232,7 +232,7 @@ function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
     { label: "Batches",        href: "/batches",    icon: FolderOpen },
     { label: "Assign",         href: "/assign",     icon: UserCheck },
     { label: "Reassignments",  href: "/reassignments", icon: ArrowUpDown, badge: openReassignmentCount },
-    { label: "Reviewers",      href: "/reviewers",  icon: ClipboardCheck },
+    { label: "Reviewers",      href: "/peers",  icon: ClipboardCheck },
     { label: "Credentials",    href: "/credentials", icon: ShieldCheck },
     { label: "Forms",          href: "/forms",      icon: FileText },
     { label: "Payouts",        href: "/payouts",    icon: DollarSign },
@@ -245,8 +245,8 @@ function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
 }
 
 const peerNavItems: SidebarNavItem[] = [
-  { label: "My Queue", href: "/reviewer/portal",   icon: ClipboardCheck },
-  { label: "Earnings", href: "/reviewer/earnings", icon: DollarSign },
+  { label: "My Queue", href: "/peer/portal",   icon: ClipboardCheck },
+  { label: "Earnings", href: "/peer/earnings", icon: DollarSign },
 ];
 
 export function Sidebar({ openReassignmentCount = 0 }: { openReassignmentCount?: number } = {}) {
@@ -254,8 +254,8 @@ export function Sidebar({ openReassignmentCount = 0 }: { openReassignmentCount?:
   const router = useRouter();
   const { mobileNavOpen, closeMobileNav } = useMobileNav();
 
-  const isReviewer = pathname === "/reviewer" || pathname.startsWith("/reviewer/");
-  const role: SidebarRole = isReviewer ? "reviewer" : "admin";
+  const isReviewer = pathname === "/peer" || pathname.startsWith("/peer/");
+  const role: SidebarRole = isReviewer ? "peer" : "admin";
   const navItems = isReviewer ? peerNavItems : buildAdminNavItems(openReassignmentCount);
 
   const session = useClerkSession({

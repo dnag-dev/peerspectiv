@@ -9,7 +9,7 @@ export const maxDuration = 45;
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-type Portal = 'admin' | 'client' | 'reviewer';
+type Portal = 'admin' | 'client' | 'peer';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  if (!portal || !['admin', 'client', 'reviewer'].includes(portal)) {
+  if (!portal || !['admin', 'client', 'peer'].includes(portal)) {
     return NextResponse.json(
       { error: 'portal must be admin, client, or reviewer' },
       { status: 400 }

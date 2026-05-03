@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
 
       await auditLog({
         action: 'credential_warning',
-        resourceType: 'reviewer',
+        resourceType: 'peer',
         resourceId: r.id,
         metadata: { kind, expiry: cv },
       });

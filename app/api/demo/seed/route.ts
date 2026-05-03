@@ -258,7 +258,7 @@ export async function POST(request: NextRequest) {
 
     const reviewResultRows = completedCases.map((c, idx) => ({
       caseId: c.id,
-      peerId: c.reviewerId,
+      peerId: c.peerId,
       criteriaScores: sampleCriteriaScores,
       deficiencies: idx === 0 ? sampleDeficiencies : [],
       overallScore: 80 + idx * 4,
@@ -308,8 +308,8 @@ export async function POST(request: NextRequest) {
     // ---------------------------------------------------------------
     const activeCaseCounts: Record<string, number> = {};
     insertedCases.forEach((c) => {
-      if (c.reviewerId && ['assigned', 'in_progress'].includes(c.status as string)) {
-        activeCaseCounts[c.reviewerId] = (activeCaseCounts[c.reviewerId] || 0) + 1;
+      if (c.peerId && ['assigned', 'in_progress'].includes(c.status as string)) {
+        activeCaseCounts[c.peerId] = (activeCaseCounts[c.peerId] || 0) + 1;
       }
     });
 

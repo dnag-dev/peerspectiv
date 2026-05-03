@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
         type: 'reviewer_returned',
         title: `${peer.fullName} is now available`,
         body: `Reviewer ${peer.fullName} has been automatically marked as available (leave period ended).`,
-        entityType: 'reviewer',
+        entityType: 'peer',
         entityId: peer.id,
       });
 

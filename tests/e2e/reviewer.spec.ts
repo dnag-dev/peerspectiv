@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Reviewer portal', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/reviewer/portal');
+    await page.goto('/peer/portal');
     await page.waitForLoadState('networkidle');
   });
 

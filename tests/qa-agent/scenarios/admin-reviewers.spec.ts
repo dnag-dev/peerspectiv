@@ -13,7 +13,7 @@ export async function run(ctx: ScenarioCtx) {
 
   await withPage(ctx, 'admin', async (page) => {
     log.resetHarvest();
-    const { status, bodyText } = await loadOk(page, '/reviewers');
+    const { status, bodyText } = await loadOk(page, '/peers');
     if (status === 404) {
       log.log({ spec_section: 'B1', severity: 'medium', category: 'not-yet-built', title: '/reviewers 404', description: 'Reviewer admin page missing.' });
       return;

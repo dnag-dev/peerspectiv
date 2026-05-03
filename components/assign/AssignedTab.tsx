@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2, ArrowUpDown, Inbox, Search } from "lucide-react";
-import { ReviewerPickerModal } from "@/components/assign/ReviewerPickerModal";
+import { ReviewerPickerModal } from "@/components/assign/PeerPickerModal";
 
 export interface AssignedRow {
   id: string;

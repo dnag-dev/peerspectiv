@@ -35,7 +35,7 @@ async function getPendingCases(): Promise<PendingCase[]> {
   }
 
   return data
-    .filter((c) => c.provider && c.reviewer && c.company)
+    .filter((c) => c.provider && c.peer && c.company)
     .map((c) => toSnake<any>(c)) as PendingCase[];
 }
 
@@ -136,8 +136,8 @@ async function getAssignedRows(): Promise<AssignedRow[]> {
           specialty: c.provider.specialty,
         }
       : null,
-    peer: c.reviewer
-      ? { id: c.reviewer.id, full_name: c.reviewer.fullName }
+    peer: c.peer
+      ? { id: c.peer.id, full_name: c.peer.fullName }
       : null,
     company: c.company ? { id: c.company.id, name: c.company.name } : null,
   })) as AssignedRow[];

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ReviewerPickerModal } from "@/components/assign/ReviewerPickerModal";
+import { ReviewerPickerModal } from "@/components/assign/PeerPickerModal";
 import { ConfirmApproveModal } from "@/components/assign/ConfirmApproveModal";
 import {
   Loader2,

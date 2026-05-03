@@ -1,5 +1,5 @@
 /**
- * C5 — Reviewer /reviewer/earnings: KPIs + period filter.
+ * C5 — Reviewer /peer/earnings: KPIs + period filter.
  */
 import { withPage, ScenarioCtx } from './_shared';
 import { snap, loadOk } from '../scenario-helpers';
@@ -10,13 +10,13 @@ export async function run(ctx: ScenarioCtx) {
   const log = ctx.logger;
   await withPage(ctx, 'reviewer', async (page) => {
     log.resetHarvest();
-    const { status, bodyText } = await loadOk(page, '/reviewer/earnings');
+    const { status, bodyText } = await loadOk(page, '/peer/earnings');
     if (status === 404) {
-      log.log({ spec_section: 'C5', severity: 'medium', category: 'not-yet-built', title: '/reviewer/earnings 404', description: 'Page missing.' });
+      log.log({ spec_section: 'C5', severity: 'medium', category: 'not-yet-built', title: '/peer/earnings 404', description: 'Page missing.' });
       return;
     }
     if (status >= 500) {
-      log.log({ spec_section: 'C5', severity: 'critical', category: 'functional', title: `/reviewer/earnings ${status}`, description: 'Server error.', screenshot: await snap(page, meta.name, '5xx') });
+      log.log({ spec_section: 'C5', severity: 'critical', category: 'functional', title: `/peer/earnings ${status}`, description: 'Server error.', screenshot: await snap(page, meta.name, '5xx') });
       return;
     }
     const kpis = ['earned', 'completed', 'avg', 'total'];

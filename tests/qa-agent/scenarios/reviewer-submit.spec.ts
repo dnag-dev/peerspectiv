@@ -14,18 +14,18 @@ export async function run(ctx: ScenarioCtx) {
   await api.loginAs('reviewer');
 
   // Hit the submit endpoint with bogus payload to get a contract response
-  const r = await api.post('/api/reviewer/submit', { case_id: 'nonexistent', responses: {} });
+  const r = await api.post('/api/peer/submit', { case_id: 'nonexistent', responses: {} });
   if (r.status === 404) {
-    log.log({ spec_section: 'C3', severity: 'medium', category: 'not-yet-built', title: 'POST /api/reviewer/submit 404', description: 'Endpoint missing.' });
+    log.log({ spec_section: 'C3', severity: 'medium', category: 'not-yet-built', title: 'POST /api/peer/submit 404', description: 'Endpoint missing.' });
     return;
   }
   if (r.status >= 500) {
-    log.log({ spec_section: 'C3', severity: 'critical', category: 'functional', title: `POST /api/reviewer/submit ${r.status}`, description: r.text.slice(0, 300) });
+    log.log({ spec_section: 'C3', severity: 'critical', category: 'functional', title: `POST /api/peer/submit ${r.status}`, description: r.text.slice(0, 300) });
     return;
   }
   // Expect 4xx for invalid payload (good — validates input)
   if (r.status >= 200 && r.status < 300) {
-    log.log({ spec_section: 'C3', severity: 'medium', category: 'security', title: 'POST /api/reviewer/submit accepts bogus case_id with 2xx', description: `status=${r.status}; should validate case existence/ownership.` });
+    log.log({ spec_section: 'C3', severity: 'medium', category: 'security', title: 'POST /api/peer/submit accepts bogus case_id with 2xx', description: `status=${r.status}; should validate case existence/ownership.` });
   }
 
   // Scoring math sanity: compute against any review_results row

@@ -23,7 +23,7 @@ import type { Batch, ReviewCase, Provider, Peer } from "@/types";
 
 export const dynamic = 'force-dynamic';
 
-interface CaseWithRelations extends Omit<ReviewCase, 'provider' | 'reviewer'> {
+interface CaseWithRelations extends Omit<ReviewCase, 'provider' | 'peer'> {
   provider?: Provider | null;
   peer?: Peer | null;
 }

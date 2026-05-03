@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       });
 
       for (const c of assignedCases) {
-        const peer = c.reviewer;
+        const peer = c.peer;
         if (peer?.email) {
           sendReviewerAssignment({
             reviewerEmail: peer.email,
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
             caseId: c.id,
             specialty: c.specialtyRequired || 'General',
             dueDate: c.dueDate ? new Date(c.dueDate).toLocaleDateString() : 'TBD',
-            portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/reviewer/case/${c.id}`,
+            portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/peer/case/${c.id}`,
           }).catch(() => {});
         }
       }
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
       }
 
       if (caseData) {
-        const peer = caseData.reviewer;
+        const peer = caseData.peer;
         if (peer?.email) {
           sendReviewerAssignment({
             reviewerEmail: peer.email,
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
             caseId: case_id,
             specialty: caseData.specialtyRequired || 'General',
             dueDate: caseData.dueDate ? new Date(caseData.dueDate).toLocaleDateString() : 'TBD',
-            portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/reviewer/case/${case_id}`,
+            portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/peer/case/${case_id}`,
           }).catch(() => {});
         }
       }

@@ -4,7 +4,7 @@ import { asc, eq, sql } from "drizzle-orm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssignmentResultsTab } from "@/components/reports/AssignmentResultsTab";
 import { QAPIReportTab } from "@/components/reports/QAPIReportTab";
-import { PeerScorecardTab } from "@/components/reports/ReviewerScorecardTab";
+import { PeerScorecardTab } from "@/components/reports/PeerScorecardTab";
 import { PdfGeneratorTab } from "@/components/reports/PdfGeneratorTab";
 import { SavedReportsTab } from "@/components/reports/SavedReportsTab";
 

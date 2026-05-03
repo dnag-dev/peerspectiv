@@ -46,7 +46,7 @@ import type {
 
 export const dynamic = 'force-dynamic';
 
-interface CaseDetail extends Omit<ReviewCase, 'provider' | 'reviewer' | 'company' | 'batch' | 'ai_analysis' | 'review_result'> {
+interface CaseDetail extends Omit<ReviewCase, 'provider' | 'peer' | 'company' | 'batch' | 'ai_analysis' | 'review_result'> {
   provider: Provider | null;
   peer: Peer | null;
   company: Company | null;
