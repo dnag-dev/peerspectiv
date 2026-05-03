@@ -8,6 +8,8 @@ export interface Company {
   notes: string | null;
   itemize_invoice?: boolean | null;
   delivery_preference?: 'email' | 'portal' | 'both' | null;
+  /** Phase 8.2 — secure-email channel for the per-cadence report ZIP. */
+  delivery_method?: 'portal' | 'secure_email' | 'both' | null;
   created_at: string;
   updated_at: string;
 }

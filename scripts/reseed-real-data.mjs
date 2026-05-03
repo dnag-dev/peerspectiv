@@ -432,6 +432,140 @@ async function main() {
   }
   console.log(` ${batchOk} batches, ${caseOk} cases, ${analysisOk} ai analyses.`);
 
+  // ─── Phase 8.6 — Demo extensions: credentialer-bucket peers + extra cases ──
+  // Populate the credentialer dashboard buckets (pending_credentialing,
+  // license_expired) and grow the case volume so /cases + /reports show real
+  // distributions during a live walkthrough.
+  console.log('Phase 8.6: extending demo data (credentialing buckets + cases)...');
+
+  const pendingPeers = [
+    { name: 'Dr. Amelia Park',    spec: 'Pediatrics',         state: 'CA' },
+    { name: 'Dr. Jonas Whitfield', spec: 'Family Medicine',    state: 'TX' },
+    { name: 'Dr. Priya Anand',    spec: 'Behavioral Health',  state: 'NY' },
+  ];
+  let pendingOk = 0;
+  for (const p of pendingPeers) {
+    const id = uuid();
+    const email = fallbackEmail(p.name).replace('reviewers', 'pending.reviewers');
+    try {
+      await sql.query(
+        `insert into peers
+          (id, full_name, email, board_certification, license_state,
+           credential_valid_until, max_case_load, rate_type, rate_amount,
+           active_cases_count, total_reviews_completed, status, availability_status, state)
+         values ($1,$2,$3,'ABFM',$4,
+                 (CURRENT_DATE + interval '1 year')::date, 50,
+                 'per_report', 100, 0, 0, 'inactive', 'unavailable', 'pending_credentialing')
+         on conflict (email) do nothing`,
+        [id, p.name, email, p.state]
+      );
+      await sql.query(
+        `insert into peer_specialties (peer_id, specialty, verified_status)
+         values ($1, $2, 'pending')
+         on conflict (peer_id, specialty) do nothing`,
+        [id, p.spec]
+      );
+      pendingOk++;
+    } catch (e) {
+      console.error(`\nPending peer insert failed for ${p.name}:`, e.message);
+    }
+  }
+
+  const expiredPeers = [
+    { name: 'Dr. Marcus Lin', spec: 'Internal Medicine', state: 'WA' },
+    { name: 'Dr. Hana Yusuf', spec: 'OB/GYN',            state: 'IL' },
+  ];
+  let expiredOk = 0;
+  for (const p of expiredPeers) {
+    const id = uuid();
+    const email = fallbackEmail(p.name).replace('reviewers', 'expired.reviewers');
+    try {
+      await sql.query(
+        `insert into peers
+          (id, full_name, email, board_certification, license_state,
+           credential_valid_until, max_case_load, rate_type, rate_amount,
+           active_cases_count, total_reviews_completed, status, availability_status, state)
+         values ($1,$2,$3,'ABFM',$4,
+                 (CURRENT_DATE - interval '14 days')::date, 50,
+                 'per_report', 100, 0, 0, 'inactive', 'unavailable', 'license_expired')
+         on conflict (email) do nothing`,
+        [id, p.name, email, p.state]
+      );
+      await sql.query(
+        `insert into peer_specialties (peer_id, specialty, verified_status)
+         values ($1, $2, 'verified')
+         on conflict (peer_id, specialty) do nothing`,
+        [id, p.spec]
+      );
+      expiredOk++;
+    } catch (e) {
+      console.error(`\nExpired peer insert failed for ${p.name}:`, e.message);
+    }
+  }
+  console.log(` ${pendingOk} pending_credentialing + ${expiredOk} license_expired peers added.`);
+
+  // Grow cases beyond the original 21. Spread across all featured + 3 more
+  // companies, mix of past_due / completed / in_progress, distinct batch periods.
+  const extraCompanies = ['Hunter Health', 'Lowell', 'Sunrise', 'NHA-Ohio', 'CareVide'];
+  const extraStatuses = ['past_due', 'completed', 'in_progress', 'unassigned', 'completed', 'completed'];
+  const extraPeriods = ['Q1 2026', 'Q4 2025', 'Q3 2025'];
+  let extraCases = 0;
+  for (const cname of extraCompanies) {
+    const companyId = companyIdByName[cname];
+    if (!companyId) continue;
+    for (const period of extraPeriods) {
+      const batchId = uuid();
+      try {
+        await sql.query(
+          `insert into batches
+            (id, batch_name, company_id, date_uploaded, total_cases, assigned_cases,
+             completed_cases, status)
+           values ($1,$2,$3,now(),0,0,0,'in_progress')`,
+          [batchId, `${period} Demo Cycle`, companyId]
+        );
+      } catch (e) {
+        console.error(`\nExtra batch insert failed for ${cname}/${period}:`, e.message);
+        continue;
+      }
+      const providers = providersByCompany[cname] || [];
+      const n = Math.min(15, providers.length || 6);
+      for (let k = 0; k < n; k++) {
+        const caseId = uuid();
+        const status = extraStatuses[k % extraStatuses.length];
+        const provider = providers[k % providers.length] || null;
+        const providerId = provider ? provider.id : null;
+        const specialty = provider ? provider.specialty : 'Family Medicine';
+        const reviewerMatch =
+          reviewerIds.find((r) => r.specialty === specialty) ||
+          reviewerIds[k % reviewerIds.length];
+        const reviewerId = reviewerMatch ? reviewerMatch.id : null;
+        // past_due: dueDate in the past; otherwise +14d
+        const dueOffsetDays = status === 'past_due' ? -7 : 14;
+        const dueDate = new Date(Date.now() + dueOffsetDays * 86_400_000).toISOString();
+        const encounterDate = new Date(Date.now() - 60 * 86_400_000).toISOString().slice(0, 10);
+        try {
+          await sql.query(
+            `insert into review_cases
+              (id, batch_id, provider_id, peer_id, company_id, assigned_at, due_date,
+               encounter_date, status, ai_analysis_status, specialty_required,
+               priority, batch_period, chart_file_name)
+             values ($1,$2,$3,$4,$5,now(),$6,$7,$8,$9,$10,'normal',$11,$12)`,
+            [
+              caseId, batchId, providerId, reviewerId, companyId, dueDate,
+              encounterDate, status,
+              status === 'completed' ? 'complete' : 'pending',
+              specialty, period, `chart-${period.replace(/\s/g, '_')}-${k + 1}.pdf`,
+            ]
+          );
+          extraCases++;
+        } catch (e) {
+          // ignore individual failures
+        }
+      }
+    }
+  }
+  console.log(` ${extraCases} extra cases inserted across ${extraCompanies.length} companies × ${extraPeriods.length} periods.`);
+
   // Final counts
   const [companyCount] = await sql.query(`select count(*)::int as n from companies`);
   const [reviewerCount] = await sql.query(`select count(*)::int as n from peers`);

@@ -37,6 +37,7 @@ const ALLOWED_FIELDS = new Set([
   "billing_cycle",
   "fiscal_year_start_month",
   "delivery_preference",
+  "delivery_method",
   "itemize_invoice",
   "pricing_mode",
   "next_cycle_due",

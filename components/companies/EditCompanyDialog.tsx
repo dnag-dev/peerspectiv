@@ -32,6 +32,11 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
   const [deliveryPreference, setDeliveryPreference] = useState<'email' | 'portal' | 'both'>(
     (company.delivery_preference as 'email' | 'portal' | 'both' | null) ?? 'portal'
   );
+  // Phase 8.2 — secure-email channel selector for report bundles. Distinct
+  // from delivery_preference (which governs invoices). Maps to companies.delivery_method.
+  const [deliveryMethod, setDeliveryMethod] = useState<'portal' | 'secure_email' | 'both'>(
+    (company.delivery_method as 'portal' | 'secure_email' | 'both' | null) ?? 'portal'
+  );
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -47,6 +52,7 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
       notes: (formData.get("notes") as string) || null,
       itemize_invoice: itemizeInvoice,
       delivery_preference: deliveryPreference,
+      delivery_method: deliveryMethod,
     };
 
     if (!payload.name.trim()) {
@@ -130,7 +136,25 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
               <option value="both">Both portal &amp; email</option>
             </select>
             <p className="text-xs text-ink-500">
-              How to deliver completed cycle reports to this client.
+              How to deliver invoices to this client.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-delivery_method">Report Bundle Delivery (Phase 8.2)</Label>
+            <select
+              id="edit-delivery_method"
+              value={deliveryMethod}
+              onChange={(e) =>
+                setDeliveryMethod(e.target.value as 'portal' | 'secure_email' | 'both')
+              }
+              className="flex h-10 w-full rounded-md border border-ink-300 bg-white px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-cobalt-600"
+            >
+              <option value="portal">Portal only (no email)</option>
+              <option value="secure_email">Secure email (Resend with ZIP attachment + audit log)</option>
+              <option value="both">Both portal &amp; secure email</option>
+            </select>
+            <p className="text-xs text-ink-500">
+              Used by /api/reports/email when sending the per-cadence ZIP bundle.
             </p>
           </div>
           {error && <p className="text-sm text-critical-600">{error}</p>}

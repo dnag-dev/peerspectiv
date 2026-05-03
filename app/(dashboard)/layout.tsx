@@ -49,11 +49,11 @@ export default async function DashboardLayout({
 
   const initialGreeting = `Hey 👋 You have ${overdueCount} overdue cases and ${pendingCount} pending your approval. What do you need?`;
 
+  // Phase 8.1 — admin-tailored quick-action prompts.
   const suggestedPrompts = [
-    'How many prospects are in my pipeline?',
-    'Which contracts have been out over a week?',
-    'Who needs a new review cycle initiated?',
     'Show overdue cases',
+    'Pipeline summary',
+    'Which credentialers are slow this month?',
     'Weekly summary',
   ];
 
