@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/supabase/server';
-import { db } from '@/lib/db';
+import { db, toSnake } from '@/lib/db';
 import { companyForms } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -11,22 +10,22 @@ export async function GET(
 ) {
   const { id } = await params;
   try {
-    const rows = await query<{
-      id: string;
-      company_id: string;
-      specialty: string;
-      form_name: string;
-      form_fields: unknown;
-      is_active: boolean;
-      allow_ai_generated_recommendations: boolean | null;
-    }>(
-      `SELECT id, company_id, specialty, form_name, form_fields, is_active,
-              allow_ai_generated_recommendations
-       FROM company_forms WHERE id = $1 LIMIT 1`,
-      [id]
-    );
-    if (!rows[0]) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    return NextResponse.json({ form: rows[0] });
+    const [row] = await db
+      .select({
+        id: companyForms.id,
+        companyId: companyForms.companyId,
+        specialty: companyForms.specialty,
+        formName: companyForms.formName,
+        formFields: companyForms.formFields,
+        isActive: companyForms.isActive,
+        allowAiGeneratedRecommendations: companyForms.allowAiGeneratedRecommendations,
+      })
+      .from(companyForms)
+      .where(eq(companyForms.id, id))
+      .limit(1);
+
+    if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return NextResponse.json({ form: toSnake(row) });
   } catch (err) {
     console.error('[api/company-forms/[id]]', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

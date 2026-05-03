@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { reviewCases } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { analyzeChart } from '@/lib/ai/chart-analyzer';
 import { auditLog } from '@/lib/utils/audit';
 
@@ -11,20 +13,20 @@ export async function POST(
     const { id: caseId } = await params;
 
     // Verify case exists
-    const { data: caseData, error: caseError } = await supabaseAdmin
-      .from('review_cases')
-      .select('id, ai_analysis_status')
-      .eq('id', caseId)
-      .single();
+    const [caseData] = await db
+      .select({ id: reviewCases.id, aiAnalysisStatus: reviewCases.aiAnalysisStatus })
+      .from(reviewCases)
+      .where(eq(reviewCases.id, caseId))
+      .limit(1);
 
-    if (caseError || !caseData) {
+    if (!caseData) {
       return NextResponse.json(
         { error: 'Case not found', code: 'NOT_FOUND' },
         { status: 404 }
       );
     }
 
-    if (caseData.ai_analysis_status === 'processing') {
+    if (caseData.aiAnalysisStatus === 'processing') {
       return NextResponse.json(
         { error: 'Analysis already in progress', code: 'ANALYSIS_IN_PROGRESS' },
         { status: 409 }

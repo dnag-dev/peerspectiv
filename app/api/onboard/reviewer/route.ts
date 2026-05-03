@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { reviewers } from '@/lib/db/schema';
 import { sendCredentialingAlert } from '@/lib/email/notifications';
 
 export const dynamic = 'force-dynamic';
@@ -56,31 +57,31 @@ export async function POST(request: NextRequest) {
 
     const mcl = max_case_load != null ? Math.max(1, Number(max_case_load) || 75) : 75;
 
-    const { data, error } = await supabaseAdmin
-      .from('reviewers')
-      .insert({
-        full_name,
-        email,
-        specialty: specs[0],
-        specialties: specs,
-        board_certification: board_certification ?? null,
-        license_number,
-        license_state,
-        max_case_load: mcl,
-        // No credential_valid_until → reviewer remains blocked from assignment
-        // until credentialing fills it in.
-        status: 'inactive',
-        availability_status: 'available',
-        active_cases_count: 0,
-        total_reviews_completed: 0,
-        rate_type: 'per_minute',
-        rate_amount: 1.0,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('[API] POST /api/onboard/reviewer error:', error);
+    let row;
+    try {
+      [row] = await db
+        .insert(reviewers)
+        .values({
+          fullName: full_name,
+          email,
+          specialty: specs[0],
+          specialties: specs,
+          boardCertification: board_certification ?? null,
+          licenseNumber: license_number,
+          licenseState: license_state,
+          maxCaseLoad: mcl,
+          // No credential_valid_until → reviewer remains blocked from assignment
+          // until credentialing fills it in.
+          status: 'inactive',
+          availabilityStatus: 'available',
+          activeCasesCount: 0,
+          totalReviewsCompleted: 0,
+          rateType: 'per_minute',
+          rateAmount: '1.00',
+        })
+        .returning();
+    } catch (err) {
+      console.error('[API] POST /api/onboard/reviewer error:', err);
       return NextResponse.json(
         { error: 'Failed to submit application', code: 'DB_ERROR' },
         { status: 500 }
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
     `;
 
     void sendCredentialingAlert({
-      reviewerId: data.id,
+      reviewerId: row.id,
       reviewerName: full_name,
       email,
       specialties: specs,

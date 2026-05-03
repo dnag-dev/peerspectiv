@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { companyForms } from '@/lib/db/schema';
+import { and, asc, eq, or, sql } from 'drizzle-orm';
 
 // GET /api/company-forms?company_id=...&specialty=...
 export async function GET(request: NextRequest) {
@@ -12,16 +14,23 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const forms = await query<{ id: string; form_name: string; specialty: string | null }>(
-      `SELECT id, form_name, specialty
-       FROM company_forms
-       WHERE company_id = $1
-         AND is_active = true
-         AND ($2::text IS NULL OR specialty = $2)
-       ORDER BY specialty ASC, form_name ASC`,
-      [companyId, specialty]
-    );
-    return NextResponse.json({ forms });
+    const conditions = [
+      eq(companyForms.companyId, companyId),
+      eq(companyForms.isActive, true),
+    ];
+    if (specialty) conditions.push(eq(companyForms.specialty, specialty));
+
+    const rows = await db
+      .select({
+        id: companyForms.id,
+        form_name: companyForms.formName,
+        specialty: companyForms.specialty,
+      })
+      .from(companyForms)
+      .where(and(...conditions))
+      .orderBy(asc(companyForms.specialty), asc(companyForms.formName));
+
+    return NextResponse.json({ forms: rows });
   } catch (err) {
     console.error('[api/company-forms]', err);
     return NextResponse.json({ forms: [] });

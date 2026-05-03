@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db, toSnake } from '@/lib/db';
+import { reviewers, reviewResults, reviewerPayouts } from '@/lib/db/schema';
+import { and, asc, eq, gte, lte } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,34 +22,10 @@ async function getAdminUserId(req: NextRequest): Promise<string | null> {
 
 type RateType = 'per_minute' | 'per_report' | 'per_hour';
 
-interface ReviewerRow {
-  id: string;
-  full_name: string;
-  specialty: string | null;
-  rate_type: RateType | null;
-  rate_amount: string | number | null;
-  status: string | null;
-}
-
 interface ResultRow {
   reviewer_id: string | null;
-  submitted_at: string | null;
+  submitted_at: Date | null;
   time_spent_minutes: number | null;
-}
-
-interface PayoutRow {
-  id: string;
-  reviewer_id: string;
-  period_start: string;
-  period_end: string;
-  unit_type: RateType;
-  units: string | number;
-  rate_amount: string | number;
-  amount: string | number;
-  status: 'pending' | 'approved' | 'paid';
-  created_at: string;
-  approved_at: string | null;
-  paid_at: string | null;
 }
 
 function monthBounds(ym?: string): { start: string; end: string; label: string } {
@@ -78,42 +56,52 @@ export async function GET(request: NextRequest) {
     const { start, end } = monthBounds(month);
 
     // 1. All reviewers with rate config
-    const { data: reviewers, error: revErr } = await supabaseAdmin
-      .from('reviewers')
-      .select('id, full_name, specialty, rate_type, rate_amount, status')
-      .order('full_name');
-
-    if (revErr) {
-      console.error('[payouts] reviewer fetch error:', revErr);
-      return NextResponse.json({ error: 'DB_ERROR' }, { status: 500 });
-    }
+    const reviewerRows = await db
+      .select({
+        id: reviewers.id,
+        full_name: reviewers.fullName,
+        specialty: reviewers.specialty,
+        rate_type: reviewers.rateType,
+        rate_amount: reviewers.rateAmount,
+        status: reviewers.status,
+      })
+      .from(reviewers)
+      .orderBy(asc(reviewers.fullName));
 
     // 2. All completed results in this period
-    const { data: results, error: resErr } = await supabaseAdmin
-      .from('review_results')
-      .select('reviewer_id, submitted_at, time_spent_minutes')
-      .gte('submitted_at', `${start}T00:00:00Z`)
-      .lte('submitted_at', `${end}T23:59:59Z`);
-
-    if (resErr) {
-      console.error('[payouts] results fetch error:', resErr);
-    }
+    const resultRows = await db
+      .select({
+        reviewer_id: reviewResults.reviewerId,
+        submitted_at: reviewResults.submittedAt,
+        time_spent_minutes: reviewResults.timeSpentMinutes,
+      })
+      .from(reviewResults)
+      .where(
+        and(
+          gte(reviewResults.submittedAt, new Date(`${start}T00:00:00Z`)),
+          lte(reviewResults.submittedAt, new Date(`${end}T23:59:59Z`))
+        )
+      );
 
     // 3. Existing payout records for this period
-    const { data: existing } = await supabaseAdmin
-      .from('reviewer_payouts')
-      .select('*')
-      .eq('period_start', start)
-      .eq('period_end', end);
+    const existing = await db
+      .select()
+      .from(reviewerPayouts)
+      .where(
+        and(
+          eq(reviewerPayouts.periodStart, start),
+          eq(reviewerPayouts.periodEnd, end)
+        )
+      );
 
-    const existingByReviewer = new Map<string, PayoutRow>();
-    for (const p of (existing ?? []) as PayoutRow[]) {
-      existingByReviewer.set(p.reviewer_id, p);
+    const existingByReviewer = new Map<string, typeof existing[number]>();
+    for (const p of existing) {
+      existingByReviewer.set(p.reviewerId, p);
     }
 
     // 4. Group results by reviewer
     const resultsByReviewer = new Map<string, ResultRow[]>();
-    for (const r of (results ?? []) as ResultRow[]) {
+    for (const r of resultRows) {
       if (!r.reviewer_id) continue;
       const arr = resultsByReviewer.get(r.reviewer_id) ?? [];
       arr.push(r);
@@ -121,7 +109,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 5. Build output: persisted payout OR computed pending preview
-    const rows = ((reviewers ?? []) as ReviewerRow[]).map((rev) => {
+    const rows = reviewerRows.map((rev) => {
       const persisted = existingByReviewer.get(rev.id);
       const rt: RateType = (rev.rate_type as RateType) ?? 'per_minute';
       const rate = Number(rev.rate_amount ?? 0);
@@ -132,15 +120,15 @@ export async function GET(request: NextRequest) {
           reviewer_id: rev.id,
           reviewer_name: rev.full_name,
           specialty: rev.specialty ?? '—',
-          period_start: persisted.period_start,
-          period_end: persisted.period_end,
-          unit_type: persisted.unit_type,
+          period_start: persisted.periodStart,
+          period_end: persisted.periodEnd,
+          unit_type: persisted.unitType,
           units: Number(persisted.units),
-          rate_amount: Number(persisted.rate_amount),
+          rate_amount: Number(persisted.rateAmount),
           amount: Number(persisted.amount),
           status: persisted.status,
-          approved_at: persisted.approved_at,
-          paid_at: persisted.paid_at,
+          approved_at: persisted.approvedAt,
+          paid_at: persisted.paidAt,
           persisted: true,
         };
       }
@@ -194,47 +182,57 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: rev, error: revErr } = await supabaseAdmin
-      .from('reviewers')
-      .select('rate_type, rate_amount')
-      .eq('id', reviewer_id)
-      .single();
-    if (revErr || !rev) {
+    const [rev] = await db
+      .select({ rate_type: reviewers.rateType, rate_amount: reviewers.rateAmount })
+      .from(reviewers)
+      .where(eq(reviewers.id, reviewer_id))
+      .limit(1);
+
+    if (!rev) {
       return NextResponse.json({ error: 'Reviewer not found' }, { status: 404 });
     }
 
-    const { data: results } = await supabaseAdmin
-      .from('review_results')
-      .select('reviewer_id, submitted_at, time_spent_minutes')
-      .eq('reviewer_id', reviewer_id)
-      .gte('submitted_at', `${period_start}T00:00:00Z`)
-      .lte('submitted_at', `${period_end}T23:59:59Z`);
+    const results = await db
+      .select({
+        reviewer_id: reviewResults.reviewerId,
+        submitted_at: reviewResults.submittedAt,
+        time_spent_minutes: reviewResults.timeSpentMinutes,
+      })
+      .from(reviewResults)
+      .where(
+        and(
+          eq(reviewResults.reviewerId, reviewer_id),
+          gte(reviewResults.submittedAt, new Date(`${period_start}T00:00:00Z`)),
+          lte(reviewResults.submittedAt, new Date(`${period_end}T23:59:59Z`))
+        )
+      );
 
-    const rt: RateType = ((rev as { rate_type: RateType }).rate_type) ?? 'per_minute';
-    const rate = Number((rev as { rate_amount: string | number }).rate_amount ?? 0);
-    const units = computeUnits(rt, (results ?? []) as ResultRow[]);
+    const rt: RateType = (rev.rate_type as RateType) ?? 'per_minute';
+    const rate = Number(rev.rate_amount ?? 0);
+    const units = computeUnits(rt, results);
     const amount = Math.round(units * rate * 100) / 100;
 
-    const { data, error } = await supabaseAdmin
-      .from('reviewer_payouts')
-      .insert({
-        reviewer_id,
-        period_start,
-        period_end,
-        unit_type: rt,
-        units,
-        rate_amount: rate,
-        amount,
-        status: 'pending',
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('[payouts] insert error:', error);
+    let row;
+    try {
+      [row] = await db
+        .insert(reviewerPayouts)
+        .values({
+          reviewerId: reviewer_id,
+          periodStart: period_start,
+          periodEnd: period_end,
+          unitType: rt,
+          units: String(units),
+          rateAmount: String(rate),
+          amount: String(amount),
+          status: 'pending',
+        })
+        .returning();
+    } catch (err) {
+      console.error('[payouts] insert error:', err);
       return NextResponse.json({ error: 'DB_ERROR' }, { status: 500 });
     }
-    return NextResponse.json({ data });
+
+    return NextResponse.json({ data: toSnake(row) });
   } catch (err) {
     console.error('[API] POST /api/payouts error:', err);
     return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 });

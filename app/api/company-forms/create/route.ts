@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { companyForms } from '@/lib/db/schema';
 import { auditLog } from '@/lib/utils/audit';
 
 interface FormFieldInput {
@@ -80,24 +81,30 @@ export async function POST(request: NextRequest) {
       return out;
     });
 
-    const { data, error } = await supabaseAdmin
-      .from('company_forms')
-      .insert({
-        company_id,
-        specialty,
-        form_name,
-        form_fields: normalizedFields,
-        is_active: true,
-        template_pdf_url: template_pdf_url || null,
-        template_pdf_name: template_pdf_name || null,
-        allow_ai_generated_recommendations: !!allow_ai_generated_recommendations,
-      })
-      .select('id, company_id, specialty, form_name, is_active')
-      .single();
-
-    if (error || !data) {
+    let row;
+    try {
+      [row] = await db
+        .insert(companyForms)
+        .values({
+          companyId: company_id,
+          specialty,
+          formName: form_name,
+          formFields: normalizedFields,
+          isActive: true,
+          templatePdfUrl: template_pdf_url || null,
+          templatePdfName: template_pdf_name || null,
+          allowAiGeneratedRecommendations: !!allow_ai_generated_recommendations,
+        })
+        .returning({
+          id: companyForms.id,
+          company_id: companyForms.companyId,
+          specialty: companyForms.specialty,
+          form_name: companyForms.formName,
+          is_active: companyForms.isActive,
+        });
+    } catch (err: any) {
       return NextResponse.json(
-        { error: error?.message || 'Insert failed' },
+        { error: err?.message || 'Insert failed' },
         { status: 500 }
       );
     }
@@ -105,12 +112,12 @@ export async function POST(request: NextRequest) {
     await auditLog({
       action: 'company_form_created',
       resourceType: 'company_form',
-      resourceId: data.id,
+      resourceId: row.id,
       metadata: { company_id, specialty, form_name, field_count: normalizedFields.length },
       request,
     });
 
-    return NextResponse.json({ form: data }, { status: 201 });
+    return NextResponse.json({ form: row }, { status: 201 });
   } catch (err) {
     console.error('[api/company-forms/create]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
