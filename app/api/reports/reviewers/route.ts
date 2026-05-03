@@ -1,48 +1,46 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { reviewers, reviewResults } from "@/lib/db/schema";
+import { asc } from "drizzle-orm";
 
 export async function GET() {
   try {
     // Fetch reviewers
-    const { data: reviewers, error: reviewerError } = await supabaseAdmin
-      .from("reviewers")
-      .select("id, full_name, specialty, total_reviews_completed, ai_agreement_score, status")
-      .order("full_name");
-
-    if (reviewerError) {
-      console.error("[API] reports/reviewers error:", reviewerError);
-      return NextResponse.json(
-        { error: "Failed to fetch reviewers", code: "DB_ERROR" },
-        { status: 500 }
-      );
-    }
+    const reviewerRows = await db
+      .select({
+        id: reviewers.id,
+        full_name: reviewers.fullName,
+        specialty: reviewers.specialty,
+        total_reviews_completed: reviewers.totalReviewsCompleted,
+        ai_agreement_score: reviewers.aiAgreementScore,
+        status: reviewers.status,
+      })
+      .from(reviewers)
+      .orderBy(asc(reviewers.fullName));
 
     // Compute average quality_score per reviewer from review_results
-    const { data: qualityData, error: qualityError } = await supabaseAdmin
-      .from("review_results")
-      .select("reviewer_id, quality_score");
-
-    if (qualityError) {
-      console.error("[API] reports/reviewers quality error:", qualityError);
-    }
+    const qualityRows = await db
+      .select({
+        reviewer_id: reviewResults.reviewerId,
+        quality_score: reviewResults.qualityScore,
+      })
+      .from(reviewResults);
 
     // Build a map: reviewer_id -> avg quality_score
     const qualityMap = new Map<string, { sum: number; count: number }>();
-    if (qualityData) {
-      for (const row of qualityData) {
-        if (row.reviewer_id && row.quality_score != null) {
-          const entry = qualityMap.get(row.reviewer_id) ?? { sum: 0, count: 0 };
-          entry.sum += row.quality_score;
-          entry.count += 1;
-          qualityMap.set(row.reviewer_id, entry);
-        }
+    for (const row of qualityRows) {
+      if (row.reviewer_id && row.quality_score != null) {
+        const entry = qualityMap.get(row.reviewer_id) ?? { sum: 0, count: 0 };
+        entry.sum += row.quality_score;
+        entry.count += 1;
+        qualityMap.set(row.reviewer_id, entry);
       }
     }
 
     // NOTE: Postgres `numeric` columns come back as STRINGS from node-postgres.
     // `ai_agreement_score` is numeric(4,2) — must coerce to Number or the
     // client's `.toFixed()` call crashes the entire /reports page.
-    const rows = (reviewers ?? []).map((r: any) => {
+    const rows = reviewerRows.map((r) => {
       const quality = qualityMap.get(r.id);
       const agreementRaw = r.ai_agreement_score;
       const agreement =
@@ -50,7 +48,7 @@ export async function GET() {
           ? null
           : Number(agreementRaw);
       return {
-        id: r.id as string,
+        id: r.id,
         full_name: r.full_name as string,
         specialty: r.specialty as string,
         total_reviews_completed: Number(r.total_reviews_completed ?? 0),

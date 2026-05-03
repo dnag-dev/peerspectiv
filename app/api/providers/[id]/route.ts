@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db, toCamel, toSnake } from "@/lib/db";
+import { providers } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function PATCH(
   req: NextRequest,
@@ -9,22 +11,18 @@ export async function PATCH(
     const body = await req.json();
     const { id } = params;
 
-    const { data, error } = await supabaseAdmin
-      .from("providers")
-      .update(body)
-      .eq("id", id)
-      .select()
-      .single();
+    const update = toCamel(body as Record<string, unknown>);
+    const [row] = await db
+      .update(providers)
+      .set(update)
+      .where(eq(providers.id, id))
+      .returning();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    if (!data) {
+    if (!row) {
       return NextResponse.json({ error: "Provider not found" }, { status: 404 });
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json(toSnake(row));
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }

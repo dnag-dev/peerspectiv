@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { nlCommandHistory } from '@/lib/db/schema';
 import { parseCommand } from '@/lib/ai/command-parser';
 import { auditLog } from '@/lib/utils/audit';
 
@@ -18,11 +19,11 @@ export async function POST(request: NextRequest) {
     const response = await parseCommand(command_text.trim());
 
     // Save command + response to nl_command_history
-    await supabaseAdmin.from('nl_command_history').insert({
-      command_text: command_text.trim(),
-      parsed_intent: response.intent,
-      response_text: response.plain_english_response,
-      action_taken: response.intent !== 'unknown' ? response.intent : null,
+    await db.insert(nlCommandHistory).values({
+      commandText: command_text.trim(),
+      parsedIntent: response.intent,
+      responseText: response.plain_english_response,
+      actionTaken: response.intent !== 'unknown' ? response.intent : null,
     });
 
     await auditLog({

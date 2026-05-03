@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db, toCamel, toSnake } from '@/lib/db';
+import { reviewers } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -142,29 +144,27 @@ export async function PATCH(
           { status: 400 }
         );
       }
-      update.rate_amount = ra;
+      update.rate_amount = String(ra);
     }
 
     if (Object.keys(update).length === 0) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('reviewers')
-      .update(update)
-      .eq('id', params.id)
-      .select()
-      .single();
+    const [row] = await db
+      .update(reviewers)
+      .set(toCamel(update))
+      .where(eq(reviewers.id, params.id))
+      .returning();
 
-    if (error) {
-      console.error('[API] PATCH /api/reviewers/[id] error:', error);
+    if (!row) {
       return NextResponse.json(
-        { error: 'Failed to update reviewer', code: 'DB_ERROR' },
-        { status: 500 }
+        { error: 'Reviewer not found', code: 'NOT_FOUND' },
+        { status: 404 }
       );
     }
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ data: toSnake(row) });
   } catch (err) {
     console.error('[API] PATCH /api/reviewers/[id] error:', err);
     return NextResponse.json(

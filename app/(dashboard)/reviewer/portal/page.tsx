@@ -1,29 +1,35 @@
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db, toSnake } from "@/lib/db";
+import { reviewCases } from "@/lib/db/schema";
+import { asc, inArray } from "drizzle-orm";
 import type { ReviewCase } from "@/types";
 import { ReviewerPortalClient } from "./client";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReviewerPortalPage() {
-  const { data: cases, error } = await supabaseAdmin
-    .from("review_cases")
-    .select(
-      `
-      *,
-      provider:providers (*),
-      reviewer:reviewers (*),
-      company:companies (*),
-      ai_analysis:ai_analyses (*)
-`
-    )
-    .in("status", ["assigned", "in_progress"])
-    .order("due_date", { ascending: true });
-
-  if (error) {
-    console.error("[ReviewerPortal] Failed to fetch cases:", error);
+  let cases: ReviewCase[] = [];
+  try {
+    const rows = await db.query.reviewCases.findMany({
+      where: inArray(reviewCases.status, ["assigned", "in_progress"]),
+      orderBy: asc(reviewCases.dueDate),
+      with: {
+        provider: true,
+        reviewer: true,
+        company: true,
+        aiAnalysis: true,
+      },
+    });
+    // Preserve legacy shape: shim returned ai_analysis as an array
+    cases = rows.map((r) => {
+      const snake = toSnake<any>(r);
+      return {
+        ...snake,
+        ai_analysis: snake.ai_analysis ? [snake.ai_analysis] : [],
+      };
+    }) as ReviewCase[];
+  } catch (err) {
+    console.error("[ReviewerPortal] Failed to fetch cases:", err);
   }
 
-  const reviewCases = (cases ?? []) as ReviewCase[];
-
-  return <ReviewerPortalClient cases={reviewCases} />;
+  return <ReviewerPortalClient cases={cases} />;
 }

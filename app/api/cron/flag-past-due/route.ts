@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { reviewCases, reviewers, notifications } from '@/lib/db/schema';
+import { and, eq, inArray, isNotNull, lt, lte, ne } from 'drizzle-orm';
 import { auditLog } from '@/lib/utils/audit';
 
 export const dynamic = 'force-dynamic';
@@ -17,40 +19,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const now = new Date().toISOString();
+    const now = new Date();
 
     // Find cases that are past due
-    const { data: pastDueCases, error: fetchError } = await supabaseAdmin
-      .from('review_cases')
-      .select('id')
-      .in('status', ['assigned', 'in_progress'])
-      .lt('due_date', now)
-      .not('due_date', 'is', null);
-
-    if (fetchError) {
-      return NextResponse.json(
-        { error: fetchError.message, code: 'QUERY_FAILED' },
-        { status: 500 }
+    const pastDueCases = await db
+      .select({ id: reviewCases.id })
+      .from(reviewCases)
+      .where(
+        and(
+          inArray(reviewCases.status, ['assigned', 'in_progress']),
+          lt(reviewCases.dueDate, now),
+          isNotNull(reviewCases.dueDate)
+        )
       );
-    }
 
-    const caseIds = pastDueCases?.map((c: any) => c.id) || [];
+    const caseIds = pastDueCases.map((c) => c.id);
 
     if (caseIds.length > 0) {
-      const { error: updateError } = await supabaseAdmin
-        .from('review_cases')
-        .update({
-          status: 'past_due',
-          updated_at: new Date().toISOString(),
-        })
-        .in('id', caseIds);
-
-      if (updateError) {
-        return NextResponse.json(
-          { error: updateError.message, code: 'UPDATE_FAILED' },
-          { status: 500 }
-        );
-      }
+      await db
+        .update(reviewCases)
+        .set({ status: 'past_due', updatedAt: new Date() })
+        .where(inArray(reviewCases.id, caseIds));
     }
 
     await auditLog({
@@ -61,38 +50,40 @@ export async function GET(request: NextRequest) {
 
     // Auto-return reviewers whose unavailable_until has passed
     const today = new Date().toISOString().split('T')[0];
-    const { data: expiredReviewers } = await supabaseAdmin
-      .from('reviewers')
-      .select('id, full_name')
-      .neq('availability_status', 'available')
-      .lte('unavailable_until', today)
-      .not('unavailable_until', 'is', null);
+    const expiredReviewers = await db
+      .select({ id: reviewers.id, fullName: reviewers.fullName })
+      .from(reviewers)
+      .where(
+        and(
+          ne(reviewers.availabilityStatus, 'available'),
+          lte(reviewers.unavailableUntil, today),
+          isNotNull(reviewers.unavailableUntil)
+        )
+      );
 
     const returnedIds: string[] = [];
-    if (expiredReviewers && expiredReviewers.length > 0) {
-      for (const reviewer of expiredReviewers) {
-        await supabaseAdmin
-          .from('reviewers')
-          .update({
-            availability_status: 'available',
-            unavailable_from: null,
-            unavailable_until: null,
-            unavailable_reason: null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', reviewer.id);
+    for (const reviewer of expiredReviewers) {
+      await db
+        .update(reviewers)
+        .set({
+          availabilityStatus: 'available',
+          unavailableFrom: null,
+          unavailableUntil: null,
+          unavailableReason: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(reviewers.id, reviewer.id));
 
-        await supabaseAdmin.from('notifications').insert({
-          user_id: null,
-          type: 'reviewer_returned',
-          title: `${reviewer.full_name} is now available`,
-          body: `Reviewer ${reviewer.full_name} has been automatically marked as available (leave period ended).`,
-          entity_type: 'reviewer',
-          entity_id: reviewer.id,
-        });
+      await db.insert(notifications).values({
+        userId: null,
+        type: 'reviewer_returned',
+        title: `${reviewer.fullName} is now available`,
+        body: `Reviewer ${reviewer.fullName} has been automatically marked as available (leave period ended).`,
+        entityType: 'reviewer',
+        entityId: reviewer.id,
+      });
 
-        returnedIds.push(reviewer.id);
-      }
+      returnedIds.push(reviewer.id);
     }
 
     return NextResponse.json({ flagged: caseIds.length, reviewers_returned: returnedIds.length });

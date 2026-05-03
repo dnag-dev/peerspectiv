@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db, toSnake } from "@/lib/db";
+import { batches as batchesTable, reviewCases, companyForms } from "@/lib/db/schema";
+import { asc, eq } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -60,41 +62,48 @@ function formatDate(dateStr: string | null) {
 }
 
 async function getBatchDetail(id: string): Promise<BatchDetail | null> {
-  const { data: batch, error: batchError } = await supabaseAdmin
-    .from("batches")
-    .select("*, companies(name), company_forms(id, form_name, specialty)")
-    .eq("id", id)
-    .single();
+  const batch = await db.query.batches.findFirst({
+    where: eq(batchesTable.id, id),
+    with: { company: { columns: { name: true } } },
+  });
 
-  if (batchError || !batch) return null;
+  if (!batch) return null;
 
-  const { data: cases } = await supabaseAdmin
-    .from("review_cases")
-    .select("*, providers(id, first_name, last_name, specialty), reviewers(id, full_name, email, specialty)")
-    .eq("batch_id", id)
-    .order("created_at", { ascending: true });
+  // Attached company form is referenced by batches.companyFormId but isn't a
+  // declared Drizzle relation — fetch it separately.
+  let attachedForm: { id: string; form_name: string; specialty: string } | null = null;
+  if (batch.companyFormId) {
+    const [f] = await db
+      .select({
+        id: companyForms.id,
+        form_name: companyForms.formName,
+        specialty: companyForms.specialty,
+      })
+      .from(companyForms)
+      .where(eq(companyForms.id, batch.companyFormId))
+      .limit(1);
+    attachedForm = f ?? null;
+  }
 
-  const mappedCases: CaseWithRelations[] = (cases || []).map((c: any) => ({
-    ...c,
-    // Compat layer singularizes: providers→provider, reviewers→reviewer
-    provider: (c.provider || c.providers) as unknown as Provider | null,
-    reviewer: (c.reviewer || c.reviewers) as unknown as Reviewer | null,
-    providers: undefined,
-    reviewers: undefined,
-  }));
+  const cases = await db.query.reviewCases.findMany({
+    where: eq(reviewCases.batchId, id),
+    orderBy: asc(reviewCases.createdAt),
+    with: {
+      provider: { columns: { id: true, firstName: true, lastName: true, specialty: true } },
+      reviewer: { columns: { id: true, fullName: true, email: true, specialty: true } },
+    },
+  });
 
-  const formRel = (batch.company_form || batch.company_forms) as
-    | { id: string; form_name: string; specialty: string }
-    | null;
+  const mappedCases: CaseWithRelations[] = cases.map((c) => {
+    const snake = toSnake<any>(c);
+    return snake;
+  });
 
+  const batchSnake = toSnake<any>({ ...batch, company: undefined });
   return {
-    ...batch,
-    company_name: ((batch.company || batch.companies) as { name: string } | null)?.name ?? null,
-    attached_form: formRel ?? null,
-    company: undefined,
-    companies: undefined,
-    company_form: undefined,
-    company_forms: undefined,
+    ...batchSnake,
+    company_name: batch.company?.name ?? null,
+    attached_form: attachedForm,
     cases: mappedCases,
   };
 }

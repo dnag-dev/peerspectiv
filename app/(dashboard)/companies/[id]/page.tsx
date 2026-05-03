@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db, toSnake } from "@/lib/db";
+import { companies, providers as providersTable, reviewCases } from "@/lib/db/schema";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -25,40 +27,39 @@ interface ProviderWithCaseCount extends Provider {
 }
 
 async function getCompanyWithProviders(id: string) {
-  const { data: company, error: companyError } = await supabaseAdmin
-    .from("companies")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const [company] = await db.select().from(companies).where(eq(companies.id, id)).limit(1);
+  if (!company) return null;
 
-  if (companyError || !company) return null;
-
-  const { data: providers } = await supabaseAdmin
-    .from("providers")
-    .select("*")
-    .eq("company_id", id)
-    .order("last_name");
+  const providers = await db
+    .select()
+    .from(providersTable)
+    .where(eq(providersTable.companyId, id))
+    .orderBy(asc(providersTable.lastName));
 
   // Get active case counts for each provider
-  const { data: caseCounts } = await supabaseAdmin
-    .from("review_cases")
-    .select("provider_id, status")
-    .eq("company_id", id)
-    .in("status", ["unassigned", "pending_approval", "assigned", "in_progress"]);
+  const caseCounts = await db
+    .select({ providerId: reviewCases.providerId, status: reviewCases.status })
+    .from(reviewCases)
+    .where(
+      and(
+        eq(reviewCases.companyId, id),
+        inArray(reviewCases.status, ['unassigned', 'pending_approval', 'assigned', 'in_progress'])
+      )
+    );
 
   const caseMap = new Map<string, number>();
-  caseCounts?.forEach((c: any) => {
-    if (c.provider_id) {
-      caseMap.set(c.provider_id, (caseMap.get(c.provider_id) || 0) + 1);
+  caseCounts.forEach((c) => {
+    if (c.providerId) {
+      caseMap.set(c.providerId, (caseMap.get(c.providerId) || 0) + 1);
     }
   });
 
-  const providersWithCounts: ProviderWithCaseCount[] = (providers || []).map((p: any) => ({
-    ...p,
+  const providersWithCounts: ProviderWithCaseCount[] = providers.map((p) => ({
+    ...(toSnake(p) as Provider),
     active_case_count: caseMap.get(p.id) || 0,
   }));
 
-  return { company: company as Company, providers: providersWithCounts };
+  return { company: toSnake(company) as Company, providers: providersWithCounts };
 }
 
 export default async function CompanyDetailPage({

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { reviewCases } from "@/lib/db/schema";
+import { and, desc, eq, gte, isNotNull, lte } from "drizzle-orm";
 
 export const dynamic = 'force-dynamic';
 
@@ -11,100 +13,63 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get("start_date");
     const endDate = searchParams.get("end_date");
 
-    // NOTE: alias syntax must be `<alias>:<table>(...)` — the project's
-    // Supabase-compat layer interprets the segment after the colon as a
-    // TABLE NAME, not an FK column. Writing `providers:provider_id(...)`
-    // made it try to join a non-existent table and silently returned 0 rows.
-    let query = supabaseAdmin
-      .from("review_cases")
-      .select(
-        `
-        id,
-        encounter_date,
-        status,
-        updated_at,
-        provider_id,
-        reviewer_id,
-        mrn_number,
-        is_pediatric,
-        provider:providers(first_name, last_name),
-        reviewer:reviewers(full_name, specialties),
-        review_results(overall_score, deficiencies)
-      `
-      )
-      .not("reviewer_id", "is", null)
-      .order("updated_at", { ascending: false })
-      .limit(200);
-
+    const conditions = [isNotNull(reviewCases.reviewerId)];
     if (companyId && companyId !== "all") {
-      query = query.eq("company_id", companyId);
+      conditions.push(eq(reviewCases.companyId, companyId));
     }
-    if (startDate) {
-      query = query.gte("encounter_date", startDate);
-    }
-    if (endDate) {
-      query = query.lte("encounter_date", endDate);
-    }
+    if (startDate) conditions.push(gte(reviewCases.encounterDate, startDate));
+    if (endDate) conditions.push(lte(reviewCases.encounterDate, endDate));
 
-    const { data, error } = await query;
+    const data = await db.query.reviewCases.findMany({
+      where: and(...conditions),
+      orderBy: desc(reviewCases.updatedAt),
+      limit: 200,
+      columns: {
+        id: true,
+        encounterDate: true,
+        status: true,
+        updatedAt: true,
+        providerId: true,
+        reviewerId: true,
+        mrnNumber: true,
+        isPediatric: true,
+      },
+      with: {
+        provider: { columns: { firstName: true, lastName: true } },
+        reviewer: { columns: { fullName: true, specialties: true } },
+        reviewResult: { columns: { overallScore: true, deficiencies: true } },
+      },
+    });
 
-    if (error) {
-      console.error("[API] reports/assignments error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch assignment results", code: "DB_ERROR" },
-        { status: 500 }
-      );
-    }
-
-    // Transform into flat rows
-    type RawRow = {
-      id: string;
-      encounter_date: string | null;
-      status: string;
-      updated_at: string;
-      provider_id: string | null;
-      reviewer_id: string | null;
-      mrn_number: string | null;
-      is_pediatric: boolean | null;
-      provider: { first_name: string; last_name: string } | null;
-      providers: { first_name: string; last_name: string } | null;
-      reviewer: { full_name: string; specialties: string[] | null } | null;
-      reviewers: { full_name: string; specialties: string[] | null } | null;
-      review_results: Array<{
-        overall_score: number | null;
-        deficiencies: unknown[] | null;
-      }> | null;
-    };
-
-    let rows = ((data ?? []) as unknown as RawRow[]).map((c) => {
-      const result = c.review_results?.[0];
+    let rows = data.map((c) => {
+      const result = c.reviewResult;
       const deficiencies = result?.deficiencies;
-      const reviewer = c.reviewer ?? c.reviewers;
+      const reviewer = c.reviewer;
       const reviewerSpecialties = reviewer?.specialties ?? [];
-      const isPediatric = c.is_pediatric === true;
+      const isPediatric = c.isPediatric === true;
       const pediatricMismatch =
         isPediatric &&
         !reviewerSpecialties.some((s) => s?.toLowerCase().includes("pediatric"));
       return {
         id: c.id,
-        provider_id: c.provider_id,
-        reviewer_id: c.reviewer_id,
-        provider_name: (c.provider ?? c.providers)
-          ? `${(c.provider ?? c.providers)!.first_name} ${(c.provider ?? c.providers)!.last_name}`
+        provider_id: c.providerId,
+        reviewer_id: c.reviewerId,
+        provider_name: c.provider
+          ? `${c.provider.firstName} ${c.provider.lastName}`
           : "Unassigned",
-        mrn_number: c.mrn_number ?? "—",
+        mrn_number: c.mrnNumber ?? "—",
         is_pediatric: isPediatric,
         pediatric_mismatch: pediatricMismatch,
-        reviewer_name: reviewer?.full_name ?? "Unassigned",
-        encounter_date: c.encounter_date,
-        overall_score: result?.overall_score ?? null,
+        reviewer_name: reviewer?.fullName ?? "Unassigned",
+        encounter_date: c.encounterDate,
+        overall_score: result?.overallScore ?? null,
         deficiencies_count: Array.isArray(deficiencies) ? deficiencies.length : 0,
-        completed_date: c.status === "completed" ? c.updated_at : null,
+        completed_date: c.status === "completed" ? c.updatedAt : null,
         status: c.status,
       };
     });
 
-    // Client-side provider name filter (Supabase doesn't support ilike on joined fields easily)
+    // Client-side provider name filter
     if (provider) {
       const search = provider.toLowerCase();
       rows = rows.filter((r) =>

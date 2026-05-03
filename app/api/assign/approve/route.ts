@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { reviewCases, batches } from '@/lib/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { approveAssignment, approveAllAssignments } from '@/lib/ai/assignment-engine';
 import { sendReviewerAssignment } from '@/lib/email/notifications';
 import { auditLog } from '@/lib/utils/audit';
@@ -25,58 +27,61 @@ export async function POST(request: NextRequest) {
 
     // Optional reassign: swap reviewer_id before approval. Used by manual reviewer picker.
     if (case_id && reassign_to) {
-      await supabaseAdmin
-        .from('review_cases')
-        .update({ reviewer_id: reassign_to, updated_at: new Date().toISOString() })
-        .eq('id', case_id);
+      await db
+        .update(reviewCases)
+        .set({ reviewerId: reassign_to, updatedAt: new Date() })
+        .where(eq(reviewCases.id, case_id));
     }
     // Optional form override: record which company-approved form applies.
     if (case_id && company_form_id) {
-      await supabaseAdmin
-        .from('review_cases')
-        .update({ company_form_id, updated_at: new Date().toISOString() })
-        .eq('id', case_id);
+      await db
+        .update(reviewCases)
+        .set({ companyFormId: company_form_id, updatedAt: new Date() })
+        .where(eq(reviewCases.id, case_id));
     }
 
     if (approve_all && batch_id) {
       const count = await approveAllAssignments(batch_id);
 
       // Send emails to all newly assigned reviewers in the batch
-      const { data: assignedCases } = await supabaseAdmin
-        .from('review_cases')
-        .select('id, specialty_required, due_date, reviewer:reviewers(full_name, email)')
-        .eq('batch_id', batch_id)
-        .eq('status', 'assigned');
+      const assignedCases = await db.query.reviewCases.findMany({
+        where: and(eq(reviewCases.batchId, batch_id), eq(reviewCases.status, 'assigned')),
+        columns: { id: true, specialtyRequired: true, dueDate: true },
+        with: { reviewer: { columns: { fullName: true, email: true } } },
+      });
 
-      if (assignedCases) {
-        for (const c of assignedCases) {
-          const reviewer = c.reviewer as unknown as { full_name: string; email: string } | null;
-          if (reviewer?.email) {
-            sendReviewerAssignment({
-              reviewerEmail: reviewer.email,
-              reviewerName: reviewer.full_name,
-              caseId: c.id,
-              specialty: c.specialty_required || 'General',
-              dueDate: c.due_date ? new Date(c.due_date).toLocaleDateString() : 'TBD',
-              portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/reviewer/case/${c.id}`,
-            }).catch(() => {});
-          }
+      for (const c of assignedCases) {
+        const reviewer = c.reviewer;
+        if (reviewer?.email) {
+          sendReviewerAssignment({
+            reviewerEmail: reviewer.email,
+            reviewerName: reviewer.fullName ?? '',
+            caseId: c.id,
+            specialty: c.specialtyRequired || 'General',
+            dueDate: c.dueDate ? new Date(c.dueDate).toLocaleDateString() : 'TBD',
+            portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/reviewer/case/${c.id}`,
+          }).catch(() => {});
         }
       }
 
       // Update projected completion for this batch
-      const { data: batchCases } = await supabaseAdmin
-        .from('review_cases')
-        .select('due_date, status')
-        .eq('batch_id', batch_id);
+      const batchCases = await db
+        .select({ due_date: reviewCases.dueDate, status: reviewCases.status })
+        .from(reviewCases)
+        .where(eq(reviewCases.batchId, batch_id));
 
-      if (batchCases) {
-        const projected = calculateProjectedCompletion(batchCases);
+      if (batchCases.length > 0) {
+        const projected = calculateProjectedCompletion(
+          batchCases.map((c) => ({
+            due_date: c.due_date ? new Date(c.due_date).toISOString() : null,
+            status: c.status as string,
+          }))
+        );
         if (projected) {
-          await supabaseAdmin
-            .from('batches')
-            .update({ projected_completion: projected.toISOString() })
-            .eq('id', batch_id);
+          await db
+            .update(batches)
+            .set({ projectedCompletion: projected })
+            .where(eq(batches.id, batch_id));
         }
       }
 
@@ -96,38 +101,44 @@ export async function POST(request: NextRequest) {
       await approveAssignment(case_id);
 
       // Fetch case details and send email
-      const { data: caseData } = await supabaseAdmin
-        .from('review_cases')
-        .select('id, batch_id, specialty_required, due_date, reviewer:reviewers(full_name, email)')
-        .eq('id', case_id)
-        .single();
+      const caseData = await db.query.reviewCases.findFirst({
+        where: eq(reviewCases.id, case_id),
+        columns: { id: true, batchId: true, specialtyRequired: true, dueDate: true },
+        with: { reviewer: { columns: { fullName: true, email: true } } },
+      });
 
       // Recalculate projected completion for this case's batch
-      if (caseData?.batch_id) {
-        const { data: sibling } = await supabaseAdmin
-          .from('review_cases')
-          .select('due_date, status')
-          .eq('batch_id', caseData.batch_id);
-        if (sibling) {
-          const projected = calculateProjectedCompletion(sibling);
+      if (caseData?.batchId) {
+        const sibling = await db
+          .select({ due_date: reviewCases.dueDate, status: reviewCases.status })
+          .from(reviewCases)
+          .where(eq(reviewCases.batchId, caseData.batchId));
+
+        if (sibling.length > 0) {
+          const projected = calculateProjectedCompletion(
+            sibling.map((c) => ({
+              due_date: c.due_date ? new Date(c.due_date).toISOString() : null,
+              status: c.status as string,
+            }))
+          );
           if (projected) {
-            await supabaseAdmin
-              .from('batches')
-              .update({ projected_completion: projected.toISOString() })
-              .eq('id', caseData.batch_id);
+            await db
+              .update(batches)
+              .set({ projectedCompletion: projected })
+              .where(eq(batches.id, caseData.batchId));
           }
         }
       }
 
       if (caseData) {
-        const reviewer = caseData.reviewer as unknown as { full_name: string; email: string } | null;
+        const reviewer = caseData.reviewer;
         if (reviewer?.email) {
           sendReviewerAssignment({
             reviewerEmail: reviewer.email,
-            reviewerName: reviewer.full_name,
+            reviewerName: reviewer.fullName ?? '',
             caseId: case_id,
-            specialty: caseData.specialty_required || 'General',
-            dueDate: caseData.due_date ? new Date(caseData.due_date).toLocaleDateString() : 'TBD',
+            specialty: caseData.specialtyRequired || 'General',
+            dueDate: caseData.dueDate ? new Date(caseData.dueDate).toLocaleDateString() : 'TBD',
             portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/reviewer/case/${case_id}`,
           }).catch(() => {});
         }

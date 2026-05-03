@@ -10,10 +10,9 @@ import {
   Zap,
   Terminal,
 } from "lucide-react";
-import { supabaseAdmin } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
-import { companies, batches } from "@/lib/db/schema";
-import { and, eq, gte, isNotNull, lt, lte, sql } from "drizzle-orm";
+import { companies, batches, reviewCases, auditLogs } from "@/lib/db/schema";
+import { and, desc, eq, gte, isNotNull, lt, lte, sql } from "drizzle-orm";
 import { ClientOverviewCard } from "@/components/dashboard/ClientOverviewCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -141,6 +140,9 @@ export default async function DashboardPage() {
     .orderBy(companies.name);
 
   // Fetch all KPI data in parallel
+  const countQuery = (where: any) =>
+    db.select({ c: sql<number>`count(*)::int` }).from(reviewCases).where(where);
+
   const [
     unassignedRes,
     pendingApprovalRes,
@@ -152,63 +154,35 @@ export default async function DashboardPage() {
     allCasesStatusRes,
     auditLogsRes,
   ] = await Promise.all([
-    supabaseAdmin
-      .from("review_cases")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "unassigned"),
-    supabaseAdmin
-      .from("review_cases")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "pending_approval"),
-    supabaseAdmin
-      .from("review_cases")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "in_progress"),
-    supabaseAdmin
-      .from("review_cases")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "past_due"),
-    supabaseAdmin
-      .from("review_cases")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "completed")
-      .gte("updated_at", startOfMonth),
-    supabaseAdmin
-      .from("review_cases")
-      .select("*", { count: "exact", head: true })
-      .eq("ai_analysis_status", "processing"),
-    // Cases by company (last 30 days)
-    supabaseAdmin
-      .from("review_cases")
-      .select("company_id, company:companies(name)")
-      .gte("created_at", thirtyDaysAgo),
-    // All cases for status distribution
-    supabaseAdmin
-      .from("review_cases")
-      .select("status"),
-    // Last 10 audit logs
-    supabaseAdmin
-      .from("audit_logs")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(10),
+    countQuery(eq(reviewCases.status, "unassigned")),
+    countQuery(eq(reviewCases.status, "pending_approval")),
+    countQuery(eq(reviewCases.status, "in_progress")),
+    countQuery(eq(reviewCases.status, "past_due")),
+    countQuery(
+      and(eq(reviewCases.status, "completed"), gte(reviewCases.updatedAt, new Date(startOfMonth)))
+    ),
+    countQuery(eq(reviewCases.aiAnalysisStatus, "processing")),
+    db.query.reviewCases.findMany({
+      where: gte(reviewCases.createdAt, new Date(thirtyDaysAgo)),
+      columns: { companyId: true },
+      with: { company: { columns: { name: true } } },
+    }),
+    db.select({ status: reviewCases.status }).from(reviewCases),
+    db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(10),
   ]);
 
-  const unassigned = unassignedRes.count ?? 0;
-  const pendingApproval = pendingApprovalRes.count ?? 0;
-  const inProgress = inProgressRes.count ?? 0;
-  const pastDue = pastDueRes.count ?? 0;
-  const completedThisMonth = completedThisMonthRes.count ?? 0;
-  const aiProcessing = aiProcessingRes.count ?? 0;
+  const unassigned = Number(unassignedRes[0]?.c ?? 0);
+  const pendingApproval = Number(pendingApprovalRes[0]?.c ?? 0);
+  const inProgress = Number(inProgressRes[0]?.c ?? 0);
+  const pastDue = Number(pastDueRes[0]?.c ?? 0);
+  const completedThisMonth = Number(completedThisMonthRes[0]?.c ?? 0);
+  const aiProcessing = Number(aiProcessingRes[0]?.c ?? 0);
 
   // Aggregate cases by company
   const companyMap = new Map<string, number>();
-  if (casesByCompanyRes.data) {
-    for (const row of casesByCompanyRes.data) {
-      const companyName =
-        (row.companies as unknown as { name: string })?.name ?? "Unknown";
-      companyMap.set(companyName, (companyMap.get(companyName) ?? 0) + 1);
-    }
+  for (const row of casesByCompanyRes) {
+    const companyName = row.company?.name ?? "Unknown";
+    companyMap.set(companyName, (companyMap.get(companyName) ?? 0) + 1);
   }
   const casesByCompany = Array.from(companyMap.entries())
     .map(([name, count]) => ({ name, count }))
@@ -217,10 +191,9 @@ export default async function DashboardPage() {
 
   // Aggregate cases by status
   const statusMap = new Map<string, number>();
-  if (allCasesStatusRes.data) {
-    for (const row of allCasesStatusRes.data) {
-      statusMap.set(row.status, (statusMap.get(row.status) ?? 0) + 1);
-    }
+  for (const row of allCasesStatusRes) {
+    const s = (row.status as string) ?? '';
+    statusMap.set(s, (statusMap.get(s) ?? 0) + 1);
   }
   const casesByStatus = Array.from(statusMap.entries()).map(
     ([status, count]) => ({
@@ -230,7 +203,7 @@ export default async function DashboardPage() {
     })
   );
 
-  const auditLogs = auditLogsRes.data ?? [];
+  const auditLogList = auditLogsRes;
 
   return (
     <div className="space-y-6">
@@ -425,13 +398,13 @@ export default async function DashboardPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {auditLogs.length === 0 ? (
+          {auditLogList.length === 0 ? (
             <p className="py-6 text-center text-sm text-ink-500">
               No recent activity
             </p>
           ) : (
             <ul className="space-y-3">
-              {auditLogs.map((log: any) => (
+              {auditLogList.map((log) => (
                 <li
                   key={log.id}
                   className="flex items-start gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-cobalt-50"
@@ -442,19 +415,19 @@ export default async function DashboardPage() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-ink-900">
                       {formatAction(log.action)}
-                      {log.resource_type && (
+                      {log.resourceType && (
                         <span className="ml-1 font-normal text-ink-500">
-                          on {log.resource_type}
+                          on {log.resourceType}
                         </span>
                       )}
                     </p>
                     <p className="text-xs text-ink-500">
-                      {formatRelativeTime(log.created_at)}
+                      {log.createdAt ? formatRelativeTime(new Date(log.createdAt).toISOString()) : ''}
                     </p>
                   </div>
-                  {log.resource_id && (
+                  {log.resourceId && (
                     <Badge variant="outline" className="shrink-0 text-[10px]">
-                      {log.resource_id.slice(0, 8)}
+                      {log.resourceId.slice(0, 8)}
                     </Badge>
                   )}
                 </li>

@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { and, eq, isNull } from 'drizzle-orm';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import { scoreReviewerQuality } from '@/lib/ai/quality-scorer';
 import { auditLog } from '@/lib/utils/audit';
-import { db } from '@/lib/db';
-import { retentionSchedule, reviewResults, correctiveActions } from '@/lib/db/schema';
+import { db, toSnake } from '@/lib/db';
+import {
+  retentionSchedule,
+  reviewResults,
+  reviewCases,
+  reviewers,
+  batches,
+  aiAnalyses,
+  correctiveActions,
+} from '@/lib/db/schema';
 import { generateCorrectiveActionPlan } from '@/lib/ai/report-generator';
 import type { CriterionScore, Deficiency, ReviewerChange } from '@/types';
 
@@ -45,7 +52,6 @@ export async function POST(request: NextRequest) {
     let overall_score = overall_score_in;
 
     // Section C.3 — yes_no scoring with N/A excluded.
-    // numerator = yes count, denominator = yes + no count.
     if (form_responses && typeof form_responses === 'object') {
       let yes = 0;
       let no = 0;
@@ -53,14 +59,10 @@ export async function POST(request: NextRequest) {
         const v = resp?.value;
         if (v === true || v === 'yes') yes++;
         else if (v === false || v === 'no') no++;
-        // 'na' (or anything else) is excluded from numerator/denominator
       }
       const denom = yes + no;
       if (denom > 0) {
-        // Round to 2 decimals so 8/9 yields 88.89 (not 89). DB column is
-        // numeric(5,2) — see migration 010.
         const yesNoScore = Math.round((yes / denom) * 10000) / 100;
-        // Average with the existing rating-based overall_score when both exist.
         if (typeof overall_score_in === 'number' && criteria_scores?.length) {
           overall_score = Math.round(((overall_score_in + yesNoScore) / 2) * 100) / 100;
         } else {
@@ -89,13 +91,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch case and AI analysis for agreement comparison
-    const { data: caseData, error: caseError } = await supabaseAdmin
-      .from('review_cases')
-      .select('id, reviewer_id, status')
-      .eq('id', case_id)
-      .single();
+    const [caseData] = await db
+      .select({
+        id: reviewCases.id,
+        reviewerId: reviewCases.reviewerId,
+        status: reviewCases.status,
+      })
+      .from(reviewCases)
+      .where(eq(reviewCases.id, case_id))
+      .limit(1);
 
-    if (caseError || !caseData) {
+    if (!caseData) {
       return NextResponse.json(
         { error: 'Case not found', code: 'NOT_FOUND' },
         { status: 404 }
@@ -110,18 +116,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch AI analysis for comparison
-    const { data: aiAnalysis } = await supabaseAdmin
-      .from('ai_analyses')
-      .select('criteria_scores')
-      .eq('case_id', case_id)
-      .single();
+    const [aiAnalysis] = await db
+      .select({ criteriaScores: aiAnalyses.criteriaScores })
+      .from(aiAnalyses)
+      .where(eq(aiAnalyses.caseId, case_id))
+      .limit(1);
 
     // Calculate AI agreement percentage and build reviewer_changes
     let aiAgreementPercentage: number | null = null;
     let reviewerChanges: ReviewerChange[] = [];
 
-    if (aiAnalysis?.criteria_scores && Array.isArray(aiAnalysis.criteria_scores)) {
-      const aiScores = aiAnalysis.criteria_scores as CriterionScore[];
+    if (aiAnalysis?.criteriaScores && Array.isArray(aiAnalysis.criteriaScores)) {
+      const aiScores = aiAnalysis.criteriaScores as CriterionScore[];
       let agreements = 0;
       let total = 0;
 
@@ -147,18 +153,16 @@ export async function POST(request: NextRequest) {
 
     // Resolve reviewer full name for the snapshot
     let reviewerNameSnapshot: string | null = null;
-    if (caseData.reviewer_id) {
-      const { data: reviewerRow } = await supabaseAdmin
-        .from('reviewers')
-        .select('full_name')
-        .eq('id', caseData.reviewer_id)
-        .single();
-      reviewerNameSnapshot = reviewerRow?.full_name ?? null;
+    if (caseData.reviewerId) {
+      const [reviewerRow] = await db
+        .select({ fullName: reviewers.fullName })
+        .from(reviewers)
+        .where(eq(reviewers.id, caseData.reviewerId))
+        .limit(1);
+      reviewerNameSnapshot = reviewerRow?.fullName ?? null;
     }
 
-    // Save to review_results — Drizzle onConflictDoUpdate (NOT supabase-js
-    // upsert, which mis-serializes JSONB arrays into `{}`). See P0 fix in
-    // Phase 5.0.
+    // Save to review_results
     const submittedAt = new Date();
     const deficienciesArr: Deficiency[] = deficiencies || [];
     const aiAgreementStr =
@@ -173,7 +177,7 @@ export async function POST(request: NextRequest) {
       .insert(reviewResults)
       .values({
         caseId: case_id,
-        reviewerId: caseData.reviewer_id,
+        reviewerId: caseData.reviewerId,
         criteriaScores: criteria_scores,
         deficiencies: deficienciesArr,
         overallScore: overall_score,
@@ -191,7 +195,7 @@ export async function POST(request: NextRequest) {
       .onConflictDoUpdate({
         target: reviewResults.caseId,
         set: {
-          reviewerId: caseData.reviewer_id,
+          reviewerId: caseData.reviewerId,
           criteriaScores: criteria_scores,
           deficiencies: deficienciesArr,
           overallScore: overall_score,
@@ -217,9 +221,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Readback shape guard — verify JSONB arrays persisted as arrays with
-    // matching length. Catches any future serialization regression at the
-    // point of failure rather than silently shipping hollow data.
+    // Readback shape guard
     const persistedCriteria = result.criteriaScores as unknown;
     const persistedDeficiencies = result.deficiencies as unknown;
     const criteriaOk =
@@ -229,22 +231,7 @@ export async function POST(request: NextRequest) {
       Array.isArray(persistedDeficiencies) &&
       persistedDeficiencies.length === deficienciesArr.length;
     if (!criteriaOk || !deficienciesOk) {
-      console.error('[API] PERSIST_SHAPE_MISMATCH for case:', case_id, {
-        criteriaInputLen: criteria_scores.length,
-        criteriaPersistedType: Array.isArray(persistedCriteria)
-          ? 'array'
-          : typeof persistedCriteria,
-        criteriaPersistedLen: Array.isArray(persistedCriteria)
-          ? persistedCriteria.length
-          : null,
-        deficienciesInputLen: deficienciesArr.length,
-        deficienciesPersistedType: Array.isArray(persistedDeficiencies)
-          ? 'array'
-          : typeof persistedDeficiencies,
-        deficienciesPersistedLen: Array.isArray(persistedDeficiencies)
-          ? persistedDeficiencies.length
-          : null,
-      });
+      console.error('[API] PERSIST_SHAPE_MISMATCH for case:', case_id);
       await auditLog({
         action: 'review_persist_shape_mismatch',
         resourceType: 'review_result',
@@ -268,14 +255,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Update review_cases status to completed (and snapshot MRN — Section C.4)
-    await supabaseAdmin
-      .from('review_cases')
-      .update({
+    await db
+      .update(reviewCases)
+      .set({
         status: 'completed',
-        updated_at: new Date().toISOString(),
-        ...(mrnSnapshot ? { mrn_number: mrnSnapshot } : {}),
+        updatedAt: new Date(),
+        ...(mrnSnapshot ? { mrnNumber: mrnSnapshot } : {}),
       })
-      .eq('id', case_id);
+      .where(eq(reviewCases.id, case_id));
 
     // Retention hook -- extend chart retention 30 days past review completion.
     try {
@@ -296,42 +283,41 @@ export async function POST(request: NextRequest) {
     }
 
     // Decrement reviewer active_cases_count
-    if (caseData.reviewer_id) {
-      const { data: reviewer } = await supabaseAdmin
-        .from('reviewers')
-        .select('active_cases_count')
-        .eq('id', caseData.reviewer_id)
-        .single();
+    if (caseData.reviewerId) {
+      const [reviewer] = await db
+        .select({ activeCasesCount: reviewers.activeCasesCount })
+        .from(reviewers)
+        .where(eq(reviewers.id, caseData.reviewerId))
+        .limit(1);
 
       if (reviewer) {
-        await supabaseAdmin
-          .from('reviewers')
-          .update({
-            active_cases_count: Math.max(0, (reviewer.active_cases_count || 0) - 1),
-            updated_at: new Date().toISOString(),
+        await db
+          .update(reviewers)
+          .set({
+            activeCasesCount: Math.max(0, (reviewer.activeCasesCount || 0) - 1),
+            updatedAt: new Date(),
           })
-          .eq('id', caseData.reviewer_id);
+          .where(eq(reviewers.id, caseData.reviewerId));
       }
     }
 
     // Update batch completed count
-    const { data: batchCase } = await supabaseAdmin
-      .from('review_cases')
-      .select('batch_id')
-      .eq('id', case_id)
-      .single();
+    const [batchCase] = await db
+      .select({ batchId: reviewCases.batchId })
+      .from(reviewCases)
+      .where(eq(reviewCases.id, case_id))
+      .limit(1);
 
-    if (batchCase?.batch_id) {
-      const { count } = await supabaseAdmin
-        .from('review_cases')
-        .select('*', { count: 'exact', head: true })
-        .eq('batch_id', batchCase.batch_id)
-        .eq('status', 'completed');
+    if (batchCase?.batchId) {
+      const [{ count }] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(reviewCases)
+        .where(and(eq(reviewCases.batchId, batchCase.batchId), eq(reviewCases.status, 'completed')));
 
-      await supabaseAdmin
-        .from('batches')
-        .update({ completed_cases: count || 0 })
-        .eq('id', batchCase.batch_id);
+      await db
+        .update(batches)
+        .set({ completedCases: count || 0 })
+        .where(eq(batches.id, batchCase.batchId));
     }
 
     // Trigger quality scoring in the background
@@ -339,9 +325,7 @@ export async function POST(request: NextRequest) {
       console.error('[API] Quality scoring failed for case:', case_id, err);
     });
 
-    // Section J4 — auto-draft a Corrective Action Plan when the result hits
-    // the threshold (overall_score < 70 OR any deficiencies). Runs in the
-    // background; never blocks the submit response.
+    // Section J4 — auto-draft Corrective Action Plan when threshold met
     const shouldDraftCap =
       (typeof overall_score === 'number' && overall_score < 70) ||
       deficienciesArr.length > 0;
@@ -350,14 +334,14 @@ export async function POST(request: NextRequest) {
         try {
           const cap = await generateCorrectiveActionPlan(case_id, deficienciesArr);
           // Look up companyId + providerId from the case for the CAP row.
-          const { data: caseCtx } = await supabaseAdmin
-            .from('review_cases')
-            .select('company_id, provider_id')
-            .eq('id', case_id)
-            .single();
+          const [caseCtx] = await db
+            .select({ companyId: reviewCases.companyId, providerId: reviewCases.providerId })
+            .from(reviewCases)
+            .where(eq(reviewCases.id, case_id))
+            .limit(1);
           await db.insert(correctiveActions).values({
-            companyId: caseCtx?.company_id ?? null,
-            providerId: caseCtx?.provider_id ?? null,
+            companyId: caseCtx?.companyId ?? null,
+            providerId: caseCtx?.providerId ?? null,
             title: cap.title,
             description: cap.description,
             identifiedIssue: cap.identified_issue,
@@ -384,7 +368,7 @@ export async function POST(request: NextRequest) {
       request,
     });
 
-    return NextResponse.json({ data: result }, { status: 201 });
+    return NextResponse.json({ data: toSnake(result) }, { status: 201 });
   } catch (err) {
     console.error('[API] POST /api/reviewer/submit error:', err);
     return NextResponse.json(

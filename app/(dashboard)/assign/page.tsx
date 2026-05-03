@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db, toSnake } from "@/lib/db";
+import { reviewCases, reviewers as reviewersTable } from "@/lib/db/schema";
+import { and, asc, eq, gte, inArray } from "drizzle-orm";
 import { Card, CardContent } from "@/components/ui/card";
 import { AssignmentQueue } from "@/components/assign/AssignmentQueue";
 import { AssignTabsNav } from "@/components/assign/AssignTabsNav";
@@ -16,34 +18,25 @@ interface PendingCase extends ReviewCase {
 }
 
 async function getPendingCases(): Promise<PendingCase[]> {
-  const { data, error } = await supabaseAdmin
-    .from("review_cases")
-    .select(
-      `
-      *,
-      provider:providers(id, first_name, last_name, specialty, npi, email),
-      reviewer:reviewers(id, full_name, email, specialty, board_certification, active_cases_count, total_reviews_completed, ai_agreement_score, status),
-      company:companies(id, name, contact_person, contact_email)
-    `
-    )
-    .eq("status", "pending_approval")
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    console.error("[assign] Failed to fetch pending cases:", error);
+  let data;
+  try {
+    data = await db.query.reviewCases.findMany({
+      where: eq(reviewCases.status, "pending_approval"),
+      orderBy: asc(reviewCases.createdAt),
+      with: {
+        provider: { columns: { id: true, firstName: true, lastName: true, specialty: true, npi: true, email: true } },
+        reviewer: { columns: { id: true, fullName: true, email: true, specialty: true, boardCertification: true, activeCasesCount: true, totalReviewsCompleted: true, aiAgreementScore: true, status: true } },
+        company: { columns: { id: true, name: true, contactPerson: true, contactEmail: true } },
+      },
+    });
+  } catch (err) {
+    console.error("[assign] Failed to fetch pending cases:", err);
     return [];
   }
 
-  return (data || [])
-    .filter(
-      (c: any) => c.provider && c.reviewer && c.company
-    )
-    .map((c: any) => ({
-      ...c,
-      provider: c.provider as unknown as Provider,
-      reviewer: c.reviewer as unknown as Reviewer,
-      company: c.company as unknown as Company,
-    })) as PendingCase[];
+  return data
+    .filter((c) => c.provider && c.reviewer && c.company)
+    .map((c) => toSnake<any>(c)) as PendingCase[];
 }
 
 async function getAlternateReviewers(
@@ -61,19 +54,22 @@ async function getAlternateReviewers(
 
   if (specialtySet.size === 0) return result;
 
-  const { data: reviewers } = await supabaseAdmin
-    .from("reviewers")
-    .select("*")
-    .eq("status", "active")
-    .in("specialty", Array.from(specialtySet))
-    .order("active_cases_count", { ascending: true })
+  const reviewerRows = await db
+    .select()
+    .from(reviewersTable)
+    .where(
+      and(
+        eq(reviewersTable.status, "active"),
+        inArray(reviewersTable.specialty, Array.from(specialtySet))
+      )
+    )
+    .orderBy(asc(reviewersTable.activeCasesCount))
     .limit(50);
 
-  if (!reviewers) return result;
-
+  const reviewers = reviewerRows.map((r) => toSnake(r)) as Reviewer[];
   for (const c of cases) {
     const neededSpecialty = c.specialty_required || c.provider.specialty;
-    result[c.id] = (reviewers as Reviewer[]).filter(
+    result[c.id] = reviewers.filter(
       (r) => r.id !== c.reviewer.id && r.specialty === neededSpecialty
     );
   }
@@ -84,55 +80,67 @@ async function getAlternateReviewers(
 async function getApprovedTodayCount(): Promise<number> {
   const startOfDayUtc = new Date();
   startOfDayUtc.setUTCHours(0, 0, 0, 0);
-  const { data, error } = await supabaseAdmin
-    .from("review_cases")
-    .select("id, status, updated_at")
-    .gte("updated_at", startOfDayUtc.toISOString())
-    .in("status", ["assigned", "in_progress", "completed", "past_due"]);
-  if (error) return 0;
-  return (data ?? []).length;
+  try {
+    const data = await db
+      .select({ id: reviewCases.id })
+      .from(reviewCases)
+      .where(
+        and(
+          gte(reviewCases.updatedAt, startOfDayUtc),
+          inArray(reviewCases.status, ["assigned", "in_progress", "completed", "past_due"])
+        )
+      );
+    return data.length;
+  } catch {
+    return 0;
+  }
 }
 
 async function getAssignedRows(): Promise<AssignedRow[]> {
-  const { data, error } = await supabaseAdmin
-    .from("review_cases")
-    .select(
-      `
-      id, status, due_date, specialty_required, batch_id,
-      provider:providers(id, first_name, last_name, specialty),
-      reviewer:reviewers(id, full_name),
-      company:companies(id, name),
-      batch:batches(id, batch_name)
-    `
-    )
-    .in("status", ["assigned", "in_progress"])
-    .order("due_date", { ascending: true });
-
-  if (error) {
-    console.error("[assign] Failed to fetch assigned cases:", error);
+  let data;
+  try {
+    data = await db.query.reviewCases.findMany({
+      where: inArray(reviewCases.status, ["assigned", "in_progress"]),
+      orderBy: asc(reviewCases.dueDate),
+      columns: {
+        id: true,
+        status: true,
+        dueDate: true,
+        specialtyRequired: true,
+        batchId: true,
+      },
+      with: {
+        provider: { columns: { id: true, firstName: true, lastName: true, specialty: true } },
+        reviewer: { columns: { id: true, fullName: true } },
+        company: { columns: { id: true, name: true } },
+        batch: { columns: { id: true, batchName: true } },
+      },
+    });
+  } catch (err) {
+    console.error("[assign] Failed to fetch assigned cases:", err);
     return [];
   }
 
-  return (data || []).map((c: any) => ({
+  return data.map((c) => ({
     id: c.id,
-    status: c.status,
-    due_date: c.due_date,
-    specialty_required: c.specialty_required,
-    batch_id: c.batch_id,
-    batch_name: c.batch?.batch_name ?? null,
+    status: c.status as string,
+    due_date: c.dueDate ? new Date(c.dueDate).toISOString() : null,
+    specialty_required: c.specialtyRequired,
+    batch_id: c.batchId,
+    batch_name: c.batch?.batchName ?? null,
     provider: c.provider
       ? {
           id: c.provider.id,
-          first_name: c.provider.first_name,
-          last_name: c.provider.last_name,
+          first_name: c.provider.firstName,
+          last_name: c.provider.lastName,
           specialty: c.provider.specialty,
         }
       : null,
     reviewer: c.reviewer
-      ? { id: c.reviewer.id, full_name: c.reviewer.full_name }
+      ? { id: c.reviewer.id, full_name: c.reviewer.fullName }
       : null,
     company: c.company ? { id: c.company.id, name: c.company.name } : null,
-  }));
+  })) as AssignedRow[];
 }
 
 export default async function AssignPage({

@@ -1,18 +1,11 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { companies } from '@/lib/db/schema';
+import { sql } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    const { error } = await supabaseAdmin
-      .from('companies')
-      .select('id', { count: 'exact', head: true });
-
-    if (error) {
-      return NextResponse.json(
-        { status: 'degraded', db: false, timestamp: new Date().toISOString(), error: error.message, code: 'DB_CONNECTION_FAILED' },
-        { status: 503 }
-      );
-    }
+    await db.select({ count: sql<number>`count(*)::int` }).from(companies);
 
     return NextResponse.json({
       status: 'ok',
@@ -21,8 +14,14 @@ export async function GET() {
     });
   } catch (err) {
     return NextResponse.json(
-      { error: 'Health check failed', code: 'HEALTH_CHECK_ERROR' },
-      { status: 500 }
+      {
+        status: 'degraded',
+        db: false,
+        timestamp: new Date().toISOString(),
+        error: err instanceof Error ? err.message : 'Health check failed',
+        code: 'DB_CONNECTION_FAILED',
+      },
+      { status: 503 }
     );
   }
 }

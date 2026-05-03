@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db, toSnake } from "@/lib/db";
+import { companies } from "@/lib/db/schema";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,24 +11,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Company name is required" }, { status: 400 });
     }
 
-    const { data, error } = await supabaseAdmin
-      .from("companies")
-      .insert({
+    const [row] = await db
+      .insert(companies)
+      .values({
         name: name.trim(),
-        contact_person: contact_person || null,
-        contact_email: contact_email || null,
-        contact_phone: contact_phone || null,
+        contactPerson: contact_person || null,
+        contactEmail: contact_email || null,
+        contactPhone: contact_phone || null,
         notes: notes || null,
         status: status || "active",
       })
-      .select()
-      .single();
+      .returning();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json(toSnake(row), { status: 201 });
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }

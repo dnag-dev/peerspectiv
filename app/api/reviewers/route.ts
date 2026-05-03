@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db, toSnake } from '@/lib/db';
+import { reviewers } from '@/lib/db/schema';
 import { sendCredentialingAlert } from '@/lib/email/notifications';
 
 export const dynamic = 'force-dynamic';
@@ -33,7 +34,6 @@ export async function POST(request: NextRequest) {
       rate_amount?: number | string;
     };
 
-    // Resolve effective specialties array (multi) and back-compat scalar
     let specs: string[] = Array.isArray(specialties)
       ? specialties.map((s) => s.trim()).filter(Boolean)
       : [];
@@ -67,30 +67,30 @@ export async function POST(request: NextRequest) {
     // No credential expiry → keep reviewer inactive until credentialing reviews.
     const initialStatus = credential_valid_until ? 'active' : 'inactive';
 
-    const { data, error } = await supabaseAdmin
-      .from('reviewers')
-      .insert({
-        full_name,
-        email,
-        specialty: specs[0],
-        specialties: specs,
-        board_certification: board_certification ?? null,
-        license_number: license_number ?? null,
-        license_state: license_state ?? null,
-        credential_valid_until: credential_valid_until ?? null,
-        max_case_load: mcl,
-        status: initialStatus,
-        availability_status: 'available',
-        active_cases_count: 0,
-        total_reviews_completed: 0,
-        rate_type: rt,
-        rate_amount: ra,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('[API] POST /api/reviewers error:', error);
+    let row;
+    try {
+      [row] = await db
+        .insert(reviewers)
+        .values({
+          fullName: full_name,
+          email,
+          specialty: specs[0],
+          specialties: specs,
+          boardCertification: board_certification ?? null,
+          licenseNumber: license_number ?? null,
+          licenseState: license_state ?? null,
+          credentialValidUntil: credential_valid_until ?? null,
+          maxCaseLoad: mcl,
+          status: initialStatus,
+          availabilityStatus: 'available',
+          activeCasesCount: 0,
+          totalReviewsCompleted: 0,
+          rateType: rt,
+          rateAmount: String(ra),
+        })
+        .returning();
+    } catch (err) {
+      console.error('[API] POST /api/reviewers error:', err);
       return NextResponse.json(
         { error: 'Failed to create reviewer', code: 'DB_ERROR' },
         { status: 500 }
@@ -99,15 +99,15 @@ export async function POST(request: NextRequest) {
 
     // Fire-and-forget credentialing notification.
     void sendCredentialingAlert({
-      reviewerId: data.id,
-      reviewerName: data.full_name ?? full_name,
-      email: data.email ?? email,
+      reviewerId: row.id,
+      reviewerName: row.fullName ?? full_name,
+      email: row.email ?? email,
       specialties: specs,
     }).catch((err) => {
       console.error('[API] sendCredentialingAlert failed:', err);
     });
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ data: toSnake(row) });
   } catch (err) {
     console.error('[API] POST /api/reviewers error:', err);
     return NextResponse.json(

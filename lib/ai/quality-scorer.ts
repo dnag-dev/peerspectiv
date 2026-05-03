@@ -1,5 +1,7 @@
 import { callClaude } from './anthropic';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { aiAnalyses, reviewResults, reviewers } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 const QUALITY_SYSTEM_PROMPT = `You are a senior medical quality assurance director evaluating the work of a peer reviewer.
 
@@ -20,36 +22,36 @@ Flag options: "rubber_stamping" if agreement > 98% and time spent < 10 minutes, 
 
 export async function scoreReviewerQuality(caseId: string): Promise<void> {
   // Fetch AI analysis and reviewer result
-  const { data: aiAnalysis } = await supabaseAdmin
-    .from('ai_analyses')
-    .select('*')
-    .eq('case_id', caseId)
-    .single();
+  const [aiAnalysis] = await db
+    .select()
+    .from(aiAnalyses)
+    .where(eq(aiAnalyses.caseId, caseId))
+    .limit(1);
 
-  const { data: reviewResult } = await supabaseAdmin
-    .from('review_results')
-    .select('*')
-    .eq('case_id', caseId)
-    .single();
+  const [reviewResult] = await db
+    .select()
+    .from(reviewResults)
+    .where(eq(reviewResults.caseId, caseId))
+    .limit(1);
 
   if (!aiAnalysis || !reviewResult) return;
 
   const userPrompt = `AI Analysis:\n${JSON.stringify({
-    criteria_scores: aiAnalysis.criteria_scores,
+    criteria_scores: aiAnalysis.criteriaScores,
     deficiencies: aiAnalysis.deficiencies,
-    overall_score: aiAnalysis.overall_score,
-    narrative_draft: aiAnalysis.narrative_draft,
+    overall_score: aiAnalysis.overallScore,
+    narrative_draft: aiAnalysis.narrativeDraft,
   }, null, 2)}
 
 Reviewer Submission:\n${JSON.stringify({
-    criteria_scores: reviewResult.criteria_scores,
+    criteria_scores: reviewResult.criteriaScores,
     deficiencies: reviewResult.deficiencies,
-    overall_score: reviewResult.overall_score,
-    narrative_final: reviewResult.narrative_final,
-    time_spent_minutes: reviewResult.time_spent_minutes,
+    overall_score: reviewResult.overallScore,
+    narrative_final: reviewResult.narrativeFinal,
+    time_spent_minutes: reviewResult.timeSpentMinutes,
   }, null, 2)}
 
-AI Agreement Rate: ${reviewResult.ai_agreement_percentage}%`;
+AI Agreement Rate: ${reviewResult.aiAgreementPercentage}%`;
 
   const response = await callClaude(QUALITY_SYSTEM_PROMPT, userPrompt);
 
@@ -59,37 +61,41 @@ AI Agreement Rate: ${reviewResult.ai_agreement_percentage}%`;
   const quality = JSON.parse(jsonMatch[0]);
 
   // Update review result with quality scores
-  await supabaseAdmin
-    .from('review_results')
-    .update({
-      quality_score: quality.quality_score,
-      quality_notes: quality.quality_notes,
+  await db
+    .update(reviewResults)
+    .set({
+      qualityScore: quality.quality_score,
+      qualityNotes: quality.quality_notes,
     })
-    .eq('case_id', caseId);
+    .where(eq(reviewResults.caseId, caseId));
 
   // Update reviewer's running average
-  if (reviewResult.reviewer_id) {
-    const { data: reviewer } = await supabaseAdmin
-      .from('reviewers')
-      .select('ai_agreement_score, total_reviews_completed')
-      .eq('id', reviewResult.reviewer_id)
-      .single();
+  if (reviewResult.reviewerId) {
+    const [reviewer] = await db
+      .select({
+        aiAgreementScore: reviewers.aiAgreementScore,
+        totalReviewsCompleted: reviewers.totalReviewsCompleted,
+      })
+      .from(reviewers)
+      .where(eq(reviewers.id, reviewResult.reviewerId))
+      .limit(1);
 
     if (reviewer) {
-      const total = reviewer.total_reviews_completed || 0;
-      const currentAvg = reviewer.ai_agreement_score || 0;
+      const total = reviewer.totalReviewsCompleted || 0;
+      const currentAvg = Number(reviewer.aiAgreementScore || 0);
+      const aiAgreement = Number(reviewResult.aiAgreementPercentage ?? 0);
       const newAvg = total === 0
-        ? reviewResult.ai_agreement_percentage
-        : (currentAvg * total + (reviewResult.ai_agreement_percentage || 0)) / (total + 1);
+        ? aiAgreement
+        : (currentAvg * total + aiAgreement) / (total + 1);
 
-      await supabaseAdmin
-        .from('reviewers')
-        .update({
-          ai_agreement_score: Math.round(newAvg * 100) / 100,
-          total_reviews_completed: total + 1,
-          updated_at: new Date().toISOString(),
+      await db
+        .update(reviewers)
+        .set({
+          aiAgreementScore: String(Math.round(newAvg * 100) / 100),
+          totalReviewsCompleted: total + 1,
+          updatedAt: new Date(),
         })
-        .eq('id', reviewResult.reviewer_id);
+        .where(eq(reviewers.id, reviewResult.reviewerId));
     }
   }
 }

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db, toSnake } from '@/lib/db';
+import { reviewCases } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
@@ -8,41 +10,55 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const { data, error } = await supabaseAdmin
-      .from('review_cases')
-      .select(`
-        *,
-        provider:providers(id, first_name, last_name, specialty, npi, email),
-        reviewer:reviewers(id, full_name, email, specialty, board_certification),
-        company:companies(id, name, contact_person, contact_email),
-        batch:batches(id, batch_name, status),
-        ai_analysis:ai_analyses(
-          id, chart_summary, criteria_scores, deficiencies,
-          overall_score, documentation_score,
-          clinical_appropriateness_score, care_coordination_score,
-          narrative_draft, model_used, processing_time_ms, created_at
-        ),
-        review_result:review_results(
-          id, criteria_scores, deficiencies, overall_score,
-          narrative_final, ai_agreement_percentage, reviewer_changes,
-          quality_score, quality_notes, submitted_at, time_spent_minutes
-        )
-      `)
-      .eq('id', id)
-      .single();
+    const row = await db.query.reviewCases.findFirst({
+      where: eq(reviewCases.id, id),
+      with: {
+        provider: {
+          columns: { id: true, firstName: true, lastName: true, specialty: true, npi: true, email: true },
+        },
+        reviewer: {
+          columns: { id: true, fullName: true, email: true, specialty: true, boardCertification: true },
+        },
+        company: {
+          columns: { id: true, name: true, contactPerson: true, contactEmail: true },
+        },
+        batch: {
+          columns: { id: true, batchName: true, status: true },
+        },
+        aiAnalysis: {
+          columns: {
+            id: true, chartSummary: true, criteriaScores: true, deficiencies: true,
+            overallScore: true, documentationScore: true,
+            clinicalAppropriatenessScore: true, careCoordinationScore: true,
+            narrativeDraft: true, modelUsed: true, processingTimeMs: true, createdAt: true,
+          },
+        },
+        reviewResult: {
+          columns: {
+            id: true, criteriaScores: true, deficiencies: true, overallScore: true,
+            narrativeFinal: true, aiAgreementPercentage: true, reviewerChanges: true,
+            qualityScore: true, qualityNotes: true, submittedAt: true, timeSpentMinutes: true,
+          },
+        },
+      },
+    });
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Case not found', code: 'NOT_FOUND' },
-          { status: 404 }
-        );
-      }
+    if (!row) {
       return NextResponse.json(
-        { error: error.message, code: 'QUERY_FAILED' },
-        { status: 500 }
+        { error: 'Case not found', code: 'NOT_FOUND' },
+        { status: 404 }
       );
     }
+
+    // Preserve legacy shim API contract: shim returned `ai_analysis` and
+    // `review_result` wrapped in arrays for one-to-one joins. Keep the array
+    // wrapping so the frontend continues to work unchanged.
+    const snake = toSnake<any>(row);
+    const data = {
+      ...snake,
+      ai_analysis: snake.ai_analysis ? [snake.ai_analysis] : [],
+      review_result: snake.review_result ? [snake.review_result] : [],
+    };
 
     return NextResponse.json({ data });
   } catch (err) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
-import { db } from '@/lib/db';
-import { aautipayEvents } from '@/lib/db/schema';
+import { db, toSnake } from '@/lib/db';
+import { reviewers, reviewerPayouts, aautipayEvents } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { aautipay } from '@/lib/aautipay/client';
 
 export const dynamic = 'force-dynamic';
@@ -32,22 +32,32 @@ export async function PATCH(
     }
 
     const update: Record<string, unknown> = { status };
-    if (status === 'approved') update.approved_at = new Date().toISOString();
-    if (status === 'paid') update.paid_at = new Date().toISOString();
+    if (status === 'approved') update.approvedAt = new Date();
+    if (status === 'paid') update.paidAt = new Date();
     if (notes != null) update.notes = notes;
 
     // 1. Internal status update — happens regardless of Aautipay outcome.
-    const { data: payout, error } = await supabaseAdmin
-      .from('reviewer_payouts')
-      .update(update)
-      .eq('id', id)
-      .select(
-        'id, reviewer_id, amount, status, period_start, period_end, aautipay_payout_id'
-      )
-      .single();
+    let payout;
+    try {
+      [payout] = await db
+        .update(reviewerPayouts)
+        .set(update)
+        .where(eq(reviewerPayouts.id, id))
+        .returning({
+          id: reviewerPayouts.id,
+          reviewer_id: reviewerPayouts.reviewerId,
+          amount: reviewerPayouts.amount,
+          status: reviewerPayouts.status,
+          period_start: reviewerPayouts.periodStart,
+          period_end: reviewerPayouts.periodEnd,
+          aautipay_payout_id: reviewerPayouts.aautipayPayoutId,
+        });
+    } catch (err) {
+      console.error('[payouts] patch error:', err);
+      return NextResponse.json({ error: 'DB_ERROR' }, { status: 500 });
+    }
 
-    if (error || !payout) {
-      console.error('[payouts] patch error:', error);
+    if (!payout) {
       return NextResponse.json({ error: 'DB_ERROR' }, { status: 500 });
     }
 
@@ -57,13 +67,17 @@ export async function PATCH(
     let aautipayMessage: string | null = null;
 
     if (status === 'approved' && !payout.aautipay_payout_id) {
-      const { data: reviewer } = await supabaseAdmin
-        .from('reviewers')
-        .select(
-          'full_name, email, payment_ready, aautipay_beneficiary_id, aautipay_bank_account_id'
-        )
-        .eq('id', payout.reviewer_id)
-        .single();
+      const [reviewer] = await db
+        .select({
+          full_name: reviewers.fullName,
+          email: reviewers.email,
+          payment_ready: reviewers.paymentReady,
+          aautipay_beneficiary_id: reviewers.aautipayBeneficiaryId,
+          aautipay_bank_account_id: reviewers.aautipayBankAccountId,
+        })
+        .from(reviewers)
+        .where(eq(reviewers.id, payout.reviewer_id))
+        .limit(1);
 
       if (!reviewer?.payment_ready) {
         // No Aautipay attempt — reviewer hasn't completed onboarding.
@@ -89,14 +103,14 @@ export async function PATCH(
           const externalPayoutId = result?.data?.payout_id ?? null;
           const externalStatus = result?.data?.status ?? 'submitted';
 
-          await supabaseAdmin
-            .from('reviewer_payouts')
-            .update({
-              aautipay_payout_id: externalPayoutId,
-              aautipay_payout_status: externalStatus,
-              external_payout_initiated_at: new Date().toISOString(),
+          await db
+            .update(reviewerPayouts)
+            .set({
+              aautipayPayoutId: externalPayoutId,
+              aautipayPayoutStatus: externalStatus,
+              externalPayoutInitiatedAt: new Date(),
             })
-            .eq('id', payout.id);
+            .where(eq(reviewerPayouts.id, payout.id));
 
           await db.insert(aautipayEvents).values({
             eventType: 'payout',
@@ -111,13 +125,13 @@ export async function PATCH(
           const message = err instanceof Error ? err.message : 'Unknown error';
           console.error('[payouts] Aautipay createPayoutApproval failed:', message);
 
-          await supabaseAdmin
-            .from('reviewer_payouts')
-            .update({
-              external_fail_reason: message,
-              external_payout_initiated_at: new Date().toISOString(),
+          await db
+            .update(reviewerPayouts)
+            .set({
+              externalFailReason: message,
+              externalPayoutInitiatedAt: new Date(),
             })
-            .eq('id', payout.id);
+            .where(eq(reviewerPayouts.id, payout.id));
 
           await db.insert(aautipayEvents).values({
             eventType: 'payout',
@@ -135,7 +149,7 @@ export async function PATCH(
     }
 
     return NextResponse.json({
-      data: payout,
+      data: toSnake(payout),
       aautipay: aautipayResult,
       aautipayMessage,
     });

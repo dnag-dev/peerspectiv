@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { reviewers } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { auditLog } from '@/lib/utils/audit';
 
 // PATCH — Set reviewer as unavailable
@@ -12,20 +14,16 @@ export async function PATCH(
     const body = await request.json();
     const { availability_status, unavailable_from, unavailable_until, unavailable_reason } = body;
 
-    const { error } = await supabaseAdmin
-      .from('reviewers')
-      .update({
-        availability_status,
-        unavailable_from,
-        unavailable_until,
-        unavailable_reason,
-        updated_at: new Date().toISOString(),
+    await db
+      .update(reviewers)
+      .set({
+        availabilityStatus: availability_status,
+        unavailableFrom: unavailable_from,
+        unavailableUntil: unavailable_until,
+        unavailableReason: unavailable_reason,
+        updatedAt: new Date(),
       })
-      .eq('id', id);
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+      .where(eq(reviewers.id, id));
 
     await auditLog({
       action: 'reviewer_set_unavailable',
@@ -50,20 +48,16 @@ export async function POST(
   try {
     const { id } = params;
 
-    const { error } = await supabaseAdmin
-      .from('reviewers')
-      .update({
-        availability_status: 'available',
-        unavailable_from: null,
-        unavailable_until: null,
-        unavailable_reason: null,
-        updated_at: new Date().toISOString(),
+    await db
+      .update(reviewers)
+      .set({
+        availabilityStatus: 'available',
+        unavailableFrom: null,
+        unavailableUntil: null,
+        unavailableReason: null,
+        updatedAt: new Date(),
       })
-      .eq('id', id);
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+      .where(eq(reviewers.id, id));
 
     await auditLog({
       action: 'reviewer_marked_available',
