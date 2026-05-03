@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { SpecialtyMultiSelect } from '@/components/peers/SpecialtyMultiSelect';
 
 type RateType = 'per_minute' | 'per_report' | 'per_hour';
 
@@ -56,14 +57,9 @@ interface Props {
   }) => void;
 }
 
-const SPECIALTIES = [
-  'Family Medicine',
-  'Internal Medicine',
-  'Pediatrics',
-  'OB/GYN',
-  'Behavioral Health',
-  'Dental',
-];
+// Specialty list moved to /api/specialties (Phase 2 multi-spec UI).
+// Fallback default kept for `initialSpecialties` when a peer has none yet.
+const FALLBACK_SPECIALTY = 'Family Medicine';
 
 const RATE_TYPES = [
   { value: 'per_minute' as const, label: 'Per minute', suffix: '$/min' },
@@ -76,7 +72,7 @@ function initialSpecialties(r: Peer): string[] {
     return r.specialties;
   }
   if (r.specialty) return [r.specialty];
-  return [SPECIALTIES[0]];
+  return [FALLBACK_SPECIALTY];
 }
 
 export function EditRateModal({
@@ -127,12 +123,6 @@ export function EditRateModal({
     setRateAmount(String(currentRateAmount ?? Number(peer.rate_amount ?? 1)));
     setError(null);
   }, [open, peer, boardCertification, currentRateType, currentRateAmount]);
-
-  function toggleSpecialty(s: string) {
-    setSpecialties((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-    );
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -212,22 +202,14 @@ export function EditRateModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink-700 mb-2">
+            <label className="block text-sm font-medium text-ink-700 mb-2" htmlFor="edit-peer-specialties">
               Specialties <span className="text-critical-600">*</span>
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              {SPECIALTIES.map((s) => (
-                <label key={s} className="flex items-center gap-2 text-sm text-ink-700">
-                  <input
-                    type="checkbox"
-                    checked={specialties.includes(s)}
-                    onChange={() => toggleSpecialty(s)}
-                    className="rounded border-ink-300"
-                  />
-                  {s}
-                </label>
-              ))}
-            </div>
+            <SpecialtyMultiSelect
+              id="edit-peer-specialties"
+              value={specialties}
+              onChange={setSpecialties}
+            />
           </div>
 
           <div>

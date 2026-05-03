@@ -8,21 +8,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { SpecialtyMultiSelect } from '@/components/peers/SpecialtyMultiSelect';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
-
-const SPECIALTIES = [
-  'Family Medicine',
-  'Internal Medicine',
-  'Pediatrics',
-  'OB/GYN',
-  'Behavioral Health',
-  'Dental',
-];
 
 const RATE_TYPES = [
   { value: 'per_minute', label: 'Per minute', placeholder: '1.00', suffix: '$/min' },
@@ -33,7 +25,7 @@ const RATE_TYPES = [
 export function AddPeerModal({ open, onClose, onSuccess }: Props) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [specialties, setSpecialties] = useState<string[]>([SPECIALTIES[0]]);
+  const [specialties, setSpecialties] = useState<string[]>([]);
   const [boardCert, setBoardCert] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
   const [licenseState, setLicenseState] = useState('');
@@ -47,7 +39,7 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
   function reset() {
     setFullName('');
     setEmail('');
-    setSpecialties([SPECIALTIES[0]]);
+    setSpecialties([]);
     setBoardCert('');
     setLicenseNumber('');
     setLicenseState('');
@@ -56,12 +48,6 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
     setRateType('per_minute');
     setRateAmount('1.00');
     setError(null);
-  }
-
-  function toggleSpecialty(s: string) {
-    setSpecialties((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-    );
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -139,22 +125,14 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink-700 mb-2">
+            <label className="block text-sm font-medium text-ink-700 mb-2" htmlFor="add-peer-specialties">
               Specialties <span className="text-critical-600">*</span>
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              {SPECIALTIES.map((s) => (
-                <label key={s} className="flex items-center gap-2 text-sm text-ink-700">
-                  <input
-                    type="checkbox"
-                    checked={specialties.includes(s)}
-                    onChange={() => toggleSpecialty(s)}
-                    className="rounded border-ink-300"
-                  />
-                  {s}
-                </label>
-              ))}
-            </div>
+            <SpecialtyMultiSelect
+              id="add-peer-specialties"
+              value={specialties}
+              onChange={setSpecialties}
+            />
           </div>
 
           <div>

@@ -6,11 +6,15 @@ import { PeersTable } from './PeersTable';
 export const dynamic = 'force-dynamic';
 
 export default async function PeersPage() {
-  // Phase 1.3: hydrate specialties from peer_specialties join (back-compat shape)
+  // Phase 1.3: hydrate specialties from peer_specialties join (back-compat shape).
+  // Note: drizzle's ${peers.id} interpolates as the bare column name "id" inside
+  // the correlated subquery, which collides with peer_specialties.id. Use the
+  // fully-qualified table name to keep the correlation pinned to the outer
+  // peers row.
   const rows = await db
     .select({
       peer: peers,
-      specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty), '{}'::text[])`,
+      specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = peers.id order by specialty), '{}'::text[])`,
     })
     .from(peers)
     .orderBy(asc(peers.fullName));
