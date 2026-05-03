@@ -4,7 +4,10 @@ import { peers, peerSpecialties } from "@/lib/db/schema";
 import { asc, eq, sql } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, Download, Mail, Stethoscope } from "lucide-react";
+import { MyReviewsTab } from "@/components/peer/MyReviewsTab";
+import { MyScorecardTab } from "@/components/peer/MyScorecardTab";
 
 export const dynamic = "force-dynamic";
 
@@ -57,13 +60,30 @@ export default async function PeerProfilePage() {
     daysToExpiry != null && daysToExpiry < 60 ? daysToExpiry : null;
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-4xl">
       <div>
         <h1 className="text-2xl font-bold text-ink-900">Profile</h1>
         <p className="text-sm text-ink-500">
-          Your contact, specialties, and license on file
+          Your contact, specialties, license, reviews, and scorecard
         </p>
       </div>
+
+      <Tabs defaultValue="profile" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="reviews">My Reviews</TabsTrigger>
+          <TabsTrigger value="scorecard">My Scorecard</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="reviews">
+          <MyReviewsTab peerId={peer.id} />
+        </TabsContent>
+
+        <TabsContent value="scorecard">
+          <MyScorecardTab peerId={peer.id} />
+        </TabsContent>
+
+        <TabsContent value="profile" className="space-y-6">
 
       {expiryWarning != null && (
         <div
@@ -180,6 +200,8 @@ export default async function PeerProfilePage() {
           </p>
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
