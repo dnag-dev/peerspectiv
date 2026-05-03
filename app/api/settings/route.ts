@@ -41,6 +41,25 @@ export async function PUT(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Phase 7: server-side validation for known numeric keys (SA-060 — no negatives).
+    const positiveNumberKeys = new Set([
+      'global_pay_rate_per_review',
+      'default_invoice_due_days',
+      'file_expiration_days',
+      'file_expiration_hours',
+    ]);
+    if (positiveNumberKeys.has(settingKey.trim())) {
+      const raw = typeof settingValue === 'string' ? settingValue : (settingValue as any);
+      const n = Number(raw);
+      if (!Number.isFinite(n) || n <= 0) {
+        return NextResponse.json(
+          { error: `${settingKey} must be a positive number`, code: 'VALIDATION_ERROR' },
+          { status: 400 }
+        );
+      }
+    }
+
     const updatedBy =
       req.headers.get('x-demo-user-id')?.trim() || 'admin-demo';
     const now = new Date();
