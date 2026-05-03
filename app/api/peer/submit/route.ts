@@ -13,6 +13,8 @@ import {
   correctiveActions,
 } from '@/lib/db/schema';
 import { generateCorrectiveActionPlan } from '@/lib/ai/report-generator';
+import { scoreReview, type FormField, type ResponseValue, type ScoringSystem } from '@/lib/scoring/default-based';
+import { companyForms } from '@/lib/db/schema';
 import type { CriterionScore, Deficiency, PeerChange } from '@/types';
 
 interface SubmitBody {
@@ -51,22 +53,73 @@ export async function POST(request: NextRequest) {
     } = body;
     let overall_score = overall_score_in;
 
-    // Section C.3 — yes_no scoring with N/A excluded.
+    // Phase 1.3 — default-based scoring engine (replaces inline yes_no math).
+    // Looks up the company_form attached to this case to pick scoring_system
+    // and form_fields (each with a default_answer). N/A excluded; non-default
+    // counts against denominator only.
+    let scoringResult: ReturnType<typeof scoreReview> | null = null;
     if (form_responses && typeof form_responses === 'object') {
-      let yes = 0;
-      let no = 0;
-      for (const resp of Object.values(form_responses)) {
-        const v = resp?.value;
-        if (v === true || v === 'yes') yes++;
-        else if (v === false || v === 'no') no++;
+      // Resolve form_fields/scoring_system from the case's company_form.
+      const [caseRow] = await db
+        .select({ companyFormId: reviewCases.companyFormId })
+        .from(reviewCases)
+        .where(eq(reviewCases.id, case_id))
+        .limit(1);
+      let formFields: FormField[] = [];
+      let scoringSystem: ScoringSystem = 'yes_no_na';
+      let passFailThreshold: any = null;
+      if (caseRow?.companyFormId) {
+        const [formRow] = await db
+          .select({
+            formFields: companyForms.formFields,
+            scoringSystem: companyForms.scoringSystem,
+            passFailThreshold: companyForms.passFailThreshold,
+          })
+          .from(companyForms)
+          .where(eq(companyForms.id, caseRow.companyFormId))
+          .limit(1);
+        if (formRow) {
+          formFields = (formRow.formFields as FormField[]) ?? [];
+          scoringSystem = (formRow.scoringSystem as ScoringSystem) ?? 'yes_no_na';
+          passFailThreshold = formRow.passFailThreshold ?? null;
+        }
       }
-      const denom = yes + no;
-      if (denom > 0) {
-        const yesNoScore = Math.round((yes / denom) * 10000) / 100;
-        if (typeof overall_score_in === 'number' && criteria_scores?.length) {
-          overall_score = Math.round(((overall_score_in + yesNoScore) / 2) * 100) / 100;
-        } else {
-          overall_score = yesNoScore;
+
+      // Map { value, comment } → raw value
+      const responses: Record<string, ResponseValue> = {};
+      for (const [k, v] of Object.entries(form_responses)) {
+        responses[k] = (v?.value ?? null) as ResponseValue;
+      }
+
+      if (formFields.length > 0) {
+        scoringResult = scoreReview(
+          { scoring_system: scoringSystem, pass_fail_threshold: passFailThreshold, form_fields: formFields },
+          responses
+        );
+        if (scoringResult.total_measures_met_pct != null) {
+          if (typeof overall_score_in === 'number' && criteria_scores?.length) {
+            overall_score = Math.round(((overall_score_in + scoringResult.total_measures_met_pct) / 2) * 100) / 100;
+          } else {
+            overall_score = scoringResult.total_measures_met_pct;
+          }
+        }
+      } else {
+        // Fallback: legacy inline yes_no math when no company_form is attached.
+        let yes = 0;
+        let no = 0;
+        for (const resp of Object.values(form_responses)) {
+          const v = resp?.value;
+          if (v === true || v === 'yes') yes++;
+          else if (v === false || v === 'no') no++;
+        }
+        const denom = yes + no;
+        if (denom > 0) {
+          const yesNoScore = Math.round((yes / denom) * 10000) / 100;
+          if (typeof overall_score_in === 'number' && criteria_scores?.length) {
+            overall_score = Math.round(((overall_score_in + yesNoScore) / 2) * 100) / 100;
+          } else {
+            overall_score = yesNoScore;
+          }
         }
       }
     }
@@ -191,6 +244,8 @@ export async function POST(request: NextRequest) {
         peerLicenseStateSnapshot: licenseState,
         mrnNumber: mrnSnapshot,
         peerSignatureText: signatureText,
+        scoringBreakdown: scoringResult ? scoringResult.per_question : null,
+        scoringEngineVersion: scoringResult ? 'default_based_v1' : null,
       })
       .onConflictDoUpdate({
         target: reviewResults.caseId,
@@ -209,6 +264,8 @@ export async function POST(request: NextRequest) {
           peerLicenseStateSnapshot: licenseState,
           mrnNumber: mrnSnapshot,
           peerSignatureText: signatureText,
+          scoringBreakdown: scoringResult ? scoringResult.per_question : null,
+          scoringEngineVersion: scoringResult ? 'default_based_v1' : null,
         },
       })
       .returning();
