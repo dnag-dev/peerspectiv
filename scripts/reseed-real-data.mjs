@@ -122,7 +122,8 @@ async function main() {
     'contracts',
     'review_cycles',
     'providers',
-    'reviewers',
+    'peer_specialties',
+    'peers',
     'companies',
   ];
   for (const t of wipeOrder) {
@@ -178,13 +179,24 @@ async function main() {
     const id = uuid();
     const email = r.email || fallbackEmail(r.name);
     try {
+      // Phase 1.3: peers no longer has specialty/specialties cols; specialty
+      // lives in peer_specialties join.
       await sql.query(
-        `insert into reviewers
-          (id, full_name, email, specialty, board_certification,
-           active_cases_count, total_reviews_completed, status)
-         values ($1,$2,$3,$4,$5,0,$6,'active')`,
-        [id, r.name, email, r.specialty, r.boardCert || null, r.reviews || 0]
+        `insert into peers
+          (id, full_name, email, board_certification,
+           active_cases_count, total_reviews_completed, status, state)
+         values ($1,$2,$3,$4,0,$5,'active','active')`,
+        [id, r.name, email, r.boardCert || null, r.reviews || 0]
       );
+      // Insert specialty into the join table
+      if (r.specialty) {
+        await sql.query(
+          `insert into peer_specialties (peer_id, specialty, verified_status)
+           values ($1, $2, 'verified')
+           on conflict (peer_id, specialty) do nothing`,
+          [id, r.specialty]
+        );
+      }
       reviewerIds.push({ id, specialty: r.specialty });
       reviewerOk++;
       dot();
@@ -200,21 +212,19 @@ async function main() {
   // non-existent reviewer row. Add them here so reseed is canonical.
   console.log('Upserting demo personas (rjohnson)...');
   const rjohnsonId = uuid();
+  // Phase 1.3: specialty columns dropped; specialty goes into peer_specialties.
   await sql.query(
-    `insert into reviewers
-      (id, full_name, email, specialty, specialties,
+    `insert into peers
+      (id, full_name, email,
        board_certification, license_number, license_state,
        credential_valid_until, max_case_load, rate_type, rate_amount,
-       active_cases_count, total_reviews_completed, status, availability_status)
+       active_cases_count, total_reviews_completed, status, availability_status, state)
      values ($1, 'Dr. Richard Johnson', 'rjohnson@peerspectiv.com',
-             'Family Medicine', ARRAY['Family Medicine','Pediatrics']::text[],
              'ABFM', 'MD-12345', 'NY',
              (CURRENT_DATE + interval '2 years')::date, 75,
-             'per_report', 100, 0, 0, 'active', 'available')
+             'per_report', 100, 0, 0, 'active', 'available', 'active')
      on conflict (email) do update set
        full_name = excluded.full_name,
-       specialty = excluded.specialty,
-       specialties = excluded.specialties,
        license_number = excluded.license_number,
        license_state = excluded.license_state,
        credential_valid_until = excluded.credential_valid_until,
@@ -225,7 +235,20 @@ async function main() {
        availability_status = excluded.availability_status`,
     [rjohnsonId]
   );
-  reviewerIds.push({ id: rjohnsonId, specialty: 'Family Medicine' });
+  // Resolve actual id (may be the existing one if upsert hit conflict)
+  const [{ id: actualRjohnsonId }] = await sql.query(
+    `select id from peers where email = 'rjohnson@peerspectiv.com'`
+  );
+  // rjohnson is multi-spec: Family Medicine + Pediatrics
+  for (const sp of ['Family Medicine', 'Pediatrics']) {
+    await sql.query(
+      `insert into peer_specialties (peer_id, specialty, verified_status)
+       values ($1, $2, 'verified')
+       on conflict (peer_id, specialty) do nothing`,
+      [actualRjohnsonId, sp]
+    );
+  }
+  reviewerIds.push({ id: actualRjohnsonId, specialty: 'Family Medicine' });
   console.log(' rjohnson upserted.');
 
   // ─── Providers ───
@@ -315,7 +338,7 @@ async function main() {
       try {
         await sql.query(
           `insert into review_cases
-            (id, batch_id, provider_id, reviewer_id, company_id, assigned_at, due_date,
+            (id, batch_id, provider_id, peer_id, company_id, assigned_at, due_date,
              encounter_date, status, ai_analysis_status, specialty_required,
              priority, batch_period, chart_file_name)
            values ($1,$2,$3,$4,$5,now(),$6,$7,$8,$9,$10,'normal','Q4 2025',$11)`,
@@ -396,7 +419,7 @@ async function main() {
 
   // Final counts
   const [companyCount] = await sql.query(`select count(*)::int as n from companies`);
-  const [reviewerCount] = await sql.query(`select count(*)::int as n from reviewers`);
+  const [reviewerCount] = await sql.query(`select count(*)::int as n from peers`);
   const [providerCount] = await sql.query(`select count(*)::int as n from providers`);
   const [batchCount] = await sql.query(`select count(*)::int as n from batches`);
   const [caseCount] = await sql.query(`select count(*)::int as n from review_cases`);
