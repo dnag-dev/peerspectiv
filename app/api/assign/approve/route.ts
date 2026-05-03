@@ -3,7 +3,8 @@ import { db } from '@/lib/db';
 import { reviewCases, batches, peers } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { isAssignable, type PeerState } from '@/lib/peers/state-machine';
-import { approveAssignment, approveAllAssignments } from '@/lib/ai/assignment-engine';
+import { approveAssignment } from '@/lib/ai/assignment-engine';
+import { getPeerCapacity } from '@/lib/peers/capacity';
 import { sendCaseAssignedAlert } from '@/lib/email/notifications';
 import { auditLog } from '@/lib/utils/audit';
 import { calculateProjectedCompletion } from '@/lib/utils/completion';
@@ -11,12 +12,13 @@ import { calculateProjectedCompletion } from '@/lib/utils/completion';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { case_id, batch_id, approve_all, reassign_to, company_form_id } = body as {
+    const { case_id, batch_id, approve_all, reassign_to, company_form_id, case_ids } = body as {
       case_id?: string;
       batch_id?: string;
       approve_all?: boolean;
       reassign_to?: string;
       company_form_id?: string;
+      case_ids?: string[];
     };
 
     if (!case_id && !(batch_id && approve_all)) {
@@ -54,7 +56,52 @@ export async function POST(request: NextRequest) {
     }
 
     if (approve_all && batch_id) {
-      const count = await approveAllAssignments(batch_id);
+      // Phase 5.5 (SA-074A) — walk approvals one at a time and guard each
+      // against the target peer's current capacity. If approving the next
+      // case would push that peer's load over max_case_load, skip with a
+      // reason so the client can render a "Capacity hit — skipped" chip.
+      // Optional `case_ids` body lets the caller restrict the walk; default
+      // is every pending_approval case in the batch.
+      const pendingCases = await db.query.reviewCases.findMany({
+        where: and(
+          eq(reviewCases.batchId, batch_id),
+          eq(reviewCases.status, 'pending_approval')
+        ),
+        columns: { id: true, peerId: true },
+      });
+
+      const requested = Array.isArray(case_ids) && case_ids.length > 0
+        ? new Set(case_ids)
+        : null;
+      const walk = requested
+        ? pendingCases.filter((c) => requested.has(c.id))
+        : pendingCases;
+
+      const approved: string[] = [];
+      const skipped: { caseId: string; reason: string }[] = [];
+
+      // In-memory free-capacity counter per peer so the second case approved
+      // for the same peer in this loop sees the decremented load.
+      const freeByPeer = new Map<string, number>();
+      for (const c of walk) {
+        if (!c.peerId) {
+          skipped.push({ caseId: c.id, reason: 'No peer assigned' });
+          continue;
+        }
+        let free = freeByPeer.get(c.peerId);
+        if (free === undefined) {
+          const cap = await getPeerCapacity(c.peerId);
+          free = cap.free;
+        }
+        if (free <= 0) {
+          skipped.push({ caseId: c.id, reason: 'Capacity hit — skipped, retry later' });
+          freeByPeer.set(c.peerId, 0);
+          continue;
+        }
+        await approveAssignment(c.id);
+        approved.push(c.id);
+        freeByPeer.set(c.peerId, free - 1);
+      }
 
       // Send emails to all newly assigned peers in the batch (Phase 5.4 SA-091).
       const assignedCases = await db.query.reviewCases.findMany({
@@ -67,6 +114,7 @@ export async function POST(request: NextRequest) {
       });
 
       for (const c of assignedCases) {
+        if (!approved.includes(c.id)) continue; // only newly approved this call
         const peer = c.peer;
         if (peer?.email) {
           const providerName = c.provider
@@ -105,11 +153,16 @@ export async function POST(request: NextRequest) {
         action: 'batch_assignments_approved',
         resourceType: 'batch',
         resourceId: batch_id,
-        metadata: { approved_count: count },
+        metadata: { approved_count: approved.length, skipped_count: skipped.length },
         request,
       });
 
-      return NextResponse.json({ success: true, approved_count: count });
+      return NextResponse.json({
+        success: true,
+        approved_count: approved.length,
+        approved,
+        skipped,
+      });
     }
 
     // Single case approval
