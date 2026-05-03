@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Settings as SettingsIcon, Save, Trash2, Loader2 } from "lucide-react";
+import { Settings as SettingsIcon, Save, Loader2, Plus, Mail, FileText, Tag, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface SettingRow {
   id: string;
@@ -17,172 +18,23 @@ interface SettingRow {
   updatedAt: Date | null;
 }
 
-interface Props {
-  initialSettings: SettingRow[];
+interface Props { initialSettings: SettingRow[]; }
+
+const HEADERS = { "Content-Type": "application/json", "x-demo-user-id": "admin-demo" } as const;
+
+function readNum(v: unknown, fallback: number): number {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") { const n = Number(v); if (Number.isFinite(n)) return n; }
+  return fallback;
+}
+function readBool(v: unknown, fallback: boolean): boolean {
+  if (typeof v === "boolean") return v;
+  if (typeof v === "string") return v === "true" || v === "1";
+  return fallback;
 }
 
-/**
- * Curated default keys we surface as ready-to-edit rows even before they exist
- * in the DB. Editing one upserts the row.
- */
-const DEFAULT_KEYS: Array<{
-  key: string;
-  description: string;
-  defaultValue: unknown;
-}> = [
-  {
-    key: "default_due_days",
-    description: "Default peer turnaround (days) when batch has none.",
-    defaultValue: 7,
-  },
-  {
-    key: "ai_assignment_enabled",
-    description: "Whether AI-assisted assignment is on by default.",
-    defaultValue: true,
-  },
-  {
-    key: "alert_email",
-    description: "Email that receives operational alerts (overdue, errors).",
-    defaultValue: "ops@peerspectiv.com",
-  },
-  {
-    key: "invoice_due_days",
-    description: "Days from invoice send to due date.",
-    defaultValue: 30,
-  },
-];
-
 export function SettingsView({ initialSettings }: Props) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [busy, setBusy] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  // Merge defaults with existing — existing wins.
-  const byKey = new Map(initialSettings.map((s) => [s.settingKey, s]));
-  const merged = [
-    ...DEFAULT_KEYS.map((d) => {
-      const existing = byKey.get(d.key);
-      if (existing) {
-        byKey.delete(d.key);
-        return { ...existing, description: existing.description ?? d.description };
-      }
-      return {
-        id: `default:${d.key}`,
-        settingKey: d.key,
-        settingValue: d.defaultValue,
-        description: d.description,
-        updatedBy: null,
-        updatedAt: null,
-      } as SettingRow;
-    }),
-    ...Array.from(byKey.values()),
-  ];
-
-  // Local edit buffer — string form.
-  const [draft, setDraft] = useState<Record<string, string>>(() => {
-    const o: Record<string, string> = {};
-    for (const s of merged) o[s.settingKey] = stringify(s.settingValue);
-    return o;
-  });
-
-  async function handleSave(key: string, descFallback: string | null) {
-    setErr(null);
-    let parsed: unknown;
-    const raw = draft[key] ?? "";
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      // not valid JSON — treat as plain string
-      parsed = raw;
-    }
-    setBusy(key);
-    try {
-      const res = await fetch("/api/settings", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-demo-user-id": "admin-demo",
-        },
-        body: JSON.stringify({
-          settingKey: key,
-          settingValue: parsed,
-          description: descFallback ?? undefined,
-        }),
-      });
-      const j = await res.json();
-      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`);
-      startTransition(() => router.refresh());
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  async function handleDelete(key: string) {
-    if (!confirm(`Reset ${key}? It will revert to its default.`)) return;
-    setBusy(key);
-    try {
-      const res = await fetch(`/api/settings?settingKey=${encodeURIComponent(key)}`, {
-        method: "DELETE",
-      });
-      if (!res.ok && res.status !== 404) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.error || `HTTP ${res.status}`);
-      }
-      startTransition(() => router.refresh());
-    } catch (e) {
-      alert(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  // Custom-key adder
-  const [newKey, setNewKey] = useState("");
-  const [newVal, setNewVal] = useState("");
-  const [newDesc, setNewDesc] = useState("");
-
-  async function handleCreate() {
-    setErr(null);
-    if (!newKey.trim()) {
-      setErr("Key is required");
-      return;
-    }
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(newVal);
-    } catch {
-      parsed = newVal;
-    }
-    setBusy("__new__");
-    try {
-      const res = await fetch("/api/settings", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-demo-user-id": "admin-demo",
-        },
-        body: JSON.stringify({
-          settingKey: newKey.trim(),
-          settingValue: parsed,
-          description: newDesc.trim() || undefined,
-        }),
-      });
-      const j = await res.json();
-      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`);
-      setNewKey("");
-      setNewVal("");
-      setNewDesc("");
-      startTransition(() => router.refresh());
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(null);
-    }
-  }
-
+  const byKey = new Map(initialSettings.map((s) => [s.settingKey, s.settingValue]));
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -190,135 +42,430 @@ export function SettingsView({ initialSettings }: Props) {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-ink-900">Settings</h1>
           <p className="text-sm text-muted-foreground">
-            Global key-value configuration. Values are JSON; plain strings are accepted.
+            Global configuration, specialty taxonomy, credentialer rates, and email templates.
           </p>
         </div>
       </div>
 
-      {err && (
-        <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">
-          {err}
-        </p>
-      )}
+      <Tabs defaultValue="general">
+        <TabsList>
+          <TabsTrigger value="general"><FileText className="h-4 w-4 mr-1.5" />General</TabsTrigger>
+          <TabsTrigger value="taxonomy"><Tag className="h-4 w-4 mr-1.5" />Specialty Taxonomy</TabsTrigger>
+          <TabsTrigger value="credentialers"><Users className="h-4 w-4 mr-1.5" />Credentialers</TabsTrigger>
+          <TabsTrigger value="templates"><Mail className="h-4 w-4 mr-1.5" />Email Templates</TabsTrigger>
+        </TabsList>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-ink-900">Global Settings</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {merged.map((s) => {
-            const isDefault = s.id.startsWith("default:");
-            return (
-              <div
-                key={s.settingKey}
-                className="grid gap-3 md:grid-cols-[200px_1fr_auto] items-start border-b border-ink-100 pb-4 last:border-b-0"
-              >
-                <div>
-                  <p className="font-mono text-xs font-medium text-ink-900">
-                    {s.settingKey}
-                  </p>
-                  {s.description && (
-                    <p className="mt-1 text-xs text-ink-500">{s.description}</p>
-                  )}
-                  {!isDefault && s.updatedBy && (
-                    <p className="mt-1 text-[10px] text-ink-400">
-                      updated by {s.updatedBy}
-                    </p>
-                  )}
-                </div>
-                <Input
-                  value={draft[s.settingKey] ?? ""}
-                  onChange={(e) =>
-                    setDraft((p) => ({ ...p, [s.settingKey]: e.target.value }))
-                  }
-                  className="font-mono text-xs"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => handleSave(s.settingKey, s.description)}
-                    disabled={busy === s.settingKey}
-                    className="bg-cobalt-600 hover:bg-cobalt-700"
-                  >
-                    {busy === s.settingKey ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
-                      <Save className="h-3 w-3" />
-                    )}
-                  </Button>
-                  {!isDefault && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDelete(s.settingKey)}
-                      disabled={busy === s.settingKey || isPending}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-ink-900">Add Custom Setting</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            <div>
-              <Label>Key</Label>
-              <Input
-                value={newKey}
-                onChange={(e) => setNewKey(e.target.value)}
-                placeholder="my_custom_key"
-                className="font-mono text-xs"
-              />
-            </div>
-            <div>
-              <Label>Value (JSON or string)</Label>
-              <Input
-                value={newVal}
-                onChange={(e) => setNewVal(e.target.value)}
-                placeholder='"hello" or 42 or {"a":1}'
-                className="font-mono text-xs"
-              />
-            </div>
-            <div>
-              <Label>Description</Label>
-              <Input
-                value={newDesc}
-                onChange={(e) => setNewDesc(e.target.value)}
-                placeholder="optional"
-              />
-            </div>
-          </div>
-          <Button
-            onClick={handleCreate}
-            disabled={busy === "__new__"}
-            className="bg-cobalt-600 hover:bg-cobalt-700"
-          >
-            {busy === "__new__" ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
-            Save
-          </Button>
-        </CardContent>
-      </Card>
+        <TabsContent value="general"><GeneralTab byKey={byKey} /></TabsContent>
+        <TabsContent value="taxonomy"><TaxonomyTab /></TabsContent>
+        <TabsContent value="credentialers"><CredentialersTab /></TabsContent>
+        <TabsContent value="templates"><TemplatesTab /></TabsContent>
+      </Tabs>
     </div>
   );
 }
 
-function stringify(v: unknown): string {
-  if (typeof v === "string") return JSON.stringify(v);
-  try {
-    return JSON.stringify(v);
-  } catch {
-    return String(v ?? "");
+/* ─── General tab — file expiration, global pay rate, behind-firewall toggle ─── */
+function GeneralTab({ byKey }: { byKey: Map<string, unknown> }) {
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const [fileDays, setFileDays] = useState(() =>
+    String(readNum(byKey.get("file_expiration_days"), 30))
+  );
+  const [payRate, setPayRate] = useState(() =>
+    String(readNum(byKey.get("global_pay_rate_per_review"), 35))
+  );
+  const [firewallAfter, setFirewallAfter] = useState(() =>
+    readBool(byKey.get("files_behind_firewall_after_retention"), false)
+  );
+
+  async function save(key: string, value: unknown) {
+    setErr(null);
+    setBusy(key);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: HEADERS,
+        body: JSON.stringify({ settingKey: key, settingValue: value }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`);
+      startTransition(() => router.refresh());
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally { setBusy(null); }
   }
+
+  function validatePositive(s: string): number | null {
+    const n = Number(s);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    return n;
+  }
+
+  return (
+    <Card>
+      <CardHeader><CardTitle className="text-ink-900">General</CardTitle></CardHeader>
+      <CardContent className="space-y-6">
+        {err && <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">{err}</p>}
+
+        <div className="grid gap-2 max-w-md">
+          <Label>File expiration (days)</Label>
+          <p className="text-xs text-ink-500">Uploaded chart files auto-deleted after this many days (SA-084).</p>
+          <div className="flex gap-2">
+            <Input type="number" min={1} step={1} value={fileDays}
+              onChange={(e) => setFileDays(e.target.value)} className="w-32" />
+            <Button size="sm" disabled={busy === "file_expiration_days"}
+              onClick={() => {
+                const n = validatePositive(fileDays);
+                if (n === null) { setErr("File expiration must be a positive integer"); return; }
+                save("file_expiration_days", Math.trunc(n));
+              }}
+              className="bg-cobalt-600 hover:bg-cobalt-700">
+              {busy === "file_expiration_days" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-2 max-w-md">
+          <Label>Global Pay Rate per Review ($)</Label>
+          <p className="text-xs text-ink-500">Default per-review pay rate for peers (SA-058). Negative values are rejected (SA-060).</p>
+          <div className="flex gap-2">
+            <Input type="number" min={0.01} step={0.01} value={payRate}
+              onChange={(e) => setPayRate(e.target.value)} className="w-32" />
+            <Button size="sm" disabled={busy === "global_pay_rate_per_review"}
+              onClick={() => {
+                const n = validatePositive(payRate);
+                if (n === null) { setErr("Pay rate must be a positive number"); return; }
+                save("global_pay_rate_per_review", n);
+              }}
+              className="bg-cobalt-600 hover:bg-cobalt-700">
+              {busy === "global_pay_rate_per_review" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3 max-w-md">
+          <input id="firewall" type="checkbox" className="mt-1"
+            checked={firewallAfter}
+            onChange={(e) => { setFirewallAfter(e.target.checked); save("files_behind_firewall_after_retention", e.target.checked); }} />
+          <div>
+            <Label htmlFor="firewall">Move files behind firewall after retention</Label>
+            <p className="text-xs text-ink-500 mt-0.5">When enabled, files past their expiration are archived behind firewall instead of being deleted (SA-085).</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ─── Specialty Taxonomy tab (SA-105 / SA-106) ─── */
+interface SpecialtyRow { id: string; name: string; isActive: boolean | null; }
+
+function TaxonomyTab() {
+  const [rows, setRows] = useState<SpecialtyRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [newName, setNewName] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+
+  async function reload() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/specialty-taxonomy");
+      const j = await res.json();
+      setRows(j.data ?? []);
+    } finally { setLoading(false); }
+  }
+  useEffect(() => { reload(); }, []);
+
+  async function add() {
+    setErr(null);
+    if (!newName.trim()) { setErr("Name required"); return; }
+    setBusy("__new__");
+    try {
+      const res = await fetch("/api/specialty-taxonomy", {
+        method: "POST", headers: HEADERS,
+        body: JSON.stringify({ name: newName.trim() }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`);
+      setNewName("");
+      await reload();
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
+  }
+
+  async function patch(id: string, body: Record<string, unknown>) {
+    setBusy(id); setErr(null);
+    try {
+      const res = await fetch(`/api/specialty-taxonomy/${id}`, {
+        method: "PATCH", headers: HEADERS, body: JSON.stringify(body),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`);
+      setEditingId(null);
+      await reload();
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
+  }
+
+  return (
+    <Card>
+      <CardHeader><CardTitle className="text-ink-900">Specialty Taxonomy</CardTitle></CardHeader>
+      <CardContent className="space-y-4">
+        {err && <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">{err}</p>}
+
+        <div className="flex gap-2 max-w-md">
+          <Input placeholder="New specialty name" value={newName}
+            onChange={(e) => setNewName(e.target.value)} />
+          <Button size="sm" onClick={add} disabled={busy === "__new__"} className="bg-cobalt-600 hover:bg-cobalt-700">
+            {busy === "__new__" ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Plus className="h-3 w-3 mr-1" />Add</>}
+          </Button>
+        </div>
+
+        {loading ? <p className="text-sm text-ink-500">Loading…</p> : (
+          <table className="w-full text-sm">
+            <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
+              <tr><th className="px-3 py-2 text-left">Name</th><th className="px-3 py-2 text-left">Status</th><th className="px-3 py-2 text-right">Actions</th></tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id} className="border-t border-ink-100">
+                  <td className="px-3 py-2">
+                    {editingId === r.id ? (
+                      <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-7" />
+                    ) : r.name}
+                  </td>
+                  <td className="px-3 py-2">
+                    <span className={`inline-flex rounded px-2 py-0.5 text-xs ${r.isActive ? "bg-mint-50 text-mint-700" : "bg-ink-100 text-ink-500"}`}>
+                      {r.isActive ? "active" : "inactive"}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-right space-x-1">
+                    {editingId === r.id ? (
+                      <>
+                        <Button size="sm" disabled={busy === r.id}
+                          onClick={() => patch(r.id, { name: editName })} className="bg-cobalt-600 hover:bg-cobalt-700">
+                          {busy === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button size="sm" variant="outline" onClick={() => { setEditingId(r.id); setEditName(r.name); }}>Edit</Button>
+                        {r.isActive ? (
+                          <Button size="sm" variant="outline" disabled={busy === r.id}
+                            onClick={() => patch(r.id, { is_active: false })}>
+                            {busy === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Deactivate"}
+                          </Button>
+                        ) : (
+                          <Button size="sm" variant="outline" disabled={busy === r.id}
+                            onClick={() => patch(r.id, { is_active: true })}>
+                            Reactivate
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {rows.length === 0 && (
+                <tr><td colSpan={3} className="px-3 py-8 text-center text-ink-500">No specialties yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ─── Credentialers tab ─── */
+interface CredentialerRow {
+  id: string; email: string; fullName: string | null;
+  perPeerRate: string; isActive: boolean | null;
+}
+interface RateHistoryRow { rateAtAction: string | null; action: string; performedAt: string; }
+
+function CredentialersTab() {
+  const [rows, setRows] = useState<CredentialerRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [newEmail, setNewEmail] = useState("");
+  const [newName, setNewName] = useState("");
+  const [newRate, setNewRate] = useState("100");
+  const [edits, setEdits] = useState<Record<string, string>>({});
+  const [historyFor, setHistoryFor] = useState<string | null>(null);
+  const [history, setHistory] = useState<RateHistoryRow[]>([]);
+
+  async function reload() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/credentialer-users");
+      const j = await res.json();
+      setRows(j.data ?? []);
+    } finally { setLoading(false); }
+  }
+  useEffect(() => { reload(); }, []);
+
+  async function add() {
+    setErr(null);
+    const rate = Number(newRate);
+    if (!newEmail.trim()) { setErr("Email required"); return; }
+    if (!Number.isFinite(rate) || rate <= 0) { setErr("Rate must be positive"); return; }
+    setBusy("__new__");
+    try {
+      const res = await fetch("/api/credentialer-users", {
+        method: "POST", headers: HEADERS,
+        body: JSON.stringify({ email: newEmail.trim(), full_name: newName.trim(), per_peer_rate: rate }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`);
+      setNewEmail(""); setNewName(""); setNewRate("100");
+      await reload();
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
+  }
+
+  async function saveRate(id: string) {
+    setErr(null);
+    const rate = Number(edits[id]);
+    if (!Number.isFinite(rate) || rate <= 0) { setErr("Rate must be positive"); return; }
+    setBusy(id);
+    try {
+      const res = await fetch(`/api/credentialer-users/${id}`, {
+        method: "PATCH", headers: HEADERS,
+        body: JSON.stringify({ per_peer_rate: rate }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`);
+      setEdits((p) => { const n = { ...p }; delete n[id]; return n; });
+      await reload();
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
+  }
+
+  async function openHistory(id: string) {
+    setHistoryFor(id);
+    setHistory([]);
+    const res = await fetch(`/api/credentialer-users/${id}`);
+    const j = await res.json();
+    setHistory(j.rate_history ?? []);
+  }
+
+  return (
+    <>
+      <Card>
+        <CardHeader><CardTitle className="text-ink-900">Credentialers</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          {err && <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">{err}</p>}
+
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_140px_auto] gap-2">
+            <Input placeholder="Email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+            <Input placeholder="Full name" value={newName} onChange={(e) => setNewName(e.target.value)} />
+            <Input type="number" min={0.01} step={0.01} placeholder="Rate" value={newRate}
+              onChange={(e) => setNewRate(e.target.value)} />
+            <Button size="sm" onClick={add} disabled={busy === "__new__"} className="bg-cobalt-600 hover:bg-cobalt-700">
+              {busy === "__new__" ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Plus className="h-3 w-3 mr-1" />Add</>}
+            </Button>
+          </div>
+
+          {loading ? <p className="text-sm text-ink-500">Loading…</p> : (
+            <table className="w-full text-sm">
+              <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
+                <tr>
+                  <th className="px-3 py-2 text-left">Email</th>
+                  <th className="px-3 py-2 text-left">Name</th>
+                  <th className="px-3 py-2 text-right">Per-peer rate ($)</th>
+                  <th className="px-3 py-2 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const editVal = edits[r.id] ?? r.perPeerRate;
+                  const dirty = edits[r.id] !== undefined && Number(edits[r.id]) !== Number(r.perPeerRate);
+                  return (
+                    <tr key={r.id} className="border-t border-ink-100">
+                      <td className="px-3 py-2">{r.email}</td>
+                      <td className="px-3 py-2">{r.fullName ?? "—"}</td>
+                      <td className="px-3 py-2 text-right">
+                        <Input type="number" min={0.01} step={0.01} value={editVal}
+                          onChange={(e) => setEdits((p) => ({ ...p, [r.id]: e.target.value }))}
+                          className="h-7 w-24 ml-auto text-right" />
+                      </td>
+                      <td className="px-3 py-2 text-right space-x-1">
+                        {dirty && (
+                          <Button size="sm" disabled={busy === r.id}
+                            onClick={() => saveRate(r.id)} className="bg-cobalt-600 hover:bg-cobalt-700">
+                            {busy === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
+                          </Button>
+                        )}
+                        <Button size="sm" variant="outline" onClick={() => openHistory(r.id)}>History</Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {rows.length === 0 && (
+                  <tr><td colSpan={4} className="px-3 py-8 text-center text-ink-500">No credentialers yet.</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
+
+      {historyFor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setHistoryFor(null)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-ink-900 mb-3">Rate change history</h3>
+            {history.length === 0 ? (
+              <p className="text-sm text-ink-500">No rate-stamped actions recorded yet.</p>
+            ) : (
+              <ul className="space-y-2 max-h-80 overflow-y-auto">
+                {history.map((h, i) => (
+                  <li key={i} className="text-xs flex justify-between border-b border-ink-100 pb-1">
+                    <span>{h.action} · {new Date(h.performedAt).toLocaleString()}</span>
+                    <span className="font-mono">${h.rateAtAction ?? "—"}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="mt-4 text-right">
+              <Button size="sm" variant="outline" onClick={() => setHistoryFor(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ─── Email Templates tab — read-only stub ─── */
+function TemplatesTab() {
+  const templates = [
+    { name: "New case assigned", description: "Sent to peer when a case is assigned." },
+    { name: "Past due reminder", description: "Sent to peer at +1d, +3d, +7d after due date." },
+    { name: "License expires soon", description: "Sent to credentialing inbox at 14/7/3/1 days before expiry." },
+    { name: "Invoice issued", description: "Sent to client billing contact when an invoice transitions to sent." },
+    { name: "Credentialing review needed", description: "Sent to credentialing inbox when a new peer is invited." },
+    { name: "Peer invitation", description: "Sent to a peer when an admin issues an invite token." },
+  ];
+
+  return (
+    <Card>
+      <CardHeader><CardTitle className="text-ink-900">Email Templates</CardTitle></CardHeader>
+      <CardContent>
+        <p className="text-xs text-ink-500 mb-3">Read-only preview. Customisation is on the wishlist; today templates live in <code>lib/email/notifications.ts</code> as inline HTML.</p>
+        <ul className="divide-y divide-ink-100 border border-ink-100 rounded">
+          {templates.map((t) => (
+            <li key={t.name} className="px-4 py-3">
+              <div className="font-medium text-ink-900 text-sm">{t.name}</div>
+              <div className="text-xs text-ink-500 mt-0.5">{t.description}</div>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
 }

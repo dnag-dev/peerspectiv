@@ -53,6 +53,8 @@ export const companies = pgTable('companies', {
   cadencePeriodType: text('cadence_period_type').notNull().default('quarterly'),
   cadencePeriodMonths: integer('cadence_period_months'),
   deliveryMethod: text('delivery_method').notNull().default('portal'),
+  // Phase 7: per-specialty vs flat pricing mode (drives invoice generator)
+  pricingMode: text('pricing_mode').notNull().default('flat'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
 });
