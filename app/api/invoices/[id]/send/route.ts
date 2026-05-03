@@ -58,8 +58,34 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       .where(eq(invoices.id, params.id))
       .returning();
 
-    // Email integration is out of scope; this endpoint just flips the
-    // state and returns the link the admin can copy/paste manually.
+    // Phase 7 (CL-030): notify the client per company.deliveryMethod.
+    //   'portal'        → no email (in-app surface only).
+    //   'secure_email'  → email the billing contact.
+    //   'both'          → email + portal.
+    try {
+      const deliveryMethod = (company as any).deliveryMethod ?? 'portal';
+      if ((deliveryMethod === 'secure_email' || deliveryMethod === 'both') && company.contactEmail) {
+        const { sendEmail } = await import('@/lib/email/notifications');
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.ai';
+        const portalUrl = `${appUrl}/portal/invoices`;
+        const subject = `New invoice ${updated.invoiceNumber} — ${company.name}`;
+        const html = `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color:#0F2044;">Invoice ${updated.invoiceNumber}</h2>
+            <p>Hi ${company.contactPerson ?? company.name},</p>
+            <p>A new invoice for $${Number(updated.totalAmount).toFixed(2)} (${updated.reviewCount} reviews) is available for the period <strong>${updated.rangeStart} → ${updated.rangeEnd}</strong>.</p>
+            <p>Due date: <strong>${updated.dueDate ?? '—'}</strong></p>
+            ${updated.pdfUrl ? `<p><a href="${updated.pdfUrl}">Download PDF</a></p>` : ''}
+            ${paymentLinkUrl ? `<p><a href="${paymentLinkUrl}" style="background:#1E4DB7;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:16px;">Pay now</a></p>` : ''}
+            <p style="margin-top:24px;">View all invoices in your <a href="${portalUrl}">portal</a>.</p>
+          </div>
+        `;
+        await sendEmail({ to: company.contactEmail, subject, html });
+      }
+    } catch (e) {
+      console.error('[invoices.send] email notification failed (non-fatal):', e);
+    }
+
     return NextResponse.json({ invoice: updated });
   } catch (err) {
     console.error('[invoices.send] failed:', err);

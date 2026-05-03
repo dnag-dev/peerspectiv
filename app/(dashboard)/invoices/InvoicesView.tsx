@@ -79,6 +79,14 @@ export function InvoicesView({ invoices, companies }: Props) {
   const [quantityOverride, setQuantityOverride] = useState<string>("");
   const [adjustmentReason, setAdjustmentReason] = useState<string>("");
 
+  // Phase 7: cadence-period generation form
+  const [showCadence, setShowCadence] = useState(false);
+  const [cadenceCompanyId, setCadenceCompanyId] = useState("");
+  const [cadenceLabel, setCadenceLabel] = useState("");
+  const [cadenceCaseCount, setCadenceCaseCount] = useState("");
+  const [cadenceReason, setCadenceReason] = useState("");
+  const [cadenceItemized, setCadenceItemized] = useState(false);
+
   // Filter / sort state
   const [searchQ, setSearchQ] = useState("");
   const [companyFilter, setCompanyFilter] = useState<string>("all");
@@ -226,6 +234,46 @@ export function InvoicesView({ invoices, companies }: Props) {
     }
   }
 
+  async function handleGenerateCadence() {
+    setErr(null);
+    if (!cadenceCompanyId) { setErr("Select a company"); return; }
+    if (!cadenceLabel.trim()) { setErr("Cadence period label is required (e.g. 2026-Q1)"); return; }
+    const cc = cadenceCaseCount.trim();
+    const ccNum = cc === "" ? null : Number(cc);
+    if (cc !== "" && (!Number.isFinite(ccNum) || (ccNum as number) < 0)) {
+      setErr("Case count must be a non-negative integer");
+      return;
+    }
+    if (ccNum !== null && !cadenceReason.trim()) {
+      setErr("Adjustment reason is required when case count is overridden");
+      return;
+    }
+    setBusy("cadence");
+    try {
+      const res = await fetch("/api/invoices/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-demo-user-id": "admin-demo" },
+        body: JSON.stringify({
+          company_id: cadenceCompanyId,
+          cadence_period_label: cadenceLabel.trim(),
+          case_count: ccNum,
+          adjustment_reason: cadenceReason.trim() || null,
+          itemized: cadenceItemized,
+        }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`);
+      setShowCadence(false);
+      setCadenceCaseCount("");
+      setCadenceReason("");
+      startTransition(() => router.refresh());
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function handleSend(id: string) {
     setBusy(id);
     try {
@@ -285,10 +333,68 @@ export function InvoicesView({ invoices, companies }: Props) {
             Generate, track, and send invoices for client peer-review services.
           </p>
         </div>
-        <Button onClick={() => setShowCreate(true)} className="bg-cobalt-600 hover:bg-cobalt-700">
-          <Plus className="h-4 w-4 mr-2" /> New Invoice
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowCadence(true)}>
+            <FileText className="h-4 w-4 mr-2" /> By Cadence Period
+          </Button>
+          <Button onClick={() => setShowCreate(true)} className="bg-cobalt-600 hover:bg-cobalt-700">
+            <Plus className="h-4 w-4 mr-2" /> New Invoice
+          </Button>
+        </div>
       </div>
+
+      {showCadence && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-ink-900">Generate Invoice by Cadence Period</CardTitle>
+            <Button variant="ghost" size="icon" onClick={() => setShowCadence(false)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label>Company</Label>
+                <Select value={cadenceCompanyId} onValueChange={setCadenceCompanyId}>
+                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+                  <SelectContent>
+                    {companies.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Cadence period label</Label>
+                <Input placeholder="e.g. 2026-Q1 or 2026-04" value={cadenceLabel}
+                  onChange={(e) => setCadenceLabel(e.target.value)} />
+              </div>
+              <div>
+                <Label>Case count override (optional)</Label>
+                <Input type="number" min={0} step={1} placeholder="Leave blank to use auto-count"
+                  value={cadenceCaseCount} onChange={(e) => setCadenceCaseCount(e.target.value)} />
+              </div>
+              <div>
+                <Label>
+                  Adjustment reason{cadenceCaseCount.trim() !== "" && <span className="text-critical-600">*</span>}
+                </Label>
+                <Input placeholder="Required when case count is set"
+                  value={cadenceReason} onChange={(e) => setCadenceReason(e.target.value)}
+                  disabled={cadenceCaseCount.trim() === ""} />
+              </div>
+            </div>
+            <label className="flex items-center gap-2 text-sm text-ink-700">
+              <input type="checkbox" checked={cadenceItemized}
+                onChange={(e) => setCadenceItemized(e.target.checked)} />
+              Itemise per provider (no PHI — name + count + specialty + subtotal)
+            </label>
+            {err && <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">{err}</p>}
+            <Button onClick={handleGenerateCadence} disabled={busy === "cadence"}
+              className="bg-cobalt-600 hover:bg-cobalt-700">
+              {busy === "cadence" ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
+              Generate Invoice
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {showCreate && (
         <Card>
