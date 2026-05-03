@@ -232,6 +232,100 @@ export async function sendCycleCompletionEmail(
   }
 }
 
+/**
+ * Phase 5.4 (SA-091) — alert a peer that a case has just been assigned to
+ * them. Thin wrapper that uses the same Resend + console fallback pattern
+ * as sendPeerAssignment but with a tighter signature for the assignment-
+ * approval call site.
+ */
+export async function sendCaseAssignedAlert(
+  peer: { fullName: string | null; email: string | null },
+  caseRow: { id: string; specialtyRequired: string | null; dueDate: Date | string | null },
+  providerName: string
+): Promise<{ delivery: 'email' | 'log' | 'skipped' }> {
+  if (!peer.email) return { delivery: 'skipped' };
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.ai';
+  const link = `${appUrl}/peer/cases/${caseRow.id}`;
+  const due = caseRow.dueDate ? new Date(caseRow.dueDate).toLocaleDateString() : 'TBD';
+  const subject = `New case assigned: ${providerName}`;
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color:#0F2044;">New peer review assignment</h2>
+      <p>Hello ${escapeHtml(peer.fullName ?? 'reviewer')},</p>
+      <p>You've been assigned a new case for <strong>${escapeHtml(providerName)}</strong>.</p>
+      <ul>
+        <li><strong>Specialty:</strong> ${escapeHtml(caseRow.specialtyRequired ?? 'General')}</li>
+        <li><strong>Due:</strong> ${escapeHtml(due)}</li>
+      </ul>
+      <a href="${link}"
+         style="background:#1E4DB7;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:8px;">
+        Open case
+      </a>
+    </div>
+  `;
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[case-assigned] (no RESEND_API_KEY)', { to: peer.email, subject });
+    return { delivery: 'log' };
+  }
+  try {
+    await getResend().emails.send({
+      from: 'Peerspectiv <reviews@peerspectiv.com>',
+      to: peer.email,
+      subject,
+      html,
+    });
+    return { delivery: 'email' };
+  } catch (err) {
+    console.log('[case-assigned] send failed:', err);
+    return { delivery: 'log' };
+  }
+}
+
+/**
+ * Phase 5.4 (SA-092) — past-due reminder email to the assigned peer.
+ */
+export async function sendPastDueReminder(params: {
+  peerEmail: string;
+  peerName: string | null;
+  caseId: string;
+  providerName: string;
+  dueDate: Date | string | null;
+}): Promise<{ delivery: 'email' | 'log' }> {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.ai';
+  const link = `${appUrl}/peer/cases/${params.caseId}`;
+  const due = params.dueDate ? new Date(params.dueDate).toLocaleDateString() : 'unknown';
+  const subject = `Case past due: ${params.providerName}`;
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color:#B91C1C;">Past-due reminder</h2>
+      <p>Hello ${escapeHtml(params.peerName ?? 'reviewer')},</p>
+      <p>Your assigned case for <strong>${escapeHtml(params.providerName)}</strong>
+        was due on <strong>${escapeHtml(due)}</strong> and is still in progress.</p>
+      <p>Please complete it as soon as possible.</p>
+      <a href="${link}"
+         style="background:#B91C1C;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:8px;">
+        Open case
+      </a>
+    </div>
+  `;
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[past-due] (no RESEND_API_KEY)', { to: params.peerEmail, subject });
+    return { delivery: 'log' };
+  }
+  try {
+    await getResend().emails.send({
+      from: 'Peerspectiv <reviews@peerspectiv.com>',
+      to: params.peerEmail,
+      subject,
+      html,
+    });
+    return { delivery: 'email' };
+  } catch (err) {
+    console.log('[past-due] send failed:', err);
+    return { delivery: 'log' };
+  }
+}
+
 export async function sendPeerAssignment(params: {
   peerEmail: string;
   peerName: string;

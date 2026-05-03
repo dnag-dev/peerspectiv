@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, toSnake } from '@/lib/db';
-import { reviewCases } from '@/lib/db/schema';
+import { reviewCases, peers } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { isAssignable, type PeerState } from '@/lib/peers/state-machine';
+import { auditLog } from '@/lib/utils/audit';
 
 export async function GET(
   request: NextRequest,
@@ -63,6 +65,92 @@ export async function GET(
     return NextResponse.json({ data });
   } catch (err) {
     console.error('[API] GET /api/cases/[id] error:', err);
+    return NextResponse.json(
+      { error: 'Internal server error', code: 'INTERNAL_ERROR' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Phase 5.3 — admin reassign / unassign from the assignments index.
+ *
+ * Body shapes:
+ *   { action: 'reassign', peer_id }   → set peer_id, status='assigned',
+ *                                       assignment_source='reassigned'
+ *   { action: 'unassign' }            → clear peer_id, status='unassigned'
+ *
+ * Reassign validates the target peer is state='active'; otherwise returns
+ * 422 PEER_NOT_ACTIVE (matches Phase 4 contract on /api/assign/approve).
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json().catch(() => ({}));
+    const action = body?.action as string | undefined;
+
+    if (action === 'reassign') {
+      const peerId = body?.peer_id as string | undefined;
+      if (!peerId) {
+        return NextResponse.json(
+          { error: 'peer_id required for reassign', code: 'VALIDATION_ERROR' },
+          { status: 400 }
+        );
+      }
+      const [target] = await db
+        .select({ state: peers.state })
+        .from(peers)
+        .where(eq(peers.id, peerId))
+        .limit(1);
+      if (!target || !isAssignable(target.state as PeerState)) {
+        return NextResponse.json(
+          { error: 'Peer not in Active state. Cannot assign.', code: 'PEER_NOT_ACTIVE' },
+          { status: 422 }
+        );
+      }
+      await db
+        .update(reviewCases)
+        .set({
+          peerId,
+          status: 'assigned',
+          assignmentSource: 'reassigned',
+          assignedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(reviewCases.id, id));
+      await auditLog({
+        action: 'case_reassigned',
+        resourceType: 'review_case',
+        resourceId: id,
+        metadata: { peer_id: peerId },
+        request,
+      });
+      return NextResponse.json({ ok: true });
+    }
+
+    if (action === 'unassign') {
+      await db
+        .update(reviewCases)
+        .set({ peerId: null, status: 'unassigned', updatedAt: new Date() })
+        .where(eq(reviewCases.id, id));
+      await auditLog({
+        action: 'case_unassigned',
+        resourceType: 'review_case',
+        resourceId: id,
+        request,
+      });
+      return NextResponse.json({ ok: true });
+    }
+
+    return NextResponse.json(
+      { error: 'Unknown action', code: 'VALIDATION_ERROR' },
+      { status: 400 }
+    );
+  } catch (err) {
+    console.error('[API] PATCH /api/cases/[id] error:', err);
     return NextResponse.json(
       { error: 'Internal server error', code: 'INTERNAL_ERROR' },
       { status: 500 }

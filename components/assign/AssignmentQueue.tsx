@@ -30,6 +30,7 @@ export function AssignmentQueue({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [approvingAll, setApprovingAll] = useState(false);
+  const [skipped, setSkipped] = useState<Record<string, string>>({});
   const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
   const [reassigningIds, setReassigningIds] = useState<Set<string>>(new Set());
   const [pickerOpenForCase, setPickerOpenForCase] = useState<string | null>(null);
@@ -44,6 +45,16 @@ export function AssignmentQueue({
         body: JSON.stringify({ approve_all: true, batch_id: initialCases[0]?.batch_id }),
       });
       if (!res.ok) throw new Error("Failed to approve all");
+      // Phase 5.5 — render inline "Capacity hit" chips for skipped cases.
+      const data = await res.json().catch(() => ({}));
+      const skips: { caseId: string; reason: string }[] = data?.skipped ?? [];
+      if (skips.length > 0) {
+        const next: Record<string, string> = {};
+        for (const s of skips) next[s.caseId] = s.reason;
+        setSkipped(next);
+      } else {
+        setSkipped({});
+      }
       startTransition(() => router.refresh());
     } catch (err) {
       console.error("Approve all failed:", err);
@@ -183,6 +194,14 @@ export function AssignmentQueue({
               <div className="absolute top-3.5 right-3.5">
                 <ConfidenceDot variant={confidenceVariant} />
               </div>
+
+              {/* Phase 5.5 — capacity-skip chip */}
+              {skipped[c.id] && (
+                <div className="mb-2 inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-700">
+                  <AlertTriangle className="h-3 w-3" />
+                  {skipped[c.id]}
+                </div>
+              )}
 
               {/* Company + provider header */}
               <header className="mb-3.5 pr-28 min-h-[56px]">
