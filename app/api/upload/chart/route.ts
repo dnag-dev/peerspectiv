@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
 import { uploadChart } from '@/lib/storage';
 import { analyzeChart } from '@/lib/ai/chart-analyzer';
 import { auditLog } from '@/lib/utils/audit';
 import { db } from '@/lib/db';
-import { retentionSchedule } from '@/lib/db/schema';
+import { retentionSchedule, reviewCases } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { extractChartMetadata } from '@/lib/pdf/extractor';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
@@ -46,13 +46,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify case exists
-    const { data: caseData, error: caseError } = await supabaseAdmin
-      .from('review_cases')
-      .select('id, encounter_date')
-      .eq('id', caseId)
-      .single();
+    const [caseData] = await db
+      .select({ id: reviewCases.id, encounterDate: reviewCases.encounterDate })
+      .from(reviewCases)
+      .where(eq(reviewCases.id, caseId))
+      .limit(1);
 
-    if (caseError || !caseData) {
+    if (!caseData) {
       return NextResponse.json(
         { error: 'Case not found', code: 'NOT_FOUND' },
         { status: 404 }
@@ -82,26 +82,23 @@ export async function POST(request: NextRequest) {
 
     // Build the case update — only fill fields we have.
     const caseUpdate: Record<string, unknown> = {
-      chart_file_path: blobUrl,
-      chart_file_name: file.name,
-      updated_at: new Date().toISOString(),
+      chartFilePath: blobUrl,
+      chartFileName: file.name,
+      updatedAt: new Date(),
     };
     if (metadata) {
-      if (metadata.patient_first) caseUpdate.patient_first_name = metadata.patient_first;
-      if (metadata.patient_last) caseUpdate.patient_last_name = metadata.patient_last;
-      if (metadata.mrn) caseUpdate.mrn_number = metadata.mrn;
-      if (typeof metadata.is_pediatric === 'boolean') caseUpdate.is_pediatric = metadata.is_pediatric;
+      if (metadata.patient_first) caseUpdate.patientFirstName = metadata.patient_first;
+      if (metadata.patient_last) caseUpdate.patientLastName = metadata.patient_last;
+      if (metadata.mrn) caseUpdate.mrnNumber = metadata.mrn;
+      if (typeof metadata.is_pediatric === 'boolean') caseUpdate.isPediatric = metadata.is_pediatric;
       // Only set encounter_date if not already present
-      if (metadata.encounter_date && !caseData.encounter_date) {
-        caseUpdate.encounter_date = metadata.encounter_date;
+      if (metadata.encounter_date && !caseData.encounterDate) {
+        caseUpdate.encounterDate = metadata.encounter_date;
       }
     }
 
     // Update review_cases with chart info (store blob URL instead of path)
-    await supabaseAdmin
-      .from('review_cases')
-      .update(caseUpdate)
-      .eq('id', caseId);
+    await db.update(reviewCases).set(caseUpdate).where(eq(reviewCases.id, caseId));
 
     // Audit log -- case_id only, no filename (PHI protection)
     await auditLog({

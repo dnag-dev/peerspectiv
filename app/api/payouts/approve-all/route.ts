@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { reviewerPayouts } from '@/lib/db/schema';
+import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,22 +27,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: pending, error: selErr } = await supabaseAdmin
-      .from('reviewer_payouts')
-      .select('id, amount')
-      .eq('status', 'pending')
-      .gte('period_start', period_start)
-      .lte('period_end', period_end);
+    const pending = await db
+      .select({ id: reviewerPayouts.id, amount: reviewerPayouts.amount })
+      .from(reviewerPayouts)
+      .where(
+        and(
+          eq(reviewerPayouts.status, 'pending'),
+          gte(reviewerPayouts.periodStart, period_start),
+          lte(reviewerPayouts.periodEnd, period_end)
+        )
+      );
 
-    if (selErr) {
-      console.error('[payouts.approve-all] select error:', selErr);
-      return NextResponse.json({ error: 'DB_ERROR' }, { status: 500 });
-    }
-
-    type PendingRow = { id: string; amount: string | number };
-    const ids = ((pending ?? []) as PendingRow[]).map((p) => p.id);
-    const totalAmount = ((pending ?? []) as PendingRow[]).reduce(
-      (s: number, p: PendingRow) => s + Number(p.amount ?? 0),
+    const ids = pending.map((p) => p.id);
+    const totalAmount = pending.reduce(
+      (s, p) => s + Number(p.amount ?? 0),
       0
     );
 
@@ -48,15 +48,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ count: 0, total_amount: 0 });
     }
 
-    const { error: updErr } = await supabaseAdmin
-      .from('reviewer_payouts')
-      .update({ status: 'approved', approved_at: new Date().toISOString() })
-      .in('id', ids);
-
-    if (updErr) {
-      console.error('[payouts.approve-all] update error:', updErr);
-      return NextResponse.json({ error: 'DB_ERROR' }, { status: 500 });
-    }
+    await db
+      .update(reviewerPayouts)
+      .set({ status: 'approved', approvedAt: new Date() })
+      .where(inArray(reviewerPayouts.id, ids));
 
     return NextResponse.json({
       count: ids.length,

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db, toCamel, toSnake } from "@/lib/db";
+import { companies } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 async function getAdminUserId(req: NextRequest): Promise<string | null> {
   try {
@@ -74,8 +76,8 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const update = pickAllowed(body);
-  if (Object.keys(update).length === 0) {
+  const updateSnake = pickAllowed(body);
+  if (Object.keys(updateSnake).length === 0) {
     return NextResponse.json(
       { error: "No allowed fields in request body" },
       { status: 400 }
@@ -83,19 +85,15 @@ export async function PATCH(
   }
 
   const { id } = params;
-  const { data, error } = await supabaseAdmin
-    .from("companies")
-    .update(update)
-    .eq("id", id)
-    .select()
-    .single();
+  const [row] = await db
+    .update(companies)
+    .set(toCamel(updateSnake))
+    .where(eq(companies.id, id))
+    .returning();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-  if (!data) {
+  if (!row) {
     return NextResponse.json({ error: "Company not found" }, { status: 404 });
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json(toSnake(row));
 }

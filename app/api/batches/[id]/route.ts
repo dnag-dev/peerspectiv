@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { batches, reviewCases } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { auditLog } from '@/lib/utils/audit';
 
 // PATCH /api/batches/[id]
@@ -23,22 +25,16 @@ export async function PATCH(
     }
 
     // Update the batch
-    const { error: batchErr } = await supabaseAdmin
-      .from('batches')
-      .update({ company_form_id })
-      .eq('id', id);
-    if (batchErr) {
-      return NextResponse.json({ error: batchErr.message }, { status: 500 });
-    }
+    await db
+      .update(batches)
+      .set({ companyFormId: company_form_id })
+      .where(eq(batches.id, id));
 
     // Cascade to all cases in this batch
-    const { error: casesErr } = await supabaseAdmin
-      .from('review_cases')
-      .update({ company_form_id, updated_at: new Date().toISOString() })
-      .eq('batch_id', id);
-    if (casesErr) {
-      return NextResponse.json({ error: casesErr.message }, { status: 500 });
-    }
+    await db
+      .update(reviewCases)
+      .set({ companyFormId: company_form_id, updatedAt: new Date() })
+      .where(eq(reviewCases.batchId, id));
 
     await auditLog({
       action: 'batch_form_changed',

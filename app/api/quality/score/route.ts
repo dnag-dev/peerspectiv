@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { reviewResults } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { scoreReviewerQuality } from '@/lib/ai/quality-scorer';
 import { auditLog } from '@/lib/utils/audit';
 
@@ -16,13 +18,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify case exists and has a review result
-    const { data: reviewResult, error } = await supabaseAdmin
-      .from('review_results')
-      .select('id, case_id')
-      .eq('case_id', case_id)
-      .single();
+    const [reviewResult] = await db
+      .select({ id: reviewResults.id, caseId: reviewResults.caseId })
+      .from(reviewResults)
+      .where(eq(reviewResults.caseId, case_id))
+      .limit(1);
 
-    if (error || !reviewResult) {
+    if (!reviewResult) {
       return NextResponse.json(
         { error: 'No review result found for this case', code: 'NOT_FOUND' },
         { status: 404 }
@@ -32,24 +34,27 @@ export async function POST(request: NextRequest) {
     await scoreReviewerQuality(case_id);
 
     // Fetch updated result
-    const { data: updatedResult } = await supabaseAdmin
-      .from('review_results')
-      .select('quality_score, quality_notes')
-      .eq('case_id', case_id)
-      .single();
+    const [updatedResult] = await db
+      .select({
+        qualityScore: reviewResults.qualityScore,
+        qualityNotes: reviewResults.qualityNotes,
+      })
+      .from(reviewResults)
+      .where(eq(reviewResults.caseId, case_id))
+      .limit(1);
 
     await auditLog({
       action: 'quality_score_calculated',
       resourceType: 'review_case',
       resourceId: case_id,
-      metadata: { quality_score: updatedResult?.quality_score },
+      metadata: { quality_score: updatedResult?.qualityScore },
       request,
     });
 
     return NextResponse.json({
       success: true,
-      quality_score: updatedResult?.quality_score,
-      quality_notes: updatedResult?.quality_notes,
+      quality_score: updatedResult?.qualityScore,
+      quality_notes: updatedResult?.qualityNotes,
     });
   } catch (err) {
     console.error('[API] POST /api/quality/score error:', err);
