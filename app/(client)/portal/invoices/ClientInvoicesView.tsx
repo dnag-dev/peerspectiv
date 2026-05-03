@@ -83,7 +83,10 @@ export function ClientInvoicesView({ companyName, invoices }: Props) {
                 <tr key={inv.id} className="border-t border-ink-100">
                   <td className="px-4 py-3 font-mono text-xs text-ink-900">{inv.invoiceNumber}</td>
                   <td className="px-4 py-3 text-ink-700">
-                    {inv.rangeStart} → {inv.rangeEnd}
+                    {/* Cadence-period invoices store the same label in start+end. */}
+                    {inv.rangeStart === inv.rangeEnd
+                      ? inv.rangeStart
+                      : `${inv.rangeStart} → ${inv.rangeEnd}`}
                   </td>
                   <td className="px-4 py-3 text-right text-ink-800">{inv.reviewCount}</td>
                   <td className="px-4 py-3 text-right font-medium text-ink-900">
