@@ -1,4 +1,5 @@
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { auditLogs } from '@/lib/db/schema';
 
 export async function auditLog(params: {
   userId?: string;
@@ -8,12 +9,12 @@ export async function auditLog(params: {
   metadata?: Record<string, unknown>;
   request?: Request;
 }) {
-  await supabaseAdmin.from('audit_logs').insert({
-    user_id: params.userId,
+  await db.insert(auditLogs).values({
+    userId: params.userId,
     action: params.action,
-    resource_type: params.resourceType,
-    resource_id: params.resourceId,
-    ip_address: params.request?.headers.get('x-forwarded-for') ?? null,
+    resourceType: params.resourceType,
+    resourceId: params.resourceId,
+    ipAddress: params.request?.headers.get('x-forwarded-for') ?? null,
     metadata: params.metadata ?? {},
   });
 }
