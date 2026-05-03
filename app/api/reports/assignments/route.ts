@@ -45,11 +45,11 @@ export async function GET(request: NextRequest) {
       const result = c.reviewResult;
       const deficiencies = result?.deficiencies;
       const peer = c.peer;
-      const reviewerSpecialties = peer?.specialties ?? [];
+      const peerSpecialties = peer?.specialties ?? [];
       const isPediatric = c.isPediatric === true;
       const pediatricMismatch =
         isPediatric &&
-        !reviewerSpecialties.some((s) => s?.toLowerCase().includes("pediatric"));
+        !peerSpecialties.some((s) => s?.toLowerCase().includes("pediatric"));
       return {
         id: c.id,
         provider_id: c.providerId,

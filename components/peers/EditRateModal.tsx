@@ -3,7 +3,7 @@
 // Despite the filename this is the full reviewer editor (name, email,
 // specialties, board cert, license, credential expiry, caseload, rate).
 // Kept the file name to avoid a rename churn across the codebase — the
-// export is also aliased as `EditReviewerModal`.
+// export is also aliased as `EditPeerModal`.
 
 import { useEffect, useState } from 'react';
 import {
@@ -37,7 +37,7 @@ interface Props {
   // Kept for back-compat with any caller still passing these explicitly —
   // they override the values pulled from `reviewer`.
   peerId?: string;
-  reviewerName?: string;
+  peerName?: string;
   currentRateType?: RateType;
   currentRateAmount?: number;
   boardCertification?: string | null;

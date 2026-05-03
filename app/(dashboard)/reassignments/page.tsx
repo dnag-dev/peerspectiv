@@ -22,7 +22,7 @@ async function getOpenRequests(): Promise<ReassignmentRow[]> {
       status: caseReassignmentRequests.status,
       createdAt: caseReassignmentRequests.createdAt,
       specialtyRequired: reviewCases.specialtyRequired,
-      reviewerName: peers.fullName,
+      peerName: peers.fullName,
       providerFirstName: providers.firstName,
       providerLastName: providers.lastName,
       providerSpecialty: providers.specialty,
@@ -42,7 +42,7 @@ async function getOpenRequests(): Promise<ReassignmentRow[]> {
     reason: r.reason,
     createdAt: r.createdAt ? r.createdAt.toISOString() : null,
     specialty: r.specialtyRequired ?? r.providerSpecialty ?? null,
-    reviewerName: r.reviewerName ?? null,
+    peerName: r.peerName ?? null,
     providerName:
       `${r.providerFirstName ?? ''} ${r.providerLastName ?? ''}`.trim() || null,
     companyName: r.companyName ?? null,

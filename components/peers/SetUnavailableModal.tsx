@@ -13,7 +13,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   peerId: string;
-  reviewerName: string;
+  peerName: string;
   onSuccess: (status: string) => void;
 }
 
@@ -24,7 +24,7 @@ const REASONS = [
   { value: 'other', label: 'Other' },
 ];
 
-export function SetUnavailableModal({ open, onClose, peerId, reviewerName, onSuccess }: Props) {
+export function SetUnavailableModal({ open, onClose, peerId, peerName, onSuccess }: Props) {
   const [reason, setReason] = useState('vacation');
   const [fromDate, setFromDate] = useState('');
   const [untilDate, setUntilDate] = useState('');
@@ -70,7 +70,7 @@ export function SetUnavailableModal({ open, onClose, peerId, reviewerName, onSuc
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Set {reviewerName} Unavailable</DialogTitle>
+          <DialogTitle>Set {peerName} Unavailable</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">

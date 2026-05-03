@@ -599,15 +599,15 @@ export async function fetchPeerEarningsSummaryData(input: {
     email: string | null;
     rate_amount: string | null;
   };
-  const reviewerRows = rowsOf<ReviewerRow>(
+  const peerRows = rowsOf<ReviewerRow>(
     await db.execute(sql`
       SELECT full_name, email, rate_amount
       FROM reviewers WHERE id = ${input.peerId} LIMIT 1
     `)
   );
-  const peer = reviewerRows[0];
-  const reviewerName = peer?.full_name ?? 'Unknown reviewer';
-  const reviewerEmail = peer?.email ?? undefined;
+  const peer = peerRows[0];
+  const peerName = peer?.full_name ?? 'Unknown reviewer';
+  const peerEmail = peer?.email ?? undefined;
   const fallbackRate = peer?.rate_amount ? Number(peer.rate_amount) : 1.0;
 
   type LineRow = {
@@ -660,8 +660,8 @@ export async function fetchPeerEarningsSummaryData(input: {
   const ytdTotal = Number(ytdRows[0]?.ytd ?? 0);
 
   return {
-    reviewerName,
-    reviewerEmail,
+    peerName,
+    peerEmail,
     rangeStart: input.rangeStart,
     rangeEnd: input.rangeEnd,
     currency: 'USD',
@@ -684,7 +684,7 @@ export interface ReviewerScorecardRow {
   earnings: number;
 }
 
-export async function fetchReviewerScorecard(
+export async function fetchPeerScorecard(
   periodStart: string,
   periodEnd: string
 ): Promise<ReviewerScorecardRow[]> {

@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     in30.setUTCDate(in30.getUTCDate() + 30);
     const in30Iso = in30.toISOString().slice(0, 10);
 
-    const reviewerRows = await db
+    const peerRows = await db
       .select({
         id: peers.id,
         fullName: peers.fullName,
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     let sentExpired = 0;
     let skipped = 0;
 
-    for (const r of reviewerRows) {
+    for (const r of peerRows) {
       const cv = String(r.credentialValidUntil).slice(0, 10);
       let kind: 'warn30' | 'expired' | null = null;
       if (cv < todayIso) kind = 'expired';
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
 
       await sendCredentialingAlert({
         peerId: r.id,
-        reviewerName: r.fullName ?? 'Reviewer',
+        peerName: r.fullName ?? 'Reviewer',
         email: r.email ?? '',
         specialties: specs,
         subject,

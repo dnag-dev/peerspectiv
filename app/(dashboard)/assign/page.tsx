@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db, toSnake } from "@/lib/db";
-import { reviewCases, peers as reviewersTable } from "@/lib/db/schema";
+import { reviewCases, peers as peersTable } from "@/lib/db/schema";
 import { and, asc, eq, gte, inArray } from "drizzle-orm";
 import { Card, CardContent } from "@/components/ui/card";
 import { AssignmentQueue } from "@/components/assign/AssignmentQueue";
@@ -39,34 +39,34 @@ async function getPendingCases(): Promise<PendingCase[]> {
     .map((c) => toSnake<any>(c)) as PendingCase[];
 }
 
-async function getAlternateReviewers(
+async function getAlternatePeers(
   cases: PendingCase[]
 ): Promise<Record<string, Peer[]>> {
   const result: Record<string, Peer[]> = {};
 
   const specialtySet = new Set<string>();
-  const currentReviewerIds = new Set<string>();
+  const currentPeerIds = new Set<string>();
   for (const c of cases) {
     const spec = c.specialty_required || c.provider.specialty;
     if (spec) specialtySet.add(spec);
-    currentReviewerIds.add(c.peer.id);
+    currentPeerIds.add(c.peer.id);
   }
 
   if (specialtySet.size === 0) return result;
 
-  const reviewerRows = await db
+  const peerRows = await db
     .select()
-    .from(reviewersTable)
+    .from(peersTable)
     .where(
       and(
-        eq(reviewersTable.status, "active"),
-        inArray(reviewersTable.specialty, Array.from(specialtySet))
+        eq(peersTable.status, "active"),
+        inArray(peersTable.specialty, Array.from(specialtySet))
       )
     )
-    .orderBy(asc(reviewersTable.activeCasesCount))
+    .orderBy(asc(peersTable.activeCasesCount))
     .limit(50);
 
-  const peers = reviewerRows.map((r) => toSnake(r)) as Peer[];
+  const peers = peerRows.map((r) => toSnake(r)) as Peer[];
   for (const c of cases) {
     const neededSpecialty = c.specialty_required || c.provider.specialty;
     result[c.id] = peers.filter(
@@ -156,8 +156,8 @@ export default async function AssignPage({
     getAssignedRows(),
   ]);
 
-  const alternateReviewers =
-    activeTab === "pending" ? await getAlternateReviewers(pendingCases) : {};
+  const alternatePeers =
+    activeTab === "pending" ? await getAlternatePeers(pendingCases) : {};
   const approvedToday = await getApprovedTodayCount();
 
   const confidences = pendingCases
@@ -181,19 +181,19 @@ export default async function AssignPage({
 
   // Filter dropdown options for the Assigned tab.
   const companyMap = new Map<string, string>();
-  const reviewerMap = new Map<string, string>();
+  const peerMap = new Map<string, string>();
   const specialtySet = new Set<string>();
   for (const r of assignedRows) {
     if (r.company?.id && r.company.name) companyMap.set(r.company.id, r.company.name);
     if (r.peer?.id && r.peer.full_name)
-      reviewerMap.set(r.peer.id, r.peer.full_name);
+      peerMap.set(r.peer.id, r.peer.full_name);
     const s = r.specialty_required ?? r.provider?.specialty;
     if (s) specialtySet.add(s);
   }
   const companies = Array.from(companyMap, ([id, name]) => ({ id, name })).sort((a, b) =>
     a.name.localeCompare(b.name)
   );
-  const peers = Array.from(reviewerMap, ([id, full_name]) => ({ id, full_name })).sort(
+  const peers = Array.from(peerMap, ([id, full_name]) => ({ id, full_name })).sort(
     (a, b) => a.full_name.localeCompare(b.full_name)
   );
   const specialties = Array.from(specialtySet).sort();
@@ -266,7 +266,7 @@ export default async function AssignPage({
         ) : (
           <AssignmentQueue
             pendingCases={pendingCases}
-            alternateReviewers={alternateReviewers}
+            alternatePeers={alternatePeers}
           />
         )
       ) : (

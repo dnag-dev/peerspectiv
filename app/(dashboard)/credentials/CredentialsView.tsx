@@ -44,7 +44,7 @@ function bucketize(r: Peer, today: string): Bucket {
 
 export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
   const router = useRouter();
-  const [peers, setReviewers] = useState<Peer[]>(initial);
+  const [peers, setPeers] = useState<Peer[]>(initial);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -94,7 +94,7 @@ export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
         const j = await res.json().catch(() => null);
         throw new Error(j?.error ?? `Request failed (${res.status})`);
       }
-      setReviewers((prev) =>
+      setPeers((prev) =>
         prev.map((x) =>
           x.id === r.id
             ? {

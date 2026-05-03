@@ -57,7 +57,7 @@ interface Props {
   formFields: FormField[];
   aiPrefills: Record<string, AiPrefill>;
   existingResult: ExistingResult | null;
-  reviewerLicense?: ReviewerLicense;
+  peerLicense?: ReviewerLicense;
   initialMrnNumber?: string | null;
   allowAiNarrative?: boolean;
   /** Section F5: extracted chart text used to estimate the page a hovered
@@ -122,7 +122,7 @@ export function PeerCaseSplit({
   formFields,
   aiPrefills,
   existingResult,
-  reviewerLicense,
+  peerLicense,
   initialMrnNumber,
   allowAiNarrative,
   chartTextExtracted,
@@ -381,7 +381,7 @@ export function PeerCaseSplit({
                 peerId={peerId}
                 formFields={formFields}
                 aiPrefills={aiPrefills}
-                reviewerLicense={reviewerLicense}
+                peerLicense={peerLicense}
                 initialMrnNumber={initialMrnNumber}
                 allowAiNarrative={allowAiNarrative}
                 onFieldHover={chartViewUrl ? handleFieldHover : undefined}

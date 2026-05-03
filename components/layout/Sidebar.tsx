@@ -254,16 +254,16 @@ export function Sidebar({ openReassignmentCount = 0 }: { openReassignmentCount?:
   const router = useRouter();
   const { mobileNavOpen, closeMobileNav } = useMobileNav();
 
-  const isReviewer = pathname === "/peer" || pathname.startsWith("/peer/");
-  const role: SidebarRole = isReviewer ? "peer" : "admin";
-  const navItems = isReviewer ? peerNavItems : buildAdminNavItems(openReassignmentCount);
+  const isPeer = pathname === "/peer" || pathname.startsWith("/peer/");
+  const role: SidebarRole = isPeer ? "peer" : "admin";
+  const navItems = isPeer ? peerNavItems : buildAdminNavItems(openReassignmentCount);
 
   const session = useClerkSession({
-    fallbackName: isReviewer ? "Dr. Richard Johnson" : "Ashton Williams",
-    fallbackEmail: isReviewer ? "rjohnson@peerspectiv.com" : "admin@peerspectiv.com",
+    fallbackName: isPeer ? "Dr. Richard Johnson" : "Ashton Williams",
+    fallbackEmail: isPeer ? "rjohnson@peerspectiv.com" : "admin@peerspectiv.com",
   });
-  const name = isReviewer ? "Dr. Richard Johnson" : session.name;
-  const email = isReviewer ? "rjohnson@peerspectiv.com" : session.email;
+  const name = isPeer ? "Dr. Richard Johnson" : session.name;
+  const email = isPeer ? "rjohnson@peerspectiv.com" : session.email;
 
   async function handleLogout() {
     await session.signOut();

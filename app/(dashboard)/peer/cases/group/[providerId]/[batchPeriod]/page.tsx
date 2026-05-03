@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { reviewCases, providers } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
-import { renderReviewerCaseDetail } from "../../../[id]/page";
+import { renderPeerCaseDetail } from "../../../[id]/page";
 import { GroupCaseTabs } from "./tabs-client";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ interface GroupParams {
 // Section F1: tabbed detail page for a (provider, batch_period) pair when more
 // than one chart is assigned to the same reviewer for that provider in that
 // quarter. Each tab embeds the existing per-case detail content via the
-// extracted renderReviewerCaseDetail() helper.
+// extracted renderPeerCaseDetail() helper.
 export default async function ReviewerCaseGroupPage({ params }: GroupParams) {
   const { providerId, batchPeriod: batchPeriodRaw } = await params;
   const batchPeriod = decodeURIComponent(batchPeriodRaw);
@@ -43,7 +43,7 @@ export default async function ReviewerCaseGroupPage({ params }: GroupParams) {
 
   // If only one chart matched, just redirect-style render the single page.
   if (cases.length === 1) {
-    return renderReviewerCaseDetail(cases[0].id);
+    return renderPeerCaseDetail(cases[0].id);
   }
 
   const [providerRow] = await db
@@ -66,7 +66,7 @@ export default async function ReviewerCaseGroupPage({ params }: GroupParams) {
         ? new Date(c.encounterDate).toLocaleDateString()
         : c.chartFileName ?? `Chart ${c.id.slice(0, 6)}`,
       status: c.status,
-      content: await renderReviewerCaseDetail(c.id),
+      content: await renderPeerCaseDetail(c.id),
     }))
   );
 

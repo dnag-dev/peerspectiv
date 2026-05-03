@@ -93,7 +93,7 @@ async function getCaseDetail(id: string): Promise<CaseDetail | null> {
       reviewResult: {
         columns: {
           id: true, criteriaScores: true, deficiencies: true, overallScore: true,
-          narrativeFinal: true, aiAgreementPercentage: true, reviewerChanges: true,
+          narrativeFinal: true, aiAgreementPercentage: true, peerChanges: true,
           qualityScore: true, qualityNotes: true, submittedAt: true, timeSpentMinutes: true,
         },
       },

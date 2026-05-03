@@ -65,7 +65,7 @@ interface ReviewFormProps {
   formFields: FormField[];
   aiPrefills?: Record<string, AIPrefill>;
   onSubmit?: (data: ReviewFormSubmitData) => Promise<void>;
-  reviewerLicense?: ReviewerLicenseInfo;
+  peerLicense?: ReviewerLicenseInfo;
   /** Existing MRN persisted on review_cases (Section C.4). */
   initialMrnNumber?: string | null;
   /** company_forms.allow_ai_generated_recommendations (Section C.5). */
@@ -123,7 +123,7 @@ export function ReviewForm({
   formFields,
   aiPrefills = {},
   onSubmit,
-  reviewerLicense,
+  peerLicense,
   initialMrnNumber,
   allowAiNarrative,
   onFieldHover,
@@ -157,10 +157,10 @@ export function ReviewForm({
 
   // ── License attestation state (Phase 4.B — HRSA audit trail) ──
   const [licenseNumber, setLicenseNumber] = useState<string>(
-    reviewerLicense?.licenseNumber ?? ""
+    peerLicense?.licenseNumber ?? ""
   );
   const [licenseState, setLicenseState] = useState<string>(
-    reviewerLicense?.licenseState ?? ""
+    peerLicense?.licenseState ?? ""
   );
   const [attested, setAttested] = useState(false);
 
@@ -182,7 +182,7 @@ export function ReviewForm({
     return s;
   });
 
-  const [reviewerComments, setReviewerComments] = useState("");
+  const [peerComments, setPeerComments] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -293,16 +293,16 @@ export function ReviewForm({
     };
 
     // Section C.4 — assemble reviewer signature text for review_results.
-    const reviewerDisplayName = reviewerLicense?.fullName?.trim() || "Reviewer";
+    const peerDisplayName = peerLicense?.fullName?.trim() || "Reviewer";
     const signedOn = new Date().toISOString().slice(0, 10);
-    const reviewerSignatureText = `${reviewerDisplayName}, License ${licenseSnapshot.license_state}-${licenseSnapshot.license_number}, signed ${signedOn}`;
+    const peerSignatureText = `${peerDisplayName}, License ${licenseSnapshot.license_state}-${licenseSnapshot.license_number}, signed ${signedOn}`;
 
     const payload: ReviewFormSubmitData = {
       form_responses,
-      reviewer_comments: reviewerComments,
+      reviewer_comments: peerComments,
       license_snapshot: licenseSnapshot,
       mrn_number: mrnNumber.trim(),
-      reviewer_signature_text: reviewerSignatureText,
+      reviewer_signature_text: peerSignatureText,
     };
 
     setSubmitting(true);
@@ -349,7 +349,7 @@ export function ReviewForm({
         );
         const narrative = narrativeField
           ? String(state[narrativeField.fieldKey]?.value ?? "")
-          : reviewerComments;
+          : peerComments;
 
         const res = await fetch("/api/peer/submit", {
           method: "POST",
@@ -359,11 +359,11 @@ export function ReviewForm({
             criteria_scores: criteriaScores,
             deficiencies: [],
             overall_score: overallScore,
-            narrative_final: narrative.trim() || reviewerComments || "Reviewer submitted form.",
+            narrative_final: narrative.trim() || peerComments || "Reviewer submitted form.",
             time_spent_minutes: timeSpent,
             license_snapshot: licenseSnapshot,
             mrn_number: mrnNumber.trim(),
-            reviewer_signature_text: reviewerSignatureText,
+            reviewer_signature_text: peerSignatureText,
             form_responses,
           }),
         });
@@ -480,8 +480,8 @@ export function ReviewForm({
             <h3 className="mt-1 text-base font-semibold text-ink-900">
               You are reviewing this case as:{" "}
               <span className="text-cobalt-800">
-                {reviewerLicense?.fullName ?? "Reviewer"}
-                {reviewerLicense?.credential ? `, ${reviewerLicense.credential}` : ""}
+                {peerLicense?.fullName ?? "Reviewer"}
+                {peerLicense?.credential ? `, ${peerLicense.credential}` : ""}
               </span>
             </h3>
             <p className="mt-1 text-xs leading-relaxed text-ink-600">
@@ -792,13 +792,13 @@ export function ReviewForm({
                   const res = await fetch("/api/peer/ai-suggest-narrative", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ case_id: caseId, draft: reviewerComments }),
+                    body: JSON.stringify({ case_id: caseId, draft: peerComments }),
                   });
                   const j = await res.json().catch(() => ({}));
                   if (!res.ok) throw new Error(j.error || `AI request failed (${res.status})`);
                   if (typeof j.text === "string" && j.text.trim()) {
                     // Replace — reviewer can still edit. (Section C.5)
-                    setReviewerComments(j.text.trim());
+                    setPeerComments(j.text.trim());
                   }
                 } catch (err) {
                   setAiSuggestError(
@@ -815,8 +815,8 @@ export function ReviewForm({
           )}
         </div>
         <textarea
-          value={reviewerComments}
-          onChange={(e) => setReviewerComments(e.target.value)}
+          value={peerComments}
+          onChange={(e) => setPeerComments(e.target.value)}
           rows={4}
           className="w-full resize-y rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
           placeholder="Any additional commentary for this case..."

@@ -76,15 +76,15 @@ export async function POST(request: NextRequest) {
     // ---------------------------------------------------------------
     // 3. Seed Reviewers
     // ---------------------------------------------------------------
-    const reviewerRows = [
+    const peerRows = [
       { fullName: 'Dr. Angela Martinez', email: 'amartinez@peerspectiv.com', specialty: 'Family Medicine', boardCertification: 'ABFM', activeCasesCount: 0, status: 'active', totalReviewsCompleted: 12, aiAgreementScore: '87.5' },
       { fullName: 'Dr. James Patterson', email: 'jpatterson@peerspectiv.com', specialty: 'Internal Medicine', boardCertification: 'ABIM', activeCasesCount: 0, status: 'active', totalReviewsCompleted: 8, aiAgreementScore: '91.2' },
       { fullName: 'Dr. Priya Sharma', email: 'psharma@peerspectiv.com', specialty: 'Pediatrics', boardCertification: 'ABP', activeCasesCount: 0, status: 'active', totalReviewsCompleted: 15, aiAgreementScore: '82.0' },
       { fullName: 'Dr. William Chen', email: 'wchen@peerspectiv.com', specialty: 'Family Medicine', boardCertification: 'ABFM', activeCasesCount: 0, status: 'active', totalReviewsCompleted: 6, aiAgreementScore: '94.3' },
     ];
 
-    const insertedReviewers: { id: string; fullName: string | null }[] = [];
-    for (const r of reviewerRows) {
+    const insertedPeers: { id: string; fullName: string | null }[] = [];
+    for (const r of peerRows) {
       const [row] = await db
         .insert(peers)
         .values(r)
@@ -100,11 +100,11 @@ export async function POST(request: NextRequest) {
           },
         })
         .returning({ id: peers.id, fullName: peers.fullName });
-      insertedReviewers.push(row);
+      insertedPeers.push(row);
     }
 
     const reviewersByName = Object.fromEntries(
-      insertedReviewers.map((r) => [r.fullName, r.id])
+      insertedPeers.map((r) => [r.fullName, r.id])
     );
 
     // ---------------------------------------------------------------
@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
       overallScore: 80 + idx * 4,
       narrativeFinal: `I reviewed this clinical encounter chart as part of the FQHC peer review process. The provider demonstrated solid clinical reasoning throughout this diabetes and hypertension follow-up visit. Lab values were appropriately reviewed and medication adjustments were evidence-based.\n\nI agree with the AI's assessment on most criteria. The documentation is adequate but could be strengthened with updated social history and more specific BMI counseling documentation.\n\nThe care coordination and follow-up planning are excellent, with appropriate specialist referrals and a clear return visit schedule. Overall, this represents good quality care consistent with HRSA standards.`,
       aiAgreementPercentage: String(75 + idx * 8),
-      reviewerChanges: idx > 0 ? [
+      peerChanges: idx > 0 ? [
         { criterion: 'Documentation completeness', ai_score: 2, reviewer_score: 3, reason: 'While documentation could be improved, the overall quality meets the standard for a busy FQHC setting.' },
       ] : [],
       qualityScore: 82 + idx * 5,
@@ -290,7 +290,7 @@ export async function POST(request: NextRequest) {
                 overallScore: row.overallScore,
                 narrativeFinal: row.narrativeFinal,
                 aiAgreementPercentage: row.aiAgreementPercentage,
-                reviewerChanges: row.reviewerChanges,
+                peerChanges: row.peerChanges,
                 qualityScore: row.qualityScore,
                 qualityNotes: row.qualityNotes,
                 submittedAt: row.submittedAt,
@@ -360,7 +360,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         companies: insertedCompanies.length,
         providers: insertedProviders.length,
-        peers: insertedReviewers.length,
+        peers: insertedPeers.length,
         batches: insertedBatches.length,
         cases: insertedCases.length,
         ai_analyses: aiAnalysisRows.length,
@@ -374,7 +374,7 @@ export async function POST(request: NextRequest) {
       summary: {
         companies: insertedCompanies.length,
         providers: insertedProviders.length,
-        peers: insertedReviewers.length,
+        peers: insertedPeers.length,
         batches: insertedBatches.length,
         cases: insertedCases.length,
         ai_analyses: aiAnalysisRows.length,

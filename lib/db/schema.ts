@@ -286,7 +286,7 @@ export const reviewResults = pgTable('review_results', {
     precision: 5,
     scale: 2,
   }),
-  reviewerChanges: jsonb('reviewer_changes'),
+  peerChanges: jsonb('reviewer_changes'),
   qualityScore: integer('quality_score'),
   qualityNotes: text('quality_notes'),
   submittedAt: timestamp('submitted_at', { withTimezone: true }).default(
@@ -294,12 +294,12 @@ export const reviewResults = pgTable('review_results', {
   ),
   timeSpentMinutes: integer('time_spent_minutes'),
   // Reviewer license snapshot (HRSA audit) — captured at submission
-  reviewerNameSnapshot: text('reviewer_name_snapshot'),
-  reviewerLicenseSnapshot: text('reviewer_license_snapshot'),
-  reviewerLicenseStateSnapshot: text('reviewer_license_state_snapshot'),
+  peerNameSnapshot: text('reviewer_name_snapshot'),
+  peerLicenseSnapshot: text('reviewer_license_snapshot'),
+  peerLicenseStateSnapshot: text('reviewer_license_state_snapshot'),
   // Post-Ashton review (009): MRN snapshot + reviewer signature block
   mrnNumber: text('mrn_number'),
-  reviewerSignatureText: text('reviewer_signature_text'),
+  peerSignatureText: text('reviewer_signature_text'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
 });
 

@@ -31,7 +31,7 @@ async function getAdminContext() {
     return {
       overdueCount: Number(overdueRow?.count ?? 0),
       pendingCount: Number(pendingRow?.count ?? 0),
-      unavailableReviewerCount: Number(unavailableRow?.count ?? 0),
+      unavailablePeerCount: Number(unavailableRow?.count ?? 0),
       openReassignmentCount: Number(reassignRow?.count ?? 0),
     };
   } catch (err) {
@@ -45,7 +45,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { overdueCount, pendingCount, unavailableReviewerCount, openReassignmentCount } = await getAdminContext();
+  const { overdueCount, pendingCount, unavailablePeerCount, openReassignmentCount } = await getAdminContext();
 
   const initialGreeting = `Hey 👋 You have ${overdueCount} overdue cases and ${pendingCount} pending your approval. What do you need?`;
 
@@ -60,7 +60,7 @@ export default async function DashboardLayout({
   const ashContext = {
     overdueCount,
     pendingCount,
-    unavailableReviewerCount,
+    unavailablePeerCount,
     todayIso: new Date().toISOString().split('T')[0],
   };
 

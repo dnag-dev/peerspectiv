@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     // Auto-return reviewers whose unavailable_until has passed
     const today = new Date().toISOString().split('T')[0];
-    const expiredReviewers = await db
+    const expiredPeers = await db
       .select({ id: peers.id, fullName: peers.fullName })
       .from(peers)
       .where(
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       );
 
     const returnedIds: string[] = [];
-    for (const peer of expiredReviewers) {
+    for (const peer of expiredPeers) {
       await db
         .update(peers)
         .set({

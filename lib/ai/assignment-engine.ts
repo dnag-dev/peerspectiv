@@ -87,11 +87,11 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
     .from(peers)
     .where(and(eq(peers.status, 'active'), eq(peers.availabilityStatus, 'available')));
 
-  const allReviewers = reviewersRaw as ReviewerRow[];
+  const allPeers = reviewersRaw as ReviewerRow[];
   const today = new Date().toISOString().slice(0, 10);
 
   // Credentialed + capacity filter
-  const eligible = allReviewers.filter((r) => {
+  const eligible = allPeers.filter((r) => {
     if (!r.credential_valid_until) return false;
     if (String(r.credential_valid_until).slice(0, 10) < today) return false;
     const active = Number(r.active_cases_count ?? 0);
@@ -143,7 +143,7 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
 
   let result: AssignmentResult;
   if (reviewersForAI.length === 0) {
-    const reason = allReviewers.length === 0
+    const reason = allPeers.length === 0
       ? 'No reviewers available'
       : 'All reviewers blocked (missing/expired credential or at capacity)';
     return {
@@ -159,7 +159,7 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
   }
 
   // Annotate unassignable with capacity reason for any over-cap reviewers
-  const overCap = allReviewers.filter((r) => {
+  const overCap = allPeers.filter((r) => {
     const active = Number(r.active_cases_count ?? 0);
     const cap = Number(r.max_case_load ?? 75);
     return active >= cap;
@@ -222,16 +222,16 @@ export async function approveAssignment(caseId: string): Promise<void> {
     .limit(1);
 
   if (caseData?.peerId) {
-    const [reviewerData] = await db
+    const [peerData] = await db
       .select({ activeCasesCount: peers.activeCasesCount })
       .from(peers)
       .where(eq(peers.id, caseData.peerId))
       .limit(1);
 
-    if (reviewerData) {
+    if (peerData) {
       await db
         .update(peers)
-        .set({ activeCasesCount: (reviewerData.activeCasesCount || 0) + 1 })
+        .set({ activeCasesCount: (peerData.activeCasesCount || 0) + 1 })
         .where(eq(peers.id, caseData.peerId));
     }
   }

@@ -59,13 +59,13 @@ function initials(name: string | null | undefined) {
     .toUpperCase();
 }
 
-async function getReviewerDetail(id: string) {
-  const [reviewerRow] = await db
+async function getPeerDetail(id: string) {
+  const [peerRow] = await db
     .select()
     .from(peers)
     .where(eq(peers.id, id))
     .limit(1);
-  if (!reviewerRow) return null;
+  if (!peerRow) return null;
 
   const casesRaw = await db.query.reviewCases.findMany({
     where: eq(reviewCases.peerId, id),
@@ -115,7 +115,7 @@ async function getReviewerDetail(id: string) {
     if (snake.case) snake.review_cases = snake.case;
     return snake;
   });
-  const peer = toSnake<any>(reviewerRow);
+  const peer = toSnake<any>(peerRow);
 
   return { peer, cases, results };
 }
@@ -125,7 +125,7 @@ export default async function ReviewerDetailPage({
 }: {
   params: { id: string };
 }) {
-  const data = await getReviewerDetail(params.id);
+  const data = await getPeerDetail(params.id);
   if (!data) notFound();
   const { peer, cases, results } = data;
 

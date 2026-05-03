@@ -53,8 +53,8 @@ export async function GET(request: NextRequest) {
         dueDate: reviewCases.dueDate,
         specialtyRequired: reviewCases.specialtyRequired,
         // reviewer
-        reviewerName: peers.fullName,
-        reviewerEmail: peers.email,
+        peerName: peers.fullName,
+        peerEmail: peers.email,
         // provider
         providerFirstName: providers.firstName,
         providerLastName: providers.lastName,
@@ -139,8 +139,8 @@ export async function POST(request: NextRequest) {
       .where(eq(reviewCases.id, case_id));
 
     // Hydrate names for the email (best-effort, errors suppressed)
-    let reviewerName = 'Unknown reviewer';
-    let reviewerEmail: string | null = null;
+    let peerName = 'Unknown reviewer';
+    let peerEmail: string | null = null;
     let providerName: string | null = null;
     try {
       if (caseRow.peerId) {
@@ -149,8 +149,8 @@ export async function POST(request: NextRequest) {
           .from(peers)
           .where(eq(peers.id, caseRow.peerId))
           .limit(1);
-        reviewerName = r?.fullName ?? reviewerName;
-        reviewerEmail = r?.email ?? null;
+        peerName = r?.fullName ?? peerName;
+        peerEmail = r?.email ?? null;
       }
       if (caseRow.providerId) {
         const [p] = await db
@@ -169,8 +169,8 @@ export async function POST(request: NextRequest) {
     // Fire admin email (don't block on failure)
     sendReassignmentRequestAlert({
       caseId: case_id,
-      reviewerName,
-      reviewerEmail,
+      peerName,
+      peerEmail,
       providerName,
       reason: trimmed,
     }).catch((err) => console.error('[reassignments] email failed:', err));

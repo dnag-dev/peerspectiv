@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchReviewerScorecard } from "@/lib/reports/data";
+import { fetchPeerScorecard } from "@/lib/reports/data";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const rows = await fetchReviewerScorecard(periodStart, periodEnd);
+    const rows = await fetchPeerScorecard(periodStart, periodEnd);
     return NextResponse.json({ data: rows, period_start: periodStart, period_end: periodEnd });
   } catch (err) {
     console.error("[API] GET /api/reports/peer-scorecard error:", err);

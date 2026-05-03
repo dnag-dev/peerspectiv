@@ -113,18 +113,18 @@ export default async function ReviewerEarningsPage() {
   // for the (single) reviewer surfaced in the rows. Demo mode may have multiple
   // reviewers — render the average across whichever rows we have, or a single
   // value when one reviewer dominates.
-  const reviewerIds = Array.from(new Set(data.map((r) => r.peer_id))).filter(
+  const peerIds = Array.from(new Set(data.map((r) => r.peer_id))).filter(
     Boolean
   );
   let avgMinutesPerChart: number | null = null;
-  if (reviewerIds.length > 0) {
-    const reviewerRows = await db
+  if (peerIds.length > 0) {
+    const peerRows = await db
       .select({
         id: peers.id,
         avgMinutesPerChart: peers.avgMinutesPerChart,
       })
       .from(peers);
-    const matching = reviewerRows.filter((r) => reviewerIds.includes(r.id));
+    const matching = peerRows.filter((r) => peerIds.includes(r.id));
     const numeric = matching
       .map((r) => (r.avgMinutesPerChart != null ? Number(r.avgMinutesPerChart) : null))
       .filter((n): n is number => n != null && Number.isFinite(n));

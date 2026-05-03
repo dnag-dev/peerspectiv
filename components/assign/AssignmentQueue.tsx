@@ -20,12 +20,12 @@ interface PendingCase extends ReviewCase {
 
 interface AssignmentQueueProps {
   pendingCases: PendingCase[];
-  alternateReviewers: Record<string, Peer[]>;
+  alternatePeers: Record<string, Peer[]>;
 }
 
 export function AssignmentQueue({
   pendingCases: initialCases,
-  alternateReviewers,
+  alternatePeers,
 }: AssignmentQueueProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -76,7 +76,7 @@ export function AssignmentQueue({
     }
   }
 
-  async function handleReassign(caseId: string, newReviewerId: string) {
+  async function handleReassign(caseId: string, newPeerId: string) {
     setReassigningIds((prev) => new Set(prev).add(caseId));
     try {
       const res = await fetch("/api/assign/approve", {
@@ -84,7 +84,7 @@ export function AssignmentQueue({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           case_id: caseId,
-          reassign_to: newReviewerId,
+          reassign_to: newPeerId,
         }),
       });
       if (!res.ok) throw new Error("Failed to reassign");
@@ -157,7 +157,7 @@ export function AssignmentQueue({
               ? "high"
               : "standard";
 
-          const reviewerInitials = c.peer.full_name
+          const peerInitials = c.peer.full_name
             .split(" ")
             .map((n) => n[0])
             .filter(Boolean)
@@ -220,7 +220,7 @@ export function AssignmentQueue({
 
               {/* Reviewer row */}
               <div className="flex items-center gap-2.5 py-3 border-y border-ink-100 mb-3 flex-shrink-0">
-                <ReviewerAvatar initials={reviewerInitials} availability={availability} />
+                <ReviewerAvatar initials={peerInitials} availability={availability} />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-ink-900 truncate">
                     {c.peer.full_name}
@@ -282,8 +282,8 @@ export function AssignmentQueue({
                   setPickerOpenForCase(open ? c.id : null)
                 }
                 specialty={neededSpecialty === "—" ? null : neededSpecialty}
-                currentReviewerId={c.peer.id}
-                onPick={(newReviewerId) => handleReassign(c.id, newReviewerId)}
+                currentPeerId={c.peer.id}
+                onPick={(newPeerId) => handleReassign(c.id, newPeerId)}
                 title="Reassign reviewer"
               />
               <ConfirmApproveModal
@@ -291,7 +291,7 @@ export function AssignmentQueue({
                 onOpenChange={(open) =>
                   setConfirmOpenForCase(open ? c.id : null)
                 }
-                reviewerName={c.peer.full_name}
+                peerName={c.peer.full_name}
                 companyId={c.company.id}
                 specialty={neededSpecialty === "—" ? null : neededSpecialty}
                 defaultFormId={

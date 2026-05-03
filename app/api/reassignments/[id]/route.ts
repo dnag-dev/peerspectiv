@@ -48,13 +48,13 @@ export async function PATCH(
     // existing reassign path in /api/assign/approve.
     if (status === 'resolved' && new_reviewer_id) {
       // Look up new reviewer name for the resolution note
-      const [newReviewer] = await db
+      const [newPeer] = await db
         .select({ fullName: peers.fullName })
         .from(peers)
         .where(eq(peers.id, new_reviewer_id))
         .limit(1);
 
-      const oldReviewerId = reqRow.peerId;
+      const oldPeerId = reqRow.peerId;
 
       await db
         .update(reviewCases)
@@ -65,14 +65,14 @@ export async function PATCH(
         })
         .where(eq(reviewCases.id, reqRow.caseId));
 
-      if (oldReviewerId && oldReviewerId !== new_reviewer_id) {
+      if (oldPeerId && oldPeerId !== new_reviewer_id) {
         await db
           .update(peers)
           .set({
             activeCasesCount: sql`GREATEST(0, COALESCE(${peers.activeCasesCount}, 0) - 1)`,
             updatedAt: new Date(),
           })
-          .where(eq(peers.id, oldReviewerId));
+          .where(eq(peers.id, oldPeerId));
       }
       await db
         .update(peers)
@@ -83,7 +83,7 @@ export async function PATCH(
         .where(eq(peers.id, new_reviewer_id));
 
       if (!finalNote) {
-        finalNote = `Reassigned to ${newReviewer?.fullName ?? 'new reviewer'}`;
+        finalNote = `Reassigned to ${newPeer?.fullName ?? 'new reviewer'}`;
       }
     } else {
       // Dismiss or resolve without picking — just clear the flag on the case.

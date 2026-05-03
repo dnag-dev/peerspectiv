@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
 
     void sendCredentialingAlert({
       peerId: row.id,
-      reviewerName: full_name,
+      peerName: full_name,
       email,
       specialties: specs,
       subject: `New reviewer application: ${full_name}`,

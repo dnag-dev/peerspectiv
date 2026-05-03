@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { reviewCases, batches } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { approveAssignment, approveAllAssignments } from '@/lib/ai/assignment-engine';
-import { sendReviewerAssignment } from '@/lib/email/notifications';
+import { sendPeerAssignment } from '@/lib/email/notifications';
 import { auditLog } from '@/lib/utils/audit';
 import { calculateProjectedCompletion } from '@/lib/utils/completion';
 
@@ -53,9 +53,9 @@ export async function POST(request: NextRequest) {
       for (const c of assignedCases) {
         const peer = c.peer;
         if (peer?.email) {
-          sendReviewerAssignment({
-            reviewerEmail: peer.email,
-            reviewerName: peer.fullName ?? '',
+          sendPeerAssignment({
+            peerEmail: peer.email,
+            peerName: peer.fullName ?? '',
             caseId: c.id,
             specialty: c.specialtyRequired || 'General',
             dueDate: c.dueDate ? new Date(c.dueDate).toLocaleDateString() : 'TBD',
@@ -133,9 +133,9 @@ export async function POST(request: NextRequest) {
       if (caseData) {
         const peer = caseData.peer;
         if (peer?.email) {
-          sendReviewerAssignment({
-            reviewerEmail: peer.email,
-            reviewerName: peer.fullName ?? '',
+          sendPeerAssignment({
+            peerEmail: peer.email,
+            peerName: peer.fullName ?? '',
             caseId: case_id,
             specialty: caseData.specialtyRequired || 'General',
             dueDate: caseData.dueDate ? new Date(caseData.dueDate).toLocaleDateString() : 'TBD',

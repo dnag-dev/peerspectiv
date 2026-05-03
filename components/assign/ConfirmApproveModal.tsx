@@ -14,7 +14,7 @@ interface CompanyForm {
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  reviewerName: string;
+  peerName: string;
   companyId: string;
   specialty: string | null;
   defaultFormId?: string | null;
@@ -24,7 +24,7 @@ interface Props {
 export function ConfirmApproveModal({
   open,
   onOpenChange,
-  reviewerName,
+  peerName,
   companyId,
   specialty,
   defaultFormId,
@@ -73,7 +73,7 @@ export function ConfirmApproveModal({
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Reviewer
             </p>
-            <p className="mt-1 text-sm font-medium">{reviewerName}</p>
+            <p className="mt-1 text-sm font-medium">{peerName}</p>
           </div>
 
           <div>

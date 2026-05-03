@@ -45,7 +45,7 @@ export async function sendEmail(params: {
  */
 export async function sendCredentialingAlert(params: {
   peerId: string;
-  reviewerName: string;
+  peerName: string;
   email: string;
   specialties: string[];
   /** Optional override subject — used by the expiry-warning cron. */
@@ -58,13 +58,13 @@ export async function sendCredentialingAlert(params: {
   const editUrl = `${appUrl}/credentials`;
 
   const subject =
-    params.subject ?? `Credentialing review needed: ${params.reviewerName}`;
+    params.subject ?? `Credentialing review needed: ${params.peerName}`;
   const html =
     params.bodyHtml ??
     `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color:#0F2044;">New Reviewer Awaiting Credentialing</h2>
-        <p><strong>${params.reviewerName}</strong> (${params.email}) was added and is currently inactive.</p>
+        <p><strong>${params.peerName}</strong> (${params.email}) was added and is currently inactive.</p>
         <p>Specialties: ${params.specialties.join(', ') || '—'}</p>
         <p>Please review credentials and set the expiry date to activate the reviewer.</p>
         <a href="${editUrl}"
@@ -78,7 +78,7 @@ export async function sendCredentialingAlert(params: {
     console.log('[credentialing] (no RESEND_API_KEY — printing to log)', {
       to,
       subject,
-      peer: params.reviewerName,
+      peer: params.peerName,
     });
     return { delivery: 'log' };
   }
@@ -103,8 +103,8 @@ export async function sendCredentialingAlert(params: {
  */
 export async function sendReassignmentRequestAlert(params: {
   caseId: string;
-  reviewerName: string;
-  reviewerEmail?: string | null;
+  peerName: string;
+  peerEmail?: string | null;
   providerName?: string | null;
   reason: string;
 }): Promise<{ delivery: 'email' | 'log' }> {
@@ -116,8 +116,8 @@ export async function sendReassignmentRequestAlert(params: {
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color:#0F2044;">Reviewer requested reassignment</h2>
-      <p><strong>${params.reviewerName}</strong>${
-        params.reviewerEmail ? ` (${params.reviewerEmail})` : ''
+      <p><strong>${params.peerName}</strong>${
+        params.peerEmail ? ` (${params.peerEmail})` : ''
       } has asked to be reassigned from case <code>${params.caseId}</code>${
         params.providerName ? ` (provider: ${params.providerName})` : ''
       }.</p>
@@ -136,7 +136,7 @@ export async function sendReassignmentRequestAlert(params: {
       to,
       subject,
       caseId: params.caseId,
-      peer: params.reviewerName,
+      peer: params.peerName,
     });
     return { delivery: 'log' };
   }
@@ -232,9 +232,9 @@ export async function sendCycleCompletionEmail(
   }
 }
 
-export async function sendReviewerAssignment(params: {
-  reviewerEmail: string;
-  reviewerName: string;
+export async function sendPeerAssignment(params: {
+  peerEmail: string;
+  peerName: string;
   caseId: string;
   specialty: string;
   dueDate: string;
@@ -243,12 +243,12 @@ export async function sendReviewerAssignment(params: {
   try {
     await getResend().emails.send({
       from: 'Peerspectiv <reviews@peerspectiv.com>',
-      to: params.reviewerEmail,
+      to: params.peerEmail,
       subject: `New Peer Review Assignment — ${params.specialty} | Due ${params.dueDate}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #0F2044;">New Review Assignment</h2>
-          <p>Hello ${params.reviewerName},</p>
+          <p>Hello ${params.peerName},</p>
           <p>You have been assigned a new peer review case.</p>
           <ul>
             <li><strong>Specialty:</strong> ${params.specialty}</li>

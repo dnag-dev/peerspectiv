@@ -14,7 +14,7 @@ export interface ReassignmentRow {
   reason: string;
   createdAt: string | null;
   specialty: string | null;
-  reviewerName: string | null;
+  peerName: string | null;
   providerName: string | null;
   companyName: string | null;
 }
@@ -44,14 +44,14 @@ export function ReassignmentsList({ rows }: Props) {
     });
   }
 
-  async function handlePick(requestId: string, newReviewerId: string) {
+  async function handlePick(requestId: string, newPeerId: string) {
     markBusy(requestId, true);
     setError(null);
     try {
       const res = await fetch(`/api/reassignments/${requestId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "resolved", new_reviewer_id: newReviewerId }),
+        body: JSON.stringify({ status: "resolved", new_reviewer_id: newPeerId }),
       });
       if (!res.ok) throw new Error("Failed to resolve");
       startTransition(() => router.refresh());
@@ -124,7 +124,7 @@ export function ReassignmentsList({ rows }: Props) {
                   <div className="text-xs text-ink-600">
                     Reviewer:{" "}
                     <span className="font-medium text-ink-800">
-                      {r.reviewerName ?? "Unknown"}
+                      {r.peerName ?? "Unknown"}
                     </span>
                     <span className="ml-3 text-ink-400">Requested {created}</span>
                   </div>
@@ -170,9 +170,9 @@ export function ReassignmentsList({ rows }: Props) {
           open={!!pickerOpen}
           onOpenChange={(o) => setPickerOpen(o ? pickerOpen : null)}
           specialty={currentPickerRow.specialty}
-          currentReviewerId={currentPickerRow.peerId ?? null}
-          onPick={(newReviewerId) =>
-            handlePick(currentPickerRow.id, newReviewerId)
+          currentPeerId={currentPickerRow.peerId ?? null}
+          onPick={(newPeerId) =>
+            handlePick(currentPickerRow.id, newPeerId)
           }
           title="Reassign to new reviewer"
         />

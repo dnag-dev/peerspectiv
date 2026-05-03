@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Loader2, User, CheckCircle2, AlertCircle } from "lucide-react";
 
-export interface PickerReviewer {
+export interface PickerPeer {
   id: string;
   full_name: string;
   specialty: string | null;
@@ -21,7 +21,7 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   specialty: string | null;
-  currentReviewerId?: string | null;
+  currentPeerId?: string | null;
   onPick: (peerId: string) => void | Promise<void>;
   title?: string;
 }
@@ -30,12 +30,12 @@ export function ReviewerPickerModal({
   open,
   onOpenChange,
   specialty,
-  currentReviewerId,
+  currentPeerId,
   onPick,
   title = "Pick a reviewer",
 }: Props) {
   const [loading, setLoading] = useState(false);
-  const [peers, setReviewers] = useState<PickerReviewer[]>([]);
+  const [peers, setPeers] = useState<PickerPeer[]>([]);
   const [pickingId, setPickingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,8 +44,8 @@ export function ReviewerPickerModal({
     const qs = specialty ? `?specialty=${encodeURIComponent(specialty)}` : "";
     fetch(`/api/peers/available${qs}`)
       .then((r) => r.json())
-      .then((d) => setReviewers(d.reviewers ?? []))
-      .catch(() => setReviewers([]))
+      .then((d) => setPeers(d.reviewers ?? []))
+      .catch(() => setPeers([]))
       .finally(() => setLoading(false));
   }, [open, specialty]);
 
@@ -85,7 +85,7 @@ export function ReviewerPickerModal({
         ) : (
           <div className="max-h-[60vh] space-y-2 overflow-y-auto">
             {peers.map((r) => {
-              const isCurrent = r.id === currentReviewerId;
+              const isCurrent = r.id === currentPeerId;
               const isUnavailable = r.availability_status !== "available";
               const isPicking = pickingId === r.id;
               return (

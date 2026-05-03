@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { reviewResults } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { scoreReviewerQuality } from '@/lib/ai/quality-scorer';
+import { scorePeerQuality } from '@/lib/ai/quality-scorer';
 import { auditLog } from '@/lib/utils/audit';
 
 export async function POST(request: NextRequest) {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await scoreReviewerQuality(case_id);
+    await scorePeerQuality(case_id);
 
     // Fetch updated result
     const [updatedResult] = await db

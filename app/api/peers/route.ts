@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
     // Fire-and-forget credentialing notification.
     void sendCredentialingAlert({
       peerId: row.id,
-      reviewerName: row.fullName ?? full_name,
+      peerName: row.fullName ?? full_name,
       email: row.email ?? email,
       specialties: specs,
     }).catch((err) => {

@@ -20,7 +20,7 @@ Evaluate and return ONLY valid JSON:
 
 Flag options: "rubber_stamping" if agreement > 98% and time spent < 10 minutes, "superficial_review" if narrative unchanged and all agreed, "thorough_review" if meaningful edits with good rationale`;
 
-export async function scoreReviewerQuality(caseId: string): Promise<void> {
+export async function scorePeerQuality(caseId: string): Promise<void> {
   // Fetch AI analysis and reviewer result
   const [aiAnalysis] = await db
     .select()

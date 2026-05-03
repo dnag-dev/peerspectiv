@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     const { start, end } = monthBounds(month);
 
     // 1. All reviewers with rate config
-    const reviewerRows = await db
+    const peerRows = await db
       .select({
         id: peers.id,
         full_name: peers.fullName,
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 5. Build output: persisted payout OR computed pending preview
-    const rows = reviewerRows.map((rev) => {
+    const rows = peerRows.map((rev) => {
       const persisted = existingByReviewer.get(rev.id);
       const rt: RateType = (rev.rate_type as RateType) ?? 'per_minute';
       const rate = Number(rev.rate_amount ?? 0);

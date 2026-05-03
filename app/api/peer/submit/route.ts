@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { and, eq, isNull, sql } from 'drizzle-orm';
-import { scoreReviewerQuality } from '@/lib/ai/quality-scorer';
+import { scorePeerQuality } from '@/lib/ai/quality-scorer';
 import { auditLog } from '@/lib/utils/audit';
 import { db, toSnake } from '@/lib/db';
 import {
@@ -124,25 +124,25 @@ export async function POST(request: NextRequest) {
 
     // Calculate AI agreement percentage and build reviewer_changes
     let aiAgreementPercentage: number | null = null;
-    let reviewerChanges: ReviewerChange[] = [];
+    let peerChanges: ReviewerChange[] = [];
 
     if (aiAnalysis?.criteriaScores && Array.isArray(aiAnalysis.criteriaScores)) {
       const aiScores = aiAnalysis.criteriaScores as CriterionScore[];
       let agreements = 0;
       let total = 0;
 
-      for (const reviewerScore of criteria_scores) {
-        const aiScore = aiScores.find((a) => a.criterion === reviewerScore.criterion);
+      for (const peerScore of criteria_scores) {
+        const aiScore = aiScores.find((a) => a.criterion === peerScore.criterion);
         if (aiScore) {
           total++;
-          if (aiScore.score === reviewerScore.score) {
+          if (aiScore.score === peerScore.score) {
             agreements++;
           } else {
-            reviewerChanges.push({
-              criterion: reviewerScore.criterion,
+            peerChanges.push({
+              criterion: peerScore.criterion,
               ai_score: aiScore.score,
-              reviewer_score: reviewerScore.score,
-              reason: reviewerScore.rationale || 'No reason provided',
+              reviewer_score: peerScore.score,
+              reason: peerScore.rationale || 'No reason provided',
             });
           }
         }
@@ -152,14 +152,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Resolve reviewer full name for the snapshot
-    let reviewerNameSnapshot: string | null = null;
+    let peerNameSnapshot: string | null = null;
     if (caseData.peerId) {
-      const [reviewerRow] = await db
+      const [peerRow] = await db
         .select({ fullName: peers.fullName })
         .from(peers)
         .where(eq(peers.id, caseData.peerId))
         .limit(1);
-      reviewerNameSnapshot = reviewerRow?.fullName ?? null;
+      peerNameSnapshot = peerRow?.fullName ?? null;
     }
 
     // Save to review_results
@@ -183,14 +183,14 @@ export async function POST(request: NextRequest) {
         overallScore: overall_score,
         narrativeFinal: narrative_final,
         aiAgreementPercentage: aiAgreementStr,
-        reviewerChanges: reviewerChanges,
+        peerChanges: peerChanges,
         timeSpentMinutes: time_spent_minutes || null,
         submittedAt,
-        reviewerNameSnapshot,
-        reviewerLicenseSnapshot: licenseNumber,
-        reviewerLicenseStateSnapshot: licenseState,
+        peerNameSnapshot,
+        peerLicenseSnapshot: licenseNumber,
+        peerLicenseStateSnapshot: licenseState,
         mrnNumber: mrnSnapshot,
-        reviewerSignatureText: signatureText,
+        peerSignatureText: signatureText,
       })
       .onConflictDoUpdate({
         target: reviewResults.caseId,
@@ -201,14 +201,14 @@ export async function POST(request: NextRequest) {
           overallScore: overall_score,
           narrativeFinal: narrative_final,
           aiAgreementPercentage: aiAgreementStr,
-          reviewerChanges: reviewerChanges,
+          peerChanges: peerChanges,
           timeSpentMinutes: time_spent_minutes || null,
           submittedAt,
-          reviewerNameSnapshot,
-          reviewerLicenseSnapshot: licenseNumber,
-          reviewerLicenseStateSnapshot: licenseState,
+          peerNameSnapshot,
+          peerLicenseSnapshot: licenseNumber,
+          peerLicenseStateSnapshot: licenseState,
           mrnNumber: mrnSnapshot,
-          reviewerSignatureText: signatureText,
+          peerSignatureText: signatureText,
         },
       })
       .returning();
@@ -321,7 +321,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Trigger quality scoring in the background
-    scoreReviewerQuality(case_id).catch((err) => {
+    scorePeerQuality(case_id).catch((err) => {
       console.error('[API] Quality scoring failed for case:', case_id, err);
     });
 
@@ -362,7 +362,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         overall_score,
         ai_agreement_percentage: aiAgreementPercentage,
-        changes_count: reviewerChanges.length,
+        changes_count: peerChanges.length,
         time_spent_minutes,
       },
       request,

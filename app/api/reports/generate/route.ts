@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
           }
           case 'peer_earnings_summary': {
             if (!peerId || !rangeStart || !rangeEnd) {
-              throw new Error('reviewerId, rangeStart, rangeEnd required');
+              throw new Error('peerId, rangeStart, rangeEnd required');
             }
             const data = await fetchPeerEarningsSummaryData({
               peerId,

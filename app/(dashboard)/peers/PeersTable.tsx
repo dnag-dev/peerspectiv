@@ -78,7 +78,7 @@ type SortDir = 'asc' | 'desc';
 
 export function PeersTable({ peers: initial }: { peers: Peer[] }) {
   const router = useRouter();
-  const [peers, setReviewers] = useState(initial);
+  const [peers, setPeers] = useState(initial);
   const [unavailOpen, setUnavailOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
@@ -217,14 +217,14 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
   async function markAvailable(r: Peer) {
     const res = await fetch(`/api/peers/${r.id}/availability`, { method: 'POST' });
     if (res.ok) {
-      setReviewers((prev) =>
+      setPeers((prev) =>
         prev.map((x) => (x.id === r.id ? { ...x, availability_status: 'available' } : x))
       );
     }
   }
 
   function handleUnavailSuccess(peerId: string, status: string) {
-    setReviewers((prev) =>
+    setPeers((prev) =>
       prev.map((x) => (x.id === peerId ? { ...x, availability_status: status } : x))
     );
     setUnavailOpen(false);
@@ -244,7 +244,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
     rate_amount: number;
   }) {
     if (!selected) return;
-    setReviewers((prev) =>
+    setPeers((prev) =>
       prev.map((x) =>
         x.id === selected.id
           ? {
@@ -407,7 +407,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
           open={unavailOpen}
           onClose={() => setUnavailOpen(false)}
           peerId={selected.id}
-          reviewerName={selected.full_name ?? 'Reviewer'}
+          peerName={selected.full_name ?? 'Reviewer'}
           onSuccess={(status) => handleUnavailSuccess(selected.id, status)}
         />
       )}

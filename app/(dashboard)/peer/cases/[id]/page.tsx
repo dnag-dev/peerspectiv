@@ -44,7 +44,7 @@ interface AiPrefill {
 }
 
 // Load reviewer id either from Clerk or fall back to first available reviewer (demo mode).
-async function resolveReviewerId(): Promise<string | null> {
+async function resolvePeerId(): Promise<string | null> {
   const isDemoMode =
     !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === "pk_test_placeholder" ||
@@ -68,8 +68,8 @@ async function resolveReviewerId(): Promise<string | null> {
     }
   }
 
-  const firstReviewer = await db.select().from(peers).limit(1);
-  return firstReviewer[0]?.id ?? null;
+  const firstPeer = await db.select().from(peers).limit(1);
+  return firstPeer[0]?.id ?? null;
 }
 
 async function loadFormFields(
@@ -156,7 +156,7 @@ async function loadFormFields(
 // Section F1: extracted so the group/[providerId]/[batchPeriod] tabbed page
 // can render the same per-case detail content inside a tab without
 // duplicating all the data-loading + AI-prefill assembly logic.
-export async function renderReviewerCaseDetail(caseId: string) {
+export async function renderPeerCaseDetail(caseId: string) {
   // 1) Fetch the case
   const caseRows = await db
     .select()
@@ -314,14 +314,14 @@ export async function renderReviewerCaseDetail(caseId: string) {
   }
 
   // 6) Reviewer id
-  const peerId = reviewCase.peerId ?? (await resolveReviewerId()) ?? "";
+  const peerId = reviewCase.peerId ?? (await resolvePeerId()) ?? "";
 
   // 6b) Reviewer license info (HRSA attestation prefill)
-  let reviewerLicense:
+  let peerLicense:
     | { fullName: string | null; credential: string | null; licenseNumber: string | null; licenseState: string | null }
     | undefined;
   if (peerId) {
-    const [reviewerRow] = await db
+    const [peerRow] = await db
       .select({
         fullName: peers.fullName,
         boardCertification: peers.boardCertification,
@@ -331,12 +331,12 @@ export async function renderReviewerCaseDetail(caseId: string) {
       .from(peers)
       .where(eq(peers.id, peerId))
       .limit(1);
-    if (reviewerRow) {
-      reviewerLicense = {
-        fullName: reviewerRow.fullName,
-        credential: reviewerRow.boardCertification,
-        licenseNumber: reviewerRow.licenseNumber,
-        licenseState: reviewerRow.licenseState,
+    if (peerRow) {
+      peerLicense = {
+        fullName: peerRow.fullName,
+        credential: peerRow.boardCertification,
+        licenseNumber: peerRow.licenseNumber,
+        licenseState: peerRow.licenseState,
       };
     }
   }
@@ -470,7 +470,7 @@ export async function renderReviewerCaseDetail(caseId: string) {
                 }
               : null
           }
-          reviewerLicense={reviewerLicense}
+          peerLicense={peerLicense}
           initialMrnNumber={(reviewCase as unknown as { mrnNumber?: string | null }).mrnNumber ?? null}
           allowAiNarrative={allowAiNarrative}
           chartTextExtracted={analysisRow?.chartTextExtracted ?? null}
@@ -486,5 +486,5 @@ export default async function ReviewerCasePage({
   params: Promise<{ id: string }>;
 }) {
   const { id: caseId } = await params;
-  return renderReviewerCaseDetail(caseId);
+  return renderPeerCaseDetail(caseId);
 }

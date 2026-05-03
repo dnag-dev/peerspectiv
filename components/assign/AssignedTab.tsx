@@ -29,7 +29,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [companyId, setCompanyId] = useState<string>("");
-  const [peerId, setReviewerId] = useState<string>("");
+  const [peerId, setPeerId] = useState<string>("");
   const [specialty, setSpecialty] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState<string>("");
@@ -61,13 +61,13 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
     });
   }, [rows, companyId, peerId, specialty, statusFilter, search]);
 
-  async function handleReassign(caseId: string, newReviewerId: string) {
+  async function handleReassign(caseId: string, newPeerId: string) {
     setReassigning((p) => new Set(p).add(caseId));
     try {
       const res = await fetch("/api/assign/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ case_id: caseId, reassign_to: newReviewerId }),
+        body: JSON.stringify({ case_id: caseId, reassign_to: newPeerId }),
       });
       if (!res.ok) throw new Error("Reassign failed");
       startTransition(() => router.refresh());
@@ -112,7 +112,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
         </select>
         <select
           value={peerId}
-          onChange={(e) => setReviewerId(e.target.value)}
+          onChange={(e) => setPeerId(e.target.value)}
           className="rounded-md border border-ink-200 bg-paper-surface py-1.5 px-2 text-sm focus:border-cobalt-600 focus:outline-none"
         >
           <option value="">All reviewers</option>
@@ -237,8 +237,8 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
             currentPickerCase.provider?.specialty ??
             null
           }
-          currentReviewerId={currentPickerCase.peer?.id ?? null}
-          onPick={(newReviewerId) => handleReassign(currentPickerCase.id, newReviewerId)}
+          currentPeerId={currentPickerCase.peer?.id ?? null}
+          onPick={(newPeerId) => handleReassign(currentPickerCase.id, newPeerId)}
           title="Reassign reviewer"
         />
       )}

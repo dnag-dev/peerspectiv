@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 
 export const dynamic = 'force-dynamic';
 
-export default async function NewReviewerInboxPage() {
+export default async function NewPeerInboxPage() {
   const list = await db
     .select({
       id: peers.id,

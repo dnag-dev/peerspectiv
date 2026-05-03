@@ -12,8 +12,8 @@ export interface PeerEarningsLine {
 }
 
 export interface PeerEarningsSummaryData {
-  reviewerName: string;
-  reviewerEmail?: string;
+  peerName: string;
+  peerEmail?: string;
   rangeStart: string;
   rangeEnd: string;
   currency: string;
@@ -38,9 +38,9 @@ export function PeerEarningsSummaryPdf({ data }: { data: PeerEarningsSummaryData
             <Text style={styles.brand}>Peerspectiv</Text>
             <Text style={styles.eyebrow}>EARNINGS STATEMENT</Text>
             <Text style={styles.reportTitle}>Peer Earnings Summary</Text>
-            <Text style={styles.reportSubtitle}>{data.reviewerName}</Text>
-            {data.reviewerEmail ? (
-              <Text style={{ fontSize: 9, color: colors.ink500 }}>{data.reviewerEmail}</Text>
+            <Text style={styles.reportSubtitle}>{data.peerName}</Text>
+            {data.peerEmail ? (
+              <Text style={{ fontSize: 9, color: colors.ink500 }}>{data.peerEmail}</Text>
             ) : null}
             <Text style={styles.dateRange}>
               {data.rangeStart} — {data.rangeEnd}

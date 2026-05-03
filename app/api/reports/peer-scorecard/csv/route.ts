@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchReviewerScorecard } from "@/lib/reports/data";
+import { fetchPeerScorecard } from "@/lib/reports/data";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const rows = await fetchReviewerScorecard(periodStart, periodEnd);
+    const rows = await fetchPeerScorecard(periodStart, periodEnd);
     const headers = [
       "Reviewer",
       "Cases Reviewed",

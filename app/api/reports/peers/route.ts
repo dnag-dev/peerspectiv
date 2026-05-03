@@ -6,7 +6,7 @@ import { asc } from "drizzle-orm";
 export async function GET() {
   try {
     // Fetch reviewers
-    const reviewerRows = await db
+    const peerRows = await db
       .select({
         id: peers.id,
         full_name: peers.fullName,
@@ -40,7 +40,7 @@ export async function GET() {
     // NOTE: Postgres `numeric` columns come back as STRINGS from node-postgres.
     // `ai_agreement_score` is numeric(4,2) — must coerce to Number or the
     // client's `.toFixed()` call crashes the entire /reports page.
-    const rows = reviewerRows.map((r) => {
+    const rows = peerRows.map((r) => {
       const quality = qualityMap.get(r.id);
       const agreementRaw = r.ai_agreement_score;
       const agreement =
