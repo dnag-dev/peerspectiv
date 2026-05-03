@@ -36,7 +36,7 @@ export default function ClientProfilePage() {
         <CardContent>
           <p className="text-sm text-ink-500">
             Notification settings will land in a follow-up phase. Today, all notifications
-            are delivered per your organization's <em>Report Bundle Delivery</em> setting.
+            are delivered per your organization&apos;s <em>Report Bundle Delivery</em> setting.
           </p>
         </CardContent>
       </Card>
