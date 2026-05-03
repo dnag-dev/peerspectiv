@@ -28,7 +28,7 @@ const ROLES: Record<string, { email: string; name: string; landing: string }> = 
   credentialer: {
     email: 'credentialing@peerspectiv.com',
     name: 'Renée Cole',
-    landing: '/credentialing/credentials',
+    landing: '/credentialing',
   },
 };
 

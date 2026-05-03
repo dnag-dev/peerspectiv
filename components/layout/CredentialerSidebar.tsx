@@ -12,7 +12,7 @@ import { useClerkSession } from "./useClerkSession";
 import { SidebarShell, type SidebarNavItem } from "./Sidebar";
 
 const NAV: SidebarNavItem[] = [
-  { label: "Dashboard", href: "/credentialing/credentials", icon: LayoutDashboard, group: "Credentialing" },
+  { label: "Dashboard", href: "/credentialing", icon: LayoutDashboard, group: "Credentialing" },
   { label: "Earnings",  href: "/credentialing/earnings",    icon: DollarSign,      group: "Credentialing" },
   { label: "Profile",   href: "/credentialing/profile",     icon: UserIcon,        group: "Account" },
 ];
