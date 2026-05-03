@@ -40,6 +40,9 @@ const APP_PATHS = new Set<string>([
   'payouts',
   'prospects',
   'reports',
+  'peer',
+  'peers',
+  // Back-compat: legacy /reviewer/* paths handled via 301 below
   'reviewer',
   'reviewers',
   'settings',
@@ -98,6 +101,8 @@ const ROLE_LANDING: Record<string, string> = {
   admin: '/dashboard',
   client: '/portal',
   peer: '/peer/portal',
+  reviewer: '/peer/portal',  // BACK-COMPAT — old cookies still resolve
+  credentialer: '/credentialing/credentials',
 };
 
 function isPublic(pathname: string): boolean {
@@ -219,6 +224,12 @@ export default async function middleware(request: NextRequest) {
     return new NextResponse(null, { status: 404 });
   }
 
+  // Legacy /reviewer/* paths — 301 to /peer/* equivalent
+  if (pathname.startsWith('/reviewer/') || pathname === '/reviewer') {
+    const newPath = pathname === '/reviewer' ? '/peer' : pathname.replace(/^\/reviewer\//, '/peer/');
+    return NextResponse.redirect(new URL(newPath, request.url), 301);
+  }
+
   // Vercel preview hosts (*.vercel.app): pass through to app behavior.
   // Existing site_gate (pre-login password wall).
   const isGateExempt =
@@ -253,7 +264,7 @@ export default async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/portal', request.url));
     }
     if (
-      demo.role === 'reviewer' &&
+      (demo.role === 'peer' || demo.role === 'reviewer') &&
       !pathname.startsWith('/peer/') &&
       pathname !== '/peer' &&
       !pathname.startsWith('/api/')
@@ -290,7 +301,8 @@ export default async function middleware(request: NextRequest) {
       '/companies(.*)',
       '/batches(.*)',
       '/assign(.*)',
-      '/reviewer(.*)',
+      '/peer(.*)',
+      '/peers(.*)',
       '/reports(.*)',
       '/command(.*)',
       '/portal(.*)',
