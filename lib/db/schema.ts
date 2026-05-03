@@ -84,7 +84,7 @@ export const providersRelations = relations(providers, ({ one, many }) => ({
 
 // ─── Reviewers ───────────────────────────────────────────────────────────────
 
-export const peers = pgTable('reviewers', {
+export const peers = pgTable('peers', {
   id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
   fullName: text('full_name'),
   email: text('email').unique(),
@@ -120,9 +120,9 @@ export const peers = pgTable('reviewers', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
 });
 
-export const peerPayouts = pgTable('reviewer_payouts', {
+export const peerPayouts = pgTable('peer_payouts', {
   id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
-  peerId: uuid('reviewer_id').notNull().references(() => peers.id, { onDelete: 'cascade' }),
+  peerId: uuid('peer_id').notNull().references(() => peers.id, { onDelete: 'cascade' }),
   periodStart: date('period_start').notNull(),
   periodEnd: date('period_end').notNull(),
   unitType: text('unit_type').notNull(),
@@ -180,7 +180,7 @@ export const reviewCases = pgTable('review_cases', {
   id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
   batchId: uuid('batch_id').references(() => batches.id),
   providerId: uuid('provider_id').references(() => providers.id),
-  peerId: uuid('reviewer_id').references(() => peers.id),
+  peerId: uuid('peer_id').references(() => peers.id),
   companyId: uuid('company_id').references(() => companies.id),
   assignedAt: timestamp('assigned_at', { withTimezone: true }),
   dueDate: timestamp('due_date', { withTimezone: true }),
@@ -275,7 +275,7 @@ export const reviewResults = pgTable('review_results', {
   caseId: uuid('case_id')
     .references(() => reviewCases.id)
     .unique(),
-  peerId: uuid('reviewer_id').references(() => peers.id),
+  peerId: uuid('peer_id').references(() => peers.id),
   criteriaScores: jsonb('criteria_scores'),
   deficiencies: jsonb('deficiencies'),
   // numeric(5,2) so 88.89 round-trips exactly. mode:'number' makes drizzle
@@ -625,7 +625,7 @@ export const clinics = pgTable('clinics', {
 export const caseReassignmentRequests = pgTable('case_reassignment_requests', {
   id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
   caseId: uuid('case_id').notNull().references(() => reviewCases.id, { onDelete: 'cascade' }),
-  peerId: uuid('reviewer_id').references(() => peers.id),
+  peerId: uuid('peer_id').references(() => peers.id),
   reason: text('reason').notNull(),
   status: text('status').notNull().default('open'),
   resolvedBy: text('resolved_by'),
