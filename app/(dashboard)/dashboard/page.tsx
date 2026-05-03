@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CaseStatusChart } from "@/components/dashboard/CaseStatusChart";
+import { CompanyFilter } from "@/components/dashboard/CompanyFilter";
 
 export const dynamic = 'force-dynamic';
 
@@ -53,8 +54,24 @@ const STATUS_COLORS: Record<string, string> = {
   past_due:         "#EF4444", // critical-500
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: { company?: string };
+}) {
   const now = new Date();
+  // SA-003: optional company filter applied to every per-case query below.
+  const filterCompanyId = searchParams?.company || null;
+  const companyFilterSql = filterCompanyId
+    ? eq(reviewCases.companyId, filterCompanyId)
+    : undefined;
+  const companyParam = filterCompanyId ? `&company=${filterCompanyId}` : "";
+
+  // Companies dropdown options (always full list — gating by status feels too clever).
+  const companyOptions = await db
+    .select({ id: companies.id, name: companies.name })
+    .from(companies)
+    .orderBy(companies.name);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 86_400_000).toISOString();
   const todayIso = now.toISOString().split("T")[0];
@@ -140,6 +157,8 @@ export default async function DashboardPage() {
     .orderBy(companies.name);
 
   // Fetch all KPI data in parallel
+  const withCompanyFilter = (where: any) =>
+    companyFilterSql ? and(where, companyFilterSql) : where;
   const countQuery = (where: any) =>
     db.select({ c: sql<number>`count(*)::int` }).from(reviewCases).where(where);
 
@@ -154,20 +173,25 @@ export default async function DashboardPage() {
     allCasesStatusRes,
     auditLogsRes,
   ] = await Promise.all([
-    countQuery(eq(reviewCases.status, "unassigned")),
-    countQuery(eq(reviewCases.status, "pending_approval")),
-    countQuery(eq(reviewCases.status, "in_progress")),
-    countQuery(eq(reviewCases.status, "past_due")),
+    countQuery(withCompanyFilter(eq(reviewCases.status, "unassigned"))),
+    countQuery(withCompanyFilter(eq(reviewCases.status, "pending_approval"))),
+    countQuery(withCompanyFilter(eq(reviewCases.status, "in_progress"))),
+    countQuery(withCompanyFilter(eq(reviewCases.status, "past_due"))),
     countQuery(
-      and(eq(reviewCases.status, "completed"), gte(reviewCases.updatedAt, new Date(startOfMonth)))
+      withCompanyFilter(
+        and(eq(reviewCases.status, "completed"), gte(reviewCases.updatedAt, new Date(startOfMonth)))
+      )
     ),
-    countQuery(eq(reviewCases.aiAnalysisStatus, "processing")),
+    countQuery(withCompanyFilter(eq(reviewCases.aiAnalysisStatus, "processing"))),
     db.query.reviewCases.findMany({
-      where: gte(reviewCases.createdAt, new Date(thirtyDaysAgo)),
+      where: withCompanyFilter(gte(reviewCases.createdAt, new Date(thirtyDaysAgo))),
       columns: { companyId: true },
       with: { company: { columns: { name: true } } },
     }),
-    db.select({ status: reviewCases.status }).from(reviewCases),
+    db
+      .select({ status: reviewCases.status })
+      .from(reviewCases)
+      .where(companyFilterSql),
     db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(10),
   ]);
 
@@ -208,13 +232,16 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-ink-900">
-          Dashboard
-        </h1>
-        <p className="text-sm text-ink-500">
-          Overview of case activity and system health
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-ink-900">
+            Dashboard
+          </h1>
+          <p className="text-sm text-ink-500">
+            Overview of case activity and system health
+          </p>
+        </div>
+        <CompanyFilter companies={companyOptions} current={filterCompanyId ?? ""} />
       </div>
 
       {/* Pipeline Summary — mini cards */}
@@ -343,45 +370,57 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* KPI Cards */}
+      {/* KPI Cards — every numeric widget drills (AU-016). */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <KPICard
-          title="Unassigned Cases"
-          value={unassigned}
-          icon={<FileQuestion className="h-5 w-5 text-ink-500" />}
-          color="bg-ink-500"
-        />
-        <KPICard
-          title="Pending Approval"
-          value={pendingApproval}
-          icon={<Clock className="h-5 w-5 text-amber-600" />}
-          color="bg-amber-600"
-          pulse={pendingApproval > 0}
-        />
-        <KPICard
-          title="In Progress"
-          value={inProgress}
-          icon={<Activity className="h-5 w-5 text-mint-600" />}
-          color="bg-mint-600"
-        />
-        <KPICard
-          title="Past Due"
-          value={pastDue}
-          icon={<AlertTriangle className="h-5 w-5 text-critical-600" />}
-          color="bg-critical-600"
-        />
-        <KPICard
-          title="Completed This Month"
-          value={completedThisMonth}
-          icon={<CheckCircle2 className="h-5 w-5 text-cobalt-500" />}
-          color="bg-cobalt-500"
-        />
-        <KPICard
-          title="AI Analyses Running"
-          value={aiProcessing}
-          icon={<Brain className="h-5 w-5 text-cobalt-600" />}
-          color="bg-cobalt-600"
-        />
+        <Link href={`/cases?status=unassigned${companyParam}`} data-testid="kpi-link" className="block">
+          <KPICard
+            title="Unassigned Cases"
+            value={unassigned}
+            icon={<FileQuestion className="h-5 w-5 text-ink-500" />}
+            color="bg-ink-500"
+          />
+        </Link>
+        <Link href={`/cases?status=pending_approval${companyParam}`} data-testid="kpi-link" className="block">
+          <KPICard
+            title="Pending Approval"
+            value={pendingApproval}
+            icon={<Clock className="h-5 w-5 text-amber-600" />}
+            color="bg-amber-600"
+            pulse={pendingApproval > 0}
+          />
+        </Link>
+        <Link href={`/cases?status=in_progress${companyParam}`} data-testid="kpi-link" className="block">
+          <KPICard
+            title="In Progress"
+            value={inProgress}
+            icon={<Activity className="h-5 w-5 text-mint-600" />}
+            color="bg-mint-600"
+          />
+        </Link>
+        <Link href={`/cases?status=past_due${companyParam}`} data-testid="kpi-link" className="block">
+          <KPICard
+            title="Past Due"
+            value={pastDue}
+            icon={<AlertTriangle className="h-5 w-5 text-critical-600" />}
+            color="bg-critical-600"
+          />
+        </Link>
+        <Link href={`/cases?status=completed&month=current${companyParam}`} data-testid="kpi-link" className="block">
+          <KPICard
+            title="Completed This Month"
+            value={completedThisMonth}
+            icon={<CheckCircle2 className="h-5 w-5 text-cobalt-500" />}
+            color="bg-cobalt-500"
+          />
+        </Link>
+        <Link href={`/cases?ai_status=processing${companyParam}`} data-testid="kpi-link" className="block">
+          <KPICard
+            title="AI Analyses Running"
+            value={aiProcessing}
+            icon={<Brain className="h-5 w-5 text-cobalt-600" />}
+            color="bg-cobalt-600"
+          />
+        </Link>
       </div>
 
       {/* Charts */}

@@ -16,6 +16,9 @@ import {
   Receipt,
   UploadCloud,
   Menu,
+  Folder,
+  FileText,
+  User as UserIcon,
 } from "lucide-react";
 import { useClerkSession } from "./useClerkSession";
 import { SidebarShell, type SidebarNavItem, type SidebarRole } from "./Sidebar";
@@ -24,7 +27,8 @@ export type ClientRole = "cmo" | "quality" | "operations";
 
 const NAV: SidebarNavItem[] = [
   { label: "Dashboard",          href: "/portal",            icon: LayoutDashboard,  group: "Overview" },
-  { label: "Submit Records",     href: "/portal/submit",     icon: UploadCloud,      group: "Overview" },
+  { label: "Submit Records",     href: "/portal/upload",     icon: UploadCloud,      group: "Overview" },
+  { label: "My Files",           href: "/portal/files",      icon: Folder,           group: "Overview" },
   { label: "All Reviews",        href: "/portal/reviews",    icon: ClipboardList,    group: "Reviews" },
   { label: "In Progress",        href: "/portal/inprogress", icon: Clock,            group: "Reviews" },
   { label: "Overdue",            href: "/portal/overdue",    icon: AlertTriangle,    group: "Reviews" },
@@ -33,11 +37,13 @@ const NAV: SidebarNavItem[] = [
   { label: "Providers",          href: "/portal/providers",  icon: Users,            group: "Analytics" },
   { label: "Corrective Actions", href: "/portal/corrective", icon: Wrench,           group: "Compliance" },
   { label: "Export & Reports",   href: "/portal/export",     icon: Download,         group: "Compliance" },
-  { label: "Invoices",           href: "/portal/invoices",   icon: Receipt,          group: "Billing" },
+  { label: "Forms",              href: "/portal/forms",      icon: FileText,         group: "Compliance" },
+  { label: "Invoices",           href: "/portal/invoices",   icon: Receipt,          group: "Compliance" },
   { label: "Share Feedback",     href: "/portal/feedback",   icon: Heart,            group: "Compliance" },
+  { label: "Profile",            href: "/portal/profile",    icon: UserIcon,         group: "Account" },
 ];
 
-const GROUPS = ["Overview", "Reviews", "Analytics", "Compliance", "Billing"];
+const GROUPS = ["Overview", "Reviews", "Analytics", "Compliance", "Account"];
 
 const DIM_FOR: Record<ClientRole, string[]> = {
   cmo:        ["/portal/inprogress", "/portal/overdue"],

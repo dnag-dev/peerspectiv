@@ -40,11 +40,18 @@ interface Peer {
   max_case_load: number | null;
 }
 
-function formatSpecialties(r: Peer): string {
+function specialtiesAsList(r: Peer): string[] {
   if (Array.isArray(r.specialties) && r.specialties.length > 0) {
-    return r.specialties.join(', ');
+    return r.specialties;
   }
-  return r.specialty ?? '—';
+  return r.specialty ? [r.specialty] : [];
+}
+
+function daysToExpiry(date: string | null): number | null {
+  if (!date) return null;
+  return Math.ceil(
+    (new Date(date).getTime() - Date.now()) / 86_400_000
+  );
 }
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
@@ -87,6 +94,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
   const [searchQ, setSearchQ] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState<string>('all');
   const [availFilter, setAvailFilter] = useState<string>('all');
+  const [stateFilter, setStateFilter] = useState<string>('all');
   const [sortKey, setSortKey] = useState<SortKey>('full_name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
@@ -111,26 +119,36 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
     return Array.from(s).sort();
   }, [peers]);
 
+  const states = useMemo(() => {
+    const s = new Set<string>();
+    for (const r of peers) {
+      if (r.license_state) s.add(r.license_state);
+    }
+    return Array.from(s).sort();
+  }, [peers]);
+
   const filtered = useMemo(() => {
     const q = searchQ.trim().toLowerCase();
     return peers.filter((r) => {
       if (specialtyFilter !== 'all') {
-        const specs = Array.isArray(r.specialties) && r.specialties.length > 0
-          ? r.specialties
-          : r.specialty
-            ? [r.specialty]
-            : [];
+        const specs = specialtiesAsList(r);
+        // SA-104 — multi-include semantics: row matches when any selected
+        // specialty is in the peer's list. Single-select for now; the
+        // dropdown just exposes one value.
         if (!specs.includes(specialtyFilter)) return false;
       }
       const status = r.availability_status || 'available';
       if (availFilter !== 'all' && status !== availFilter) return false;
+      if (stateFilter !== 'all' && r.license_state !== stateFilter) return false;
       if (!q) return true;
+      const specHaystack = specialtiesAsList(r).join(' ').toLowerCase();
       return (
         (r.full_name ?? '').toLowerCase().includes(q) ||
-        (r.specialty ?? '').toLowerCase().includes(q)
+        (r.email ?? '').toLowerCase().includes(q) ||
+        specHaystack.includes(q)
       );
     });
-  }, [peers, specialtyFilter, availFilter, searchQ]);
+  }, [peers, specialtyFilter, availFilter, stateFilter, searchQ]);
 
   const visible = useMemo(() => {
     const arr = [...filtered];
@@ -281,7 +299,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
 
       <Card>
         <CardContent className="p-4">
-          <div className="grid gap-3 md:grid-cols-[1fr_180px_180px]">
+          <div className="grid gap-3 md:grid-cols-[1fr_180px_180px_140px]">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
               <Input
@@ -317,6 +335,19 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
                 ))}
               </SelectContent>
             </Select>
+            <Select value={stateFilter} onValueChange={setStateFilter}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any state</SelectItem>
+                {states.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <p className="mt-3 text-xs text-ink-500">
             Showing <strong>{visible.length}</strong> of {peers.length} peers
@@ -329,10 +360,12 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
           <thead>
             <tr className="border-b border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
               <SortHead label="Name" k="full_name" />
-              <SortHead label="Specialty" k="specialty" />
+              <th className="px-4 py-3 text-left">Email</th>
+              <SortHead label="Specialties" k="specialty" />
+              <th className="px-4 py-3 text-left">License</th>
+              <th className="px-4 py-3 text-left">State</th>
               <SortHead label="Active" k="active_cases_count" />
               <SortHead label="Total" k="total_reviews_completed" />
-              <SortHead label="Rate" k="rate_amount" />
               <SortHead label="Availability" k="availability_status" />
               <th className="px-4 py-3 text-left">Actions</th>
             </tr>
@@ -340,7 +373,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
           <tbody>
             {visible.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-ink-400">
+                <td colSpan={9} className="px-4 py-8 text-center text-ink-400">
                   {peers.length === 0 ? 'No peers found.' : 'No peers match your filters.'}
                 </td>
               </tr>
@@ -348,6 +381,9 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
             {visible.map((r) => {
               const status = r.availability_status || 'available';
               const colors = STATUS_COLORS[status] || STATUS_COLORS.inactive;
+              const specs = specialtiesAsList(r);
+              const expDays = daysToExpiry(r.credential_valid_until);
+              const expWarn = expDays != null && expDays < 60;
               return (
                 <tr key={r.id} className="border-b border-ink-100 hover:bg-ink-50">
                   <td className="px-4 py-3 font-medium text-ink-900">
@@ -358,16 +394,49 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
                       {r.full_name ?? '—'}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-ink-600">{formatSpecialties(r)}</td>
+                  <td className="px-4 py-3 text-ink-600 text-xs">{r.email ?? '—'}</td>
+                  <td className="px-4 py-3" data-testid="peers-row-specialties">
+                    <div className="flex flex-wrap gap-1">
+                      {specs.length === 0 && (
+                        <span className="text-xs text-ink-400">—</span>
+                      )}
+                      {specs.map((s) => (
+                        <Badge
+                          key={s}
+                          variant="secondary"
+                          className="bg-cobalt-50 text-cobalt-700 text-[10px]"
+                        >
+                          {s}
+                        </Badge>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-ink-600 text-xs">
+                    <div className="font-mono">{r.license_number ?? '—'}</div>
+                    {r.credential_valid_until && (
+                      <div
+                        className={
+                          expWarn ? 'text-critical-700 font-medium' : 'text-ink-400'
+                        }
+                      >
+                        {expDays! < 0
+                          ? `Expired ${Math.abs(expDays!)}d ago`
+                          : expWarn
+                            ? `Expires ${expDays}d`
+                            : `Valid through ${new Date(r.credential_valid_until).toLocaleDateString()}`}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-ink-600">{r.license_state ?? '—'}</td>
                   <td className="px-4 py-3 text-ink-600">{r.active_cases_count ?? 0}</td>
                   <td className="px-4 py-3 text-ink-600">{r.total_reviews_completed ?? 0}</td>
-                  <td className="px-4 py-3 text-ink-700">
-                    <span className="font-medium">{formatRate(r.rate_type, r.rate_amount)}</span>
-                  </td>
                   <td className="px-4 py-3">
                     <Badge className={`${colors.bg} ${colors.text} border-0`}>
                       {status.replace('_', ' ')}
                     </Badge>
+                    <div className="mt-1 text-[10px] text-ink-500">
+                      {formatRate(r.rate_type, r.rate_amount)}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">

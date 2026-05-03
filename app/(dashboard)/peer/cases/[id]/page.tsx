@@ -472,6 +472,13 @@ export async function renderPeerCaseDetail(caseId: string) {
           }
           peerLicense={peerLicense}
           initialMrnNumber={(reviewCase as unknown as { mrnNumber?: string | null }).mrnNumber ?? null}
+          initialMrnSource={
+            ((reviewCase as unknown as { mrnSource?: string | null }).mrnSource ?? null) as
+              | "manual"
+              | "ai_extracted"
+              | "corrected"
+              | null
+          }
           allowAiNarrative={allowAiNarrative}
           chartTextExtracted={analysisRow?.chartTextExtracted ?? null}
         />

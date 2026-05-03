@@ -100,7 +100,10 @@ Analyze this chart and return ONLY valid JSON in exactly this structure. Do not 
   "clinical_appropriateness_score": 0,
   "care_coordination_score": 0,
 
-  "narrative_draft": "A professional 3-5 paragraph peer review narrative written in the style of a board-certified physician. Write this as the peer, in first person: 'I reviewed the chart for...'"
+  "narrative_draft": "A professional 3-5 paragraph peer review narrative written in the style of a board-certified physician. Write this as the peer, in first person: 'I reviewed the chart for...'",
+
+  "mrn": "Medical record number found in the chart, or null if not present. Look for headings like 'MRN', 'Medical Record Number', 'MR#', or chart-specific identifiers near the top of the document.",
+  "mrn_confidence": "high|medium|low — high if MRN is explicitly labeled, medium if inferred from a numeric identifier near patient demographics, low otherwise."
 }
 
 Scoring guide: 4=Exceeds Standard, 3=Meets Standard, 2=Partially Meets, 1=Does Not Meet, 0=N/A`;
@@ -203,6 +206,23 @@ ${chartText}
         },
       });
 
+    // Phase 2 — persist AI-extracted MRN onto the case (PR-035/036). Only
+    // overwrite when the case has no MRN yet, so a peer-corrected value is
+    // never clobbered by a re-run.
+    const aiMrn =
+      typeof analysis.mrn === 'string' && analysis.mrn.trim() ? analysis.mrn.trim() : null;
+    let mrnPatch: { mrnNumber?: string; mrnSource?: string } = {};
+    if (aiMrn) {
+      const [existing] = await db
+        .select({ mrnNumber: reviewCases.mrnNumber })
+        .from(reviewCases)
+        .where(eq(reviewCases.id, caseId))
+        .limit(1);
+      if (!existing?.mrnNumber) {
+        mrnPatch = { mrnNumber: aiMrn, mrnSource: 'ai_extracted' };
+      }
+    }
+
     // Update case status
     await db
       .update(reviewCases)
@@ -211,6 +231,7 @@ ${chartText}
         aiProcessedAt: new Date(),
         chartPages: pageCount,
         updatedAt: new Date(),
+        ...mrnPatch,
       })
       .where(eq(reviewCases.id, caseId));
 

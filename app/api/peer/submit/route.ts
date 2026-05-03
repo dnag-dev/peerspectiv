@@ -31,6 +31,8 @@ interface SubmitBody {
   };
   // Section C.4 additions
   mrn_number?: string;
+  /** PR-036 — 'manual' | 'ai_extracted' | 'corrected' */
+  mrn_source?: string;
   peer_signature_text?: string;
   // Section C.3 — full yes_no answers used for NA-aware scoring.
   form_responses?: Record<string, { value: unknown; comment?: string }>;
@@ -48,6 +50,7 @@ export async function POST(request: NextRequest) {
       time_spent_minutes,
       license_snapshot,
       mrn_number,
+      mrn_source,
       peer_signature_text,
       form_responses,
     } = body;
@@ -225,6 +228,10 @@ export async function POST(request: NextRequest) {
 
     const mrnSnapshot = mrn_number?.trim() || null;
     const signatureText = peer_signature_text?.trim() || null;
+    const mrnSourceClean =
+      mrn_source && ['manual', 'ai_extracted', 'corrected'].includes(mrn_source)
+        ? mrn_source
+        : null;
 
     const insertedRows = await db
       .insert(reviewResults)
@@ -318,6 +325,7 @@ export async function POST(request: NextRequest) {
         status: 'completed',
         updatedAt: new Date(),
         ...(mrnSnapshot ? { mrnNumber: mrnSnapshot } : {}),
+        ...(mrnSourceClean ? { mrnSource: mrnSourceClean } : {}),
       })
       .where(eq(reviewCases.id, case_id));
 

@@ -20,6 +20,51 @@ function formatShortDate(date: string): string {
 
 interface PeerPortalClientProps {
   cases: ReviewCase[];
+  /** Current ?status= filter — drives the active state on the circles. */
+  activeStatus?: string;
+  /** Phase 2 — drill-down circles at the top. */
+  counts?: {
+    in_progress: number;
+    completed: number;
+    incomplete: number;
+  };
+}
+
+function StatusCircle({
+  label,
+  count,
+  href,
+  active,
+  tone,
+}: {
+  label: string;
+  count: number;
+  href: string;
+  active: boolean;
+  tone: "mint" | "amber" | "ink";
+}) {
+  const ringByTone: Record<string, string> = {
+    mint: "border-mint-300 text-mint-700",
+    amber: "border-amber-300 text-amber-700",
+    ink: "border-ink-300 text-ink-700",
+  };
+  return (
+    <Link
+      href={href}
+      data-testid="peer-status-circle"
+      data-active={active ? "true" : "false"}
+      className={cn(
+        "flex h-24 w-24 flex-col items-center justify-center rounded-full border-4 bg-white shadow-sm transition-all hover:shadow-md",
+        ringByTone[tone],
+        active ? "ring-4 ring-cobalt-200" : ""
+      )}
+    >
+      <div className="text-2xl font-bold leading-none">{count}</div>
+      <div className="mt-1 text-[10px] font-medium uppercase tracking-wider">
+        {label}
+      </div>
+    </Link>
+  );
 }
 
 // Section F1: group cases by (provider_id, batch_period). Multi-chart pairs
@@ -55,10 +100,58 @@ function groupCases(cases: ReviewCase[]): CaseGroup[] {
   return Array.from(groups.values());
 }
 
-export function PeerPortalClient({ cases }: PeerPortalClientProps) {
+export function PeerPortalClient({
+  cases,
+  activeStatus = "all",
+  counts = { in_progress: 0, completed: 0, incomplete: 0 },
+}: PeerPortalClientProps) {
+  const statusCircles = (
+    <div className="flex flex-wrap items-center gap-4">
+      <StatusCircle
+        label="In Progress"
+        count={counts.in_progress}
+        href="/peer/portal?status=in_progress"
+        active={activeStatus === "in_progress" || activeStatus === "all"}
+        tone="amber"
+      />
+      <StatusCircle
+        label="Completed"
+        count={counts.completed}
+        href="/peer/portal?status=completed"
+        active={activeStatus === "completed"}
+        tone="mint"
+      />
+      <StatusCircle
+        label="Incomplete"
+        count={counts.incomplete}
+        href="/peer/portal?status=incomplete"
+        active={activeStatus === "incomplete"}
+        tone="ink"
+      />
+      {activeStatus !== "all" && (
+        <Link
+          href="/peer/portal"
+          className="text-xs text-cobalt-600 underline hover:text-cobalt-700"
+        >
+          Clear filter
+        </Link>
+      )}
+    </div>
+  );
+
   if (cases.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-24">
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-ink-900">My Queue</h1>
+          <p className="mt-1 text-sm text-ink-500">
+            {activeStatus === "all"
+              ? "No cases assigned"
+              : `No cases match status: ${activeStatus.replace("_", " ")}`}
+          </p>
+        </div>
+        {statusCircles}
+        <div className="flex flex-col items-center justify-center py-24">
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-ink-100">
           <svg
             className="h-8 w-8 text-ink-400"
@@ -80,6 +173,7 @@ export function PeerPortalClient({ cases }: PeerPortalClientProps) {
         <p className="mt-1 text-sm text-ink-500">
           You have no cases in your queue. Check back later for new assignments.
         </p>
+        </div>
       </div>
     );
   }
@@ -91,9 +185,12 @@ export function PeerPortalClient({ cases }: PeerPortalClientProps) {
       <div>
         <h1 className="text-2xl font-semibold text-ink-900">My Queue</h1>
         <p className="mt-1 text-sm text-ink-500">
-          {cases.length} case{cases.length !== 1 ? "s" : ""} assigned to you
+          {cases.length} case{cases.length !== 1 ? "s" : ""}
+          {activeStatus === "all" ? " assigned to you" : ` matching status: ${activeStatus.replace("_", " ")}`}
         </p>
       </div>
+
+      {statusCircles}
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
         {groups.map((group) => {

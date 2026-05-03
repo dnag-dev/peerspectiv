@@ -4,6 +4,7 @@
 // per-form allow_ai_prefill flag. See docs/product-roadmap.md.
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { AttestationBlock } from "@/components/peer/AttestationBlock";
 
 /* ──────────────────────── Types ──────────────────────── */
 
@@ -49,6 +50,8 @@ export interface ReviewFormSubmitData {
     attested_at: string;
   };
   mrn_number?: string;
+  /** PR-036 — manual | ai_extracted | corrected. */
+  mrn_source?: "manual" | "ai_extracted" | "corrected";
   peer_signature_text?: string;
 }
 
@@ -68,6 +71,9 @@ interface ReviewFormProps {
   peerLicense?: PeerLicenseInfo;
   /** Existing MRN persisted on review_cases (Section C.4). */
   initialMrnNumber?: string | null;
+  /** mrn_source from review_cases (Phase 2). When 'ai_extracted', edits flip
+   *  to 'corrected' on submit per PR-036. */
+  initialMrnSource?: "manual" | "ai_extracted" | "corrected" | null;
   /** company_forms.allow_ai_generated_recommendations (Section C.5). */
   allowAiNarrative?: boolean;
   /** Section F5: hover-to-jump callback wired up by PeerCaseSplit so
@@ -125,6 +131,7 @@ export function ReviewForm({
   onSubmit,
   peerLicense,
   initialMrnNumber,
+  initialMrnSource,
   allowAiNarrative,
   onFieldHover,
 }: ReviewFormProps) {
@@ -152,6 +159,20 @@ export function ReviewForm({
 
   // ── MRN (Section C.4) ──
   const [mrnNumber, setMrnNumber] = useState<string>(initialMrnNumber ?? "");
+  // PR-036: track edits against the AI-extracted value. If the peer changes
+  // an AI-extracted MRN, source flips to 'corrected' at submit time.
+  const initialMrnRef = useRef<string>(initialMrnNumber ?? "");
+  const initialMrnSourceRef = useRef<typeof initialMrnSource>(initialMrnSource ?? null);
+  const effectiveMrnSource: "manual" | "ai_extracted" | "corrected" | null = (() => {
+    const src = initialMrnSourceRef.current;
+    if (src === "ai_extracted") {
+      return mrnNumber.trim() !== initialMrnRef.current.trim() ? "corrected" : "ai_extracted";
+    }
+    if (src === "corrected") return "corrected";
+    if (src === "manual") return "manual";
+    // No source recorded yet — treat any non-empty value as manual.
+    return mrnNumber.trim() ? "manual" : null;
+  })();
   const [aiSuggestLoading, setAiSuggestLoading] = useState(false);
   const [aiSuggestError, setAiSuggestError] = useState<string | null>(null);
 
@@ -302,6 +323,7 @@ export function ReviewForm({
       peer_comments: peerComments,
       license_snapshot: licenseSnapshot,
       mrn_number: mrnNumber.trim(),
+      mrn_source: effectiveMrnSource ?? "manual",
       peer_signature_text: peerSignatureText,
     };
 
@@ -363,6 +385,7 @@ export function ReviewForm({
             time_spent_minutes: timeSpent,
             license_snapshot: licenseSnapshot,
             mrn_number: mrnNumber.trim(),
+            mrn_source: effectiveMrnSource ?? "manual",
             peer_signature_text: peerSignatureText,
             form_responses,
           }),
@@ -446,26 +469,15 @@ export function ReviewForm({
         </div>
       </div>
 
-      {/* ── MRN Number (Section C.4) ── */}
-      <div className="rounded-xl border border-ink-200 bg-paper-surface p-5">
-        <label className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-          MRN Number
-          <span className="rounded-full bg-cobalt-50 px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-wide text-cobalt-700">
-            required
-          </span>
-        </label>
-        <input
-          type="text"
-          data-testid="mrn-number-input"
-          value={mrnNumber}
-          onChange={(e) => setMrnNumber(e.target.value)}
-          placeholder='Enter MRN, or type "redacted" / "N/A" if unavailable'
-          className="mt-2 w-full rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm text-ink-900 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
-        />
-        <p className="mt-1 text-xs text-ink-500">
-          Snapshotted onto the review record.
-        </p>
-      </div>
+      {/* ── System Attestation Block (Phase 2 — PR-035/036/037/039) ── */}
+      <AttestationBlock
+        mrn={mrnNumber}
+        onMrnChange={setMrnNumber}
+        mrnSource={effectiveMrnSource}
+        peerName={peerLicense?.fullName ?? ""}
+        licenseNumber={peerLicense?.licenseNumber ?? ""}
+        licenseState={peerLicense?.licenseState ?? ""}
+      />
 
       {/* ── License attestation (HRSA audit) ── */}
       <div

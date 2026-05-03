@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Building2,
@@ -21,10 +22,14 @@ import {
   Settings,
   ArrowUpDown,
   X,
+  ChevronsLeft,
+  ChevronsRight,
   type LucideIcon,
 } from "lucide-react";
 import { useMobileNav } from "./MobileNavContext";
 import { useClerkSession } from "./useClerkSession";
+
+const COLLAPSE_STORAGE_KEY = "peerspectiv.sidebar.collapsed";
 
 /**
  * Practitioner-spec unified sidebar. One component, three personas — admin
@@ -85,6 +90,28 @@ export function SidebarShell({
 }: SidebarShellProps) {
   const pathname = usePathname();
   const chip = ROLE_CHIP[role];
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(COLLAPSE_STORAGE_KEY);
+      if (raw === "1") setCollapsed(true);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  function toggleCollapsed() {
+    setCollapsed((c) => {
+      const next = !c;
+      try {
+        localStorage.setItem(COLLAPSE_STORAGE_KEY, next ? "1" : "0");
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }
 
   const renderItem = (item: SidebarNavItem) => {
     const isActive =
@@ -96,7 +123,8 @@ export function SidebarShell({
         key={item.href}
         href={item.href}
         onClick={onCloseMobile}
-        className={`group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all ${
+        title={collapsed ? item.label : undefined}
+        className={`group relative flex items-center ${collapsed ? "justify-center" : "gap-3"} rounded-md px-3 py-2 text-sm font-medium transition-all ${
           isActive
             ? "bg-paper-surface text-cobalt-900 shadow-sm"
             : "text-cobalt-100 hover:bg-cobalt-700/40 hover:text-white"
@@ -105,8 +133,8 @@ export function SidebarShell({
         <Icon
           className="h-[18px] w-[18px] flex-shrink-0"
         />
-        <span className="truncate">{item.label}</span>
-        {typeof item.badge === "number" && item.badge > 0 && (
+        {!collapsed && <span className="truncate">{item.label}</span>}
+        {!collapsed && typeof item.badge === "number" && item.badge > 0 && (
           <span
             className={`ml-auto inline-flex min-w-[20px] items-center justify-center rounded-pill px-1.5 py-0.5 font-mono text-[10px] font-medium ${
               isActive
@@ -122,19 +150,26 @@ export function SidebarShell({
   };
 
   const aside = (
-    <aside className="flex h-full w-64 flex-shrink-0 flex-col bg-cobalt-900">
+    <aside className={`flex h-full ${collapsed ? "w-16" : "w-64"} flex-shrink-0 flex-col bg-cobalt-900 transition-[width] duration-150`}>
       {/* Logo lockup */}
-      <div className="flex h-20 items-center justify-between px-5">
-        <div className="rounded-md bg-paper-surface px-3 py-2 shadow-sm">
-          <Image
-            src="/peerspectiv-logo.png"
-            alt="Peerspectiv"
-            width={180}
-            height={37}
-            priority
-            className="block h-auto w-[160px]"
-          />
-        </div>
+      <div className={`flex h-20 items-center ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
+        {!collapsed && (
+          <div className="rounded-md bg-paper-surface px-3 py-2 shadow-sm">
+            <Image
+              src="/peerspectiv-logo.png"
+              alt="Peerspectiv"
+              width={180}
+              height={37}
+              priority
+              className="block h-auto w-[160px]"
+            />
+          </div>
+        )}
+        {collapsed && (
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-paper-surface text-cobalt-900 font-bold text-sm">
+            P
+          </div>
+        )}
         <button
           className="lg:hidden md:hidden text-cobalt-100 hover:text-white"
           onClick={onCloseMobile}
@@ -144,7 +179,7 @@ export function SidebarShell({
         </button>
       </div>
 
-      {contextLabel && (
+      {contextLabel && !collapsed && (
         <div className="px-6 pb-2 text-eyebrow text-cobalt-200">
           {contextLabel}
         </div>
@@ -155,7 +190,9 @@ export function SidebarShell({
         {groups && groups.length > 0 ? (
           groups.map((g) => (
             <div key={g}>
-              <p className="px-3 pb-2 text-eyebrow text-cobalt-200">{g}</p>
+              {!collapsed && (
+                <p className="px-3 pb-2 text-eyebrow text-cobalt-200">{g}</p>
+              )}
               <div className="space-y-0.5">
                 {nav.filter((i) => i.group === g).map(renderItem)}
               </div>
@@ -166,28 +203,50 @@ export function SidebarShell({
         )}
       </nav>
 
+      {/* Collapse toggle */}
+      <button
+        type="button"
+        data-testid="sidebar-collapse-toggle"
+        onClick={toggleCollapsed}
+        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        className="mx-3 mb-2 flex items-center justify-center rounded-md border border-cobalt-700/50 bg-cobalt-800/40 px-2 py-1.5 text-cobalt-100 hover:bg-cobalt-700/40 hover:text-white transition-colors"
+      >
+        {collapsed ? (
+          <ChevronsRight className="h-4 w-4" />
+        ) : (
+          <>
+            <ChevronsLeft className="h-4 w-4" />
+            <span className="ml-2 text-xs">Collapse</span>
+          </>
+        )}
+      </button>
+
       {/* Demo Mode pill — amber for visibility on cobalt */}
-      <div className="mx-3 mb-3 rounded-pill border border-amber-500/40 bg-amber-500/15 px-3 py-1.5 text-center">
-        <span className="text-eyebrow text-amber-500">Demo Mode</span>
-      </div>
+      {!collapsed && (
+        <div className="mx-3 mb-3 rounded-pill border border-amber-500/40 bg-amber-500/15 px-3 py-1.5 text-center">
+          <span className="text-eyebrow text-amber-500">Demo Mode</span>
+        </div>
+      )}
 
       {/* User card on white-tint surface */}
       <div className="border-t border-cobalt-800/60 bg-white/5 px-3 py-3">
-        <div className="flex items-center gap-3 px-2">
+        <div className={`flex items-center ${collapsed ? "flex-col gap-2" : "gap-3 px-2"}`}>
           <div className="flex h-9 w-9 items-center justify-center rounded-pill bg-cobalt-700">
             <User className="h-4 w-4 text-cobalt-100" />
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-white">{userName}</p>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span
-                className={`inline-flex items-center rounded-sm px-1.5 py-0 text-[9px] font-mono font-medium tracking-[0.10em] ${chip.cls}`}
-              >
-                {chip.label}
-              </span>
-              <span className="truncate text-[11px] text-cobalt-200">{userSubtitle}</span>
+          {!collapsed && (
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-white">{userName}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span
+                  className={`inline-flex items-center rounded-sm px-1.5 py-0 text-[9px] font-mono font-medium tracking-[0.10em] ${chip.cls}`}
+                >
+                  {chip.label}
+                </span>
+                <span className="truncate text-[11px] text-cobalt-200">{userSubtitle}</span>
+              </div>
             </div>
-          </div>
+          )}
           <button
             onClick={onSignOut}
             title="Sign out"
@@ -227,26 +286,30 @@ export function SidebarShell({
 
 function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
   return [
-    { label: "Dashboard",      href: "/dashboard",  icon: LayoutDashboard },
-    { label: "Companies",      href: "/companies",  icon: Building2 },
-    { label: "Batches",        href: "/batches",    icon: FolderOpen },
-    { label: "Assign",         href: "/assign",     icon: UserCheck },
-    { label: "Reassignments",  href: "/reassignments", icon: ArrowUpDown, badge: openReassignmentCount },
-    { label: "Peers",      href: "/peers",  icon: ClipboardCheck },
-    { label: "Credentials",    href: "/credentials", icon: ShieldCheck },
-    { label: "Forms",          href: "/forms",      icon: FileText },
-    { label: "Payouts",        href: "/payouts",    icon: DollarSign },
-    { label: "Invoices",       href: "/invoices",   icon: Receipt },
-    { label: "Reports",        href: "/reports",    icon: BarChart3 },
-    { label: "Tags",           href: "/tags",       icon: Tag },
-    { label: "Settings",       href: "/settings",   icon: Settings },
-    { label: "Command Center", href: "/command",    icon: Terminal },
+    // Primary tier
+    { label: "Dashboard",       href: "/dashboard",  icon: LayoutDashboard,  group: "Workspace" },
+    { label: "Reviews",         href: "/cases",      icon: ClipboardCheck,   group: "Workspace" },
+    { label: "Reports",         href: "/reports",    icon: BarChart3,        group: "Workspace" },
+    { label: "Peers",           href: "/peers",      icon: UserCheck,        group: "Workspace" },
+    { label: "Companies",       href: "/companies",  icon: Building2,        group: "Workspace" },
+    { label: "Forms",           href: "/forms",      icon: FileText,         group: "Workspace" },
+    { label: "Tags",            href: "/tags",       icon: Tag,              group: "Workspace" },
+    { label: "Settings",        href: "/settings",   icon: Settings,         group: "Workspace" },
+    // Second-tier admin tools
+    { label: "Batches",         href: "/batches",    icon: FolderOpen,       group: "Admin Tools" },
+    { label: "Assignments",     href: "/assignments", icon: ArrowUpDown,     group: "Admin Tools", badge: openReassignmentCount },
+    { label: "Credentials",     href: "/credentials", icon: ShieldCheck,     group: "Admin Tools" },
+    { label: "Payouts",         href: "/payouts",    icon: DollarSign,       group: "Admin Tools" },
+    { label: "Invoices",        href: "/invoices",   icon: Receipt,          group: "Admin Tools" },
+    { label: "Command Center",  href: "/command",    icon: Terminal,         group: "Admin Tools" },
   ];
 }
 
+const ADMIN_GROUPS = ["Workspace", "Admin Tools"];
+
 const peerNavItems: SidebarNavItem[] = [
-  { label: "My Queue", href: "/peer/portal",   icon: ClipboardCheck },
-  { label: "Earnings", href: "/peer/earnings", icon: DollarSign },
+  { label: "Dashboard", href: "/peer/portal",   icon: LayoutDashboard },
+  { label: "Profile",   href: "/peer/profile",  icon: User },
 ];
 
 export function Sidebar({ openReassignmentCount = 0 }: { openReassignmentCount?: number } = {}) {
@@ -273,6 +336,7 @@ export function Sidebar({ openReassignmentCount = 0 }: { openReassignmentCount?:
   return (
     <SidebarShell
       nav={navItems}
+      groups={isPeer ? undefined : ADMIN_GROUPS}
       role={role}
       userName={name}
       userSubtitle={email}
