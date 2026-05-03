@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, toSnake } from '@/lib/db';
-import { peers } from '@/lib/db/schema';
+import { peers, peerSpecialties } from '@/lib/db/schema';
 import { sendCredentialingAlert } from '@/lib/email/notifications';
 
 export const dynamic = 'force-dynamic';
@@ -74,8 +74,6 @@ export async function POST(request: NextRequest) {
         .values({
           fullName: full_name,
           email,
-          specialty: specs[0],
-          specialties: specs,
           boardCertification: board_certification ?? null,
           licenseNumber: license_number ?? null,
           licenseState: license_state ?? null,
@@ -95,6 +93,18 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to create peer', code: 'DB_ERROR' },
         { status: 500 }
       );
+    }
+
+    // Phase 1.3 — write specialties to peer_specialties join table.
+    for (const s of specs) {
+      try {
+        await db
+          .insert(peerSpecialties)
+          .values({ peerId: row.id, specialty: s, verifiedStatus: 'verified' })
+          .onConflictDoNothing();
+      } catch (err) {
+        console.error('[API] peer_specialties insert failed:', err);
+      }
     }
 
     // Fire-and-forget credentialing notification.

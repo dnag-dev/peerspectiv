@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { peers, reviewResults } from "@/lib/db/schema";
-import { asc } from "drizzle-orm";
+import { asc, sql } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -10,7 +10,7 @@ export async function GET() {
       .select({
         id: peers.id,
         full_name: peers.fullName,
-        specialty: peers.specialty,
+        specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
         total_reviews_completed: peers.totalReviewsCompleted,
         ai_agreement_score: peers.aiAgreementScore,
         status: peers.status,

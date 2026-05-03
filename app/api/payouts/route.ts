@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, toSnake } from '@/lib/db';
 import { peers, reviewResults, peerPayouts } from '@/lib/db/schema';
-import { and, asc, eq, gte, lte } from 'drizzle-orm';
+import { and, asc, eq, gte, lte, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       .select({
         id: peers.id,
         full_name: peers.fullName,
-        specialty: peers.specialty,
+        specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
         rate_type: peers.rateType,
         rate_amount: peers.rateAmount,
         status: peers.status,

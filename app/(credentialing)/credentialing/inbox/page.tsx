@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { peers } from '@/lib/db/schema';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -13,8 +13,8 @@ export default async function NewPeerInboxPage() {
       id: peers.id,
       full_name: peers.fullName,
       email: peers.email,
-      specialty: peers.specialty,
-      specialties: peers.specialties,
+      specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
+      specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty), '{}'::text[])`,
       license_number: peers.licenseNumber,
       license_state: peers.licenseState,
       credential_valid_until: peers.credentialValidUntil,

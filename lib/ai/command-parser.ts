@@ -122,7 +122,7 @@ async function executeIntent(intent: string, parameters: Record<string, unknown>
       const data = await db
         .select({
           full_name: peers.fullName,
-          specialty: peers.specialty,
+          specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
           active_cases_count: peers.activeCasesCount,
           ai_agreement_score: peers.aiAgreementScore,
           total_reviews_completed: peers.totalReviewsCompleted,

@@ -4,6 +4,7 @@ import {
   companies,
   providers,
   peers,
+  peerSpecialties,
   batches,
   reviewCases,
   aiAnalyses,
@@ -85,14 +86,15 @@ export async function POST(request: NextRequest) {
 
     const insertedPeers: { id: string; fullName: string | null }[] = [];
     for (const r of peerRows) {
+      // Phase 1.3: specialty lives in peer_specialties, not on peers
+      const { specialty, ...peerData } = r;
       const [row] = await db
         .insert(peers)
-        .values(r)
+        .values(peerData)
         .onConflictDoUpdate({
           target: peers.email,
           set: {
             fullName: r.fullName,
-            specialty: r.specialty,
             boardCertification: r.boardCertification,
             status: r.status,
             totalReviewsCompleted: r.totalReviewsCompleted,
@@ -101,6 +103,11 @@ export async function POST(request: NextRequest) {
         })
         .returning({ id: peers.id, fullName: peers.fullName });
       insertedPeers.push(row);
+      // Upsert into peer_specialties
+      await db
+        .insert(peerSpecialties)
+        .values({ peerId: row.id, specialty, verifiedStatus: 'verified' })
+        .onConflictDoNothing();
     }
 
     const peersByName = Object.fromEntries(

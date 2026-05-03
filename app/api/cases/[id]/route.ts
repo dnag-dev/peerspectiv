@@ -17,7 +17,7 @@ export async function GET(
           columns: { id: true, firstName: true, lastName: true, specialty: true, npi: true, email: true },
         },
         peer: {
-          columns: { id: true, fullName: true, email: true, specialty: true, boardCertification: true },
+          columns: { id: true, fullName: true, email: true, boardCertification: true },
         },
         company: {
           columns: { id: true, name: true, contactPerson: true, contactEmail: true },

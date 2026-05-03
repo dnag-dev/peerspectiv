@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       orderBy: desc(reviewCases.createdAt),
       with: {
         provider: { columns: { id: true, firstName: true, lastName: true, specialty: true, npi: true } },
-        peer: { columns: { id: true, fullName: true, email: true, specialty: true } },
+        peer: { columns: { id: true, fullName: true, email: true } },
         company: { columns: { id: true, name: true } },
         batch: { columns: { id: true, batchName: true } },
       },
