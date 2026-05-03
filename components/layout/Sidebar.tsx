@@ -292,6 +292,7 @@ function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
     { label: "Reviews",         href: "/cases",      icon: ClipboardCheck,   group: "Workspace" },
     { label: "Reports",         href: "/reports",    icon: BarChart3,        group: "Workspace" },
     { label: "Peers",           href: "/peers",      icon: UserCheck,        group: "Workspace" },
+    { label: "Onboarding Queue",href: "/peers/onboarding-queue", icon: UserCheck, group: "Workspace" },
     { label: "Companies",       href: "/companies",  icon: Building2,        group: "Workspace" },
     { label: "Forms",           href: "/forms",      icon: FileText,         group: "Workspace" },
     { label: "Tags",            href: "/tags",       icon: Tag,              group: "Workspace" },
