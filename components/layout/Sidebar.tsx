@@ -43,7 +43,7 @@ const COLLAPSE_STORAGE_KEY = "peerspectiv.sidebar.collapsed";
  *  - Footer: demo-mode pill ABOVE user card; user card has color-coded role chip
  */
 
-export type SidebarRole = "admin" | "peer" | "cmo" | "quality" | "operations";
+export type SidebarRole = "admin" | "peer" | "cmo" | "quality" | "operations" | "credentialer";
 
 export interface SidebarNavItem {
   label: string;
@@ -75,6 +75,7 @@ const ROLE_CHIP: Record<SidebarRole, { label: string; cls: string }> = {
   cmo:        { label: "CMO",      cls: "bg-cobalt-100 text-cobalt-800" },
   quality:    { label: "QUALITY",  cls: "bg-cobalt-100 text-cobalt-800" },
   operations: { label: "OPS",      cls: "bg-cobalt-100 text-cobalt-800" },
+  credentialer: { label: "CRED", cls: "bg-cobalt-100 text-cobalt-800" },
 };
 
 export function SidebarShell({
