@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { reviewers, auditLogs } from '@/lib/db/schema';
+import { and, eq, isNotNull } from 'drizzle-orm';
 import { sendCredentialingAlert } from '@/lib/email/notifications';
 import { auditLog } from '@/lib/utils/audit';
 
@@ -24,30 +26,41 @@ export async function GET(request: NextRequest) {
     in30.setUTCDate(in30.getUTCDate() + 30);
     const in30Iso = in30.toISOString().slice(0, 10);
 
-    const { data: reviewers } = await supabaseAdmin
-      .from('reviewers')
-      .select('id, full_name, email, specialties, specialty, credential_valid_until')
-      .not('credential_valid_until', 'is', null);
+    const reviewerRows = await db
+      .select({
+        id: reviewers.id,
+        fullName: reviewers.fullName,
+        email: reviewers.email,
+        specialties: reviewers.specialties,
+        specialty: reviewers.specialty,
+        credentialValidUntil: reviewers.credentialValidUntil,
+      })
+      .from(reviewers)
+      .where(isNotNull(reviewers.credentialValidUntil));
 
     let sentExpiring = 0;
     let sentExpired = 0;
     let skipped = 0;
 
-    for (const r of (reviewers ?? []) as any[]) {
-      const cv = String(r.credential_valid_until).slice(0, 10);
+    for (const r of reviewerRows) {
+      const cv = String(r.credentialValidUntil).slice(0, 10);
       let kind: 'warn30' | 'expired' | null = null;
       if (cv < todayIso) kind = 'expired';
       else if (cv === in30Iso) kind = 'warn30';
       if (!kind) continue;
 
       // Dedupe: have we already sent this kind for this reviewer + expiry date?
-      const { data: prior } = await supabaseAdmin
-        .from('audit_logs')
-        .select('id')
-        .eq('action', 'credential_warning')
-        .eq('resource_type', 'reviewer')
-        .eq('resource_id', r.id);
-      const alreadySent = (prior ?? []).some((row: any) => {
+      const prior = await db
+        .select({ id: auditLogs.id, metadata: auditLogs.metadata })
+        .from(auditLogs)
+        .where(
+          and(
+            eq(auditLogs.action, 'credential_warning'),
+            eq(auditLogs.resourceType, 'reviewer'),
+            eq(auditLogs.resourceId, r.id)
+          )
+        );
+      const alreadySent = prior.some((row) => {
         const m = (row.metadata ?? {}) as any;
         return m.kind === kind && m.expiry === cv;
       });
@@ -65,12 +78,12 @@ export async function GET(request: NextRequest) {
 
       const subject =
         kind === 'expired'
-          ? `Credential EXPIRED: ${r.full_name}`
-          : `Credential expiring in 30 days: ${r.full_name}`;
+          ? `Credential EXPIRED: ${r.fullName}`
+          : `Credential expiring in 30 days: ${r.fullName}`;
       const bodyHtml = `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color:#0F2044;">${subject}</h2>
-          <p><strong>${r.full_name}</strong> (${r.email ?? ''})</p>
+          <p><strong>${r.fullName}</strong> (${r.email ?? ''})</p>
           <p>Credential expiry on file: <strong>${cv}</strong>.</p>
           ${
             kind === 'expired'
@@ -86,7 +99,7 @@ export async function GET(request: NextRequest) {
 
       await sendCredentialingAlert({
         reviewerId: r.id,
-        reviewerName: r.full_name ?? 'Reviewer',
+        reviewerName: r.fullName ?? 'Reviewer',
         email: r.email ?? '',
         specialties: specs,
         subject,
