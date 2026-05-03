@@ -6,7 +6,7 @@ import {
   providers,
   correctiveActions,
 } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import {
   getComplianceScore,
   getReviewsThisQuarter,
@@ -173,6 +173,63 @@ export async function GET(request: NextRequest) {
         narrative,
         hrsaMeasures,
       });
+    }
+
+    if (kind === "company_specialties") {
+      // Distinct specialties for providers attached to this company.
+      const result = await db.execute(sql`
+        SELECT DISTINCT NULLIF(specialty, '') AS specialty
+        FROM providers
+        WHERE company_id = ${companyId} AND specialty IS NOT NULL
+        ORDER BY specialty
+      `);
+      const raws =
+        ((result as { rows?: unknown[] }).rows as Array<{ specialty: string | null }>) ??
+        (result as any);
+      const specialties = (raws ?? [])
+        .map((r) => (r.specialty ?? '').trim())
+        .filter((s) => !!s);
+      return NextResponse.json({ specialties });
+    }
+
+    if (kind === "reviews_in_period") {
+      // Used by Phase 3.3 admin Reports page (Per-Provider tab) to populate
+      // the review picker for the selected company + cadence period.
+      const start = url.searchParams.get("start");
+      const end = url.searchParams.get("end");
+      if (!start || !end) {
+        return NextResponse.json({ error: "start and end required" }, { status: 400 });
+      }
+      const result = await db.execute(sql`
+        SELECT
+          rr.id AS result_id,
+          p.first_name AS provider_first,
+          p.last_name  AS provider_last,
+          rr.submitted_at
+        FROM review_results rr
+        INNER JOIN review_cases rc ON rc.id = rr.case_id
+        INNER JOIN providers     p  ON p.id  = rc.provider_id
+        WHERE rc.company_id = ${companyId}
+          AND rr.submitted_at::date >= ${start}::date
+          AND rr.submitted_at::date <= ${end}::date
+        ORDER BY rr.submitted_at DESC
+        LIMIT 500
+      `);
+      const raws =
+        ((result as { rows?: unknown[] }).rows as Array<{
+          result_id: string;
+          provider_first: string | null;
+          provider_last: string | null;
+          submitted_at: string;
+        }>) ?? (result as any);
+      const reviews = (raws ?? []).map((r) => {
+        const name =
+          [r.provider_first, r.provider_last].filter(Boolean).join(" ").trim() ||
+          "Unknown provider";
+        const d = new Date(r.submitted_at).toISOString().slice(0, 10);
+        return { id: r.result_id, label: `${name} — ${d}` };
+      });
+      return NextResponse.json({ reviews });
     }
 
     return NextResponse.json({ error: "unknown kind" }, { status: 400 });
