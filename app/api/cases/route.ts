@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { and, eq, ne } from 'drizzle-orm';
-import { supabaseAdmin } from '@/lib/supabase/server';
-import { db } from '@/lib/db';
+import { and, desc, eq, ne } from 'drizzle-orm';
+import { db, toSnake } from '@/lib/db';
 import { reviewCases } from '@/lib/db/schema';
 
 export const dynamic = 'force-dynamic';
@@ -14,32 +13,24 @@ export async function GET(request: NextRequest) {
     const reviewer_id = searchParams.get('reviewer_id');
     const company_id = searchParams.get('company_id');
 
-    let query = supabaseAdmin
-      .from('review_cases')
-      .select(`
-        *,
-        provider:providers(id, first_name, last_name, specialty, npi),
-        reviewer:reviewers(id, full_name, email, specialty),
-        company:companies(id, name),
-        batch:batches(id, batch_name)
-      `)
-      .order('created_at', { ascending: false });
+    const conditions = [];
+    if (status) conditions.push(eq(reviewCases.status, status));
+    if (batch_id) conditions.push(eq(reviewCases.batchId, batch_id));
+    if (reviewer_id) conditions.push(eq(reviewCases.reviewerId, reviewer_id));
+    if (company_id) conditions.push(eq(reviewCases.companyId, company_id));
 
-    if (status) query = query.eq('status', status);
-    if (batch_id) query = query.eq('batch_id', batch_id);
-    if (reviewer_id) query = query.eq('reviewer_id', reviewer_id);
-    if (company_id) query = query.eq('company_id', company_id);
+    const data = await db.query.reviewCases.findMany({
+      where: conditions.length ? and(...conditions) : undefined,
+      orderBy: desc(reviewCases.createdAt),
+      with: {
+        provider: { columns: { id: true, firstName: true, lastName: true, specialty: true, npi: true } },
+        reviewer: { columns: { id: true, fullName: true, email: true, specialty: true } },
+        company: { columns: { id: true, name: true } },
+        batch: { columns: { id: true, batchName: true } },
+      },
+    });
 
-    const { data, error } = await query;
-
-    if (error) {
-      return NextResponse.json(
-        { error: error.message, code: 'QUERY_FAILED' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ data });
+    return NextResponse.json({ data: data.map((r) => toSnake(r)) });
   } catch (err) {
     console.error('[API] GET /api/cases error:', err);
     return NextResponse.json(
@@ -92,33 +83,32 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Insert via supabase to preserve existing tooling / RLS behaviors.
-    const { data, error } = await supabaseAdmin
-      .from('review_cases')
-      .insert({
-        provider_id: provider_id ?? null,
-        batch_id: batch_id ?? null,
-        company_id: company_id ?? null,
-        reviewer_id: reviewer_id ?? null,
-        batch_period: batch_period ?? null,
-        encounter_date: encounter_date ?? null,
-        specialty_required: specialty_required ?? null,
-        priority: priority ?? 'normal',
-        due_date: due_date ?? null,
-        notes: notes ?? null,
-        status: status ?? 'unassigned',
-      })
-      .select()
-      .single();
-
-    if (error) {
+    let row;
+    try {
+      [row] = await db
+        .insert(reviewCases)
+        .values({
+          providerId: provider_id ?? null,
+          batchId: batch_id ?? null,
+          companyId: company_id ?? null,
+          reviewerId: reviewer_id ?? null,
+          batchPeriod: batch_period ?? null,
+          encounterDate: encounter_date ?? null,
+          specialtyRequired: specialty_required ?? null,
+          priority: priority ?? 'normal',
+          dueDate: due_date ? new Date(due_date) : null,
+          notes: notes ?? null,
+          status: status ?? 'unassigned',
+        })
+        .returning();
+    } catch (err: any) {
       return NextResponse.json(
-        { error: error.message, code: 'INSERT_FAILED' },
+        { error: err?.message || 'Insert failed', code: 'INSERT_FAILED' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ data }, { status: 201 });
+    return NextResponse.json({ data: toSnake(row) }, { status: 201 });
   } catch (err) {
     console.error('[API] POST /api/cases error:', err);
     return NextResponse.json(

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db, toSnake } from '@/lib/db';
+import { batches, reviewCases, notifications } from '@/lib/db/schema';
+import { eq, inArray } from 'drizzle-orm';
 import { auditLog } from '@/lib/utils/audit';
-import { db } from '@/lib/db';
-import { notifications } from '@/lib/db/schema';
 
 interface CaseInput {
   provider_id: string | null;
@@ -43,8 +43,6 @@ export async function POST(request: NextRequest) {
     const batchStatus = status || 'pending';
 
     // D6: detect multi-specialty batch and split into one child batch per specialty.
-    // A "mixed" batch is one where the cases carry distinct specialty_required values,
-    // OR the parent specialty is the sentinel "Mixed".
     const caseSpecialties = cases.map(
       (c) => c.specialty_required ?? specialty ?? null
     );
@@ -54,29 +52,27 @@ export async function POST(request: NextRequest) {
     const isMixed =
       specialty === 'Mixed' ||
       (distinctSpecialties.length > 1 &&
-        // Only treat as mixed if cases actually disagree
         cases.some((c) => (c.specialty_required ?? specialty) !== distinctSpecialties[0]));
 
     if (isMixed && distinctSpecialties.length > 1) {
-      const createdBatches: any[] = [];
-      const allInsertedCases: any[] = [];
+      const createdBatches: Array<{ id: string }> = [];
+      const allInsertedCases: Array<{ id: string; chart_file_name: string | null; provider_id: string | null; specialty_required: string | null; batch_id: string | null }> = [];
 
       // Optional parent label batch — purely a marker, no cases attached.
-      const { data: parentBatch } = await supabaseAdmin
-        .from('batches')
-        .insert({
-          batch_name: `${batch_name} (mixed)`,
-          company_id,
+      const [parentBatch] = await db
+        .insert(batches)
+        .values({
+          batchName: `${batch_name} (mixed)`,
+          companyId: company_id,
           specialty: null,
-          company_form_id: null,
-          date_uploaded: new Date().toISOString(),
-          total_cases: 0,
-          assigned_cases: 0,
-          completed_cases: 0,
+          companyFormId: null,
+          dateUploaded: new Date(),
+          totalCases: 0,
+          assignedCases: 0,
+          completedCases: 0,
           status: batchStatus,
         })
-        .select()
-        .single();
+        .returning();
 
       for (const spec of distinctSpecialties) {
         const childCases = cases.filter(
@@ -84,68 +80,74 @@ export async function POST(request: NextRequest) {
         );
         if (childCases.length === 0) continue;
 
-        const { data: childBatch, error: childErr } = await supabaseAdmin
-          .from('batches')
-          .insert({
-            batch_name: `${batch_name} — ${spec}`,
-            company_id,
-            specialty: spec,
-            company_form_id: null,
-            date_uploaded: new Date().toISOString(),
-            total_cases: childCases.length,
-            assigned_cases: 0,
-            completed_cases: 0,
-            status: batchStatus,
-          })
-          .select()
-          .single();
-
-        if (childErr || !childBatch) {
+        let childBatch;
+        try {
+          [childBatch] = await db
+            .insert(batches)
+            .values({
+              batchName: `${batch_name} — ${spec}`,
+              companyId: company_id,
+              specialty: spec,
+              companyFormId: null,
+              dateUploaded: new Date(),
+              totalCases: childCases.length,
+              assignedCases: 0,
+              completedCases: 0,
+              status: batchStatus,
+            })
+            .returning();
+        } catch (err: any) {
           // Best-effort cleanup
           for (const b of createdBatches) {
-            await supabaseAdmin.from('batches').delete().eq('id', b.id);
+            await db.delete(batches).where(eq(batches.id, b.id));
           }
           if (parentBatch) {
-            await supabaseAdmin.from('batches').delete().eq('id', parentBatch.id);
+            await db.delete(batches).where(eq(batches.id, parentBatch.id));
           }
           return NextResponse.json(
-            { error: childErr?.message || 'Failed to create child batch', code: 'BATCH_CREATE_FAILED' },
+            { error: err?.message || 'Failed to create child batch', code: 'BATCH_CREATE_FAILED' },
             { status: 500 }
           );
         }
         createdBatches.push(childBatch);
 
         const childRecords = childCases.map((c) => ({
-          batch_id: childBatch.id,
-          provider_id: c.provider_id ?? null,
-          company_id,
-          specialty_required: spec,
-          encounter_date: c.encounter_date || null,
-          chart_file_name: c.chart_file_name || null,
-          company_form_id: c.company_form_id ?? null,
-          status: 'unassigned' as const,
-          ai_analysis_status: 'pending' as const,
-          priority: 'normal' as const,
+          batchId: childBatch.id,
+          providerId: c.provider_id ?? null,
+          companyId: company_id,
+          specialtyRequired: spec,
+          encounterDate: c.encounter_date || null,
+          chartFileName: c.chart_file_name || null,
+          companyFormId: c.company_form_id ?? null,
+          status: 'unassigned',
+          aiAnalysisStatus: 'pending',
+          priority: 'normal',
         }));
 
-        const { data: childInserted, error: childCasesErr } = await supabaseAdmin
-          .from('review_cases')
-          .insert(childRecords)
-          .select('id, chart_file_name, provider_id, specialty_required, batch_id');
-
-        if (childCasesErr) {
+        try {
+          const childInserted = await db
+            .insert(reviewCases)
+            .values(childRecords)
+            .returning({
+              id: reviewCases.id,
+              chart_file_name: reviewCases.chartFileName,
+              provider_id: reviewCases.providerId,
+              specialty_required: reviewCases.specialtyRequired,
+              batch_id: reviewCases.batchId,
+            });
+          allInsertedCases.push(...childInserted);
+        } catch (err: any) {
           for (const b of createdBatches) {
-            await supabaseAdmin.from('batches').delete().eq('id', b.id);
+            await db.delete(batches).where(eq(batches.id, b.id));
           }
           if (parentBatch) {
-            await supabaseAdmin.from('batches').delete().eq('id', parentBatch.id);
+            await db.delete(batches).where(eq(batches.id, parentBatch.id));
           }
           return NextResponse.json(
-            { error: childCasesErr.message, code: 'CASES_CREATE_FAILED' },
+            { error: err?.message || 'Failed to create cases', code: 'CASES_CREATE_FAILED' },
             { status: 500 }
           );
         }
-        allInsertedCases.push(...(childInserted ?? []));
       }
 
       await auditLog({
@@ -164,12 +166,10 @@ export async function POST(request: NextRequest) {
         request,
       });
 
-      // Return parent as `data` (for back-compat with single-batch callers) and
-      // the full list under `batches`.
       return NextResponse.json(
         {
-          data: parentBatch ?? createdBatches[0],
-          batches: createdBatches,
+          data: toSnake(parentBatch ?? createdBatches[0]),
+          batches: createdBatches.map((b) => toSnake(b)),
           cases: allInsertedCases,
         },
         { status: 201 }
@@ -177,64 +177,68 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Single-specialty (default) path ────────────────────────────────────
-    // Create the batch record
-    const { data: batch, error: batchError } = await supabaseAdmin
-      .from('batches')
-      .insert({
-        batch_name,
-        company_id,
-        specialty: specialty ?? null,
-        company_form_id: company_form_id ?? null,
-        date_uploaded: new Date().toISOString(),
-        total_cases: cases.length,
-        assigned_cases: 0,
-        completed_cases: 0,
-        status: batchStatus,
-      })
-      .select()
-      .single();
-
-    if (batchError || !batch) {
+    let batch;
+    try {
+      [batch] = await db
+        .insert(batches)
+        .values({
+          batchName: batch_name,
+          companyId: company_id,
+          specialty: specialty ?? null,
+          companyFormId: company_form_id ?? null,
+          dateUploaded: new Date(),
+          totalCases: cases.length,
+          assignedCases: 0,
+          completedCases: 0,
+          status: batchStatus,
+        })
+        .returning();
+    } catch (err: any) {
       return NextResponse.json(
-        { error: batchError?.message || 'Failed to create batch', code: 'BATCH_CREATE_FAILED' },
+        { error: err?.message || 'Failed to create batch', code: 'BATCH_CREATE_FAILED' },
         { status: 500 }
       );
     }
 
     // Create review_cases records for each case
     const caseRecords = cases.map((c) => ({
-      batch_id: batch.id,
-      provider_id: c.provider_id ?? null,
-      company_id,
-      specialty_required: c.specialty_required ?? specialty ?? null,
-      encounter_date: c.encounter_date || null,
-      chart_file_name: c.chart_file_name || null,
+      batchId: batch.id,
+      providerId: c.provider_id ?? null,
+      companyId: company_id,
+      specialtyRequired: c.specialty_required ?? specialty ?? null,
+      encounterDate: c.encounter_date || null,
+      chartFileName: c.chart_file_name || null,
       // Per-row override (D3) wins over batch default
-      company_form_id: c.company_form_id ?? company_form_id ?? null,
-      status: 'unassigned' as const,
-      ai_analysis_status: 'pending' as const,
-      priority: 'normal' as const,
+      companyFormId: c.company_form_id ?? company_form_id ?? null,
+      status: 'unassigned',
+      aiAnalysisStatus: 'pending',
+      priority: 'normal',
     }));
 
-    const { data: insertedCases, error: casesError } = await supabaseAdmin
-      .from('review_cases')
-      .insert(caseRecords)
-      .select('id, chart_file_name, provider_id');
-
-    if (casesError) {
+    let insertedCases;
+    try {
+      insertedCases = await db
+        .insert(reviewCases)
+        .values(caseRecords)
+        .returning({
+          id: reviewCases.id,
+          chart_file_name: reviewCases.chartFileName,
+          provider_id: reviewCases.providerId,
+        });
+    } catch (err: any) {
       // Clean up the batch if case creation fails
-      await supabaseAdmin.from('batches').delete().eq('id', batch.id);
+      await db.delete(batches).where(eq(batches.id, batch.id));
       return NextResponse.json(
-        { error: casesError.message, code: 'CASES_CREATE_FAILED' },
+        { error: err?.message || 'Failed to create cases', code: 'CASES_CREATE_FAILED' },
         { status: 500 }
       );
     }
 
     // Refresh total count (defensive)
-    await supabaseAdmin
-      .from('batches')
-      .update({ total_cases: cases.length })
-      .eq('id', batch.id);
+    await db
+      .update(batches)
+      .set({ totalCases: cases.length })
+      .where(eq(batches.id, batch.id));
 
     // Fire an admin notification if this is a client-submitted batch
     if (batchStatus === 'pending_admin_review') {
@@ -267,7 +271,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { data: batch, batches: [batch], cases: insertedCases ?? [] },
+      { data: toSnake(batch), batches: [toSnake(batch)], cases: insertedCases ?? [] },
       { status: 201 }
     );
   } catch (err) {
