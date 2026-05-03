@@ -1,10 +1,25 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Send, X } from 'lucide-react';
 import { SparkIcon } from '@/components/ui/pulse';
 
-type Portal = 'admin' | 'client' | 'peer';
+type Portal = 'admin' | 'client' | 'peer' | 'credentialer';
+
+/**
+ * Phase 8.1 — Peer-route prompt overrides.
+ *
+ * Peer routes live under /peer/* but inherit the admin (dashboard) layout for
+ * historical reasons. Until peer gets its own layout, swap prompts + portal
+ * client-side based on the pathname so peers see the peer-tailored quick
+ * actions in their Ask Ash drawer.
+ */
+const PEER_ROUTE_PROMPTS = [
+  'Explain this chart in plain English',
+  "What's the default answer for question 5?",
+  "Summarize the chart's medications",
+];
 
 interface AshChatProps {
   portal: Portal;
@@ -24,6 +39,14 @@ export function AshChat({
   initialGreeting,
   suggestedPrompts,
 }: AshChatProps) {
+  const pathname = usePathname() ?? '';
+  const isPeerRoute = pathname.startsWith('/peer');
+  const effectivePortal: Portal = isPeerRoute ? 'peer' : portal;
+  const effectivePrompts = useMemo(
+    () => (isPeerRoute ? PEER_ROUTE_PROMPTS : suggestedPrompts),
+    [isPeerRoute, suggestedPrompts]
+  );
+
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,7 +89,7 @@ export function AshChat({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: trimmed,
-          portal,
+          portal: effectivePortal,
           context,
           conversationHistory: messages.filter(
             (m, i) => !(i === 0 && m.role === 'assistant')
@@ -179,9 +202,9 @@ export function AshChat({
               </div>
             )}
 
-            {!hasUserSent && suggestedPrompts.length > 0 && !loading && (
+            {!hasUserSent && effectivePrompts.length > 0 && !loading && (
               <div className="flex flex-wrap gap-2 pt-2">
-                {suggestedPrompts.map((prompt) => (
+                {effectivePrompts.map((prompt) => (
                   <button
                     key={prompt}
                     type="button"

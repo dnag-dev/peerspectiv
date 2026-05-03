@@ -57,16 +57,18 @@ export default async function ClientLayout({
       <AshChat
         portal="client"
         context={{
+          companyId: company.id,
           companyName: company.name,
           complianceScore,
           currentQuarter: "Q1 2026",
         }}
         initialGreeting={`Hi — ${company.name} is at ${complianceScore}% compliance this quarter. What would you like to explore?`}
+        // Phase 8.1 — client-tailored quick-action prompts.
         suggestedPrompts={[
+          "Explain my Q4 score",
+          "Which providers improved most?",
+          "Draft a corrective action plan for Provider X",
           "Show providers at risk",
-          "What are our top deficiencies?",
-          "Export board report",
-          "Open corrective actions",
         ]}
       />
     </ClientPortalShell>

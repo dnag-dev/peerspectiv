@@ -4,12 +4,13 @@ import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { db } from '@/lib/db';
 import { ashConversations } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
+import { toolsForRole, findTool, type AshRole } from '@/lib/ash/tools';
 
 export const maxDuration = 45;
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-type Portal = 'admin' | 'client' | 'peer';
+type Portal = 'admin' | 'client' | 'peer' | 'credentialer';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -98,6 +99,14 @@ Today: ${todayIso}`;
     return `You are Ash, the compliance intelligence assistant for ${companyName} on the Peerspectiv platform. You help quality directors and CMOs understand their peer review compliance data. You can ONLY see data for ${companyName} — never reference other clients. You have access to: compliance scores, provider performance, review status, corrective actions, risk trends. Current reporting period: ${currentQuarter}. Be helpful, clear, and translate data into plain English recommendations.`;
   }
 
+  if (portal === 'credentialer') {
+    return `You are Ash, the credentialing operations assistant on the Peerspectiv platform.
+You help credentialers track peer onboarding, license expirations, and credentialing throughput.
+Use the named typed tools (e.g. list_expiring_peers) to fetch data — never invent numbers.
+Today: ${todayIso}.
+Context: ${JSON.stringify(context ?? {})}`;
+  }
+
   // peer
   const peerName = context?.peerName || 'the peer';
   const currentCase = context?.currentCase || {};
@@ -122,7 +131,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  if (!portal || !['admin', 'client', 'peer'].includes(portal)) {
+  if (!portal || !['admin', 'client', 'peer', 'credentialer'].includes(portal)) {
     return NextResponse.json(
       { error: 'portal must be admin, client, or peer' },
       { status: 400 }
@@ -151,15 +160,26 @@ export async function POST(req: NextRequest) {
     { role: 'user' as const, content: message },
   ];
 
-  // Admin portal gets a read-only SQL tool so Ash can actually fetch data
-  // instead of hallucinating SQL or inventing numbers.
+  // Phase 8.1: typed tool registry (per persona) + admin run_sql escape hatch.
+  const role: AshRole = portal as AshRole;
+  const registryTools = toolsForRole(role).map((t) => ({
+    name: t.name,
+    description: t.description,
+    input_schema: t.input_schema,
+  }));
+  const ashContext = {
+    role,
+    companyId: (context as any)?.companyId ?? null,
+    peerId: (context as any)?.peerId ?? null,
+  };
   const adminTools =
     portal === 'admin'
       ? [
+          ...registryTools,
           {
             name: 'run_sql',
             description:
-              'Execute a read-only SELECT query against the Peerspectiv Postgres database and return the rows. Use the schema provided in the system prompt. Only SELECT statements are allowed. Keep queries focused and add LIMIT 50 for list queries unless the user asks for more.',
+              'Fallback: execute a read-only SELECT query. Prefer the named typed tools above when one matches. Only SELECT statements are allowed.',
             input_schema: {
               type: 'object' as const,
               properties: {
@@ -172,7 +192,9 @@ export async function POST(req: NextRequest) {
             },
           },
         ]
-      : undefined;
+      : registryTools.length > 0
+        ? registryTools
+        : undefined;
 
   let assistantText: string;
   try {
@@ -205,6 +227,26 @@ export async function POST(req: NextRequest) {
 
         for (const block of response.content) {
           if (block.type !== 'tool_use') continue;
+          // First: try the typed registry.
+          const typed = findTool(block.name, role);
+          if (typed) {
+            try {
+              const out = await typed.handler((block.input as any) ?? {}, ashContext);
+              toolResults.push({
+                type: 'tool_result',
+                tool_use_id: block.id,
+                content: out,
+              });
+            } catch (err: any) {
+              toolResults.push({
+                type: 'tool_result',
+                tool_use_id: block.id,
+                content: `Tool error: ${err?.message ?? String(err)}`,
+                is_error: true,
+              });
+            }
+            continue;
+          }
           if (block.name !== 'run_sql') {
             toolResults.push({
               type: 'tool_result',
