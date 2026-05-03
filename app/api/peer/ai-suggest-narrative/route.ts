@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
         chart_summary: analysis.chartSummary ?? null,
         criteria_scores: analysis.criteriaScores ?? [],
         deficiencies: analysis.deficiencies ?? [],
-        reviewer_existing_draft: draft ?? null,
+        peer_existing_draft: draft ?? null,
       },
       null,
       2

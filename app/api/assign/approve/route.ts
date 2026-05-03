@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Optional reassign: swap reviewer_id before approval. Used by manual peer picker.
+    // Optional reassign: swap peer_id before approval. Used by manual peer picker.
     if (case_id && reassign_to) {
       await db
         .update(reviewCases)

@@ -26,7 +26,7 @@ export async function GET() {
       })
       .from(reviewResults);
 
-    // Build a map: reviewer_id -> avg quality_score
+    // Build a map: peer_id -> avg quality_score
     const qualityMap = new Map<string, { sum: number; count: number }>();
     for (const row of qualityRows) {
       if (row.peer_id && row.quality_score != null) {

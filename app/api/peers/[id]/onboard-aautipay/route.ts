@@ -67,7 +67,7 @@ export async function POST(
   const [pendingEvent] = await db
     .insert(aautipayEvents)
     .values({
-      eventType: 'reviewer_onboard_request',
+      eventType: 'peer_onboard_request',
       externalId: peerId,
       rawPayload: body as unknown as object,
       status: 'received',

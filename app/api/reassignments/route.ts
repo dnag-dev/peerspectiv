@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Look up the case to derive reviewer_id (the case already records the
+    // Look up the case to derive peer_id (the case already records the
     // assigned peer). Mirrors /api/peer/submit which trusts the case.
     const [caseRow] = await db
       .select({

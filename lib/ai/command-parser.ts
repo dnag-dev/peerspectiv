@@ -31,7 +31,7 @@ QUERY actions (return data):
 - "dashboard_stats" - overall KPIs
 - "list_cases" - with filters (status, company, peer, date_range)
 - "list_past_due" - past due cases with details
-- "reviewer_performance" - peer scores and stats
+- "peer_performance" - peer scores and stats
 - "company_summary" - cases by company
 
 ACTION actions (perform operations):
@@ -118,7 +118,7 @@ async function executeIntent(intent: string, parameters: Record<string, unknown>
       return data;
     }
 
-    case 'reviewer_performance': {
+    case 'peer_performance': {
       const data = await db
         .select({
           full_name: peers.fullName,

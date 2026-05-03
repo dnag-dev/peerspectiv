@@ -26,7 +26,7 @@ export async function PATCH(
       .where(eq(peers.id, id));
 
     await auditLog({
-      action: 'reviewer_set_unavailable',
+      action: 'peer_set_unavailable',
       resourceType: 'peer',
       resourceId: id,
       metadata: { availability_status, unavailable_from, unavailable_until, unavailable_reason },
@@ -60,7 +60,7 @@ export async function POST(
       .where(eq(peers.id, id));
 
     await auditLog({
-      action: 'reviewer_marked_available',
+      action: 'peer_marked_available',
       resourceType: 'peer',
       resourceId: id,
       request,

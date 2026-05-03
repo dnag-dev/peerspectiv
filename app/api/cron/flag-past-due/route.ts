@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
 
       await db.insert(notifications).values({
         userId: null,
-        type: 'reviewer_returned',
+        type: 'peer_returned',
         title: `${peer.fullName} is now available`,
         body: `Peer ${peer.fullName} has been automatically marked as available (leave period ended).`,
         entityType: 'peer',
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
       returnedIds.push(peer.id);
     }
 
-    return NextResponse.json({ flagged: caseIds.length, reviewers_returned: returnedIds.length });
+    return NextResponse.json({ flagged: caseIds.length, peers_returned: returnedIds.length });
   } catch (err) {
     console.error('[API] GET /api/cron/flag-past-due error:', err);
     return NextResponse.json(

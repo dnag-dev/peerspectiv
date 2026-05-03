@@ -56,7 +56,7 @@ interface SidebarShellProps {
   groups?: string[];
   role: SidebarRole;
   userName: string;
-  userSubtitle: string; // email for admin/reviewer, company name for client
+  userSubtitle: string; // email for admin/peer, company name for client
   onSignOut: () => void;
   onCloseMobile: () => void;
   mobileOpen: boolean;
@@ -66,7 +66,7 @@ interface SidebarShellProps {
 
 const ROLE_CHIP: Record<SidebarRole, { label: string; cls: string }> = {
   admin:      { label: "ADMIN",    cls: "bg-cobalt-100 text-cobalt-800" },
-  peer:   { label: "REVIEWER", cls: "bg-mint-100 text-mint-700" },
+  peer:   { label: "PEER", cls: "bg-mint-100 text-mint-700" },
   cmo:        { label: "CMO",      cls: "bg-cobalt-100 text-cobalt-800" },
   quality:    { label: "QUALITY",  cls: "bg-cobalt-100 text-cobalt-800" },
   operations: { label: "OPS",      cls: "bg-cobalt-100 text-cobalt-800" },

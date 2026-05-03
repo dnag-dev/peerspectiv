@@ -29,7 +29,7 @@ interface SubmitBody {
   };
   // Section C.4 additions
   mrn_number?: string;
-  reviewer_signature_text?: string;
+  peer_signature_text?: string;
   // Section C.3 — full yes_no answers used for NA-aware scoring.
   form_responses?: Record<string, { value: unknown; comment?: string }>;
 }
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       time_spent_minutes,
       license_snapshot,
       mrn_number,
-      reviewer_signature_text,
+      peer_signature_text,
       form_responses,
     } = body;
     let overall_score = overall_score_in;
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
       .where(eq(aiAnalyses.caseId, case_id))
       .limit(1);
 
-    // Calculate AI agreement percentage and build reviewer_changes
+    // Calculate AI agreement percentage and build peer_changes
     let aiAgreementPercentage: number | null = null;
     let peerChanges: PeerChange[] = [];
 
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
     const licenseState = license_snapshot.license_state.trim().toUpperCase();
 
     const mrnSnapshot = mrn_number?.trim() || null;
-    const signatureText = reviewer_signature_text?.trim() || null;
+    const signatureText = peer_signature_text?.trim() || null;
 
     const insertedRows = await db
       .insert(reviewResults)

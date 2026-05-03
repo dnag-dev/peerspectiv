@@ -42,14 +42,14 @@ export interface ReviewFormSubmitData {
       ai_value?: unknown;
     }
   >;
-  reviewer_comments: string;
+  peer_comments: string;
   license_snapshot?: {
     license_number: string;
     license_state: string;
     attested_at: string;
   };
   mrn_number?: string;
-  reviewer_signature_text?: string;
+  peer_signature_text?: string;
 }
 
 export interface PeerLicenseInfo {
@@ -299,10 +299,10 @@ export function ReviewForm({
 
     const payload: ReviewFormSubmitData = {
       form_responses,
-      reviewer_comments: peerComments,
+      peer_comments: peerComments,
       license_snapshot: licenseSnapshot,
       mrn_number: mrnNumber.trim(),
-      reviewer_signature_text: peerSignatureText,
+      peer_signature_text: peerSignatureText,
     };
 
     setSubmitting(true);
@@ -363,7 +363,7 @@ export function ReviewForm({
             time_spent_minutes: timeSpent,
             license_snapshot: licenseSnapshot,
             mrn_number: mrnNumber.trim(),
-            reviewer_signature_text: peerSignatureText,
+            peer_signature_text: peerSignatureText,
             form_responses,
           }),
         });
@@ -423,7 +423,7 @@ export function ReviewForm({
       <div className="rounded-xl border border-ink-200 bg-paper-surface p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-eyebrow text-ink-500">REVIEWER · ASSESSMENT</div>
+            <div className="text-eyebrow text-ink-500">PEER · ASSESSMENT</div>
             <h2 className="mt-1 text-h2 text-ink-900">Peer Review</h2>
             <p className="mt-1 text-small text-ink-500">
               Review each field below. AI prefills are shown with confidence
@@ -475,7 +475,7 @@ export function ReviewForm({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-eyebrow text-cobalt-700">
-              REVIEWER · LICENSE ATTESTATION
+              PEER · LICENSE ATTESTATION
             </div>
             <h3 className="mt-1 text-base font-semibold text-ink-900">
               You are reviewing this case as:{" "}
