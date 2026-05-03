@@ -3,6 +3,47 @@ import { db, toSnake } from '@/lib/db';
 import { batches, reviewCases, notifications } from '@/lib/db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { auditLog } from '@/lib/utils/audit';
+import {
+  suggestAssignmentsForCases,
+  type CaseInput as AssignCaseInput,
+} from '@/lib/assignment/auto-suggest';
+
+/**
+ * Phase 5.1 — apply per-file split to a freshly inserted batch of cases.
+ * For each suggestion with a non-null peerId, flip the case to
+ * pending_approval + record the assignment_source. Cases with no candidate
+ * stay status='unassigned'. Failures are logged but never crash the batch
+ * insert (we already have the cases in the DB).
+ */
+async function applyAutoSuggest(
+  inserted: Array<{ id: string; specialty_required: string | null; company_id: string }>
+): Promise<void> {
+  const eligible: AssignCaseInput[] = inserted
+    .filter((c) => !!c.specialty_required)
+    .map((c) => ({
+      id: c.id,
+      specialty: c.specialty_required as string,
+      companyId: c.company_id,
+    }));
+  if (eligible.length === 0) return;
+  try {
+    const suggestions = await suggestAssignmentsForCases(eligible);
+    for (const s of suggestions) {
+      if (!s.peerId) continue;
+      await db
+        .update(reviewCases)
+        .set({
+          peerId: s.peerId,
+          status: 'pending_approval',
+          assignmentSource: 'ai_suggested',
+          updatedAt: new Date(),
+        })
+        .where(eq(reviewCases.id, s.caseId));
+    }
+  } catch (err) {
+    console.error('[batches] auto-suggest failed (non-fatal):', err);
+  }
+}
 
 interface CaseInput {
   provider_id: string | null;
@@ -136,6 +177,15 @@ export async function POST(request: NextRequest) {
               batch_id: reviewCases.batchId,
             });
           allInsertedCases.push(...childInserted);
+
+          // Phase 5.1 — capacity-aware per-file split (best-effort).
+          await applyAutoSuggest(
+            childInserted.map((c) => ({
+              id: c.id,
+              specialty_required: c.specialty_required ?? null,
+              company_id,
+            }))
+          );
         } catch (err: any) {
           for (const b of createdBatches) {
             await db.delete(batches).where(eq(batches.id, b.id));
@@ -224,7 +274,17 @@ export async function POST(request: NextRequest) {
           id: reviewCases.id,
           chart_file_name: reviewCases.chartFileName,
           provider_id: reviewCases.providerId,
+          specialty_required: reviewCases.specialtyRequired,
         });
+
+      // Phase 5.1 — capacity-aware per-file split (best-effort).
+      await applyAutoSuggest(
+        insertedCases.map((c) => ({
+          id: c.id,
+          specialty_required: c.specialty_required ?? null,
+          company_id,
+        }))
+      );
     } catch (err: any) {
       // Clean up the batch if case creation fails
       await db.delete(batches).where(eq(batches.id, batch.id));
