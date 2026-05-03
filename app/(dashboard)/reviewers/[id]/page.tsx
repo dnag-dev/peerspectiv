@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db, toSnake } from "@/lib/db";
+import { reviewers, reviewCases, reviewResults } from "@/lib/db/schema";
+import { asc, desc, eq } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -58,30 +60,64 @@ function initials(name: string | null | undefined) {
 }
 
 async function getReviewerDetail(id: string) {
-  const { data: reviewer, error } = await supabaseAdmin
-    .from("reviewers")
-    .select("*")
-    .eq("id", id)
-    .single();
-  if (error || !reviewer) return null;
+  const [reviewerRow] = await db
+    .select()
+    .from(reviewers)
+    .where(eq(reviewers.id, id))
+    .limit(1);
+  if (!reviewerRow) return null;
 
-  const { data: cases } = await supabaseAdmin
-    .from("review_cases")
-    .select(
-      "id, status, due_date, assigned_at, specialty_required, batch_id, providers(first_name, last_name), companies(name), batches(batch_name)"
-    )
-    .eq("reviewer_id", id)
-    .order("due_date", { ascending: true });
+  const casesRaw = await db.query.reviewCases.findMany({
+    where: eq(reviewCases.reviewerId, id),
+    orderBy: asc(reviewCases.dueDate),
+    columns: {
+      id: true,
+      status: true,
+      dueDate: true,
+      assignedAt: true,
+      specialtyRequired: true,
+      batchId: true,
+    },
+    with: {
+      provider: { columns: { firstName: true, lastName: true } },
+      company: { columns: { name: true } },
+      batch: { columns: { batchName: true } },
+    },
+  });
 
-  const { data: results } = await supabaseAdmin
-    .from("review_results")
-    .select(
-      "id, case_id, overall_score, submitted_at, time_spent_minutes, narrative_final, review_cases(id, batch_id, providers(first_name, last_name), companies(name))"
-    )
-    .eq("reviewer_id", id)
-    .order("submitted_at", { ascending: false });
+  const resultsRaw = await db.query.reviewResults.findMany({
+    where: eq(reviewResults.reviewerId, id),
+    orderBy: desc(reviewResults.submittedAt),
+    columns: {
+      id: true,
+      caseId: true,
+      overallScore: true,
+      submittedAt: true,
+      timeSpentMinutes: true,
+      narrativeFinal: true,
+    },
+    with: {
+      case: {
+        columns: { id: true, batchId: true },
+        with: {
+          provider: { columns: { firstName: true, lastName: true } },
+          company: { columns: { name: true } },
+        },
+      },
+    },
+  });
 
-  return { reviewer, cases: cases ?? [], results: results ?? [] };
+  // Snake-case the responses to preserve the legacy template shape.
+  const cases = casesRaw.map((c) => toSnake(c)) as any[];
+  const results = resultsRaw.map((r) => {
+    const snake = toSnake<any>(r);
+    // Legacy code looked under r.review_cases (plural) — preserve that key.
+    if (snake.case) snake.review_cases = snake.case;
+    return snake;
+  });
+  const reviewer = toSnake<any>(reviewerRow);
+
+  return { reviewer, cases, results };
 }
 
 export default async function ReviewerDetailPage({

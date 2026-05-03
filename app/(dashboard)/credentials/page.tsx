@@ -1,15 +1,25 @@
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db, toSnake } from '@/lib/db';
+import { reviewers } from '@/lib/db/schema';
+import { asc } from 'drizzle-orm';
 import { CredentialsView } from './CredentialsView';
 
 export const dynamic = 'force-dynamic';
 
 export default async function CredentialsPage() {
-  const { data: reviewers } = await supabaseAdmin
-    .from('reviewers')
-    .select(
-      'id, full_name, email, specialty, specialties, credential_valid_until, status, license_number, license_state'
-    )
-    .order('full_name');
+  const rows = await db
+    .select({
+      id: reviewers.id,
+      fullName: reviewers.fullName,
+      email: reviewers.email,
+      specialty: reviewers.specialty,
+      specialties: reviewers.specialties,
+      credentialValidUntil: reviewers.credentialValidUntil,
+      status: reviewers.status,
+      licenseNumber: reviewers.licenseNumber,
+      licenseState: reviewers.licenseState,
+    })
+    .from(reviewers)
+    .orderBy(asc(reviewers.fullName));
 
   return (
     <div className="space-y-6">
@@ -21,7 +31,7 @@ export default async function CredentialsPage() {
         </p>
       </div>
 
-      <CredentialsView reviewers={reviewers ?? []} />
+      <CredentialsView reviewers={rows.map((r) => toSnake(r))} />
     </div>
   );
 }

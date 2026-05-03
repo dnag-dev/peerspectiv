@@ -1,6 +1,6 @@
-import { supabaseAdmin } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
-import { sql } from "drizzle-orm";
+import { companies } from "@/lib/db/schema";
+import { asc, eq, sql } from "drizzle-orm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssignmentResultsTab } from "@/components/reports/AssignmentResultsTab";
 import { QAPIReportTab } from "@/components/reports/QAPIReportTab";
@@ -11,15 +11,13 @@ import { SavedReportsTab } from "@/components/reports/SavedReportsTab";
 export const dynamic = 'force-dynamic';
 
 export default async function ReportsPage() {
-  const { data: companies } = await supabaseAdmin
-    .from("companies")
-    .select("id, name")
-    .eq("status", "active")
-    .order("name");
+  const companyRows = await db
+    .select({ id: companies.id, name: companies.name })
+    .from(companies)
+    .where(eq(companies.status, 'active'))
+    .orderBy(asc(companies.name));
 
-  // Pull YTD submitted-results counts per company so we can surface companies
-  // that actually have data FIRST in the dropdown. Otherwise QAPI defaults to
-  // an alphabetical "Aira" that has zero cases and renders empty.
+  // Pull YTD submitted-results counts per company.
   const ytdStart = `${new Date().getFullYear()}-01-01`;
   const rows = await db.execute<{ company_id: string; cnt: number }>(sql`
     SELECT rc.company_id, COUNT(rr.id)::int AS cnt
@@ -34,17 +32,16 @@ export default async function ReportsPage() {
   }
 
   type RankedCompany = { id: string; name: string; case_count: number };
-  const raw: RankedCompany[] = (companies ?? []).map((c: any) => ({
+  const raw: RankedCompany[] = companyRows.map((c) => ({
     id: c.id as string,
     name: c.name as string,
     case_count: counts.get(c.id) ?? 0,
   }));
 
-  // Companies with data first (desc by count), then the rest alphabetically.
-  const withData = raw.filter((c: RankedCompany) => c.case_count > 0).sort(
-    (a: RankedCompany, b: RankedCompany) => b.case_count - a.case_count
+  const withData = raw.filter((c) => c.case_count > 0).sort(
+    (a, b) => b.case_count - a.case_count
   );
-  const withoutData = raw.filter((c: RankedCompany) => c.case_count === 0);
+  const withoutData = raw.filter((c) => c.case_count === 0);
   const companyList = [...withData, ...withoutData].map(({ id, name }) => ({ id, name }));
 
   return (

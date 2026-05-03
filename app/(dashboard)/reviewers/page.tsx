@@ -1,13 +1,12 @@
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db, toSnake } from '@/lib/db';
+import { reviewers } from '@/lib/db/schema';
+import { asc } from 'drizzle-orm';
 import { ReviewersTable } from './ReviewersTable';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ReviewersPage() {
-  const { data: reviewers } = await supabaseAdmin
-    .from('reviewers')
-    .select('*')
-    .order('full_name');
+  const rows = await db.select().from(reviewers).orderBy(asc(reviewers.fullName));
 
   return (
     <div className="space-y-6">
@@ -18,7 +17,7 @@ export default async function ReviewersPage() {
         </p>
       </div>
 
-      <ReviewersTable reviewers={reviewers ?? []} />
+      <ReviewersTable reviewers={rows.map((r) => toSnake(r))} />
     </div>
   );
 }

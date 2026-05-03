@@ -1,20 +1,29 @@
 import Link from 'next/link';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { db } from '@/lib/db';
+import { reviewers } from '@/lib/db/schema';
+import { desc, eq } from 'drizzle-orm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NewReviewerInboxPage() {
-  const { data: reviewers } = await supabaseAdmin
-    .from('reviewers')
-    .select(
-      'id, full_name, email, specialty, specialties, license_number, license_state, credential_valid_until, created_at, board_certification'
-    )
-    .eq('status', 'inactive')
-    .order('created_at', { ascending: false });
-
-  const list = (reviewers ?? []) as any[];
+  const list = await db
+    .select({
+      id: reviewers.id,
+      full_name: reviewers.fullName,
+      email: reviewers.email,
+      specialty: reviewers.specialty,
+      specialties: reviewers.specialties,
+      license_number: reviewers.licenseNumber,
+      license_state: reviewers.licenseState,
+      credential_valid_until: reviewers.credentialValidUntil,
+      created_at: reviewers.createdAt,
+      board_certification: reviewers.boardCertification,
+    })
+    .from(reviewers)
+    .where(eq(reviewers.status, 'inactive'))
+    .orderBy(desc(reviewers.createdAt));
 
   return (
     <div className="space-y-6">

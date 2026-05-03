@@ -1,4 +1,6 @@
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { batches as batchesTable, companies as companiesTable, providers as providersTable, companyForms } from "@/lib/db/schema";
+import { asc, desc, eq } from "drizzle-orm";
 import type { Batch } from "@/types";
 import {
   NewBatchModal,
@@ -15,18 +17,29 @@ interface BatchWithCompany extends Batch {
 }
 
 async function getBatches(): Promise<BatchWithCompany[]> {
-  const { data, error } = await supabaseAdmin
-    .from("batches")
-    .select("*, company:companies(name)")
-    .order("created_at", { ascending: false });
+  const data = await db.query.batches.findMany({
+    orderBy: desc(batchesTable.createdAt),
+    with: { company: { columns: { name: true } } },
+  });
 
-  if (error) throw error;
-
-  return (data || []).map((batch: any) => ({
-    ...batch,
-    company_name: (batch.companies as { name: string } | null)?.name ?? null,
-    companies: undefined,
-  }));
+  return data.map((batch) => ({
+    id: batch.id,
+    batch_name: batch.batchName,
+    company_id: batch.companyId ?? null,
+    company_name: batch.company?.name ?? null,
+    date_uploaded: batch.dateUploaded ? new Date(batch.dateUploaded).toISOString() : null,
+    total_cases: batch.totalCases,
+    assigned_cases: batch.assignedCases,
+    completed_cases: batch.completedCases,
+    status: batch.status,
+    specialty: batch.specialty,
+    created_at: batch.createdAt ? new Date(batch.createdAt).toISOString() : null,
+    notes: batch.notes,
+    created_by: batch.createdBy,
+    source_file_path: batch.sourceFilePath,
+    projected_completion: batch.projectedCompletion ? new Date(batch.projectedCompletion).toISOString() : null,
+    company_form_id: batch.companyFormId,
+  })) as unknown as BatchWithCompany[];
 }
 
 async function getWizardData(): Promise<{
@@ -34,23 +47,41 @@ async function getWizardData(): Promise<{
   providers: BatchWizardProvider[];
   forms: BatchWizardForm[];
 }> {
-  const [companiesRes, providersRes, formsRes] = await Promise.all([
-    supabaseAdmin
-      .from("companies")
-      .select("id, name, billing_cycle, fiscal_year_start_month")
-      .order("name", { ascending: true }),
-    supabaseAdmin
-      .from("providers")
-      .select("id, company_id, first_name, last_name, specialty"),
-    supabaseAdmin
-      .from("company_forms")
-      .select("id, company_id, specialty, form_name, is_active")
-      .eq("is_active", true),
+  const [companies, providers, forms] = await Promise.all([
+    db
+      .select({
+        id: companiesTable.id,
+        name: companiesTable.name,
+        billing_cycle: companiesTable.billingCycle,
+        fiscal_year_start_month: companiesTable.fiscalYearStartMonth,
+      })
+      .from(companiesTable)
+      .orderBy(asc(companiesTable.name)),
+    db
+      .select({
+        id: providersTable.id,
+        company_id: providersTable.companyId,
+        first_name: providersTable.firstName,
+        last_name: providersTable.lastName,
+        specialty: providersTable.specialty,
+      })
+      .from(providersTable),
+    db
+      .select({
+        id: companyForms.id,
+        company_id: companyForms.companyId,
+        specialty: companyForms.specialty,
+        form_name: companyForms.formName,
+        is_active: companyForms.isActive,
+      })
+      .from(companyForms)
+      .where(eq(companyForms.isActive, true)),
   ]);
+
   return {
-    companies: (companiesRes.data ?? []) as BatchWizardCompany[],
-    providers: (providersRes.data ?? []) as BatchWizardProvider[],
-    forms: (formsRes.data ?? []) as BatchWizardForm[],
+    companies: companies as unknown as BatchWizardCompany[],
+    providers: providers as unknown as BatchWizardProvider[],
+    forms: forms as unknown as BatchWizardForm[],
   };
 }
 

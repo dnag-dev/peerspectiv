@@ -10,7 +10,9 @@ import {
   getNeedsAttention,
   getProviderPerformance,
 } from "@/lib/portal/queries";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { batches } from "@/lib/db/schema";
+import { and, desc, eq, isNotNull } from "drizzle-orm";
 import { DashboardView } from "./DashboardView";
 
 export const dynamic = "force-dynamic";
@@ -42,16 +44,21 @@ export default async function ClientDashboardPage() {
   ]);
 
   // Fetch projected completion from latest active batch
-  const { data: activeBatch } = await supabaseAdmin
-    .from('batches')
-    .select('projected_completion')
-    .eq('company_id', companyId)
-    .not('projected_completion', 'is', null)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
+  const [activeBatch] = await db
+    .select({ projectedCompletion: batches.projectedCompletion })
+    .from(batches)
+    .where(
+      and(
+        eq(batches.companyId, companyId),
+        isNotNull(batches.projectedCompletion)
+      )
+    )
+    .orderBy(desc(batches.createdAt))
+    .limit(1);
 
-  const projectedCompletion = activeBatch?.projected_completion ?? null;
+  const projectedCompletion = activeBatch?.projectedCompletion
+    ? new Date(activeBatch.projectedCompletion).toISOString()
+    : null;
 
   return (
     <DashboardView
