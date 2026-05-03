@@ -38,6 +38,10 @@ interface Props {
     | 'specialty_highlights'
     | 'provider_highlights'
     | 'quality_certificate';
+  /** When set, hides the company picker and locks all requests to this id.
+   *  Used by the client portal so the user cannot URL-pivot to another tenant.
+   *  Server still enforces — this is UX only. */
+  lockedCompanyId?: string;
 }
 
 interface ReviewOption {
@@ -70,8 +74,8 @@ function CompanyPicker({
   );
 }
 
-export function CanonicalReportPanel({ companies, type }: Props) {
-  const [companyId, setCompanyId] = useState('');
+export function CanonicalReportPanel({ companies, type, lockedCompanyId }: Props) {
+  const [companyId, setCompanyId] = useState(lockedCompanyId ?? '');
   const [period, setPeriod] = useState<string | null>(null);
   const [periodObj, setPeriodObj] = useState<CadencePeriodOption | null>(null);
   const [specialty, setSpecialty] = useState('');
@@ -166,13 +170,7 @@ export function CanonicalReportPanel({ companies, type }: Props) {
         <CardTitle>{TITLES[type]}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {type !== 'per_provider' && (
-          <div className="space-y-2">
-            <Label>Company</Label>
-            <CompanyPicker companies={companies} value={companyId} onChange={setCompanyId} />
-          </div>
-        )}
-        {type === 'per_provider' && (
+        {!lockedCompanyId && (
           <div className="space-y-2">
             <Label>Company</Label>
             <CompanyPicker companies={companies} value={companyId} onChange={setCompanyId} />
