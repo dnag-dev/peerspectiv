@@ -228,7 +228,37 @@ export function DashboardView(props: Props) {
 
         <div className="rounded-lg bg-paper-surface border border-ink-200 shadow-sm p-6">
           <h3 className="text-h3 text-ink-900 mb-4">Risk Distribution</h3>
-          <RiskDonut risk={risk} />
+          {/* AU-016: every slice drills via the legend below; donut as a whole drills to all-risk reviews. */}
+          <Link
+            href="/portal/reviews?risk=all"
+            className="block hover:opacity-90"
+            data-testid="risk-donut-link"
+          >
+            <RiskDonut risk={risk} />
+          </Link>
+          <div className="mt-3 flex flex-wrap justify-center gap-3 text-xs">
+            <Link
+              href="/portal/reviews?risk=high"
+              className="inline-flex items-center gap-1.5 hover:underline"
+            >
+              <span className="h-2 w-2 rounded-full bg-critical-600" />
+              High ({risk.high})
+            </Link>
+            <Link
+              href="/portal/reviews?risk=medium"
+              className="inline-flex items-center gap-1.5 hover:underline"
+            >
+              <span className="h-2 w-2 rounded-full bg-amber-600" />
+              Medium ({risk.medium})
+            </Link>
+            <Link
+              href="/portal/reviews?risk=low"
+              className="inline-flex items-center gap-1.5 hover:underline"
+            >
+              <span className="h-2 w-2 rounded-full bg-mint-600" />
+              Low ({risk.low})
+            </Link>
+          </div>
         </div>
       </div>
 
