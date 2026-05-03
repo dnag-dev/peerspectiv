@@ -5,9 +5,10 @@ import { asc, eq, sql } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, Download, Mail, Stethoscope } from "lucide-react";
+import { AlertTriangle, Download, Mail, ShieldCheck, Stethoscope } from "lucide-react";
 import { MyReviewsTab } from "@/components/peer/MyReviewsTab";
 import { MyScorecardTab } from "@/components/peer/MyScorecardTab";
+import { TwoFactorLink } from "@/components/profile/TwoFactorLink";
 
 export const dynamic = "force-dynamic";
 
@@ -117,6 +118,10 @@ export default async function PeerProfilePage() {
             <div className="flex items-center gap-2 text-sm text-ink-900">
               <Mail className="h-3.5 w-3.5 text-ink-400" /> {peer.email ?? "—"}
             </div>
+          </div>
+          <div className="pt-2">
+            <div className="text-eyebrow text-ink-500 mb-1">Account Security</div>
+            <TwoFactorLink />
           </div>
         </CardContent>
       </Card>
