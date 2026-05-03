@@ -35,7 +35,7 @@ import {
 import type {
   ReviewCase,
   Provider,
-  Reviewer,
+  Peer,
   Company,
   Batch,
   AIAnalysis,
@@ -46,9 +46,9 @@ import type {
 
 export const dynamic = 'force-dynamic';
 
-interface CaseDetail extends Omit<ReviewCase, 'provider' | 'reviewer' | 'company' | 'batch' | 'ai_analysis' | 'review_result'> {
+interface CaseDetail extends Omit<ReviewCase, 'provider' | 'peer' | 'company' | 'batch' | 'ai_analysis' | 'review_result'> {
   provider: Provider | null;
-  reviewer: Reviewer | null;
+  peer: Peer | null;
   company: Company | null;
   batch: Batch | null;
   ai_analysis: AIAnalysis | null;
@@ -79,7 +79,7 @@ async function getCaseDetail(id: string): Promise<CaseDetail | null> {
     where: eq(reviewCasesTable.id, id),
     with: {
       provider: { columns: { id: true, firstName: true, lastName: true, specialty: true, npi: true, email: true } },
-      reviewer: { columns: { id: true, fullName: true, email: true, specialty: true, boardCertification: true, activeCasesCount: true, totalReviewsCompleted: true, aiAgreementScore: true, status: true } },
+      peer: { columns: { id: true, fullName: true, email: true, specialty: true, boardCertification: true, activeCasesCount: true, totalReviewsCompleted: true, aiAgreementScore: true, status: true } },
       company: { columns: { id: true, name: true, contactPerson: true, contactEmail: true } },
       batch: { columns: { id: true, batchName: true, status: true } },
       aiAnalysis: {
@@ -93,7 +93,7 @@ async function getCaseDetail(id: string): Promise<CaseDetail | null> {
       reviewResult: {
         columns: {
           id: true, criteriaScores: true, deficiencies: true, overallScore: true,
-          narrativeFinal: true, aiAgreementPercentage: true, reviewerChanges: true,
+          narrativeFinal: true, aiAgreementPercentage: true, peerChanges: true,
           qualityScore: true, qualityNotes: true, submittedAt: true, timeSpentMinutes: true,
         },
       },
@@ -222,14 +222,14 @@ export default async function CaseDetailPage({
             <User className="h-5 w-5 text-muted-foreground" />
             <div>
               <p className="text-xs text-muted-foreground">
-                Assigned Reviewer
+                Assigned Peer
               </p>
               <p className="text-sm font-medium">
-                {reviewCase.reviewer?.full_name || "Unassigned"}
+                {reviewCase.peer?.full_name || "Unassigned"}
               </p>
-              {reviewCase.reviewer?.specialty && (
+              {reviewCase.peer?.specialty && (
                 <p className="text-xs text-muted-foreground">
-                  {reviewCase.reviewer.specialty}
+                  {reviewCase.peer.specialty}
                 </p>
               )}
             </div>
@@ -322,12 +322,12 @@ export default async function CaseDetailPage({
               </div>
             </div>
 
-            {/* Reviewer changes from AI */}
-            {reviewCase.review_result.reviewer_changes &&
-              reviewCase.review_result.reviewer_changes.length > 0 && (
+            {/* Peer changes from AI */}
+            {reviewCase.review_result.peer_changes &&
+              reviewCase.review_result.peer_changes.length > 0 && (
                 <div>
                   <h4 className="mb-2 text-sm font-medium">
-                    Reviewer Changes from AI
+                    Peer Changes from AI
                   </h4>
                   <Table>
                     <TableHeader>
@@ -337,13 +337,13 @@ export default async function CaseDetailPage({
                           AI Score
                         </TableHead>
                         <TableHead className="text-center">
-                          Reviewer Score
+                          Peer Score
                         </TableHead>
                         <TableHead>Reason</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {reviewCase.review_result.reviewer_changes.map(
+                      {reviewCase.review_result.peer_changes.map(
                         (change, i) => (
                           <TableRow key={i}>
                             <TableCell className="font-medium">
@@ -357,14 +357,14 @@ export default async function CaseDetailPage({
                             <TableCell className="text-center">
                               <Badge
                                 variant={
-                                  change.reviewer_score > change.ai_score
+                                  change.peer_score > change.ai_score
                                     ? "success"
-                                    : change.reviewer_score < change.ai_score
+                                    : change.peer_score < change.ai_score
                                       ? "warning"
                                       : "secondary"
                                 }
                               >
-                                {change.reviewer_score}
+                                {change.peer_score}
                               </Badge>
                             </TableCell>
                             <TableCell className="max-w-xs text-xs text-muted-foreground">

@@ -4,11 +4,11 @@ import { mkdirSync } from 'node:fs';
 const BASE = process.env.BASE_URL ?? 'http://localhost:3000';
 const OUT  = './screenshots/pulse-v2';
 
-interface Target { folder: 'admin' | 'reviewer' | 'cmo' | 'auth'; url: string; }
+interface Target { folder: 'admin' | 'peer' | 'cmo' | 'auth'; url: string; }
 
 const PERSONAS = {
   admin:    { email: 'admin@peerspectiv.com',     name: 'Ashton Williams',     landing: '/dashboard' },
-  reviewer: { email: 'rjohnson@peerspectiv.com',  name: 'Dr. Richard Johnson', landing: '/reviewer/portal' },
+  peer: { email: 'rjohnson@peerspectiv.com',  name: 'Dr. Richard Johnson', landing: '/peer/portal' },
   cmo:      { email: 'kelli@horizonhealth.org',   name: 'Kelli Ramirez',       landing: '/portal' },
 };
 
@@ -18,13 +18,13 @@ const targets: Target[] = [
   { folder: 'admin',   url: '/companies' },
   { folder: 'admin',   url: '/batches' },
   { folder: 'admin',   url: '/assign' },
-  { folder: 'admin',   url: '/reviewers' },
+  { folder: 'admin',   url: '/peers' },
   { folder: 'admin',   url: '/payouts' },
   { folder: 'admin',   url: '/reports' },
   { folder: 'admin',   url: '/command' },
   { folder: 'admin',   url: '/prospects' },
-  { folder: 'reviewer',url: '/reviewer/portal' },
-  { folder: 'reviewer',url: '/reviewer/earnings' },
+  { folder: 'peer',url: '/peer/portal' },
+  { folder: 'peer',url: '/peer/earnings' },
   { folder: 'cmo',     url: '/portal' },
   { folder: 'cmo',     url: '/portal/reviews' },
   { folder: 'cmo',     url: '/portal/inprogress' },

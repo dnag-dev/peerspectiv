@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-interface Reviewer {
+interface Peer {
   id: string;
   full_name: string | null;
   email: string | null;
@@ -20,7 +20,7 @@ interface Reviewer {
 
 type Bucket = 'missing' | 'expired' | 'expiring' | 'valid';
 
-function specialtiesText(r: Reviewer): string {
+function specialtiesText(r: Peer): string {
   if (Array.isArray(r.specialties) && r.specialties.length > 0) {
     return r.specialties.join(', ');
   }
@@ -33,7 +33,7 @@ function dayDiff(fromIso: string, toIso: string): number {
   return Math.round((a - b) / 86400000);
 }
 
-function bucketize(r: Reviewer, today: string): Bucket {
+function bucketize(r: Peer, today: string): Bucket {
   if (!r.credential_valid_until) return 'missing';
   const cv = String(r.credential_valid_until).slice(0, 10);
   if (cv < today) return 'expired';
@@ -42,9 +42,9 @@ function bucketize(r: Reviewer, today: string): Bucket {
   return 'valid';
 }
 
-export function CredentialsView({ reviewers: initial }: { reviewers: Reviewer[] }) {
+export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
   const router = useRouter();
-  const [reviewers, setReviewers] = useState<Reviewer[]>(initial);
+  const [peers, setPeers] = useState<Peer[]>(initial);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -53,39 +53,39 @@ export function CredentialsView({ reviewers: initial }: { reviewers: Reviewer[] 
   const today = new Date().toISOString().slice(0, 10);
 
   const grouped = useMemo(() => {
-    const buckets: Record<Bucket, Reviewer[]> = {
+    const buckets: Record<Bucket, Peer[]> = {
       missing: [],
       expired: [],
       expiring: [],
       valid: [],
     };
-    for (const r of reviewers) buckets[bucketize(r, today)].push(r);
+    for (const r of peers) buckets[bucketize(r, today)].push(r);
     // Sort within bucket: soonest expiring first
-    const cmp = (a: Reviewer, b: Reviewer) => {
+    const cmp = (a: Peer, b: Peer) => {
       const av = a.credential_valid_until ?? '9999-12-31';
       const bv = b.credential_valid_until ?? '9999-12-31';
       return String(av).localeCompare(String(bv));
     };
     for (const k of Object.keys(buckets) as Bucket[]) buckets[k].sort(cmp);
     return buckets;
-  }, [reviewers, today]);
+  }, [peers, today]);
 
-  function startEdit(r: Reviewer) {
+  function startEdit(r: Peer) {
     setEditingId(r.id);
     setEditValue(r.credential_valid_until ? String(r.credential_valid_until).slice(0, 10) : '');
     setError(null);
   }
 
-  async function saveEdit(r: Reviewer) {
+  async function saveEdit(r: Peer) {
     setSavingId(r.id);
     setError(null);
     try {
-      const res = await fetch(`/api/reviewers/${r.id}`, {
+      const res = await fetch(`/api/peers/${r.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           credential_valid_until: editValue || null,
-          // If we're setting an expiry, also flip to active so the reviewer can
+          // If we're setting an expiry, also flip to active so the peer can
           // receive assignments. (This mirrors the create-time default in POST.)
           ...(editValue ? { status: 'active' } : {}),
         }),
@@ -94,7 +94,7 @@ export function CredentialsView({ reviewers: initial }: { reviewers: Reviewer[] 
         const j = await res.json().catch(() => null);
         throw new Error(j?.error ?? `Request failed (${res.status})`);
       }
-      setReviewers((prev) =>
+      setPeers((prev) =>
         prev.map((x) =>
           x.id === r.id
             ? {
@@ -124,7 +124,7 @@ export function CredentialsView({ reviewers: initial }: { reviewers: Reviewer[] 
 
       <BucketCard
         title="Missing credential"
-        description="No expiry on file. These reviewers are blocked from assignment."
+        description="No expiry on file. These peers are blocked from assignment."
         rows={grouped.missing}
         badge={<Badge className="bg-ink-100 text-ink-800 border-0">Missing</Badge>}
         editingId={editingId}
@@ -184,15 +184,15 @@ export function CredentialsView({ reviewers: initial }: { reviewers: Reviewer[] 
 function BucketCard(props: {
   title: string;
   description: string;
-  rows: Reviewer[];
+  rows: Peer[];
   badge: React.ReactNode;
   editingId: string | null;
   editValue: string;
   savingId: string | null;
-  onStartEdit: (r: Reviewer) => void;
+  onStartEdit: (r: Peer) => void;
   onChangeValue: (v: string) => void;
   onCancel: () => void;
-  onSave: (r: Reviewer) => void;
+  onSave: (r: Peer) => void;
 }) {
   const { title, description, rows, badge, editingId, editValue, savingId } = props;
 
@@ -214,7 +214,7 @@ function BucketCard(props: {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-y border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
-                  <th className="px-4 py-2 text-left">Reviewer</th>
+                  <th className="px-4 py-2 text-left">Peer</th>
                   <th className="px-4 py-2 text-left">Specialties</th>
                   <th className="px-4 py-2 text-left">License</th>
                   <th className="px-4 py-2 text-left">Expiry</th>

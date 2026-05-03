@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import {
   caseReassignmentRequests,
   reviewCases,
-  reviewers,
+  peers,
   providers,
   companies,
 } from '@/lib/db/schema';
@@ -28,7 +28,7 @@ async function getAdminUserId(req: NextRequest): Promise<string | null> {
 }
 
 // GET — list reassignment requests, defaults to status=open. Joined with
-// case, reviewer, provider, company for the admin queue.
+// case, peer, provider, company for the admin queue.
 export async function GET(request: NextRequest) {
   const userId = await getAdminUserId(request);
   if (!userId) {
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       .select({
         id: caseReassignmentRequests.id,
         caseId: caseReassignmentRequests.caseId,
-        reviewerId: caseReassignmentRequests.reviewerId,
+        peerId: caseReassignmentRequests.peerId,
         reason: caseReassignmentRequests.reason,
         status: caseReassignmentRequests.status,
         createdAt: caseReassignmentRequests.createdAt,
@@ -52,9 +52,9 @@ export async function GET(request: NextRequest) {
         caseStatus: reviewCases.status,
         dueDate: reviewCases.dueDate,
         specialtyRequired: reviewCases.specialtyRequired,
-        // reviewer
-        reviewerName: reviewers.fullName,
-        reviewerEmail: reviewers.email,
+        // peer
+        peerName: peers.fullName,
+        peerEmail: peers.email,
         // provider
         providerFirstName: providers.firstName,
         providerLastName: providers.lastName,
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
       })
       .from(caseReassignmentRequests)
       .leftJoin(reviewCases, eq(caseReassignmentRequests.caseId, reviewCases.id))
-      .leftJoin(reviewers, eq(caseReassignmentRequests.reviewerId, reviewers.id))
+      .leftJoin(peers, eq(caseReassignmentRequests.peerId, peers.id))
       .leftJoin(providers, eq(reviewCases.providerId, providers.id))
       .leftJoin(companies, eq(reviewCases.companyId, companies.id))
       .where(eq(caseReassignmentRequests.status, status));
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST — reviewer submits a reassignment request.
+// POST — peer submits a reassignment request.
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
@@ -94,12 +94,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Look up the case to derive reviewer_id (the case already records the
-    // assigned reviewer). Mirrors /api/reviewer/submit which trusts the case.
+    // Look up the case to derive peer_id (the case already records the
+    // assigned peer). Mirrors /api/peer/submit which trusts the case.
     const [caseRow] = await db
       .select({
         id: reviewCases.id,
-        reviewerId: reviewCases.reviewerId,
+        peerId: reviewCases.peerId,
         providerId: reviewCases.providerId,
       })
       .from(reviewCases)
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
       .insert(caseReassignmentRequests)
       .values({
         caseId: case_id,
-        reviewerId: caseRow.reviewerId ?? null,
+        peerId: caseRow.peerId ?? null,
         reason: trimmed,
         status: 'open',
       })
@@ -139,18 +139,18 @@ export async function POST(request: NextRequest) {
       .where(eq(reviewCases.id, case_id));
 
     // Hydrate names for the email (best-effort, errors suppressed)
-    let reviewerName = 'Unknown reviewer';
-    let reviewerEmail: string | null = null;
+    let peerName = 'Unknown peer';
+    let peerEmail: string | null = null;
     let providerName: string | null = null;
     try {
-      if (caseRow.reviewerId) {
+      if (caseRow.peerId) {
         const [r] = await db
-          .select({ fullName: reviewers.fullName, email: reviewers.email })
-          .from(reviewers)
-          .where(eq(reviewers.id, caseRow.reviewerId))
+          .select({ fullName: peers.fullName, email: peers.email })
+          .from(peers)
+          .where(eq(peers.id, caseRow.peerId))
           .limit(1);
-        reviewerName = r?.fullName ?? reviewerName;
-        reviewerEmail = r?.email ?? null;
+        peerName = r?.fullName ?? peerName;
+        peerEmail = r?.email ?? null;
       }
       if (caseRow.providerId) {
         const [p] = await db
@@ -169,8 +169,8 @@ export async function POST(request: NextRequest) {
     // Fire admin email (don't block on failure)
     sendReassignmentRequestAlert({
       caseId: case_id,
-      reviewerName,
-      reviewerEmail,
+      peerName,
+      peerEmail,
       providerName,
       reason: trimmed,
     }).catch((err) => console.error('[reassignments] email failed:', err));

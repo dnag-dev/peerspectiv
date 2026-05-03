@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ReviewerPickerModal } from "@/components/assign/ReviewerPickerModal";
+import { PeerPickerModal } from "@/components/assign/PeerPickerModal";
 import { ConfirmApproveModal } from "@/components/assign/ConfirmApproveModal";
 import {
   Loader2,
@@ -10,22 +10,22 @@ import {
   AlertTriangle,
   ArrowUpDown,
 } from "lucide-react";
-import type { ReviewCase, Reviewer } from "@/types";
+import type { ReviewCase, Peer } from "@/types";
 
 interface PendingCase extends ReviewCase {
   provider: NonNullable<ReviewCase["provider"]>;
-  reviewer: NonNullable<ReviewCase["reviewer"]>;
+  peer: NonNullable<ReviewCase["peer"]>;
   company: NonNullable<ReviewCase["company"]>;
 }
 
 interface AssignmentQueueProps {
   pendingCases: PendingCase[];
-  alternateReviewers: Record<string, Reviewer[]>;
+  alternatePeers: Record<string, Peer[]>;
 }
 
 export function AssignmentQueue({
   pendingCases: initialCases,
-  alternateReviewers,
+  alternatePeers,
 }: AssignmentQueueProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -76,7 +76,7 @@ export function AssignmentQueue({
     }
   }
 
-  async function handleReassign(caseId: string, newReviewerId: string) {
+  async function handleReassign(caseId: string, newPeerId: string) {
     setReassigningIds((prev) => new Set(prev).add(caseId));
     try {
       const res = await fetch("/api/assign/approve", {
@@ -84,7 +84,7 @@ export function AssignmentQueue({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           case_id: caseId,
-          reassign_to: newReviewerId,
+          reassign_to: newPeerId,
         }),
       });
       if (!res.ok) throw new Error("Failed to reassign");
@@ -141,12 +141,12 @@ export function AssignmentQueue({
 
           const neededSpecialty =
             c.specialty_required || c.provider.specialty || "—";
-          const activeCases = c.reviewer.active_cases_count ?? 0;
-          const totalReviews = c.reviewer.total_reviews_completed ?? 0;
+          const activeCases = c.peer.active_cases_count ?? 0;
+          const totalReviews = c.peer.total_reviews_completed ?? 0;
           const isThinRationale =
             !rationale || rationale.trim().toLowerCase() === "specialty match";
           const displayRationale = isThinRationale
-            ? `Dr. ${c.reviewer.full_name} matches ${neededSpecialty}, has ${activeCases} active case${
+            ? `Dr. ${c.peer.full_name} matches ${neededSpecialty}, has ${activeCases} active case${
                 activeCases === 1 ? "" : "s"
               }${activeCases === 0 ? " (lowest available)" : ""}, ${totalReviews} total reviews completed.`
             : rationale!;
@@ -157,7 +157,7 @@ export function AssignmentQueue({
               ? "high"
               : "standard";
 
-          const reviewerInitials = c.reviewer.full_name
+          const peerInitials = c.peer.full_name
             .split(" ")
             .map((n) => n[0])
             .filter(Boolean)
@@ -166,7 +166,7 @@ export function AssignmentQueue({
             .toUpperCase();
 
           const availability: "available" | "busy" | "unavailable" =
-            c.reviewer.status !== "active"
+            c.peer.status !== "active"
               ? "unavailable"
               : activeCases >= 8
                 ? "busy"
@@ -218,15 +218,15 @@ export function AssignmentQueue({
                 <MatchRing value={confidence} />
               </div>
 
-              {/* Reviewer row */}
+              {/* Peer row */}
               <div className="flex items-center gap-2.5 py-3 border-y border-ink-100 mb-3 flex-shrink-0">
-                <ReviewerAvatar initials={reviewerInitials} availability={availability} />
+                <PeerAvatar initials={peerInitials} availability={availability} />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-ink-900 truncate">
-                    {c.reviewer.full_name}
+                    {c.peer.full_name}
                   </div>
                   <div className="font-mono text-[10px] text-ink-500 truncate">
-                    {c.reviewer.specialty ?? neededSpecialty} · {totalReviews} reviews · {activeCases} active
+                    {c.peer.specialty ?? neededSpecialty} · {totalReviews} reviews · {activeCases} active
                   </div>
                 </div>
               </div>
@@ -276,22 +276,22 @@ export function AssignmentQueue({
               </footer>
 
               {/* Modals */}
-              <ReviewerPickerModal
+              <PeerPickerModal
                 open={pickerOpenForCase === c.id}
                 onOpenChange={(open) =>
                   setPickerOpenForCase(open ? c.id : null)
                 }
                 specialty={neededSpecialty === "—" ? null : neededSpecialty}
-                currentReviewerId={c.reviewer.id}
-                onPick={(newReviewerId) => handleReassign(c.id, newReviewerId)}
-                title="Reassign reviewer"
+                currentPeerId={c.peer.id}
+                onPick={(newPeerId) => handleReassign(c.id, newPeerId)}
+                title="Reassign peer"
               />
               <ConfirmApproveModal
                 open={confirmOpenForCase === c.id}
                 onOpenChange={(open) =>
                   setConfirmOpenForCase(open ? c.id : null)
                 }
-                reviewerName={c.reviewer.full_name}
+                peerName={c.peer.full_name}
                 companyId={c.company.id}
                 specialty={neededSpecialty === "—" ? null : neededSpecialty}
                 defaultFormId={
@@ -366,7 +366,7 @@ function MatchRing({ value }: { value: number }) {
   );
 }
 
-function ReviewerAvatar({
+function PeerAvatar({
   initials,
   availability,
 }: {

@@ -82,9 +82,9 @@ export const providersRelations = relations(providers, ({ one, many }) => ({
   reviewCases: many(reviewCases),
 }));
 
-// ─── Reviewers ───────────────────────────────────────────────────────────────
+// ─── Peers ───────────────────────────────────────────────────────────────
 
-export const reviewers = pgTable('reviewers', {
+export const peers = pgTable('peers', {
   id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
   fullName: text('full_name'),
   email: text('email').unique(),
@@ -120,9 +120,9 @@ export const reviewers = pgTable('reviewers', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
 });
 
-export const reviewerPayouts = pgTable('reviewer_payouts', {
+export const peerPayouts = pgTable('peer_payouts', {
   id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
-  reviewerId: uuid('reviewer_id').notNull().references(() => reviewers.id, { onDelete: 'cascade' }),
+  peerId: uuid('peer_id').notNull().references(() => peers.id, { onDelete: 'cascade' }),
   periodStart: date('period_start').notNull(),
   periodEnd: date('period_end').notNull(),
   unitType: text('unit_type').notNull(),
@@ -141,7 +141,7 @@ export const reviewerPayouts = pgTable('reviewer_payouts', {
   externalFailReason: text('external_fail_reason'),
 });
 
-export const reviewersRelations = relations(reviewers, ({ many }) => ({
+export const peersRelations = relations(peers, ({ many }) => ({
   reviewCases: many(reviewCases),
   reviewResults: many(reviewResults),
 }));
@@ -180,7 +180,7 @@ export const reviewCases = pgTable('review_cases', {
   id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
   batchId: uuid('batch_id').references(() => batches.id),
   providerId: uuid('provider_id').references(() => providers.id),
-  reviewerId: uuid('reviewer_id').references(() => reviewers.id),
+  peerId: uuid('peer_id').references(() => peers.id),
   companyId: uuid('company_id').references(() => companies.id),
   assignedAt: timestamp('assigned_at', { withTimezone: true }),
   dueDate: timestamp('due_date', { withTimezone: true }),
@@ -218,9 +218,9 @@ export const reviewCasesRelations = relations(reviewCases, ({ one }) => ({
     fields: [reviewCases.providerId],
     references: [providers.id],
   }),
-  reviewer: one(reviewers, {
-    fields: [reviewCases.reviewerId],
-    references: [reviewers.id],
+  peer: one(peers, {
+    fields: [reviewCases.peerId],
+    references: [peers.id],
   }),
   company: one(companies, {
     fields: [reviewCases.companyId],
@@ -275,7 +275,7 @@ export const reviewResults = pgTable('review_results', {
   caseId: uuid('case_id')
     .references(() => reviewCases.id)
     .unique(),
-  reviewerId: uuid('reviewer_id').references(() => reviewers.id),
+  peerId: uuid('peer_id').references(() => peers.id),
   criteriaScores: jsonb('criteria_scores'),
   deficiencies: jsonb('deficiencies'),
   // numeric(5,2) so 88.89 round-trips exactly. mode:'number' makes drizzle
@@ -286,20 +286,20 @@ export const reviewResults = pgTable('review_results', {
     precision: 5,
     scale: 2,
   }),
-  reviewerChanges: jsonb('reviewer_changes'),
+  peerChanges: jsonb('reviewer_changes'),
   qualityScore: integer('quality_score'),
   qualityNotes: text('quality_notes'),
   submittedAt: timestamp('submitted_at', { withTimezone: true }).default(
     sql`now()`
   ),
   timeSpentMinutes: integer('time_spent_minutes'),
-  // Reviewer license snapshot (HRSA audit) — captured at submission
-  reviewerNameSnapshot: text('reviewer_name_snapshot'),
-  reviewerLicenseSnapshot: text('reviewer_license_snapshot'),
-  reviewerLicenseStateSnapshot: text('reviewer_license_state_snapshot'),
-  // Post-Ashton review (009): MRN snapshot + reviewer signature block
+  // Peer license snapshot (HRSA audit) — captured at submission
+  peerNameSnapshot: text('reviewer_name_snapshot'),
+  peerLicenseSnapshot: text('reviewer_license_snapshot'),
+  peerLicenseStateSnapshot: text('reviewer_license_state_snapshot'),
+  // Post-Ashton review (009): MRN snapshot + peer signature block
   mrnNumber: text('mrn_number'),
-  reviewerSignatureText: text('reviewer_signature_text'),
+  peerSignatureText: text('reviewer_signature_text'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
 });
 
@@ -308,9 +308,9 @@ export const reviewResultsRelations = relations(reviewResults, ({ one }) => ({
     fields: [reviewResults.caseId],
     references: [reviewCases.id],
   }),
-  reviewer: one(reviewers, {
-    fields: [reviewResults.reviewerId],
-    references: [reviewers.id],
+  peer: one(peers, {
+    fields: [reviewResults.peerId],
+    references: [peers.id],
   }),
 }));
 
@@ -604,7 +604,7 @@ export const companyForms = pgTable('company_forms', {
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   templatePdfUrl: text('template_pdf_url'),
   templatePdfName: text('template_pdf_name'),
-  // Post-Ashton review (009): allow reviewer to invoke AI-drafted narrative on this form
+  // Post-Ashton review (009): allow peer to invoke AI-drafted narrative on this form
   allowAiGeneratedRecommendations: boolean('allow_ai_generated_recommendations').default(false),
 });
 
@@ -625,7 +625,7 @@ export const clinics = pgTable('clinics', {
 export const caseReassignmentRequests = pgTable('case_reassignment_requests', {
   id: uuid('id').primaryKey().default(sql`uuid_generate_v4()`),
   caseId: uuid('case_id').notNull().references(() => reviewCases.id, { onDelete: 'cascade' }),
-  reviewerId: uuid('reviewer_id').references(() => reviewers.id),
+  peerId: uuid('peer_id').references(() => peers.id),
   reason: text('reason').notNull(),
   status: text('status').notNull().default('open'),
   resolvedBy: text('resolved_by'),

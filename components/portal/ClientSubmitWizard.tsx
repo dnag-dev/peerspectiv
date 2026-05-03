@@ -481,7 +481,7 @@ export function ClientSubmitWizard({
 
           <p className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/60">
             Submitting will queue this batch for Peerspectiv intake. Peerspectiv
-            will activate it and assign reviewers.
+            will activate it and assign peers.
           </p>
         </div>
       )}

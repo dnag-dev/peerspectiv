@@ -2,7 +2,7 @@
  * Report data fetchers — one per PDF template.
  *
  * Reads from existing tables only (review_results, review_cases, providers,
- * companies, reviewers, reviewer_payouts, company_forms). Returns the exact
+ * companies, peers, peer_payouts, company_forms). Returns the exact
  * shape each PDF template's interface expects.
  *
  * `criteria_scores` JSONB shape (per types/index.ts):
@@ -590,25 +590,25 @@ export async function fetchQualityCertificateData(input: {
 // ─── Peer Earnings Summary ────────────────────────────────────────────────
 
 export async function fetchPeerEarningsSummaryData(input: {
-  reviewerId: string;
+  peerId: string;
   rangeStart: string;
   rangeEnd: string;
 }): Promise<PeerEarningsSummaryData> {
-  type ReviewerRow = {
+  type PeerRow = {
     full_name: string | null;
     email: string | null;
     rate_amount: string | null;
   };
-  const reviewerRows = rowsOf<ReviewerRow>(
+  const peerRows = rowsOf<PeerRow>(
     await db.execute(sql`
       SELECT full_name, email, rate_amount
-      FROM reviewers WHERE id = ${input.reviewerId} LIMIT 1
+      FROM peers WHERE id = ${input.peerId} LIMIT 1
     `)
   );
-  const reviewer = reviewerRows[0];
-  const reviewerName = reviewer?.full_name ?? 'Unknown reviewer';
-  const reviewerEmail = reviewer?.email ?? undefined;
-  const fallbackRate = reviewer?.rate_amount ? Number(reviewer.rate_amount) : 1.0;
+  const peer = peerRows[0];
+  const peerName = peer?.full_name ?? 'Unknown peer';
+  const peerEmail = peer?.email ?? undefined;
+  const fallbackRate = peer?.rate_amount ? Number(peer.rate_amount) : 1.0;
 
   type LineRow = {
     submitted_at: string;
@@ -626,7 +626,7 @@ export async function fetchPeerEarningsSummaryData(input: {
       FROM review_results rr
       INNER JOIN review_cases rc ON rc.id = rr.case_id
       INNER JOIN providers     p  ON p.id  = rc.provider_id
-      WHERE rr.reviewer_id = ${input.reviewerId}
+      WHERE rr.peer_id = ${input.peerId}
         AND rr.submitted_at::date >= ${input.rangeStart}::date
         AND rr.submitted_at::date <= ${input.rangeEnd}::date
       ORDER BY rr.submitted_at ASC
@@ -652,16 +652,16 @@ export async function fetchPeerEarningsSummaryData(input: {
   const ytdRows = rowsOf<{ ytd: number | null }>(
     await db.execute(sql`
       SELECT COALESCE(SUM(amount), 0)::float AS ytd
-      FROM reviewer_payouts
-      WHERE reviewer_id = ${input.reviewerId}
+      FROM peer_payouts
+      WHERE peer_id = ${input.peerId}
         AND period_start >= ${yearStart}::date
     `)
   );
   const ytdTotal = Number(ytdRows[0]?.ytd ?? 0);
 
   return {
-    reviewerName,
-    reviewerEmail,
+    peerName,
+    peerEmail,
     rangeStart: input.rangeStart,
     rangeEnd: input.rangeEnd,
     currency: 'USD',
@@ -671,10 +671,10 @@ export async function fetchPeerEarningsSummaryData(input: {
   };
 }
 
-// ─── Reviewer Scorecard ───────────────────────────────────────────────────
+// ─── Peer Scorecard ───────────────────────────────────────────────────
 
-export interface ReviewerScorecardRow {
-  reviewer_id: string;
+export interface PeerScorecardRow {
+  peer_id: string;
   full_name: string;
   cases_reviewed: number;
   avg_turnaround_days: number | null;
@@ -684,12 +684,12 @@ export interface ReviewerScorecardRow {
   earnings: number;
 }
 
-export async function fetchReviewerScorecard(
+export async function fetchPeerScorecard(
   periodStart: string,
   periodEnd: string
-): Promise<ReviewerScorecardRow[]> {
+): Promise<PeerScorecardRow[]> {
   type Row = {
-    reviewer_id: string;
+    peer_id: string;
     full_name: string;
     avg_minutes_per_chart: string | null;
     cases_reviewed: number;
@@ -701,7 +701,7 @@ export async function fetchReviewerScorecard(
 
   const result = await db.execute<Row>(sql`
     SELECT
-      r.id AS reviewer_id,
+      r.id AS peer_id,
       r.full_name,
       r.avg_minutes_per_chart,
       COALESCE(rev.cases_reviewed, 0)::int AS cases_reviewed,
@@ -709,10 +709,10 @@ export async function fetchReviewerScorecard(
       rev.ai_agreement_pct,
       rev.quality_score,
       COALESCE(po.earnings, '0')::text AS earnings
-    FROM reviewers r
+    FROM peers r
     LEFT JOIN (
       SELECT
-        rc.reviewer_id,
+        rc.peer_id,
         COUNT(rr.id)::int AS cases_reviewed,
         AVG(EXTRACT(EPOCH FROM (rr.submitted_at - rc.assigned_at)) / 86400.0)::float AS avg_turnaround_days,
         AVG(rr.ai_agreement_percentage)::float AS ai_agreement_pct,
@@ -720,21 +720,21 @@ export async function fetchReviewerScorecard(
       FROM review_results rr
       INNER JOIN review_cases rc ON rc.id = rr.case_id
       WHERE rr.submitted_at::date BETWEEN ${periodStart}::date AND ${periodEnd}::date
-      GROUP BY rc.reviewer_id
-    ) rev ON rev.reviewer_id = r.id
+      GROUP BY rc.peer_id
+    ) rev ON rev.peer_id = r.id
     LEFT JOIN (
-      SELECT reviewer_id, SUM(amount) AS earnings
-      FROM reviewer_payouts
+      SELECT peer_id, SUM(amount) AS earnings
+      FROM peer_payouts
       WHERE period_start >= ${periodStart}::date
         AND period_end <= ${periodEnd}::date
-      GROUP BY reviewer_id
-    ) po ON po.reviewer_id = r.id
+      GROUP BY peer_id
+    ) po ON po.peer_id = r.id
     ORDER BY r.full_name ASC
   `);
 
   const rawRows = ((result as { rows?: Row[] }).rows ?? (result as unknown as Row[])) as Row[];
   return rawRows.map((r) => ({
-    reviewer_id: r.reviewer_id,
+    peer_id: r.peer_id,
     full_name: r.full_name,
     cases_reviewed: Number(r.cases_reviewed ?? 0),
     avg_turnaround_days:

@@ -249,7 +249,7 @@ export default function ClientWelcomePage() {
               <TimelineItem
                 num="2"
                 title="Board-certified physicians review"
-                body="Specialty-matched reviewers score each chart against your quality criteria."
+                body="Specialty-matched peers score each chart against your quality criteria."
               />
               <TimelineItem
                 num="3"

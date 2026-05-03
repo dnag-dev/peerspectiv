@@ -182,7 +182,7 @@ export function TagsView({ initialTags }: Props) {
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-ink-900">Tags</h1>
         <p className="text-sm text-muted-foreground">
-          Reusable labels for cases, batches, and reviewers. Used to filter
+          Reusable labels for cases, batches, and peers. Used to filter
           reports and group cohorts.
         </p>
       </div>

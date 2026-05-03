@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import {
   companies,
   providers,
-  reviewers,
+  peers,
   batches,
   reviewCases,
   aiAnalyses,
@@ -74,22 +74,22 @@ export async function POST(request: NextRequest) {
     );
 
     // ---------------------------------------------------------------
-    // 3. Seed Reviewers
+    // 3. Seed Peers
     // ---------------------------------------------------------------
-    const reviewerRows = [
+    const peerRows = [
       { fullName: 'Dr. Angela Martinez', email: 'amartinez@peerspectiv.com', specialty: 'Family Medicine', boardCertification: 'ABFM', activeCasesCount: 0, status: 'active', totalReviewsCompleted: 12, aiAgreementScore: '87.5' },
       { fullName: 'Dr. James Patterson', email: 'jpatterson@peerspectiv.com', specialty: 'Internal Medicine', boardCertification: 'ABIM', activeCasesCount: 0, status: 'active', totalReviewsCompleted: 8, aiAgreementScore: '91.2' },
       { fullName: 'Dr. Priya Sharma', email: 'psharma@peerspectiv.com', specialty: 'Pediatrics', boardCertification: 'ABP', activeCasesCount: 0, status: 'active', totalReviewsCompleted: 15, aiAgreementScore: '82.0' },
       { fullName: 'Dr. William Chen', email: 'wchen@peerspectiv.com', specialty: 'Family Medicine', boardCertification: 'ABFM', activeCasesCount: 0, status: 'active', totalReviewsCompleted: 6, aiAgreementScore: '94.3' },
     ];
 
-    const insertedReviewers: { id: string; fullName: string | null }[] = [];
-    for (const r of reviewerRows) {
+    const insertedPeers: { id: string; fullName: string | null }[] = [];
+    for (const r of peerRows) {
       const [row] = await db
-        .insert(reviewers)
+        .insert(peers)
         .values(r)
         .onConflictDoUpdate({
-          target: reviewers.email,
+          target: peers.email,
           set: {
             fullName: r.fullName,
             specialty: r.specialty,
@@ -99,12 +99,12 @@ export async function POST(request: NextRequest) {
             aiAgreementScore: r.aiAgreementScore,
           },
         })
-        .returning({ id: reviewers.id, fullName: reviewers.fullName });
-      insertedReviewers.push(row);
+        .returning({ id: peers.id, fullName: peers.fullName });
+      insertedPeers.push(row);
     }
 
-    const reviewersByName = Object.fromEntries(
-      insertedReviewers.map((r) => [r.fullName, r.id])
+    const peersByName = Object.fromEntries(
+      insertedPeers.map((r) => [r.fullName, r.id])
     );
 
     // ---------------------------------------------------------------
@@ -155,20 +155,20 @@ export async function POST(request: NextRequest) {
 
     const reviewCaseRows = [
       // Batch 1 - Hunter Health (8 cases: 5 completed, 2 in_progress, 1 past_due)
-      { batchId: batchIds[0], providerId: providersByName['Marissa Backhaus'], reviewerId: reviewersByName['Dr. Angela Martinez'], companyId: companyMap['Hunter Health FQHC'], status: 'completed', aiAnalysisStatus: 'complete', specialtyRequired: 'Family Medicine', dueDate, assignedAt: weekAgo },
-      { batchId: batchIds[0], providerId: providersByName['Marissa Backhaus'], reviewerId: reviewersByName['Dr. Angela Martinez'], companyId: companyMap['Hunter Health FQHC'], status: 'completed', aiAnalysisStatus: 'complete', specialtyRequired: 'Family Medicine', dueDate, assignedAt: weekAgo },
-      { batchId: batchIds[0], providerId: providersByName['Robert Chen'], reviewerId: reviewersByName['Dr. James Patterson'], companyId: companyMap['Hunter Health FQHC'], status: 'completed', aiAnalysisStatus: 'complete', specialtyRequired: 'Internal Medicine', dueDate, assignedAt: weekAgo },
-      { batchId: batchIds[0], providerId: providersByName['Robert Chen'], reviewerId: reviewersByName['Dr. James Patterson'], companyId: companyMap['Hunter Health FQHC'], status: 'completed', aiAnalysisStatus: 'complete', specialtyRequired: 'Internal Medicine', dueDate, assignedAt: weekAgo },
-      { batchId: batchIds[0], providerId: providersByName['Marissa Backhaus'], reviewerId: reviewersByName['Dr. William Chen'], companyId: companyMap['Hunter Health FQHC'], status: 'completed', aiAnalysisStatus: 'complete', specialtyRequired: 'Family Medicine', dueDate, assignedAt: weekAgo },
-      { batchId: batchIds[0], providerId: providersByName['Robert Chen'], reviewerId: reviewersByName['Dr. James Patterson'], companyId: companyMap['Hunter Health FQHC'], status: 'in_progress', aiAnalysisStatus: 'complete', specialtyRequired: 'Internal Medicine', dueDate, assignedAt: weekAgo },
-      { batchId: batchIds[0], providerId: providersByName['Marissa Backhaus'], reviewerId: reviewersByName['Dr. Angela Martinez'], companyId: companyMap['Hunter Health FQHC'], status: 'in_progress', aiAnalysisStatus: 'complete', specialtyRequired: 'Family Medicine', dueDate, assignedAt: weekAgo },
-      { batchId: batchIds[0], providerId: providersByName['Robert Chen'], reviewerId: reviewersByName['Dr. James Patterson'], companyId: companyMap['Hunter Health FQHC'], status: 'past_due', aiAnalysisStatus: 'complete', specialtyRequired: 'Internal Medicine', dueDate: pastDueDate, assignedAt: twoWeeksAgo },
+      { batchId: batchIds[0], providerId: providersByName['Marissa Backhaus'], peerId: peersByName['Dr. Angela Martinez'], companyId: companyMap['Hunter Health FQHC'], status: 'completed', aiAnalysisStatus: 'complete', specialtyRequired: 'Family Medicine', dueDate, assignedAt: weekAgo },
+      { batchId: batchIds[0], providerId: providersByName['Marissa Backhaus'], peerId: peersByName['Dr. Angela Martinez'], companyId: companyMap['Hunter Health FQHC'], status: 'completed', aiAnalysisStatus: 'complete', specialtyRequired: 'Family Medicine', dueDate, assignedAt: weekAgo },
+      { batchId: batchIds[0], providerId: providersByName['Robert Chen'], peerId: peersByName['Dr. James Patterson'], companyId: companyMap['Hunter Health FQHC'], status: 'completed', aiAnalysisStatus: 'complete', specialtyRequired: 'Internal Medicine', dueDate, assignedAt: weekAgo },
+      { batchId: batchIds[0], providerId: providersByName['Robert Chen'], peerId: peersByName['Dr. James Patterson'], companyId: companyMap['Hunter Health FQHC'], status: 'completed', aiAnalysisStatus: 'complete', specialtyRequired: 'Internal Medicine', dueDate, assignedAt: weekAgo },
+      { batchId: batchIds[0], providerId: providersByName['Marissa Backhaus'], peerId: peersByName['Dr. William Chen'], companyId: companyMap['Hunter Health FQHC'], status: 'completed', aiAnalysisStatus: 'complete', specialtyRequired: 'Family Medicine', dueDate, assignedAt: weekAgo },
+      { batchId: batchIds[0], providerId: providersByName['Robert Chen'], peerId: peersByName['Dr. James Patterson'], companyId: companyMap['Hunter Health FQHC'], status: 'in_progress', aiAnalysisStatus: 'complete', specialtyRequired: 'Internal Medicine', dueDate, assignedAt: weekAgo },
+      { batchId: batchIds[0], providerId: providersByName['Marissa Backhaus'], peerId: peersByName['Dr. Angela Martinez'], companyId: companyMap['Hunter Health FQHC'], status: 'in_progress', aiAnalysisStatus: 'complete', specialtyRequired: 'Family Medicine', dueDate, assignedAt: weekAgo },
+      { batchId: batchIds[0], providerId: providersByName['Robert Chen'], peerId: peersByName['Dr. James Patterson'], companyId: companyMap['Hunter Health FQHC'], status: 'past_due', aiAnalysisStatus: 'complete', specialtyRequired: 'Internal Medicine', dueDate: pastDueDate, assignedAt: twoWeeksAgo },
 
       // Batch 2 - GraceMed (6 cases: 2 assigned, 2 pending_approval, 2 unassigned)
-      { batchId: batchIds[1], providerId: providersByName['Sarah Williams'], reviewerId: reviewersByName['Dr. Priya Sharma'], companyId: companyMap['GraceMed Health Clinic'], status: 'assigned', aiAnalysisStatus: 'complete', specialtyRequired: 'Pediatrics', dueDate, assignedAt: now },
-      { batchId: batchIds[1], providerId: providersByName['David Kumar'], reviewerId: reviewersByName['Dr. Angela Martinez'], companyId: companyMap['GraceMed Health Clinic'], status: 'assigned', aiAnalysisStatus: 'complete', specialtyRequired: 'Family Medicine', dueDate, assignedAt: now },
-      { batchId: batchIds[1], providerId: providersByName['Sarah Williams'], reviewerId: reviewersByName['Dr. Priya Sharma'], companyId: companyMap['GraceMed Health Clinic'], status: 'pending_approval', aiAnalysisStatus: 'complete', specialtyRequired: 'Pediatrics' },
-      { batchId: batchIds[1], providerId: providersByName['David Kumar'], reviewerId: reviewersByName['Dr. William Chen'], companyId: companyMap['GraceMed Health Clinic'], status: 'pending_approval', aiAnalysisStatus: 'complete', specialtyRequired: 'Family Medicine' },
+      { batchId: batchIds[1], providerId: providersByName['Sarah Williams'], peerId: peersByName['Dr. Priya Sharma'], companyId: companyMap['GraceMed Health Clinic'], status: 'assigned', aiAnalysisStatus: 'complete', specialtyRequired: 'Pediatrics', dueDate, assignedAt: now },
+      { batchId: batchIds[1], providerId: providersByName['David Kumar'], peerId: peersByName['Dr. Angela Martinez'], companyId: companyMap['GraceMed Health Clinic'], status: 'assigned', aiAnalysisStatus: 'complete', specialtyRequired: 'Family Medicine', dueDate, assignedAt: now },
+      { batchId: batchIds[1], providerId: providersByName['Sarah Williams'], peerId: peersByName['Dr. Priya Sharma'], companyId: companyMap['GraceMed Health Clinic'], status: 'pending_approval', aiAnalysisStatus: 'complete', specialtyRequired: 'Pediatrics' },
+      { batchId: batchIds[1], providerId: providersByName['David Kumar'], peerId: peersByName['Dr. William Chen'], companyId: companyMap['GraceMed Health Clinic'], status: 'pending_approval', aiAnalysisStatus: 'complete', specialtyRequired: 'Family Medicine' },
       { batchId: batchIds[1], providerId: providersByName['Sarah Williams'], companyId: companyMap['GraceMed Health Clinic'], status: 'unassigned', aiAnalysisStatus: 'complete', specialtyRequired: 'Pediatrics' },
       { batchId: batchIds[1], providerId: providersByName['David Kumar'], companyId: companyMap['GraceMed Health Clinic'], status: 'unassigned', aiAnalysisStatus: 'pending', specialtyRequired: 'Family Medicine' },
 
@@ -258,19 +258,19 @@ export async function POST(request: NextRequest) {
 
     const reviewResultRows = completedCases.map((c, idx) => ({
       caseId: c.id,
-      reviewerId: c.reviewerId,
+      peerId: c.peerId,
       criteriaScores: sampleCriteriaScores,
       deficiencies: idx === 0 ? sampleDeficiencies : [],
       overallScore: 80 + idx * 4,
       narrativeFinal: `I reviewed this clinical encounter chart as part of the FQHC peer review process. The provider demonstrated solid clinical reasoning throughout this diabetes and hypertension follow-up visit. Lab values were appropriately reviewed and medication adjustments were evidence-based.\n\nI agree with the AI's assessment on most criteria. The documentation is adequate but could be strengthened with updated social history and more specific BMI counseling documentation.\n\nThe care coordination and follow-up planning are excellent, with appropriate specialist referrals and a clear return visit schedule. Overall, this represents good quality care consistent with HRSA standards.`,
       aiAgreementPercentage: String(75 + idx * 8),
-      reviewerChanges: idx > 0 ? [
-        { criterion: 'Documentation completeness', ai_score: 2, reviewer_score: 3, reason: 'While documentation could be improved, the overall quality meets the standard for a busy FQHC setting.' },
+      peerChanges: idx > 0 ? [
+        { criterion: 'Documentation completeness', ai_score: 2, peer_score: 3, reason: 'While documentation could be improved, the overall quality meets the standard for a busy FQHC setting.' },
       ] : [],
       qualityScore: 82 + idx * 5,
       qualityNotes: idx === 2
-        ? 'Thorough review with meaningful clinical insights. Reviewer appropriately adjusted documentation score with well-reasoned justification.'
-        : 'Solid review. Reviewer engaged meaningfully with AI suggestions.',
+        ? 'Thorough review with meaningful clinical insights. Peer appropriately adjusted documentation score with well-reasoned justification.'
+        : 'Solid review. Peer engaged meaningfully with AI suggestions.',
       submittedAt: new Date(now.getTime() - (3 - idx) * 24 * 60 * 60 * 1000),
       timeSpentMinutes: 14 + idx * 3,
     }));
@@ -284,13 +284,13 @@ export async function POST(request: NextRequest) {
             .onConflictDoUpdate({
               target: reviewResults.caseId,
               set: {
-                reviewerId: row.reviewerId,
+                peerId: row.peerId,
                 criteriaScores: row.criteriaScores,
                 deficiencies: row.deficiencies,
                 overallScore: row.overallScore,
                 narrativeFinal: row.narrativeFinal,
                 aiAgreementPercentage: row.aiAgreementPercentage,
-                reviewerChanges: row.reviewerChanges,
+                peerChanges: row.peerChanges,
                 qualityScore: row.qualityScore,
                 qualityNotes: row.qualityNotes,
                 submittedAt: row.submittedAt,
@@ -304,20 +304,20 @@ export async function POST(request: NextRequest) {
     }
 
     // ---------------------------------------------------------------
-    // 8. Update reviewer active_cases_count
+    // 8. Update peer active_cases_count
     // ---------------------------------------------------------------
     const activeCaseCounts: Record<string, number> = {};
     insertedCases.forEach((c) => {
-      if (c.reviewerId && ['assigned', 'in_progress'].includes(c.status as string)) {
-        activeCaseCounts[c.reviewerId] = (activeCaseCounts[c.reviewerId] || 0) + 1;
+      if (c.peerId && ['assigned', 'in_progress'].includes(c.status as string)) {
+        activeCaseCounts[c.peerId] = (activeCaseCounts[c.peerId] || 0) + 1;
       }
     });
 
-    for (const [reviewerId, count] of Object.entries(activeCaseCounts)) {
+    for (const [peerId, count] of Object.entries(activeCaseCounts)) {
       await db
-        .update(reviewers)
+        .update(peers)
         .set({ activeCasesCount: count })
-        .where(eq(reviewers.id, reviewerId));
+        .where(eq(peers.id, peerId));
     }
 
     // ---------------------------------------------------------------
@@ -360,7 +360,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         companies: insertedCompanies.length,
         providers: insertedProviders.length,
-        reviewers: insertedReviewers.length,
+        peers: insertedPeers.length,
         batches: insertedBatches.length,
         cases: insertedCases.length,
         ai_analyses: aiAnalysisRows.length,
@@ -374,7 +374,7 @@ export async function POST(request: NextRequest) {
       summary: {
         companies: insertedCompanies.length,
         providers: insertedProviders.length,
-        reviewers: insertedReviewers.length,
+        peers: insertedPeers.length,
         batches: insertedBatches.length,
         cases: insertedCases.length,
         ai_analyses: aiAnalysisRows.length,

@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import {
   caseReassignmentRequests,
   reviewCases,
-  reviewers,
+  peers,
   providers,
   companies,
 } from '@/lib/db/schema';
@@ -17,12 +17,12 @@ async function getOpenRequests(): Promise<ReassignmentRow[]> {
     .select({
       id: caseReassignmentRequests.id,
       caseId: caseReassignmentRequests.caseId,
-      reviewerId: caseReassignmentRequests.reviewerId,
+      peerId: caseReassignmentRequests.peerId,
       reason: caseReassignmentRequests.reason,
       status: caseReassignmentRequests.status,
       createdAt: caseReassignmentRequests.createdAt,
       specialtyRequired: reviewCases.specialtyRequired,
-      reviewerName: reviewers.fullName,
+      peerName: peers.fullName,
       providerFirstName: providers.firstName,
       providerLastName: providers.lastName,
       providerSpecialty: providers.specialty,
@@ -30,7 +30,7 @@ async function getOpenRequests(): Promise<ReassignmentRow[]> {
     })
     .from(caseReassignmentRequests)
     .leftJoin(reviewCases, eq(caseReassignmentRequests.caseId, reviewCases.id))
-    .leftJoin(reviewers, eq(caseReassignmentRequests.reviewerId, reviewers.id))
+    .leftJoin(peers, eq(caseReassignmentRequests.peerId, peers.id))
     .leftJoin(providers, eq(reviewCases.providerId, providers.id))
     .leftJoin(companies, eq(reviewCases.companyId, companies.id))
     .where(eq(caseReassignmentRequests.status, 'open'));
@@ -38,11 +38,11 @@ async function getOpenRequests(): Promise<ReassignmentRow[]> {
   return rows.map((r) => ({
     id: r.id,
     caseId: r.caseId,
-    reviewerId: r.reviewerId,
+    peerId: r.peerId,
     reason: r.reason,
     createdAt: r.createdAt ? r.createdAt.toISOString() : null,
     specialty: r.specialtyRequired ?? r.providerSpecialty ?? null,
-    reviewerName: r.reviewerName ?? null,
+    peerName: r.peerName ?? null,
     providerName:
       `${r.providerFirstName ?? ''} ${r.providerLastName ?? ''}`.trim() || null,
     companyName: r.companyName ?? null,
@@ -60,7 +60,7 @@ export default async function ReassignmentsPage() {
         </div>
         <h1 className="text-h1 text-ink-900">Reassignment requests</h1>
         <p className="mt-1 text-small text-ink-500">
-          Reviewers who&apos;ve asked to be taken off a case. Pick a new reviewer or
+          Peers who&apos;ve asked to be taken off a case. Pick a new peer or
           dismiss with a note.
         </p>
       </div>
@@ -70,7 +70,7 @@ export default async function ReassignmentsPage() {
           <Inbox className="mb-3 h-10 w-10 text-ink-400" />
           <h3 className="text-h3 text-ink-900">No open reassignment requests</h3>
           <p className="mt-1 max-w-sm text-small text-ink-500">
-            When a reviewer asks to be taken off a case, it&apos;ll show up here.
+            When a peer asks to be taken off a case, it&apos;ll show up here.
           </p>
         </div>
       ) : (

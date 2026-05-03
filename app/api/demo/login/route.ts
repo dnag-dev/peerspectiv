@@ -18,13 +18,13 @@ const ROLES: Record<string, { email: string; name: string; landing: string }> = 
     name: 'Kelli Ramirez',
     landing: '/portal',
   },
-  reviewer: {
+  peer: {
     email: 'rjohnson@peerspectiv.com',
     name: 'Dr. Richard Johnson',
-    landing: '/reviewer/portal',
+    landing: '/peer/portal',
   },
   // Section B6 — credentialing role. Read-only on /credentialing/* pages,
-  // cannot reach /companies, /reviewers, /payouts, /invoices.
+  // cannot reach /companies, /peers, /payouts, /invoices.
   credentialer: {
     email: 'credentialing@peerspectiv.com',
     name: 'Renée Cole',
@@ -33,7 +33,9 @@ const ROLES: Record<string, { email: string; name: string; landing: string }> = 
 };
 
 export async function POST(request: NextRequest) {
-  const { role } = await request.json();
+  const { role: rawRole } = await request.json();
+  // Back-compat: legacy 'reviewer' role normalizes to canonical 'peer'.
+  const role = rawRole === 'reviewer' ? 'peer' : rawRole;
   if (!role || !ROLES[role]) {
     return NextResponse.json({ error: 'Unknown role' }, { status: 400 });
   }

@@ -14,7 +14,7 @@ interface CompanyForm {
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  reviewerName: string;
+  peerName: string;
   companyId: string;
   specialty: string | null;
   defaultFormId?: string | null;
@@ -24,7 +24,7 @@ interface Props {
 export function ConfirmApproveModal({
   open,
   onOpenChange,
-  reviewerName,
+  peerName,
   companyId,
   specialty,
   defaultFormId,
@@ -71,9 +71,9 @@ export function ConfirmApproveModal({
         <div className="space-y-4 py-2">
           <div className="rounded-md border bg-muted/30 p-3">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              Reviewer
+              Peer
             </p>
-            <p className="mt-1 text-sm font-medium">{reviewerName}</p>
+            <p className="mt-1 text-sm font-medium">{peerName}</p>
           </div>
 
           <div>
@@ -87,7 +87,7 @@ export function ConfirmApproveModal({
             ) : forms.length === 0 ? (
               <p className="mt-1 text-sm text-amber-700">
                 No company-approved forms for {specialty ?? "this specialty"}.
-                Reviewer will use the default form.
+                Peer will use the default form.
               </p>
             ) : (
               <select

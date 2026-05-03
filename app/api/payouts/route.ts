@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, toSnake } from '@/lib/db';
-import { reviewers, reviewResults, reviewerPayouts } from '@/lib/db/schema';
+import { peers, reviewResults, peerPayouts } from '@/lib/db/schema';
 import { and, asc, eq, gte, lte } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
@@ -23,7 +23,7 @@ async function getAdminUserId(req: NextRequest): Promise<string | null> {
 type RateType = 'per_minute' | 'per_report' | 'per_hour';
 
 interface ResultRow {
-  reviewer_id: string | null;
+  peer_id: string | null;
   submitted_at: Date | null;
   time_spent_minutes: number | null;
 }
@@ -55,23 +55,23 @@ export async function GET(request: NextRequest) {
     const month = searchParams.get('month') ?? undefined; // YYYY-MM
     const { start, end } = monthBounds(month);
 
-    // 1. All reviewers with rate config
-    const reviewerRows = await db
+    // 1. All peers with rate config
+    const peerRows = await db
       .select({
-        id: reviewers.id,
-        full_name: reviewers.fullName,
-        specialty: reviewers.specialty,
-        rate_type: reviewers.rateType,
-        rate_amount: reviewers.rateAmount,
-        status: reviewers.status,
+        id: peers.id,
+        full_name: peers.fullName,
+        specialty: peers.specialty,
+        rate_type: peers.rateType,
+        rate_amount: peers.rateAmount,
+        status: peers.status,
       })
-      .from(reviewers)
-      .orderBy(asc(reviewers.fullName));
+      .from(peers)
+      .orderBy(asc(peers.fullName));
 
     // 2. All completed results in this period
     const resultRows = await db
       .select({
-        reviewer_id: reviewResults.reviewerId,
+        peer_id: reviewResults.peerId,
         submitted_at: reviewResults.submittedAt,
         time_spent_minutes: reviewResults.timeSpentMinutes,
       })
@@ -86,39 +86,39 @@ export async function GET(request: NextRequest) {
     // 3. Existing payout records for this period
     const existing = await db
       .select()
-      .from(reviewerPayouts)
+      .from(peerPayouts)
       .where(
         and(
-          eq(reviewerPayouts.periodStart, start),
-          eq(reviewerPayouts.periodEnd, end)
+          eq(peerPayouts.periodStart, start),
+          eq(peerPayouts.periodEnd, end)
         )
       );
 
-    const existingByReviewer = new Map<string, typeof existing[number]>();
+    const existingByPeer = new Map<string, typeof existing[number]>();
     for (const p of existing) {
-      existingByReviewer.set(p.reviewerId, p);
+      existingByPeer.set(p.peerId, p);
     }
 
-    // 4. Group results by reviewer
-    const resultsByReviewer = new Map<string, ResultRow[]>();
+    // 4. Group results by peer
+    const resultsByPeer = new Map<string, ResultRow[]>();
     for (const r of resultRows) {
-      if (!r.reviewer_id) continue;
-      const arr = resultsByReviewer.get(r.reviewer_id) ?? [];
+      if (!r.peer_id) continue;
+      const arr = resultsByPeer.get(r.peer_id) ?? [];
       arr.push(r);
-      resultsByReviewer.set(r.reviewer_id, arr);
+      resultsByPeer.set(r.peer_id, arr);
     }
 
     // 5. Build output: persisted payout OR computed pending preview
-    const rows = reviewerRows.map((rev) => {
-      const persisted = existingByReviewer.get(rev.id);
+    const rows = peerRows.map((rev) => {
+      const persisted = existingByPeer.get(rev.id);
       const rt: RateType = (rev.rate_type as RateType) ?? 'per_minute';
       const rate = Number(rev.rate_amount ?? 0);
 
       if (persisted) {
         return {
           id: persisted.id,
-          reviewer_id: rev.id,
-          reviewer_name: rev.full_name,
+          peer_id: rev.id,
+          peer_name: rev.full_name,
           specialty: rev.specialty ?? '—',
           period_start: persisted.periodStart,
           period_end: persisted.periodEnd,
@@ -133,14 +133,14 @@ export async function GET(request: NextRequest) {
         };
       }
 
-      const revResults = resultsByReviewer.get(rev.id) ?? [];
+      const revResults = resultsByPeer.get(rev.id) ?? [];
       const units = computeUnits(rt, revResults);
       const amount = Math.round(units * rate * 100) / 100;
 
       return {
         id: null,
-        reviewer_id: rev.id,
-        reviewer_name: rev.full_name,
+        peer_id: rev.id,
+        peer_name: rev.full_name,
         specialty: rev.specialty ?? '—',
         period_start: start,
         period_end: end,
@@ -164,44 +164,44 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST: persist a pending payout (snapshot computed values).
- * Body: { reviewer_id, period_start, period_end }
+ * Body: { peer_id, period_start, period_end }
  * Optional: { units, rate_amount, unit_type } to override.
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { reviewer_id, period_start, period_end } = body as {
-      reviewer_id?: string;
+    const { peer_id, period_start, period_end } = body as {
+      peer_id?: string;
       period_start?: string;
       period_end?: string;
     };
-    if (!reviewer_id || !period_start || !period_end) {
+    if (!peer_id || !period_start || !period_end) {
       return NextResponse.json(
-        { error: 'reviewer_id, period_start, period_end required' },
+        { error: 'peer_id, period_start, period_end required' },
         { status: 400 }
       );
     }
 
     const [rev] = await db
-      .select({ rate_type: reviewers.rateType, rate_amount: reviewers.rateAmount })
-      .from(reviewers)
-      .where(eq(reviewers.id, reviewer_id))
+      .select({ rate_type: peers.rateType, rate_amount: peers.rateAmount })
+      .from(peers)
+      .where(eq(peers.id, peer_id))
       .limit(1);
 
     if (!rev) {
-      return NextResponse.json({ error: 'Reviewer not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Peer not found' }, { status: 404 });
     }
 
     const results = await db
       .select({
-        reviewer_id: reviewResults.reviewerId,
+        peer_id: reviewResults.peerId,
         submitted_at: reviewResults.submittedAt,
         time_spent_minutes: reviewResults.timeSpentMinutes,
       })
       .from(reviewResults)
       .where(
         and(
-          eq(reviewResults.reviewerId, reviewer_id),
+          eq(reviewResults.peerId, peer_id),
           gte(reviewResults.submittedAt, new Date(`${period_start}T00:00:00Z`)),
           lte(reviewResults.submittedAt, new Date(`${period_end}T23:59:59Z`))
         )
@@ -215,9 +215,9 @@ export async function POST(request: NextRequest) {
     let row;
     try {
       [row] = await db
-        .insert(reviewerPayouts)
+        .insert(peerPayouts)
         .values({
-          reviewerId: reviewer_id,
+          peerId: peer_id,
           periodStart: period_start,
           periodEnd: period_end,
           unitType: rt,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { reviewers, auditLogs } from '@/lib/db/schema';
+import { peers, auditLogs } from '@/lib/db/schema';
 import { and, eq, isNotNull } from 'drizzle-orm';
 import { sendCredentialingAlert } from '@/lib/email/notifications';
 import { auditLog } from '@/lib/utils/audit';
@@ -8,8 +8,8 @@ import { auditLog } from '@/lib/utils/audit';
 export const dynamic = 'force-dynamic';
 
 /**
- * Daily cron — emails credentialing for any reviewer whose credential is
- * expiring in 30 days, or has just expired. Each (reviewer, kind) pair is
+ * Daily cron — emails credentialing for any peer whose credential is
+ * expiring in 30 days, or has just expired. Each (peer, kind) pair is
  * sent once: dedupe via audit_logs (action = 'credential_warning').
  */
 export async function GET(request: NextRequest) {
@@ -26,30 +26,30 @@ export async function GET(request: NextRequest) {
     in30.setUTCDate(in30.getUTCDate() + 30);
     const in30Iso = in30.toISOString().slice(0, 10);
 
-    const reviewerRows = await db
+    const peerRows = await db
       .select({
-        id: reviewers.id,
-        fullName: reviewers.fullName,
-        email: reviewers.email,
-        specialties: reviewers.specialties,
-        specialty: reviewers.specialty,
-        credentialValidUntil: reviewers.credentialValidUntil,
+        id: peers.id,
+        fullName: peers.fullName,
+        email: peers.email,
+        specialties: peers.specialties,
+        specialty: peers.specialty,
+        credentialValidUntil: peers.credentialValidUntil,
       })
-      .from(reviewers)
-      .where(isNotNull(reviewers.credentialValidUntil));
+      .from(peers)
+      .where(isNotNull(peers.credentialValidUntil));
 
     let sentExpiring = 0;
     let sentExpired = 0;
     let skipped = 0;
 
-    for (const r of reviewerRows) {
+    for (const r of peerRows) {
       const cv = String(r.credentialValidUntil).slice(0, 10);
       let kind: 'warn30' | 'expired' | null = null;
       if (cv < todayIso) kind = 'expired';
       else if (cv === in30Iso) kind = 'warn30';
       if (!kind) continue;
 
-      // Dedupe: have we already sent this kind for this reviewer + expiry date?
+      // Dedupe: have we already sent this kind for this peer + expiry date?
       const prior = await db
         .select({ id: auditLogs.id, metadata: auditLogs.metadata })
         .from(auditLogs)
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
           <p>Credential expiry on file: <strong>${cv}</strong>.</p>
           ${
             kind === 'expired'
-              ? '<p>This reviewer is now blocked from new assignments until renewed.</p>'
+              ? '<p>This peer is now blocked from new assignments until renewed.</p>'
               : '<p>Please renew before the expiry date to avoid assignment interruptions.</p>'
           }
           <a href="${process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.peerspectiv.ai'}/credentials"
@@ -98,8 +98,8 @@ export async function GET(request: NextRequest) {
       `;
 
       await sendCredentialingAlert({
-        reviewerId: r.id,
-        reviewerName: r.fullName ?? 'Reviewer',
+        peerId: r.id,
+        peerName: r.fullName ?? 'Peer',
         email: r.email ?? '',
         specialties: specs,
         subject,
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
 
       await auditLog({
         action: 'credential_warning',
-        resourceType: 'reviewer',
+        resourceType: 'peer',
         resourceId: r.id,
         metadata: { kind, expiry: cv },
       });

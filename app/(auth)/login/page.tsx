@@ -14,7 +14,7 @@ const DEMO_USERS = [
     role: 'admin' as const,
     label: 'Continue as Admin (Ashton)',
     email: 'admin@peerspectiv.com',
-    blurb: 'Full access — pipeline, batches, reviewers, finance.',
+    blurb: 'Full access — pipeline, batches, peers, finance.',
     accent: '#2563EB',
   },
   {
@@ -25,17 +25,17 @@ const DEMO_USERS = [
     accent: '#22C55E',
   },
   {
-    role: 'reviewer' as const,
-    label: 'Continue as Reviewer (Dr. Johnson)',
+    role: 'peer' as const,
+    label: 'Continue as Peer (Dr. Johnson)',
     email: 'rjohnson@peerspectiv.com',
-    blurb: 'Reviewer queue + AI-prefilled split-screen review.',
+    blurb: 'Peer queue + AI-prefilled split-screen review.',
     accent: '#F59E0B',
   },
   {
     role: 'credentialer' as const,
     label: 'Continue as Credentialing (Renée)',
     email: 'credentialing@peerspectiv.com',
-    blurb: 'Credentials + new-reviewer inbox. Scoped, no admin access.',
+    blurb: 'Credentials + new-peer inbox. Scoped, no admin access.',
     accent: '#A855F7',
   },
 ];
@@ -55,7 +55,7 @@ export default function LoginPage() {
     }
   }, [showDemo]);
 
-  async function loginAsDemo(role: 'admin' | 'client' | 'reviewer' | 'credentialer') {
+  async function loginAsDemo(role: 'admin' | 'client' | 'peer' | 'credentialer') {
     setLoading(role);
     try {
       const res = await fetch('/api/demo/login', {

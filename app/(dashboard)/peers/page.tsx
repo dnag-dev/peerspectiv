@@ -1,0 +1,23 @@
+import { db, toSnake } from '@/lib/db';
+import { peers } from '@/lib/db/schema';
+import { asc } from 'drizzle-orm';
+import { PeersTable } from './PeersTable';
+
+export const dynamic = 'force-dynamic';
+
+export default async function PeersPage() {
+  const rows = await db.select().from(peers).orderBy(asc(peers.fullName));
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-ink-900">Peers</h1>
+        <p className="text-sm text-ink-500">
+          Manage peer peers, compensation, and availability
+        </p>
+      </div>
+
+      <PeersTable peers={rows.map((r) => toSnake(r))} />
+    </div>
+  );
+}

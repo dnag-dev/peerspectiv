@@ -37,6 +37,9 @@ const checks = [
 
   // app: home returns something live (200 / 307 to /gate / 308)
   { url: `${APP}/`, expect: [200, 307, 308] },
+
+  // Phase 1.2 — verify legacy /reviewer/* paths still 301 redirect
+  { url: `${APP}/reviewer/portal`, expect: [301], followRedirect: false },
 ];
 
 let failed = 0;

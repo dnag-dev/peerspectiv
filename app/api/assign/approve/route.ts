@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { reviewCases, batches } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { approveAssignment, approveAllAssignments } from '@/lib/ai/assignment-engine';
-import { sendReviewerAssignment } from '@/lib/email/notifications';
+import { sendPeerAssignment } from '@/lib/email/notifications';
 import { auditLog } from '@/lib/utils/audit';
 import { calculateProjectedCompletion } from '@/lib/utils/completion';
 
@@ -25,11 +25,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Optional reassign: swap reviewer_id before approval. Used by manual reviewer picker.
+    // Optional reassign: swap peer_id before approval. Used by manual peer picker.
     if (case_id && reassign_to) {
       await db
         .update(reviewCases)
-        .set({ reviewerId: reassign_to, updatedAt: new Date() })
+        .set({ peerId: reassign_to, updatedAt: new Date() })
         .where(eq(reviewCases.id, case_id));
     }
     // Optional form override: record which company-approved form applies.
@@ -43,23 +43,23 @@ export async function POST(request: NextRequest) {
     if (approve_all && batch_id) {
       const count = await approveAllAssignments(batch_id);
 
-      // Send emails to all newly assigned reviewers in the batch
+      // Send emails to all newly assigned peers in the batch
       const assignedCases = await db.query.reviewCases.findMany({
         where: and(eq(reviewCases.batchId, batch_id), eq(reviewCases.status, 'assigned')),
         columns: { id: true, specialtyRequired: true, dueDate: true },
-        with: { reviewer: { columns: { fullName: true, email: true } } },
+        with: { peer: { columns: { fullName: true, email: true } } },
       });
 
       for (const c of assignedCases) {
-        const reviewer = c.reviewer;
-        if (reviewer?.email) {
-          sendReviewerAssignment({
-            reviewerEmail: reviewer.email,
-            reviewerName: reviewer.fullName ?? '',
+        const peer = c.peer;
+        if (peer?.email) {
+          sendPeerAssignment({
+            peerEmail: peer.email,
+            peerName: peer.fullName ?? '',
             caseId: c.id,
             specialty: c.specialtyRequired || 'General',
             dueDate: c.dueDate ? new Date(c.dueDate).toLocaleDateString() : 'TBD',
-            portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/reviewer/case/${c.id}`,
+            portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/peer/case/${c.id}`,
           }).catch(() => {});
         }
       }
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       const caseData = await db.query.reviewCases.findFirst({
         where: eq(reviewCases.id, case_id),
         columns: { id: true, batchId: true, specialtyRequired: true, dueDate: true },
-        with: { reviewer: { columns: { fullName: true, email: true } } },
+        with: { peer: { columns: { fullName: true, email: true } } },
       });
 
       // Recalculate projected completion for this case's batch
@@ -131,15 +131,15 @@ export async function POST(request: NextRequest) {
       }
 
       if (caseData) {
-        const reviewer = caseData.reviewer;
-        if (reviewer?.email) {
-          sendReviewerAssignment({
-            reviewerEmail: reviewer.email,
-            reviewerName: reviewer.fullName ?? '',
+        const peer = caseData.peer;
+        if (peer?.email) {
+          sendPeerAssignment({
+            peerEmail: peer.email,
+            peerName: peer.fullName ?? '',
             caseId: case_id,
             specialty: caseData.specialtyRequired || 'General',
             dueDate: caseData.dueDate ? new Date(caseData.dueDate).toLocaleDateString() : 'TBD',
-            portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/reviewer/case/${case_id}`,
+            portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.peerspectiv.com'}/peer/case/${case_id}`,
           }).catch(() => {});
         }
       }

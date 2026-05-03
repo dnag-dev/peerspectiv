@@ -54,10 +54,10 @@ export function CaseCard({ reviewCase, showCompany = true }: CaseCardProps) {
                   </span>
                 )}
 
-                {reviewCase.reviewer && (
+                {reviewCase.peer && (
                   <span className="flex items-center gap-1">
                     <User className="h-3 w-3" />
-                    {reviewCase.reviewer.full_name}
+                    {reviewCase.peer.full_name}
                   </span>
                 )}
 

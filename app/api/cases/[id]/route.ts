@@ -16,7 +16,7 @@ export async function GET(
         provider: {
           columns: { id: true, firstName: true, lastName: true, specialty: true, npi: true, email: true },
         },
-        reviewer: {
+        peer: {
           columns: { id: true, fullName: true, email: true, specialty: true, boardCertification: true },
         },
         company: {
@@ -36,7 +36,7 @@ export async function GET(
         reviewResult: {
           columns: {
             id: true, criteriaScores: true, deficiencies: true, overallScore: true,
-            narrativeFinal: true, aiAgreementPercentage: true, reviewerChanges: true,
+            narrativeFinal: true, aiAgreementPercentage: true, peerChanges: true,
             qualityScore: true, qualityNotes: true, submittedAt: true, timeSpentMinutes: true,
           },
         },

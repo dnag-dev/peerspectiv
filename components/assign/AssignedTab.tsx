@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2, ArrowUpDown, Inbox, Search } from "lucide-react";
-import { ReviewerPickerModal } from "@/components/assign/ReviewerPickerModal";
+import { PeerPickerModal } from "@/components/assign/PeerPickerModal";
 
 export interface AssignedRow {
   id: string;
@@ -14,22 +14,22 @@ export interface AssignedRow {
   batch_id: string | null;
   batch_name: string | null;
   provider: { id: string; first_name: string | null; last_name: string | null; specialty: string | null } | null;
-  reviewer: { id: string; full_name: string | null } | null;
+  peer: { id: string; full_name: string | null } | null;
   company: { id: string; name: string | null } | null;
 }
 
 interface Props {
   rows: AssignedRow[];
   companies: { id: string; name: string }[];
-  reviewers: { id: string; full_name: string }[];
+  peers: { id: string; full_name: string }[];
   specialties: string[];
 }
 
-export function AssignedTab({ rows, companies, reviewers, specialties }: Props) {
+export function AssignedTab({ rows, companies, peers, specialties }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [companyId, setCompanyId] = useState<string>("");
-  const [reviewerId, setReviewerId] = useState<string>("");
+  const [peerId, setPeerId] = useState<string>("");
   const [specialty, setSpecialty] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState<string>("");
@@ -40,14 +40,14 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
     const q = search.trim().toLowerCase();
     return rows.filter((r) => {
       if (companyId && r.company?.id !== companyId) return false;
-      if (reviewerId && r.reviewer?.id !== reviewerId) return false;
+      if (peerId && r.peer?.id !== peerId) return false;
       if (specialty && (r.specialty_required ?? r.provider?.specialty) !== specialty) return false;
       if (statusFilter !== "all" && r.status !== statusFilter) return false;
       if (q) {
         const blob = [
           r.provider?.first_name,
           r.provider?.last_name,
-          r.reviewer?.full_name,
+          r.peer?.full_name,
           r.company?.name,
           r.batch_name,
           r.specialty_required,
@@ -59,15 +59,15 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
       }
       return true;
     });
-  }, [rows, companyId, reviewerId, specialty, statusFilter, search]);
+  }, [rows, companyId, peerId, specialty, statusFilter, search]);
 
-  async function handleReassign(caseId: string, newReviewerId: string) {
+  async function handleReassign(caseId: string, newPeerId: string) {
     setReassigning((p) => new Set(p).add(caseId));
     try {
       const res = await fetch("/api/assign/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ case_id: caseId, reassign_to: newReviewerId }),
+        body: JSON.stringify({ case_id: caseId, reassign_to: newPeerId }),
       });
       if (!res.ok) throw new Error("Reassign failed");
       startTransition(() => router.refresh());
@@ -94,7 +94,7 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search provider, reviewer, batch…"
+            placeholder="Search provider, peer, batch…"
             className="w-full rounded-md border border-ink-200 bg-paper-surface py-1.5 pl-8 pr-3 text-sm placeholder:text-ink-400 focus:border-cobalt-600 focus:outline-none"
           />
         </div>
@@ -111,12 +111,12 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
           ))}
         </select>
         <select
-          value={reviewerId}
-          onChange={(e) => setReviewerId(e.target.value)}
+          value={peerId}
+          onChange={(e) => setPeerId(e.target.value)}
           className="rounded-md border border-ink-200 bg-paper-surface py-1.5 px-2 text-sm focus:border-cobalt-600 focus:outline-none"
         >
-          <option value="">All reviewers</option>
-          {reviewers.map((r) => (
+          <option value="">All peers</option>
+          {peers.map((r) => (
             <option key={r.id} value={r.id}>
               {r.full_name}
             </option>
@@ -160,7 +160,7 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
             <thead className="bg-ink-50 text-eyebrow text-ink-500">
               <tr>
                 <Th>Provider</Th>
-                <Th>Reviewer</Th>
+                <Th>Peer</Th>
                 <Th>Specialty</Th>
                 <Th>Status</Th>
                 <Th>Due date</Th>
@@ -186,7 +186,7 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
                         <div className="text-[11px] text-ink-500">{r.company.name}</div>
                       )}
                     </Td>
-                    <Td>{r.reviewer?.full_name ?? "—"}</Td>
+                    <Td>{r.peer?.full_name ?? "—"}</Td>
                     <Td>{specLabel}</Td>
                     <Td>
                       <StatusPill status={r.status} />
@@ -229,7 +229,7 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
 
       {/* Picker modal */}
       {currentPickerCase && (
-        <ReviewerPickerModal
+        <PeerPickerModal
           open={!!pickerOpen}
           onOpenChange={(o) => setPickerOpen(o ? pickerOpen : null)}
           specialty={
@@ -237,9 +237,9 @@ export function AssignedTab({ rows, companies, reviewers, specialties }: Props) 
             currentPickerCase.provider?.specialty ??
             null
           }
-          currentReviewerId={currentPickerCase.reviewer?.id ?? null}
-          onPick={(newReviewerId) => handleReassign(currentPickerCase.id, newReviewerId)}
-          title="Reassign reviewer"
+          currentPeerId={currentPickerCase.peer?.id ?? null}
+          onPick={(newPeerId) => handleReassign(currentPickerCase.id, newPeerId)}
+          title="Reassign peer"
         />
       )}
     </div>

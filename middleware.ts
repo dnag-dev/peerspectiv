@@ -40,11 +40,14 @@ const APP_PATHS = new Set<string>([
   'payouts',
   'prospects',
   'reports',
+  'peer',
+  'peers',
+  // Back-compat: legacy /reviewer/* paths handled via 301 below
   'reviewer',
   'reviewers',
   'settings',
   'tags',
-  // Public reviewer onboarding form (no auth required)
+  // Public peer onboarding form (no auth required)
   'onboard',
   'credentialing',
 ]);
@@ -97,7 +100,9 @@ const PUBLIC_PATHS = [
 const ROLE_LANDING: Record<string, string> = {
   admin: '/dashboard',
   client: '/portal',
-  reviewer: '/reviewer/portal',
+  peer: '/peer/portal',
+  reviewer: '/peer/portal',  // BACK-COMPAT — old cookies still resolve
+  credentialer: '/credentialing/credentials',
 };
 
 function isPublic(pathname: string): boolean {
@@ -219,6 +224,12 @@ export default async function middleware(request: NextRequest) {
     return new NextResponse(null, { status: 404 });
   }
 
+  // Legacy /reviewer/* paths — 301 to /peer/* equivalent
+  if (pathname.startsWith('/reviewer/') || pathname === '/reviewer') {
+    const newPath = pathname === '/reviewer' ? '/peer' : pathname.replace(/^\/reviewer\//, '/peer/');
+    return NextResponse.redirect(new URL(newPath, request.url), 301);
+  }
+
   // Vercel preview hosts (*.vercel.app): pass through to app behavior.
   // Existing site_gate (pre-login password wall).
   const isGateExempt =
@@ -246,21 +257,21 @@ export default async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // TODO: same trap as the reviewer rule below — startsWith('/portal') would
+    // TODO: same trap as the peer rule below — startsWith('/portal') would
     // match a hypothetical '/portals' admin route. No live bug today, but if
     // anyone adds /portals* tighten this to "=== '/portal' || startsWith('/portal/')".
     if (demo.role === 'client' && !pathname.startsWith('/portal') && !pathname.startsWith('/api/')) {
       return NextResponse.redirect(new URL('/portal', request.url));
     }
     if (
-      demo.role === 'reviewer' &&
-      !pathname.startsWith('/reviewer/') &&
-      pathname !== '/reviewer' &&
+      (demo.role === 'peer' || demo.role === 'reviewer') &&
+      !pathname.startsWith('/peer/') &&
+      pathname !== '/peer' &&
       !pathname.startsWith('/api/')
     ) {
-      // Tightened from startsWith('/reviewer') which prefix-matched /reviewers
-      // (admin route) and let reviewer-role users hit the admin roster page.
-      return NextResponse.redirect(new URL('/reviewer/portal', request.url));
+      // Tightened from startsWith('/peer') which prefix-matched /reviewers
+      // (admin route) and let peer-role users hit the admin roster page.
+      return NextResponse.redirect(new URL('/peer/portal', request.url));
     }
     if (
       demo.role === 'credentialer' &&
@@ -290,7 +301,8 @@ export default async function middleware(request: NextRequest) {
       '/companies(.*)',
       '/batches(.*)',
       '/assign(.*)',
-      '/reviewer(.*)',
+      '/peer(.*)',
+      '/peers(.*)',
       '/reports(.*)',
       '/command(.*)',
       '/portal(.*)',

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Send, X } from 'lucide-react';
 import { SparkIcon } from '@/components/ui/pulse';
 
-type Portal = 'admin' | 'client' | 'reviewer';
+type Portal = 'admin' | 'client' | 'peer';
 
 interface AshChatProps {
   portal: Portal;

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get("start_date");
     const endDate = searchParams.get("end_date");
 
-    const conditions = [isNotNull(reviewCases.reviewerId)];
+    const conditions = [isNotNull(reviewCases.peerId)];
     if (companyId && companyId !== "all") {
       conditions.push(eq(reviewCases.companyId, companyId));
     }
@@ -30,13 +30,13 @@ export async function GET(request: NextRequest) {
         status: true,
         updatedAt: true,
         providerId: true,
-        reviewerId: true,
+        peerId: true,
         mrnNumber: true,
         isPediatric: true,
       },
       with: {
         provider: { columns: { firstName: true, lastName: true } },
-        reviewer: { columns: { fullName: true, specialties: true } },
+        peer: { columns: { fullName: true, specialties: true } },
         reviewResult: { columns: { overallScore: true, deficiencies: true } },
       },
     });
@@ -44,23 +44,23 @@ export async function GET(request: NextRequest) {
     let rows = data.map((c) => {
       const result = c.reviewResult;
       const deficiencies = result?.deficiencies;
-      const reviewer = c.reviewer;
-      const reviewerSpecialties = reviewer?.specialties ?? [];
+      const peer = c.peer;
+      const peerSpecialties = peer?.specialties ?? [];
       const isPediatric = c.isPediatric === true;
       const pediatricMismatch =
         isPediatric &&
-        !reviewerSpecialties.some((s) => s?.toLowerCase().includes("pediatric"));
+        !peerSpecialties.some((s) => s?.toLowerCase().includes("pediatric"));
       return {
         id: c.id,
         provider_id: c.providerId,
-        reviewer_id: c.reviewerId,
+        peer_id: c.peerId,
         provider_name: c.provider
           ? `${c.provider.firstName} ${c.provider.lastName}`
           : "Unassigned",
         mrn_number: c.mrnNumber ?? "—",
         is_pediatric: isPediatric,
         pediatric_mismatch: pediatricMismatch,
-        reviewer_name: reviewer?.fullName ?? "Unassigned",
+        peer_name: peer?.fullName ?? "Unassigned",
         encounter_date: c.encounterDate,
         overall_score: result?.overallScore ?? null,
         deficiencies_count: Array.isArray(deficiencies) ? deficiencies.length : 0,

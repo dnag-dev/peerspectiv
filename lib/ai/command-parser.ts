@@ -1,6 +1,6 @@
 import { callClaude } from './anthropic';
 import { db } from '@/lib/db';
-import { reviewCases, companies, reviewers } from '@/lib/db/schema';
+import { reviewCases, companies, peers } from '@/lib/db/schema';
 import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 
 export async function parseCommand(commandText: string): Promise<{
@@ -29,14 +29,14 @@ You have access to these capabilities (respond with the action to take):
 
 QUERY actions (return data):
 - "dashboard_stats" - overall KPIs
-- "list_cases" - with filters (status, company, reviewer, date_range)
+- "list_cases" - with filters (status, company, peer, date_range)
 - "list_past_due" - past due cases with details
-- "reviewer_performance" - reviewer scores and stats
+- "peer_performance" - peer scores and stats
 - "company_summary" - cases by company
 
 ACTION actions (perform operations):
 - "assign_batch" - trigger AI assignment for a batch_id
-- "reassign_case" - move a case to a different reviewer
+- "reassign_case" - move a case to a different peer
 - "generate_report" - create QAPI report for company + date range
 
 Parse the user's command and respond with ONLY valid JSON:
@@ -59,7 +59,7 @@ Current context:
     return {
       intent: 'unknown',
       parameters: {},
-      plain_english_response: "I couldn't understand that command. Try asking about past-due cases, reviewer rankings, or batch assignments.",
+      plain_english_response: "I couldn't understand that command. Try asking about past-due cases, peer rankings, or batch assignments.",
       needs_confirmation: false,
     };
   }
@@ -93,7 +93,7 @@ async function executeIntent(intent: string, parameters: Record<string, unknown>
         orderBy: asc(reviewCases.dueDate),
         columns: { id: true, dueDate: true, specialtyRequired: true },
         with: {
-          reviewer: { columns: { fullName: true } },
+          peer: { columns: { fullName: true } },
           company: { columns: { name: true } },
           provider: { columns: { firstName: true, lastName: true } },
         },
@@ -110,7 +110,7 @@ async function executeIntent(intent: string, parameters: Record<string, unknown>
         limit: 20,
         columns: { id: true, status: true, dueDate: true, specialtyRequired: true },
         with: {
-          reviewer: { columns: { fullName: true } },
+          peer: { columns: { fullName: true } },
           company: { columns: { name: true } },
           provider: { columns: { firstName: true, lastName: true } },
         },
@@ -118,18 +118,18 @@ async function executeIntent(intent: string, parameters: Record<string, unknown>
       return data;
     }
 
-    case 'reviewer_performance': {
+    case 'peer_performance': {
       const data = await db
         .select({
-          full_name: reviewers.fullName,
-          specialty: reviewers.specialty,
-          active_cases_count: reviewers.activeCasesCount,
-          ai_agreement_score: reviewers.aiAgreementScore,
-          total_reviews_completed: reviewers.totalReviewsCompleted,
-          status: reviewers.status,
+          full_name: peers.fullName,
+          specialty: peers.specialty,
+          active_cases_count: peers.activeCasesCount,
+          ai_agreement_score: peers.aiAgreementScore,
+          total_reviews_completed: peers.totalReviewsCompleted,
+          status: peers.status,
         })
-        .from(reviewers)
-        .orderBy(asc(reviewers.aiAgreementScore));
+        .from(peers)
+        .orderBy(asc(peers.aiAgreementScore));
       return data;
     }
 

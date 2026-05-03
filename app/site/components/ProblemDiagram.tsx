@@ -13,7 +13,7 @@ export function ProblemDiagram() {
           <Tile icon={MessageSquare} label="Side chat" tone="critical" />
         </div>
         <p className="mt-6 text-sm text-ink-600">
-          Three sources of truth, none of them right. Reviewer assignments drift,
+          Three sources of truth, none of them right. Peer assignments drift,
           deadlines slip, audit prep takes a week.
         </p>
       </div>
@@ -28,7 +28,7 @@ export function ProblemDiagram() {
           <Tile icon={Layers} label="One system of record" tone="cobalt" wide />
         </div>
         <p className="mt-6 text-sm text-ink-700">
-          Cases, reviewers, results, attestations, reports — one place, role-aware,
+          Cases, peers, results, attestations, reports — one place, role-aware,
           audit-logged.
         </p>
       </div>

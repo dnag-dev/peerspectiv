@@ -28,7 +28,7 @@ import { useClerkSession } from "./useClerkSession";
 
 /**
  * Practitioner-spec unified sidebar. One component, three personas — admin
- * and reviewer use the built-in nav arrays here; client portal renders this
+ * and peer use the built-in nav arrays here; client portal renders this
  * via <ClientSidebar>, which passes its own grouped nav array + persona role.
  *
  * Visual contract:
@@ -38,7 +38,7 @@ import { useClerkSession } from "./useClerkSession";
  *  - Footer: demo-mode pill ABOVE user card; user card has color-coded role chip
  */
 
-export type SidebarRole = "admin" | "reviewer" | "cmo" | "quality" | "operations";
+export type SidebarRole = "admin" | "peer" | "cmo" | "quality" | "operations";
 
 export interface SidebarNavItem {
   label: string;
@@ -56,7 +56,7 @@ interface SidebarShellProps {
   groups?: string[];
   role: SidebarRole;
   userName: string;
-  userSubtitle: string; // email for admin/reviewer, company name for client
+  userSubtitle: string; // email for admin/peer, company name for client
   onSignOut: () => void;
   onCloseMobile: () => void;
   mobileOpen: boolean;
@@ -66,7 +66,7 @@ interface SidebarShellProps {
 
 const ROLE_CHIP: Record<SidebarRole, { label: string; cls: string }> = {
   admin:      { label: "ADMIN",    cls: "bg-cobalt-100 text-cobalt-800" },
-  reviewer:   { label: "REVIEWER", cls: "bg-mint-100 text-mint-700" },
+  peer:   { label: "PEER", cls: "bg-mint-100 text-mint-700" },
   cmo:        { label: "CMO",      cls: "bg-cobalt-100 text-cobalt-800" },
   quality:    { label: "QUALITY",  cls: "bg-cobalt-100 text-cobalt-800" },
   operations: { label: "OPS",      cls: "bg-cobalt-100 text-cobalt-800" },
@@ -223,7 +223,7 @@ export function SidebarShell({
   );
 }
 
-/* ---------- Default export: admin + reviewer wrapper ---------- */
+/* ---------- Default export: admin + peer wrapper ---------- */
 
 function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
   return [
@@ -232,7 +232,7 @@ function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
     { label: "Batches",        href: "/batches",    icon: FolderOpen },
     { label: "Assign",         href: "/assign",     icon: UserCheck },
     { label: "Reassignments",  href: "/reassignments", icon: ArrowUpDown, badge: openReassignmentCount },
-    { label: "Reviewers",      href: "/reviewers",  icon: ClipboardCheck },
+    { label: "Peers",      href: "/peers",  icon: ClipboardCheck },
     { label: "Credentials",    href: "/credentials", icon: ShieldCheck },
     { label: "Forms",          href: "/forms",      icon: FileText },
     { label: "Payouts",        href: "/payouts",    icon: DollarSign },
@@ -244,9 +244,9 @@ function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
   ];
 }
 
-const reviewerNavItems: SidebarNavItem[] = [
-  { label: "My Queue", href: "/reviewer/portal",   icon: ClipboardCheck },
-  { label: "Earnings", href: "/reviewer/earnings", icon: DollarSign },
+const peerNavItems: SidebarNavItem[] = [
+  { label: "My Queue", href: "/peer/portal",   icon: ClipboardCheck },
+  { label: "Earnings", href: "/peer/earnings", icon: DollarSign },
 ];
 
 export function Sidebar({ openReassignmentCount = 0 }: { openReassignmentCount?: number } = {}) {
@@ -254,16 +254,16 @@ export function Sidebar({ openReassignmentCount = 0 }: { openReassignmentCount?:
   const router = useRouter();
   const { mobileNavOpen, closeMobileNav } = useMobileNav();
 
-  const isReviewer = pathname === "/reviewer" || pathname.startsWith("/reviewer/");
-  const role: SidebarRole = isReviewer ? "reviewer" : "admin";
-  const navItems = isReviewer ? reviewerNavItems : buildAdminNavItems(openReassignmentCount);
+  const isPeer = pathname === "/peer" || pathname.startsWith("/peer/");
+  const role: SidebarRole = isPeer ? "peer" : "admin";
+  const navItems = isPeer ? peerNavItems : buildAdminNavItems(openReassignmentCount);
 
   const session = useClerkSession({
-    fallbackName: isReviewer ? "Dr. Richard Johnson" : "Ashton Williams",
-    fallbackEmail: isReviewer ? "rjohnson@peerspectiv.com" : "admin@peerspectiv.com",
+    fallbackName: isPeer ? "Dr. Richard Johnson" : "Ashton Williams",
+    fallbackEmail: isPeer ? "rjohnson@peerspectiv.com" : "admin@peerspectiv.com",
   });
-  const name = isReviewer ? "Dr. Richard Johnson" : session.name;
-  const email = isReviewer ? "rjohnson@peerspectiv.com" : session.email;
+  const name = isPeer ? "Dr. Richard Johnson" : session.name;
+  const email = isPeer ? "rjohnson@peerspectiv.com" : session.email;
 
   async function handleLogout() {
     await session.signOut();

@@ -26,7 +26,7 @@ export interface Provider {
   company?: Company;
 }
 
-export interface Reviewer {
+export interface Peer {
   id: string;
   full_name: string;
   email: string;
@@ -63,7 +63,7 @@ export interface ReviewCase {
   id: string;
   batch_id: string | null;
   provider_id: string | null;
-  reviewer_id: string | null;
+  peer_id: string | null;
   company_id: string | null;
   assigned_at: string | null;
   due_date: string | null;
@@ -86,7 +86,7 @@ export interface ReviewCase {
   created_at: string;
   updated_at: string;
   provider?: Provider;
-  reviewer?: Reviewer;
+  peer?: Peer;
   company?: Company;
   batch?: Batch;
   ai_analysis?: AIAnalysis;
@@ -128,23 +128,23 @@ export interface AIAnalysis {
   created_at: string;
 }
 
-export interface ReviewerChange {
+export interface PeerChange {
   criterion: string;
   ai_score: number;
-  reviewer_score: number;
+  peer_score: number;
   reason: string;
 }
 
 export interface ReviewResult {
   id: string;
   case_id: string;
-  reviewer_id: string | null;
+  peer_id: string | null;
   criteria_scores: CriterionScore[] | null;
   deficiencies: Deficiency[] | null;
   overall_score: number | null;
   narrative_final: string | null;
   ai_agreement_percentage: number | null;
-  reviewer_changes: ReviewerChange[] | null;
+  peer_changes: PeerChange[] | null;
   quality_score: number | null;
   quality_notes: string | null;
   submitted_at: string;
@@ -175,8 +175,8 @@ export interface NLCommandHistory {
 
 export interface AssignmentSuggestion {
   case_id: string;
-  reviewer_id: string;
-  reviewer_name: string;
+  peer_id: string;
+  peer_name: string;
   specialty_match: string;
   rationale: string;
   confidence: number;

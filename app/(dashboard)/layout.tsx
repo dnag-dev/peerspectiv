@@ -3,7 +3,7 @@ import { TopBar } from '@/components/layout/TopBar';
 import { MobileNavProvider } from '@/components/layout/MobileNavContext';
 import { AshChat } from '@/components/ash/AshChat';
 import { db } from '@/lib/db';
-import { reviewCases, reviewers, caseReassignmentRequests } from '@/lib/db/schema';
+import { reviewCases, peers, caseReassignmentRequests } from '@/lib/db/schema';
 import { eq, ne, sql } from 'drizzle-orm';
 
 async function getAdminContext() {
@@ -20,8 +20,8 @@ async function getAdminContext() {
 
     const [unavailableRow] = await db
       .select({ count: sql<number>`count(*)::int` })
-      .from(reviewers)
-      .where(ne(reviewers.availabilityStatus, 'available'));
+      .from(peers)
+      .where(ne(peers.availabilityStatus, 'available'));
 
     const [reassignRow] = await db
       .select({ count: sql<number>`count(*)::int` })
@@ -31,7 +31,7 @@ async function getAdminContext() {
     return {
       overdueCount: Number(overdueRow?.count ?? 0),
       pendingCount: Number(pendingRow?.count ?? 0),
-      unavailableReviewerCount: Number(unavailableRow?.count ?? 0),
+      unavailablePeerCount: Number(unavailableRow?.count ?? 0),
       openReassignmentCount: Number(reassignRow?.count ?? 0),
     };
   } catch (err) {
@@ -45,7 +45,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { overdueCount, pendingCount, unavailableReviewerCount, openReassignmentCount } = await getAdminContext();
+  const { overdueCount, pendingCount, unavailablePeerCount, openReassignmentCount } = await getAdminContext();
 
   const initialGreeting = `Hey 👋 You have ${overdueCount} overdue cases and ${pendingCount} pending your approval. What do you need?`;
 
@@ -60,7 +60,7 @@ export default async function DashboardLayout({
   const ashContext = {
     overdueCount,
     pendingCount,
-    unavailableReviewerCount,
+    unavailablePeerCount,
     todayIso: new Date().toISOString().split('T')[0],
   };
 

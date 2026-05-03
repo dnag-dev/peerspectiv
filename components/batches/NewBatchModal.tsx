@@ -577,7 +577,7 @@ export function NewBatchModal({
                     Approved review form
                   </h3>
                   <p className="text-xs text-ink-500">
-                    This is the form the reviewer will use. It must be pre-approved by the
+                    This is the form the peer will use. It must be pre-approved by the
                     client.
                   </p>
                   <div className="space-y-2 pt-2">

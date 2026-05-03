@@ -36,7 +36,7 @@ export function generateServiceAgreementText(
 
 This Peer Review Services Agreement ("Agreement") is entered into as of ${effectiveDate} ("Effective Date") by and between Peerspectiv LLC ("Peerspectiv"), a Texas limited liability company, and ${companyName} ("Client"), with its principal place of business at ${address}, ${city}, ${state}.
 
-1. SERVICES. Peerspectiv shall provide independent, board-certified medical peer review services to Client on a ${reviewCycle} basis, covering approximately ${estimatedProviders} providers per cycle. Services include chart selection coordination, AI-assisted pre-analysis, independent reviewer assignment, structured scoring against FQHC quality criteria, corrective-action recommendations, and compliance reporting suitable for HRSA, UDS, and accreditation submission.
+1. SERVICES. Peerspectiv shall provide independent, board-certified medical peer review services to Client on a ${reviewCycle} basis, covering approximately ${estimatedProviders} providers per cycle. Services include chart selection coordination, AI-assisted pre-analysis, independent peer assignment, structured scoring against FQHC quality criteria, corrective-action recommendations, and compliance reporting suitable for HRSA, UDS, and accreditation submission.
 
 2. TURNAROUND. Peerspectiv shall deliver completed peer review packets within ten (10) business days of chart receipt for each case, barring material deficiencies in submitted documentation. Cycle-level compliance reports shall be delivered within fifteen (15) business days of cycle close.
 
