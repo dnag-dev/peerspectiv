@@ -8,6 +8,12 @@ import { auditLog } from '@/lib/utils/audit';
 export const dynamic = 'force-dynamic';
 
 /**
+ * DEPRECATED — superseded by /api/cron/license-expiry (Phase 4) which
+ * notifies at 14/7/3/1 days, transitions to license_expired on D0, and
+ * auto-reassigns orphan cases. This route is left in place so any stale
+ * external scheduler keeps working without 404s; vercel.json no longer
+ * triggers it.
+ *
  * Daily cron — emails credentialing for any peer whose credential is
  * expiring in 30 days, or has just expired. Each (peer, kind) pair is
  * sent once: dedupe via audit_logs (action = 'credential_warning').
