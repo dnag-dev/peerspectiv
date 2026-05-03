@@ -16,7 +16,16 @@ export interface BuiltFormField {
   default_value?: "yes" | "no" | "na" | null;
   required_text_on_non_default?: boolean;
   ops_term?: string | null;
+  // Phase 6.1 — per-question scoring metadata.
+  // default_answer's allowed values depend on the form's scoring_system:
+  //   yes_no_na  → 'yes' | 'no'   (N/A is never a default)
+  //   abc_na     → 'A' | 'B' | 'C'
+  //   pass_fail  → null (use is_critical instead)
+  default_answer?: "yes" | "no" | "A" | "B" | "C" | null;
+  is_critical?: boolean;
 }
+
+export type ScoringSystem = "yes_no_na" | "abc_na" | "pass_fail";
 
 // Read helper: fill defaults for old rows missing the new keys.
 export function withFieldDefaults(f: BuiltFormField): Required<
@@ -50,6 +59,8 @@ interface Props {
     specialty: string;
     form_fields: BuiltFormField[];
     allow_ai_generated_recommendations?: boolean;
+    scoring_system?: ScoringSystem;
+    pass_fail_threshold?: { fail_if_any_critical_no?: boolean } | null;
   };
   /** When provided (and editForm is not), opens in create mode with these values prefilled (used by Clone). */
   prefill?: {
@@ -57,6 +68,8 @@ interface Props {
     specialty: string;
     form_fields: BuiltFormField[];
     allow_ai_generated_recommendations?: boolean;
+    scoring_system?: ScoringSystem;
+    pass_fail_threshold?: { fail_if_any_critical_no?: boolean } | null;
   };
 }
 
@@ -81,6 +94,9 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [allowAiNarrative, setAllowAiNarrative] = useState(false);
+  const [scoringSystem, setScoringSystem] = useState<ScoringSystem>("yes_no_na");
+  const [failIfAnyCriticalNo, setFailIfAnyCriticalNo] = useState(true);
+  const [aiDrafting, setAiDrafting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -98,6 +114,10 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
         }))
       );
       setAllowAiNarrative(!!editForm.allow_ai_generated_recommendations);
+      setScoringSystem(editForm.scoring_system ?? "yes_no_na");
+      setFailIfAnyCriticalNo(
+        editForm.pass_fail_threshold?.fail_if_any_critical_no !== false
+      );
       setMode("scratch");
     } else if (prefill) {
       setFormName(prefill.form_name);
@@ -109,12 +129,18 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
         }))
       );
       setAllowAiNarrative(!!prefill.allow_ai_generated_recommendations);
+      setScoringSystem(prefill.scoring_system ?? "yes_no_na");
+      setFailIfAnyCriticalNo(
+        prefill.pass_fail_threshold?.fail_if_any_critical_no !== false
+      );
       setMode("scratch");
     } else {
       setFormName("");
       setSpecialty(defaultSpecialty || "Family Medicine");
       setFields(BLANK_FIELDS);
       setAllowAiNarrative(false);
+      setScoringSystem("yes_no_na");
+      setFailIfAnyCriticalNo(true);
       setMode("scratch");
     }
     fetch(`/api/company-forms?company_id=${companyId}`)
@@ -170,6 +196,44 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
     }
   }
 
+  async function draftWithAi() {
+    setError(null);
+    if (!specialty) {
+      setError("Pick a specialty first.");
+      return;
+    }
+    setAiDrafting(true);
+    try {
+      const res = await fetch("/api/forms/ai-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          specialty,
+          form_name: formName || `${specialty} Peer Review`,
+          scoring_system: scoringSystem,
+        }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || `AI draft failed (${res.status})`);
+      const drafted: BuiltFormField[] = (j.data?.form_fields ?? []).map(
+        (f: BuiltFormField, idx: number) => ({
+          ...withFieldDefaults(f),
+          display_order: idx,
+        })
+      );
+      if (drafted.length === 0) {
+        setError("AI returned no fields. Try again or build from scratch.");
+        return;
+      }
+      setFields(drafted);
+      if (!formName) setFormName(`${specialty} Peer Review`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "AI draft failed");
+    } finally {
+      setAiDrafting(false);
+    }
+  }
+
   function addField() {
     setFields((prev) => [...prev, { field_key: `field_${prev.length + 1}`, field_label: "New question", field_type: "yes_no", is_required: false, display_order: prev.length }]);
   }
@@ -202,14 +266,30 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
           if (f.required_text_on_non_default) cleaned.required_text_on_non_default = true;
         }
         if (f.ops_term) cleaned.ops_term = f.ops_term;
+        // Phase 6.1 — bound default_answer values to the active scoring system.
+        if (scoringSystem === "yes_no_na" && (f.default_answer === "yes" || f.default_answer === "no")) {
+          cleaned.default_answer = f.default_answer;
+        } else if (
+          scoringSystem === "abc_na" &&
+          (f.default_answer === "A" || f.default_answer === "B" || f.default_answer === "C")
+        ) {
+          cleaned.default_answer = f.default_answer;
+        }
+        if (scoringSystem === "pass_fail" && f.is_critical) cleaned.is_critical = true;
         return cleaned;
       });
+      const passFailThreshold =
+        scoringSystem === "pass_fail"
+          ? { fail_if_any_critical_no: failIfAnyCriticalNo }
+          : null;
       const payload = isEdit
         ? {
             specialty,
             form_name: formName.trim(),
             form_fields: normalizedFields,
             allow_ai_generated_recommendations: allowAiNarrative,
+            scoring_system: scoringSystem,
+            pass_fail_threshold: passFailThreshold,
           }
         : {
             company_id: companyId,
@@ -219,6 +299,8 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
             template_pdf_url: templatePdfUrl,
             template_pdf_name: templatePdfName,
             allow_ai_generated_recommendations: allowAiNarrative,
+            scoring_system: scoringSystem,
+            pass_fail_threshold: passFailThreshold,
           };
       const res = await fetch(url, {
         method,
@@ -279,6 +361,64 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
               <span className="ml-1 text-ink-500">— shows a &ldquo;Generate AI suggestion&rdquo; button next to the comments box.</span>
             </span>
           </label>
+
+          {/* Phase 6.1 — Scoring system */}
+          <div className="rounded-md border border-ink-200 bg-ink-50/50 p-3">
+            <div className="text-xs font-medium text-ink-900">Scoring system</div>
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-ink-700">
+              {(
+                [
+                  ["yes_no_na", "Yes / No / NA"],
+                  ["abc_na", "A / B / C / NA"],
+                  ["pass_fail", "Pass / Fail"],
+                ] as Array<[ScoringSystem, string]>
+              ).map(([val, label]) => (
+                <label key={val} className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    name="scoring_system"
+                    value={val}
+                    checked={scoringSystem === val}
+                    onChange={() => setScoringSystem(val)}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+            {scoringSystem === "pass_fail" && (
+              <label className="mt-2 flex items-center gap-2 text-xs text-ink-700">
+                <input
+                  type="checkbox"
+                  checked={failIfAnyCriticalNo}
+                  onChange={(e) => setFailIfAnyCriticalNo(e.target.checked)}
+                />
+                Fail the form if any question marked
+                <strong className="text-ink-900">critical</strong>
+                is answered <strong className="text-ink-900">No</strong>.
+              </label>
+            )}
+          </div>
+
+          {/* Phase 6.1 — Draft with AI */}
+          <div className="flex items-center justify-between rounded-md border border-cobalt-100 bg-cobalt-50/40 px-3 py-2">
+            <div className="text-xs text-ink-700">
+              <strong className="text-ink-900">Draft form with AI</strong> — generates
+              10–20 questions appropriate for the chosen specialty.
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={draftWithAi}
+              disabled={aiDrafting || !specialty}
+            >
+              {aiDrafting ? (
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              ) : (
+                <Sparkles className="mr-1 h-3 w-3" />
+              )}
+              {aiDrafting ? "Drafting…" : "Draft with AI"}
+            </Button>
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -440,6 +580,56 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
+                    {/* Phase 6.1 — per-question scoring metadata */}
+                    {scoringSystem !== "pass_fail" && f.field_type !== "text" && (
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-1 text-xs text-ink-700">
+                        <label className="flex items-center gap-1">
+                          <span>Default answer</span>
+                          <select
+                            value={f.default_answer ?? ""}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              updateField(i, {
+                                default_answer:
+                                  v === ""
+                                    ? null
+                                    : (v as "yes" | "no" | "A" | "B" | "C"),
+                              });
+                            }}
+                            className="rounded border bg-background px-1.5 py-0.5 text-xs"
+                          >
+                            <option value="">None</option>
+                            {scoringSystem === "yes_no_na" && (
+                              <>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                              </>
+                            )}
+                            {scoringSystem === "abc_na" && (
+                              <>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                              </>
+                            )}
+                          </select>
+                        </label>
+                      </div>
+                    )}
+                    {scoringSystem === "pass_fail" && f.field_type !== "text" && (
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-1 text-xs text-ink-700">
+                        <label className="flex items-center gap-1">
+                          <input
+                            type="checkbox"
+                            checked={!!f.is_critical}
+                            onChange={(e) =>
+                              updateField(i, { is_critical: e.target.checked })
+                            }
+                          />
+                          Critical (fail-on-No)
+                        </label>
+                      </div>
+                    )}
                     {isYesNo && (
                       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-1 text-xs text-ink-700">
                         <label className="flex items-center gap-1">

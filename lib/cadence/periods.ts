@@ -216,8 +216,22 @@ export async function getCompanyCadencePeriods(
   return periods;
 }
 
-export async function getCurrentCadencePeriod(companyId: string): Promise<CadencePeriod> {
-  const all = await getCompanyCadencePeriods(companyId, 0);
-  // The "current" period is the last one in the chronological list.
+export async function getCurrentCadencePeriod(
+  companyId: string,
+  encounterDate?: string | Date | null
+): Promise<CadencePeriod> {
+  // Phase 6.4 — when an encounterDate is supplied (e.g. AI auto-tag at chart
+  // upload), pick the period whose [start, end] window contains it. Falls back
+  // to "today's period" (last entry) when no date matches or none supplied.
+  // Use a 5-year lookback so older encounter dates still resolve.
+  const all = await getCompanyCadencePeriods(companyId, 5);
+  if (encounterDate) {
+    const dStr =
+      encounterDate instanceof Date
+        ? encounterDate.toISOString().slice(0, 10)
+        : String(encounterDate).slice(0, 10);
+    const match = all.find((p) => p.start_date <= dStr && dStr <= p.end_date);
+    if (match) return match;
+  }
   return all[all.length - 1];
 }

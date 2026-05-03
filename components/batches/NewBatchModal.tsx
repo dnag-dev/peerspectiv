@@ -229,6 +229,36 @@ export function NewBatchModal({
     if (suggestedName) setBatchName(suggestedName);
   }, [suggestedName]);
 
+  // Phase 6.6 (CL-017) — when a company is picked, prefill batch name from the
+  // company's current cadence period label. Honors the user's manual edits via
+  // batchNameTouched. Cadence label takes precedence over suggestBatchName(),
+  // because it's the system-of-record for billing-period names.
+  useEffect(() => {
+    if (!companyId) return;
+    if (batchNameTouched.current) return;
+    let cancelled = false;
+    fetch(`/api/companies/${companyId}/cadence-periods`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (cancelled || !j) return;
+        const periods = (j.periods as Array<{ label: string; start_date: string; end_date: string }>) ?? [];
+        if (periods.length === 0) return;
+        const today = new Date().toISOString().slice(0, 10);
+        const current =
+          periods.find((p) => p.start_date <= today && today <= p.end_date) ??
+          periods[periods.length - 1];
+        if (current?.label && !batchNameTouched.current) {
+          setBatchName(current.label);
+        }
+      })
+      .catch(() => {
+        /* silent — fall back to suggestBatchName */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [companyId]);
+
   function reset() {
     setStep(1);
     setCompanyId("");
@@ -631,9 +661,9 @@ export function NewBatchModal({
                       placeholder="e.g. Q2 2026 — OB/GYN charts"
                       className="w-full rounded-lg border border-ink-300 px-4 py-2.5 text-sm focus:border-cobalt-600 focus:outline-none"
                     />
-                    {suggestedName && !batchNameTouched.current && (
+                    {batchName && !batchNameTouched.current && (
                       <p className="mt-1 text-xs text-ink-500">
-                        Auto-filled from billing cycle. Edit to override.
+                        Auto-filled from current cadence period. Edit to override.
                       </p>
                     )}
                   </div>

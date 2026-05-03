@@ -15,6 +15,7 @@ import {
   ArrowDown,
   ArrowUpDown,
   Copy,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +42,19 @@ interface FormRow {
   createdAt: Date | null;
   templatePdfUrl: string | null;
   templatePdfName: string | null;
+  scoringSystem?: string | null;
 }
+
+const SCORING_LABEL: Record<string, string> = {
+  yes_no_na: "Yes / No / NA",
+  abc_na: "A / B / C / NA",
+  pass_fail: "Pass / Fail",
+};
+const SCORING_CHIP: Record<string, string> = {
+  yes_no_na: "bg-cobalt-50 text-cobalt-700 border-cobalt-200",
+  abc_na: "bg-amber-50 text-amber-700 border-amber-200",
+  pass_fail: "bg-mint-50 text-mint-700 border-mint-200",
+};
 
 interface Props {
   forms: FormRow[];
@@ -78,15 +91,20 @@ export function FormsView({ forms, companies }: Props) {
     specialty: string;
     form_fields: any[];
     allow_ai_generated_recommendations?: boolean;
+    scoring_system?: "yes_no_na" | "abc_na" | "pass_fail";
+    pass_fail_threshold?: { fail_if_any_critical_no?: boolean } | null;
   } | null>(null);
   const [prefill, setPrefill] = useState<{
     form_name: string;
     specialty: string;
     form_fields: any[];
     allow_ai_generated_recommendations?: boolean;
+    scoring_system?: "yes_no_na" | "abc_na" | "pass_fail";
+    pass_fail_threshold?: { fail_if_any_critical_no?: boolean } | null;
   } | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [cloningId, setCloningId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Distinct specialties for filter dropdown
   const specialties = useMemo(() => {
@@ -212,6 +230,8 @@ export function FormsView({ forms, companies }: Props) {
         specialty: j.form.specialty,
         form_fields: Array.isArray(j.form.form_fields) ? j.form.form_fields : [],
         allow_ai_generated_recommendations: !!j.form.allow_ai_generated_recommendations,
+        scoring_system: j.form.scoring_system ?? "yes_no_na",
+        pass_fail_threshold: j.form.pass_fail_threshold ?? null,
       });
       setBuilderCompanyId(f.companyId);
       setShowBuilder(true);
@@ -219,6 +239,21 @@ export function FormsView({ forms, companies }: Props) {
       alert(e instanceof Error ? e.message : String(e));
     } finally {
       setLoadingId(null);
+    }
+  }
+
+  async function handleDelete(f: FormRow) {
+    if (!confirm(`Delete "${f.formName}"? This cannot be undone.`)) return;
+    setDeletingId(f.id);
+    try {
+      const r = await fetch(`/api/company-forms/${f.id}`, { method: "DELETE" });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+      startTransition(() => router.refresh());
+    } catch (e) {
+      alert(e instanceof Error ? e.message : String(e));
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -237,6 +272,8 @@ export function FormsView({ forms, companies }: Props) {
         specialty: f.specialty,
         form_fields: fields,
         allow_ai_generated_recommendations: !!j.form.allow_ai_generated_recommendations,
+        scoring_system: j.form.scoring_system ?? "yes_no_na",
+        pass_fail_threshold: j.form.pass_fail_threshold ?? null,
       });
       setBuilderCompanyId(f.companyId);
       setShowBuilder(true);
@@ -332,6 +369,7 @@ export function FormsView({ forms, companies }: Props) {
                 <SortHead label="Specialty" k="specialty" />
                 <SortHead label="Form Name" k="formName" />
                 <SortHead label="Fields" k="fieldCount" align="right" />
+                <th className="px-4 py-3 text-left">Scoring</th>
                 <th className="px-4 py-3 text-left">Template</th>
                 <SortHead label="Status" k="isActive" />
                 <th className="px-4 py-3 text-right">Actions</th>
@@ -340,7 +378,7 @@ export function FormsView({ forms, companies }: Props) {
             <tbody>
               {visible.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-ink-500">
+                  <td colSpan={8} className="px-4 py-12 text-center text-ink-500">
                     {forms.length === 0 ? (
                       <>No forms yet. Click <strong>New Form</strong> to build one.</>
                     ) : (
@@ -357,6 +395,19 @@ export function FormsView({ forms, companies }: Props) {
                     <td className="px-4 py-3 text-ink-700">{f.specialty}</td>
                     <td className="px-4 py-3 text-ink-900 font-medium">{f.formName}</td>
                     <td className="px-4 py-3 text-right text-ink-700">{fieldCount}</td>
+                    <td className="px-4 py-3">
+                      {(() => {
+                        const sk = f.scoringSystem ?? "yes_no_na";
+                        const cls = SCORING_CHIP[sk] ?? SCORING_CHIP.yes_no_na;
+                        return (
+                          <span
+                            className={`inline-flex rounded border px-2 py-0.5 text-xs font-medium ${cls}`}
+                          >
+                            {SCORING_LABEL[sk] ?? sk}
+                          </span>
+                        );
+                      })()}
+                    </td>
                     <td className="px-4 py-3">
                       {f.templatePdfUrl ? (
                         <a
@@ -430,6 +481,20 @@ export function FormsView({ forms, companies }: Props) {
                           <>
                             <ToggleLeft className="h-3 w-3 mr-1" /> Enable
                           </>
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDelete(f)}
+                        disabled={deletingId === f.id}
+                        className="h-7 text-xs text-critical-700 hover:bg-critical-50"
+                        title="Delete form (only allowed if no completed reviews use it)"
+                      >
+                        {deletingId === f.id ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-3 w-3" />
                         )}
                       </Button>
                     </td>

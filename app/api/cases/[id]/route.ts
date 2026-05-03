@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, toSnake } from '@/lib/db';
 import { reviewCases, peers } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { isAssignable, type PeerState } from '@/lib/peers/state-machine';
 import { auditLog } from '@/lib/utils/audit';
 
@@ -145,10 +145,64 @@ export async function PATCH(
       return NextResponse.json({ ok: true });
     }
 
-    return NextResponse.json(
-      { error: 'Unknown action', code: 'VALIDATION_ERROR' },
-      { status: 400 }
-    );
+    // ─── Phase 6.5 — generic field edit (no action) ────────────────────────
+    // When admin/client edits any AI-populated field, persist the new value
+    // AND append the field name to manual_overrides[]. Subsequent AI re-runs
+    // (chart upload, /analyze) MUST NOT overwrite a field listed here.
+    //
+    // Whitelisted field map: input-key → DB column (camelCase) + override-tag.
+    const FIELD_MAP: Record<
+      string,
+      { col: keyof typeof reviewCases.$inferSelect; tag: string }
+    > = {
+      specialty: { col: 'specialtyRequired', tag: 'specialty' },
+      specialty_required: { col: 'specialtyRequired', tag: 'specialty' },
+      provider_id: { col: 'providerId', tag: 'provider' },
+      company_form_id: { col: 'companyFormId', tag: 'company_form_id' },
+      mrn_number: { col: 'mrnNumber', tag: 'mrn' },
+      cadence_period_label: {
+        col: 'cadencePeriodLabel',
+        tag: 'cadence_period_label',
+      },
+    };
+
+    const updates: Record<string, unknown> = {};
+    const newOverrides: string[] = [];
+    for (const [key, val] of Object.entries(body ?? {})) {
+      const m = FIELD_MAP[key];
+      if (!m) continue;
+      updates[m.col as string] = val ?? null;
+      if (!newOverrides.includes(m.tag)) newOverrides.push(m.tag);
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json(
+        { error: 'Unknown action', code: 'VALIDATION_ERROR' },
+        { status: 400 }
+      );
+    }
+
+    // Append (de-duped) to manual_overrides[] using array_append-safe SQL.
+    // Drizzle doesn't have a clean concat-distinct helper here; we read,
+    // merge, and write back inside a single statement via SQL.
+    const overridesSql = sql`(
+      SELECT ARRAY(SELECT DISTINCT unnest(
+        COALESCE(${reviewCases.manualOverrides}, ARRAY[]::text[])
+        || ${newOverrides}::text[]
+      ))
+    )`;
+    (updates as any).manualOverrides = overridesSql;
+    (updates as any).updatedAt = new Date();
+
+    await db.update(reviewCases).set(updates).where(eq(reviewCases.id, id));
+    await auditLog({
+      action: 'case_field_updated',
+      resourceType: 'review_case',
+      resourceId: id,
+      metadata: { fields: newOverrides },
+      request,
+    });
+    return NextResponse.json({ ok: true, manual_overrides_added: newOverrides });
   } catch (err) {
     console.error('[API] PATCH /api/cases/[id] error:', err);
     return NextResponse.json(
