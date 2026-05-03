@@ -251,6 +251,21 @@ async function main() {
   reviewerIds.push({ id: actualRjohnsonId, specialty: 'Family Medicine' });
   console.log(' rjohnson upserted.');
 
+  // Phase 4 — credentialer demo personas. Renée + Janet provide variety
+  // for the earnings page (per-peer rate snapshots).
+  console.log('Upserting credentialer_users (Renée, Janet)...');
+  await sql.query(
+    `insert into credentialer_users (email, full_name, per_peer_rate, is_active)
+     values ('credentialing@peerspectiv.com', 'Renée Cole', 100.00, true)
+     on conflict (email) do nothing`
+  );
+  await sql.query(
+    `insert into credentialer_users (email, full_name, per_peer_rate, is_active)
+     values ('janet@peerspectiv.com', 'Janet Romero', 100.00, true)
+     on conflict (email) do nothing`
+  );
+  console.log(' credentialers upserted.');
+
   // ─── Providers ───
   console.log('Inserting providers...');
   let providerOk = 0;

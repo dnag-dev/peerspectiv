@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { reviewCases, batches } from '@/lib/db/schema';
+import { reviewCases, batches, peers } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
+import { isAssignable, type PeerState } from '@/lib/peers/state-machine';
 import { approveAssignment, approveAllAssignments } from '@/lib/ai/assignment-engine';
 import { sendPeerAssignment } from '@/lib/email/notifications';
 import { auditLog } from '@/lib/utils/audit';
@@ -27,6 +28,18 @@ export async function POST(request: NextRequest) {
 
     // Optional reassign: swap peer_id before approval. Used by manual peer picker.
     if (case_id && reassign_to) {
+      // Phase 4 (CR-006/SA-031F): block server-side if target peer is not Active.
+      const [targetPeer] = await db
+        .select({ state: peers.state })
+        .from(peers)
+        .where(eq(peers.id, reassign_to))
+        .limit(1);
+      if (!targetPeer || !isAssignable(targetPeer.state as PeerState)) {
+        return NextResponse.json(
+          { error: 'Peer not in Active state. Cannot assign.', code: 'PEER_NOT_ACTIVE' },
+          { status: 422 }
+        );
+      }
       await db
         .update(reviewCases)
         .set({ peerId: reassign_to, updatedAt: new Date() })

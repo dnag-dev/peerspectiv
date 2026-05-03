@@ -64,7 +64,8 @@ async function getAlternatePeers(
     .from(peersTable)
     .where(
       and(
-        eq(peersTable.status, "active"),
+        // Phase 4 (CR-006/SA-031F): only state='active' peers are assignable.
+        eq(peersTable.state, "active"),
         sql`exists (select 1 from peer_specialties where peer_id = ${peersTable.id} and specialty = ANY(${specialtyArr}))`
       )
     )

@@ -102,7 +102,7 @@ const ROLE_LANDING: Record<string, string> = {
   client: '/portal',
   peer: '/peer/portal',
   reviewer: '/peer/portal',  // BACK-COMPAT — old cookies still resolve
-  credentialer: '/credentialing/credentials',
+  credentialer: '/credentialing',
 };
 
 function isPublic(pathname: string): boolean {
@@ -280,7 +280,7 @@ export default async function middleware(request: NextRequest) {
       !pathname.startsWith('/api/')
     ) {
       // Section B6 — credentialer is scoped to /credentialing/* only.
-      return NextResponse.redirect(new URL('/credentialing/credentials', request.url));
+      return NextResponse.redirect(new URL('/credentialing', request.url));
     }
 
     return NextResponse.next();
