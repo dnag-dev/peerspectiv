@@ -165,15 +165,16 @@ export async function getCompanyCadencePeriods(
       // q label is 1..4 within the fiscal year
       const monthsFromFY = ((sm - fiscalStart) + 12) % 12;
       const qNum = Math.floor(monthsFromFY / 3) + 1;
-      // Fiscal year label = the calendar year containing the FY start month
-      const fyLabelYear = sm < fiscalStart ? sy - 1 : sy;
-      const fyDisplayYear = fiscalStart === 0 ? sy : fyLabelYear + 1; // FY ending year if non-Jan
-      const labelYear = fiscalStart === 0 ? sy : fyDisplayYear;
       const endMonthCursor = startCursor + 2;
       const ey = Math.floor(endMonthCursor / 12);
       const em = ((endMonthCursor % 12) + 12) % 12;
       const start = isoDate(sy, sm, 1);
       const end = isoDate(ey, em, lastDayOfMonth(ey, em));
+      // SA-063A: label year = calendar year of the period START. For FY-Apr,
+      // Q1 (Apr–Jun 2026) → "Q1 2026"; Q4 (Jan–Mar 2027) → "Q4 2027" because
+      // its start month is in 2027. (The previous formula used FY-END year
+      // for every quarter, producing "Q1 2027" for May 2026 — wrong.)
+      const labelYear = sy;
       periods.push({
         label: `Q${qNum} ${labelYear}`,
         start_date: start,
