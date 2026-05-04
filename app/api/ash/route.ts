@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
   }
   if (!portal || !['admin', 'client', 'peer', 'credentialer'].includes(portal)) {
     return NextResponse.json(
-      { error: 'portal must be admin, client, or peer' },
+      { error: 'portal must be admin, client, peer, or credentialer' },
       { status: 400 }
     );
   }

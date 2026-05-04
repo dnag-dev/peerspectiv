@@ -10,12 +10,19 @@ import {
 import { and, eq, sql, desc, inArray } from "drizzle-orm";
 
 export async function getDemoCompany() {
-  const rows = await db
-    .select()
-    .from(companies)
-    .where(eq(companies.name, "Hunter Health"))
-    .limit(1);
-  if (rows.length > 0) return rows[0];
+  // Prod DB has 7+ duplicate "Hunter Health" rows from repeated reseeds.
+  // Pick the one with the most review_cases so the demo shows real data
+  // (not an empty Hunter Health that happened to be inserted first).
+  const rows = await db.execute(sql`
+    SELECT c.* FROM companies c
+    LEFT JOIN review_cases rc ON rc.company_id = c.id
+    WHERE c.name = 'Hunter Health'
+    GROUP BY c.id
+    ORDER BY count(rc.id) DESC, c.created_at ASC
+    LIMIT 1
+  `);
+  const list = (rows as any).rows ?? rows;
+  if (Array.isArray(list) && list.length > 0) return list[0];
   const any = await db.select().from(companies).limit(1);
   return any[0];
 }

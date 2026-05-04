@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { and, desc, eq, ne } from 'drizzle-orm';
-import { db, toSnake } from '@/lib/db';
+import { db, toSnake, getCallerScope } from '@/lib/db';
 import { reviewCases } from '@/lib/db/schema';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    // CL-013 — same scoping rules as /api/cases/[id]. Force company/peer
+    // filter onto the query rather than relying on whatever the client
+    // sends in query params.
+    const scope = await getCallerScope(request);
+    if (scope.role === 'unknown' || scope.role === 'credentialer') {
+      return NextResponse.json(
+        { error: 'Forbidden', code: 'FORBIDDEN' },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const batch_id = searchParams.get('batch_id');
@@ -18,6 +29,20 @@ export async function GET(request: NextRequest) {
     if (batch_id) conditions.push(eq(reviewCases.batchId, batch_id));
     if (peer_id) conditions.push(eq(reviewCases.peerId, peer_id));
     if (company_id) conditions.push(eq(reviewCases.companyId, company_id));
+
+    // CL-013 — server-side scope. Ignore any company_id/peer_id query
+    // params from a client/peer caller; force their own scope.
+    if (scope.role === 'client') {
+      if (!scope.companyId) {
+        return NextResponse.json({ data: [] });
+      }
+      conditions.push(eq(reviewCases.companyId, scope.companyId));
+    } else if (scope.role === 'peer') {
+      if (!scope.peerId) {
+        return NextResponse.json({ data: [] });
+      }
+      conditions.push(eq(reviewCases.peerId, scope.peerId));
+    }
 
     const data = await db.query.reviewCases.findMany({
       where: conditions.length ? and(...conditions) : undefined,

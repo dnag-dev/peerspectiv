@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db, toSnake } from "@/lib/db";
-import { reviewCases, peers as peersTable } from "@/lib/db/schema";
+import { reviewCases, peers as peersTable, peerSpecialties } from "@/lib/db/schema";
 import { and, asc, eq, gte, inArray, sql } from "drizzle-orm";
 import { Card, CardContent } from "@/components/ui/card";
 import { AssignmentQueue } from "@/components/assign/AssignmentQueue";
@@ -56,6 +56,13 @@ async function getAlternatePeers(
 
   // Phase 1.3: query via peer_specialties join (specialty col dropped from peers)
   const specialtyArr = Array.from(specialtySet);
+  // Drizzle's neon-http driver flattens JS arrays into N parameters when
+  // interpolated into raw sql``, which breaks `ANY(...)`. Use inArray with
+  // a subquery instead.
+  const matchingPeerIds = db
+    .select({ peerId: peerSpecialties.peerId })
+    .from(peerSpecialties)
+    .where(inArray(peerSpecialties.specialty, specialtyArr));
   const peerRows = await db
     .select({
       peer: peersTable,
@@ -66,7 +73,7 @@ async function getAlternatePeers(
       and(
         // Phase 4 (CR-006/SA-031F): only state='active' peers are assignable.
         eq(peersTable.state, "active"),
-        sql`exists (select 1 from peer_specialties where peer_id = ${peersTable.id} and specialty = ANY(${specialtyArr}))`
+        inArray(peersTable.id, matchingPeerIds)
       )
     )
     .orderBy(asc(peersTable.activeCasesCount))

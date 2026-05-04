@@ -64,3 +64,98 @@ export function toCamel<T = Record<string, unknown>>(
   }
   return out as T;
 }
+
+// ─── CL-013 — caller scope resolver for tenant-scoped routes ──────────────
+//
+// Routes that return tenant-scoped data (review_cases, review_results, etc.)
+// must filter by the caller's company_id. Without this, a Hunter Health
+// client can read Lowell's cases by guessing UUIDs.
+//
+// Usage:
+//   const scope = await getCallerScope(request);
+//   if (scope.role === 'client' && row.companyId !== scope.companyId) → 404
+//
+// Returns role + (for client) companyId + (for peer) peerId. For admin,
+// no filter is applied (returns role only).
+
+export type CallerRole = 'admin' | 'client' | 'peer' | 'credentialer' | 'unknown';
+
+export interface CallerScope {
+  role: CallerRole;
+  companyId?: string;  // set when role='client'
+  peerId?: string;     // set when role='peer'
+  email?: string;
+}
+
+export async function getCallerScope(
+  req: { headers: Headers; cookies: { get: (name: string) => { value: string } | undefined } }
+): Promise<CallerScope> {
+  // 1. Headers (test path / API consumers)
+  const hdrRole = req.headers.get('x-demo-role') as CallerRole | null;
+  if (hdrRole) {
+    return {
+      role: hdrRole,
+      companyId: req.headers.get('x-demo-company-id') ?? undefined,
+      peerId: req.headers.get('x-demo-peer-id') ?? undefined,
+      email: req.headers.get('x-demo-email') ?? undefined,
+    };
+  }
+
+  // 2. Demo cookie (set by /api/demo/login)
+  const demoRaw = req.cookies.get('demo_user')?.value;
+  if (demoRaw) {
+    try {
+      const demo = JSON.parse(demoRaw) as { role?: string; email?: string };
+      const role = (demo.role as CallerRole) ?? 'unknown';
+      const email = demo.email;
+      const scope: CallerScope = { role, email };
+      if (role === 'client' && email) {
+        // Demo client maps to Hunter Health (the seeded demo company).
+        // For real prod tenancy we'd resolve via clients/companies join.
+        // Use the existing getDemoCompany() helper so caller scope matches
+        // what the rest of the portal sees. Important: prod has duplicate
+        // "Hunter Health" rows from repeated reseeds, and getDemoCompany
+        // picks one specific row deterministically — we must match it.
+        try {
+          const { getDemoCompany } = await import('@/lib/portal/queries');
+          const company = await getDemoCompany();
+          if (company?.id) scope.companyId = company.id;
+        } catch {
+          /* swallow — leave companyId unset; caller treats as deny */
+        }
+      } else if (role === 'peer' && email) {
+        try {
+          const { peers } = await import('./schema');
+          const { eq } = await import('drizzle-orm');
+          const [row] = await db
+            .select({ id: peers.id })
+            .from(peers)
+            .where(eq(peers.email, email))
+            .limit(1);
+          if (row) scope.peerId = row.id;
+        } catch {
+          /* swallow */
+        }
+      }
+      return scope;
+    } catch {
+      /* fall through */
+    }
+  }
+
+  // 3. Clerk session (production path) — best-effort.
+  try {
+    const { auth } = await import('@clerk/nextjs/server');
+    const a = auth() as any;
+    if (a?.userId) {
+      const role = (a.sessionClaims?.publicMetadata?.role as CallerRole) ?? 'unknown';
+      const companyId = a.sessionClaims?.publicMetadata?.companyId as string | undefined;
+      const peerId = a.sessionClaims?.publicMetadata?.peerId as string | undefined;
+      return { role, companyId, peerId };
+    }
+  } catch {
+    /* clerk not configured */
+  }
+
+  return { role: 'unknown' };
+}

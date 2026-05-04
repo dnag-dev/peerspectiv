@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, toSnake } from '@/lib/db';
+import { db, toSnake, getCallerScope } from '@/lib/db';
 import { reviewCases, peers } from '@/lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { isAssignable, type PeerState } from '@/lib/peers/state-machine';
@@ -11,6 +11,16 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+
+    // CL-013 — tenant scoping. Without this, any authenticated client can
+    // read any other tenant's case JSON by guessing UUIDs.
+    const scope = await getCallerScope(request);
+    if (scope.role === 'unknown' || scope.role === 'credentialer') {
+      return NextResponse.json(
+        { error: 'Forbidden', code: 'FORBIDDEN' },
+        { status: 403 }
+      );
+    }
 
     const row = await db.query.reviewCases.findFirst({
       where: eq(reviewCases.id, id),
@@ -50,6 +60,25 @@ export async function GET(
         { error: 'Case not found', code: 'NOT_FOUND' },
         { status: 404 }
       );
+    }
+
+    // CL-013 — tenant filter. Return 404 (not 403) to avoid confirming
+    // existence to an attacker probing UUIDs.
+    if (scope.role === 'client') {
+      if (!scope.companyId || (row as any).companyId !== scope.companyId) {
+        return NextResponse.json(
+          { error: 'Case not found', code: 'NOT_FOUND' },
+          { status: 404 }
+        );
+      }
+    }
+    if (scope.role === 'peer') {
+      if (!scope.peerId || (row as any).peerId !== scope.peerId) {
+        return NextResponse.json(
+          { error: 'Case not found', code: 'NOT_FOUND' },
+          { status: 404 }
+        );
+      }
     }
 
     // Preserve legacy shim API contract: shim returned `ai_analysis` and
