@@ -1,11 +1,13 @@
 import { db, toSnake } from "@/lib/db";
 import { companies, providers, reviewCases } from "@/lib/db/schema";
 import { asc, eq, inArray } from "drizzle-orm";
+import { unstable_noStore as noStore } from "next/cache";
 import { AddCompanyDialog } from "@/components/companies/AddCompanyDialog";
 import type { Company } from "@/types";
 import { CompaniesView } from "./CompaniesView";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface CompanyWithCounts extends Company {
   provider_count: number;
@@ -13,6 +15,10 @@ interface CompanyWithCounts extends Company {
 }
 
 async function getCompanies(): Promise<CompanyWithCounts[]> {
+  // Belt-and-braces against Next/Vercel data caching. dynamic='force-dynamic'
+  // SHOULD prevent caching but the query was returning stale results in prod
+  // (rows visible in DB but not in HTML), so opt out at the function level too.
+  noStore();
   const companyRows = await db.select().from(companies).orderBy(asc(companies.name));
   if (!companyRows.length) return [];
 
