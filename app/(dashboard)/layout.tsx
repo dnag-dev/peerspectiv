@@ -2,6 +2,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { TopBar } from '@/components/layout/TopBar';
 import { MobileNavProvider } from '@/components/layout/MobileNavContext';
 import { AshChat } from '@/components/ash/AshChat';
+import { BfcacheGuard } from '@/components/auth/BfcacheGuard';
 import { db } from '@/lib/db';
 import { reviewCases, peers, caseReassignmentRequests } from '@/lib/db/schema';
 import { eq, ne, sql } from 'drizzle-orm';
@@ -66,6 +67,7 @@ export default async function DashboardLayout({
 
   return (
     <MobileNavProvider>
+      <BfcacheGuard />
       <div className="flex h-screen overflow-hidden">
         <Sidebar openReassignmentCount={openReassignmentCount} />
         <div className="flex flex-1 flex-col overflow-hidden">
