@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Check, ChevronRight, X, Loader2 } from "lucide-react";
 
@@ -51,6 +51,34 @@ export function ClientSubmitWizard({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submittedBatchId, setSubmittedBatchId] = useState<string | null>(null);
+  const batchNameTouched = useRef(false);
+
+  // SA-063D / CL-017: prefill batch name from this company's current
+  // Review Cadence period (e.g. "Q2 2026"). Mirrors NewBatchModal's flow
+  // — admin and client both share the same cadence label so reports can
+  // align by period across personas. Honors manual edits via
+  // batchNameTouched.
+  useEffect(() => {
+    if (!company?.id) return;
+    if (batchNameTouched.current) return;
+    let cancelled = false;
+    fetch(`/api/companies/${company.id}/cadence-periods`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (cancelled || !j) return;
+        const periods = (j.periods as Array<{ label: string; start_date: string; end_date: string }>) ?? [];
+        if (periods.length === 0) return;
+        const today = new Date().toISOString().slice(0, 10);
+        const current =
+          periods.find((p) => p.start_date <= today && today <= p.end_date) ??
+          periods[periods.length - 1];
+        if (current?.label && !batchNameTouched.current) {
+          setBatchName(current.label);
+        }
+      })
+      .catch(() => { /* fall back to manual entry */ });
+    return () => { cancelled = true; };
+  }, [company?.id]);
 
   const availableSpecialties = useMemo(() => {
     const set = new Set(forms.map((f) => f.specialty));
@@ -208,6 +236,7 @@ export function ClientSubmitWizard({
             setSpecialty("");
             setFormId("");
             setBatchName("");
+            batchNameTouched.current = false;
             setRows([]);
           }}
           className="rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white hover:bg-white/10"
@@ -322,7 +351,10 @@ export function ClientSubmitWizard({
             </label>
             <input
               value={batchName}
-              onChange={(e) => setBatchName(e.target.value)}
+              onChange={(e) => {
+                batchNameTouched.current = true;
+                setBatchName(e.target.value);
+              }}
               placeholder={`e.g. Q2 2026 — ${specialty}`}
               className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#2563EB] focus:outline-none"
             />
