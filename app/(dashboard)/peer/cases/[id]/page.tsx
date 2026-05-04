@@ -15,6 +15,7 @@ import { PeerCaseSplit } from "@/components/peer/PeerCaseSplit";
 import { RequestReassignmentButton } from "@/components/peer/RequestReassignmentButton";
 import { ReturnCaseButton } from "@/components/peer/ReturnCaseButton";
 import { auth } from "@clerk/nextjs/server";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -499,6 +500,7 @@ export default async function PeerCasePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  noStore();
   const { id: caseId } = await params;
   return renderPeerCaseDetail(caseId);
 }

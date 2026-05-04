@@ -4,6 +4,7 @@ import { peers } from "@/lib/db/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Clock, FileText, CheckCircle2, Timer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,7 @@ const PAYOUT_STYLE: Record<string, string> = {
 };
 
 export default async function PeerEarningsPage() {
+  noStore();
   // Pull every case + its peer rate + time spent + most-recent payout
   // status (if any). LEFT JOIN review_results for the minutes; LEFT JOIN the
   // most recent peer_payouts row by period to surface payout state.

@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CaseStatusChart } from "@/components/dashboard/CaseStatusChart";
 import { CompanyFilter } from "@/components/dashboard/CompanyFilter";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
@@ -59,6 +60,7 @@ export default async function DashboardPage({
 }: {
   searchParams?: { company?: string };
 }) {
+  noStore();
   const now = new Date();
   // SA-003: optional company filter applied to every per-case query below.
   const filterCompanyId = searchParams?.company || null;

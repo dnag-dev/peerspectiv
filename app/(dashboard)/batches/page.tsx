@@ -9,6 +9,7 @@ import {
   type BatchWizardProvider,
 } from "@/components/batches/NewBatchModal";
 import { BatchesView } from "./BatchesView";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -86,6 +87,7 @@ async function getWizardData(): Promise<{
 }
 
 export default async function BatchesPage() {
+  noStore();
   const [batches, wizardData] = await Promise.all([
     getBatches(),
     getWizardData(),

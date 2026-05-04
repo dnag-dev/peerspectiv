@@ -20,6 +20,7 @@ import { PricingSection } from "@/components/companies/PricingSection";
 import { ProviderActions } from "@/components/companies/ProviderActions";
 import { Users } from "lucide-react";
 import type { Company, Provider } from "@/types";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
@@ -68,6 +69,7 @@ export default async function CompanyDetailPage({
 }: {
   params: { id: string };
 }) {
+  noStore();
   const result = await getCompanyWithProviders(params.id);
 
   if (!result) {

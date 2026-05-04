@@ -9,6 +9,7 @@ import { AlertTriangle, Download, Mail, ShieldCheck, Stethoscope } from "lucide-
 import { MyReviewsTab } from "@/components/peer/MyReviewsTab";
 import { MyScorecardTab } from "@/components/peer/MyScorecardTab";
 import { TwoFactorLink } from "@/components/profile/TwoFactorLink";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ function formatDate(d: string | Date | null | undefined) {
 }
 
 export default async function PeerProfilePage() {
+  noStore();
   // Find demo peer (or first available if missing).
   const found = await db
     .select()

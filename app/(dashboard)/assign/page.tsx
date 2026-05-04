@@ -8,6 +8,7 @@ import { AssignTabsNav } from "@/components/assign/AssignTabsNav";
 import { AssignedTab, type AssignedRow } from "@/components/assign/AssignedTab";
 import { Layers, Inbox } from "lucide-react";
 import type { ReviewCase, Peer, Provider, Company } from "@/types";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
@@ -169,6 +170,7 @@ export default async function AssignPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
+  noStore();
   const sp = await searchParams;
   const activeTab = sp?.tab === "assigned" ? "assigned" : "pending";
 

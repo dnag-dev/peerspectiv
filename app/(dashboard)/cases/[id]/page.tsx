@@ -21,6 +21,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { CaseStatusBadge, AIStatusBadge } from "@/components/cases/CaseStatusBadge";
 import { AIAnalysisPanel, TriggerAnalysisButton } from "@/components/cases/AIAnalysisPanel";
+import { unstable_noStore as noStore } from "next/cache";
 import {
   ArrowLeft,
   Calendar,
@@ -130,6 +131,7 @@ export default async function CaseDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  noStore();
   const { id } = await params;
   const [reviewCase, auditLogs] = await Promise.all([
     getCaseDetail(id),

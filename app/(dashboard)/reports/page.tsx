@@ -8,10 +8,12 @@ import { QAPIReportTab } from "@/components/reports/QAPIReportTab";
 import { PeerScorecardTab } from "@/components/reports/PeerScorecardTab";
 import { SavedReportsTab } from "@/components/reports/SavedReportsTab";
 import { DownloadAllPanel } from "@/components/reports/DownloadAllPanel";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReportsPage() {
+  noStore();
   const companyRows = await db
     .select({ id: companies.id, name: companies.name })
     .from(companies)

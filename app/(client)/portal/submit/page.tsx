@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { companies, providers, companyForms } from "@/lib/db/schema";
 import { and, asc, eq } from "drizzle-orm";
 import { ClientSubmitWizard } from "@/components/portal/ClientSubmitWizard";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +55,7 @@ async function getCompanyContext() {
 }
 
 export default async function ClientSubmitPage() {
+  noStore();
   const { company, providers, forms } = await getCompanyContext();
 
   return (

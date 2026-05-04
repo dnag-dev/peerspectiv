@@ -3,6 +3,7 @@ import { reviewCases } from "@/lib/db/schema";
 import { asc, eq, inArray, sql } from "drizzle-orm";
 import type { ReviewCase } from "@/types";
 import { PeerPortalClient } from "./client";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ export default async function PeerPortalPage({
 }: {
   searchParams?: { status?: string };
 }) {
+  noStore();
   const statusKey = (searchParams?.status ?? "all").toLowerCase();
   const wanted = STATUS_GROUPS[statusKey] ?? STATUS_GROUPS.all;
 

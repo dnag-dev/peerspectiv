@@ -20,6 +20,7 @@ import { BatchFormSection } from "@/components/batches/BatchFormSection";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, FileStack, Calendar, Building2, Hash } from "lucide-react";
 import type { Batch, ReviewCase, Provider, Peer } from "@/types";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
@@ -113,6 +114,7 @@ export default async function BatchDetailPage({
 }: {
   params: { id: string };
 }) {
+  noStore();
   const batch = await getBatchDetail(params.id);
 
   if (!batch) {

@@ -26,6 +26,7 @@ import {
   CalendarX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -133,6 +134,7 @@ export default async function PeerDetailPage({
 }: {
   params: { id: string };
 }) {
+  noStore();
   const data = await getPeerDetail(params.id);
   if (!data) notFound();
   const { peer, cases, results } = data;
