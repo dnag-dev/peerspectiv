@@ -3,6 +3,7 @@ import { companies } from '@/lib/db/schema';
 import { inArray, desc } from 'drizzle-orm';
 import { AddProspectModal } from '@/components/prospects/AddProspectModal';
 import { PipelineBoard } from '@/components/prospects/PipelineBoard';
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +53,7 @@ async function getPipeline() {
 }
 
 export default async function ProspectsPage() {
+  noStore();
   const pipeline = await getPipeline();
 
   // Serialize for the client board.

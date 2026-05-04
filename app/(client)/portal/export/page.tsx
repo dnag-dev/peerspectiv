@@ -1,10 +1,12 @@
 import { getDemoCompany } from "@/lib/portal/queries";
 import { ExportGrid } from "./ExportGrid";
 import { DownloadAllPanel } from "@/components/reports/DownloadAllPanel";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
 export default async function ExportPage() {
+  noStore();
   const company = await getDemoCompany();
   return (
     <div className="space-y-6">

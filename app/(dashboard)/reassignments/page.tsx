@@ -9,6 +9,7 @@ import {
 } from '@/lib/db/schema';
 import { ReassignmentsList, type ReassignmentRow } from '@/components/assign/ReassignmentsList';
 import { Inbox } from 'lucide-react';
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
@@ -50,6 +51,7 @@ async function getOpenRequests(): Promise<ReassignmentRow[]> {
 }
 
 export default async function ReassignmentsPage() {
+  noStore();
   const requests = await getOpenRequests();
 
   return (

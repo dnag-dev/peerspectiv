@@ -2,10 +2,12 @@ import { db, toSnake } from '@/lib/db';
 import { peers } from '@/lib/db/schema';
 import { asc, sql } from 'drizzle-orm';
 import { CredentialsView } from './CredentialsView';
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
 export default async function CredentialsPage() {
+  noStore();
   const rows = await db
     .select({
       id: peers.id,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,21 @@ export function AddProviderDialog({ companyId }: AddProviderDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [specialties, setSpecialties] = useState<{ id: string; name: string }[]>([]);
+
+  // SA-038: load specialty taxonomy so admins pick from a controlled list
+  // instead of typing free-text junk like "x" or "abc".
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    fetch("/api/specialties")
+      .then((r) => r.json())
+      .then((j) => {
+        if (!cancelled && Array.isArray(j?.data)) setSpecialties(j.data);
+      })
+      .catch(() => { /* ignore — validation will catch empty selection */ });
+    return () => { cancelled = true; };
+  }, [open]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,6 +65,12 @@ export function AddProviderDialog({ companyId }: AddProviderDialogProps) {
 
     if (!payload.specialty.trim()) {
       setError("Specialty is required.");
+      setLoading(false);
+      return;
+    }
+    // SA-038: gate against off-taxonomy specialty values from devtools edits.
+    if (specialties.length > 0 && !specialties.some((s) => s.name === payload.specialty)) {
+      setError("Specialty must be selected from the list.");
       setLoading(false);
       return;
     }
@@ -103,7 +124,20 @@ export function AddProviderDialog({ companyId }: AddProviderDialogProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="specialty">Specialty *</Label>
-            <Input id="specialty" name="specialty" placeholder="Internal Medicine" required />
+            <select
+              id="specialty"
+              name="specialty"
+              required
+              defaultValue=""
+              className="flex h-10 w-full rounded-md border border-ink-200 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cobalt-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="" disabled>
+                {specialties.length === 0 ? "Loading specialties…" : "Select a specialty"}
+              </option>
+              {specialties.map((s) => (
+                <option key={s.id} value={s.name}>{s.name}</option>
+              ))}
+            </select>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

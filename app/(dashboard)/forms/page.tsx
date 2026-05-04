@@ -2,10 +2,12 @@ import { db } from '@/lib/db';
 import { companyForms, companies } from '@/lib/db/schema';
 import { eq, asc } from 'drizzle-orm';
 import { FormsView } from './FormsView';
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
 export default async function FormsPage() {
+  noStore();
   const rows = await db
     .select({
       id: companyForms.id,

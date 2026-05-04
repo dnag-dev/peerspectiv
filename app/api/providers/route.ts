@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, toSnake } from "@/lib/db";
-import { providers } from "@/lib/db/schema";
+import { providers, specialtyTaxonomy } from "@/lib/db/schema";
+import { and, eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,6 +14,19 @@ export async function POST(req: NextRequest) {
 
     if (!specialty?.trim()) {
       return NextResponse.json({ error: "Specialty is required" }, { status: 400 });
+    }
+
+    // SA-038: server-side gate against off-taxonomy specialty values.
+    const taxonomyHit = await db
+      .select({ id: specialtyTaxonomy.id })
+      .from(specialtyTaxonomy)
+      .where(and(eq(specialtyTaxonomy.name, specialty.trim()), eq(specialtyTaxonomy.isActive, true)))
+      .limit(1);
+    if (taxonomyHit.length === 0) {
+      return NextResponse.json(
+        { error: "Specialty must match an active taxonomy entry.", code: "invalid_specialty" },
+        { status: 400 }
+      );
     }
 
     const [row] = await db

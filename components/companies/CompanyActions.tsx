@@ -24,20 +24,30 @@ export function CompanyActions({ company }: CompanyActionsProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiving, setArchiving] = useState(false);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
 
   async function handleArchive() {
     setArchiving(true);
+    setArchiveError(null);
     try {
       const res = await fetch(`/api/companies/${company.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "archived" }),
       });
-      if (!res.ok) throw new Error("Failed to archive company");
+      if (!res.ok) {
+        let msg = "Failed to archive company.";
+        try {
+          const body = await res.json();
+          if (body?.error) msg = body.error;
+        } catch { /* non-json */ }
+        setArchiveError(msg);
+        return;
+      }
       setArchiveOpen(false);
       router.refresh();
-    } catch {
-      // Error handled silently; could add toast
+    } catch (e: any) {
+      setArchiveError(e?.message ?? "Failed to archive company.");
     } finally {
       setArchiving(false);
     }
@@ -58,7 +68,7 @@ export function CompanyActions({ company }: CompanyActionsProps) {
 
       <EditCompanyDialog company={company} open={editOpen} onOpenChange={setEditOpen} />
 
-      <Dialog open={archiveOpen} onOpenChange={setArchiveOpen}>
+      <Dialog open={archiveOpen} onOpenChange={(o) => { setArchiveOpen(o); if (!o) setArchiveError(null); }}>
         <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle>Archive Company</DialogTitle>
@@ -67,6 +77,11 @@ export function CompanyActions({ company }: CompanyActionsProps) {
               active list. You can restore it later.
             </DialogDescription>
           </DialogHeader>
+          {archiveError && (
+            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {archiveError}
+            </div>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setArchiveOpen(false)} disabled={archiving}>
               Cancel

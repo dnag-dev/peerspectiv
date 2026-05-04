@@ -8,6 +8,7 @@ import {
 } from "@/lib/db/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { ProviderCharts } from "./ProviderCharts";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default async function ProviderDetailPage({
 }: {
   params: { id: string };
 }) {
+  noStore();
   const providerRows = await db
     .select()
     .from(providers)

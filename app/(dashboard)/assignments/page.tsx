@@ -9,6 +9,7 @@ import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { reviewCases, peers, providers, companies, batches } from '@/lib/db/schema';
 import { AssignmentsTable, type AssignmentRow } from '@/components/assign/AssignmentsTable';
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
@@ -108,6 +109,7 @@ export default async function AssignmentsPage({
 }: {
   searchParams: SearchParams;
 }) {
+  noStore();
   const rows = await loadRows(searchParams);
   const activeStatuses = parseStatusList(searchParams.status);
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getDemoCompany, getProviderPerformance } from "@/lib/portal/queries";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ interface PageProps {
 }
 
 export default async function ProvidersIndex({ searchParams }: PageProps) {
+  noStore();
   const company = await getDemoCompany();
   const list = await getProviderPerformance(company.id);
 

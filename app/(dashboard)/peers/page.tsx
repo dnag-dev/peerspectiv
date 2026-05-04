@@ -2,10 +2,12 @@ import { db, toSnake } from '@/lib/db';
 import { peers, peerSpecialties } from '@/lib/db/schema';
 import { asc, eq, sql } from 'drizzle-orm';
 import { PeersTable } from './PeersTable';
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
 export default async function PeersPage() {
+  noStore();
   // Phase 1.3: hydrate specialties from peer_specialties join (back-compat shape).
   // Note: drizzle's ${peers.id} interpolates as the bare column name "id" inside
   // the correlated subquery, which collides with peer_specialties.id. Use the

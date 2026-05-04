@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { clinics } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
 
+import { validateLocationInput } from "@/lib/validation/location";
+
 async function getAdminUserId(req: NextRequest): Promise<string | null> {
   try {
     const { auth } = await import("@clerk/nextjs/server");
@@ -64,13 +66,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "name is required" }, { status: 400 });
     }
 
+    const locErr = validateLocationInput(city, state);
+    if (locErr) {
+      return NextResponse.json({ error: locErr, code: "invalid_location" }, { status: 400 });
+    }
+
     const [row] = await db
       .insert(clinics)
       .values({
         companyId: company_id,
         name: name.trim(),
         city: city?.trim() || null,
-        state: state?.trim() || null,
+        state: state?.trim()?.toUpperCase() || null,
         isActive: true,
       })
       .returning();

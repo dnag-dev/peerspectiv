@@ -2,10 +2,12 @@ import { db } from "@/lib/db";
 import { reviewCases, providers } from "@/lib/db/schema";
 import { and, eq, desc } from "drizzle-orm";
 import { getDemoCompany } from "@/lib/portal/queries";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
 export default async function OverduePage() {
+  noStore();
   const company = await getDemoCompany();
   const rows = await db
     .select({

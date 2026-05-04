@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { clinics } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { validateLocationInput } from "@/lib/validation/location";
 
 async function getAdminUserId(req: NextRequest): Promise<string | null> {
   try {
@@ -38,9 +39,18 @@ export async function PATCH(
 
     if (typeof body.name === "string") updates.name = body.name.trim();
     if (typeof body.city === "string") updates.city = body.city.trim() || null;
-    if (typeof body.state === "string") updates.state = body.state.trim() || null;
+    if (typeof body.state === "string") {
+      const s = body.state.trim();
+      updates.state = s ? s.toUpperCase() : null;
+    }
     if (typeof body.is_active === "boolean") updates.isActive = body.is_active;
     if (typeof body.isActive === "boolean") updates.isActive = body.isActive;
+
+    // SA-040: validate city/state shape before write.
+    const locErr = validateLocationInput(updates.city, updates.state);
+    if (locErr) {
+      return NextResponse.json({ error: locErr, code: "invalid_location" }, { status: 400 });
+    }
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });

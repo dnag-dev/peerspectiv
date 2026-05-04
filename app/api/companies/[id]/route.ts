@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, toCamel, toSnake } from "@/lib/db";
-import { companies } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { companies, reviewCases } from "@/lib/db/schema";
+import { and, eq, inArray } from "drizzle-orm";
 
 async function getAdminUserId(req: NextRequest): Promise<string | null> {
   try {
@@ -94,6 +94,39 @@ export async function PATCH(
   }
 
   const { id } = params;
+
+  // SA-042: refuse to archive a company that still has active review cases.
+  // Active = anything not yet completed/cancelled. Forces the admin to
+  // resolve the work first instead of orphaning in-flight reviews.
+  if (updateSnake.status === "archived") {
+    const active = await db
+      .select({ id: reviewCases.id })
+      .from(reviewCases)
+      .where(
+        and(
+          eq(reviewCases.companyId, id),
+          inArray(reviewCases.status, [
+            "unassigned",
+            "pending_approval",
+            "assigned",
+            "in_progress",
+            "past_due",
+          ])
+        )
+      )
+      .limit(1);
+    if (active.length > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Cannot archive company with active review cases. Reassign or complete them first.",
+          code: "company_has_active_cases",
+        },
+        { status: 409 }
+      );
+    }
+  }
+
   const [row] = await db
     .update(companies)
     .set(toCamel(updateSnake))

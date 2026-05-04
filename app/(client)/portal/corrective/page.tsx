@@ -3,10 +3,12 @@ import { correctiveActions } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { getDemoCompany } from "@/lib/portal/queries";
 import { CorrectiveList } from "./CorrectiveList";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
 export default async function CorrectivePage() {
+  noStore();
   const company = await getDemoCompany();
   const rows = await db
     .select()

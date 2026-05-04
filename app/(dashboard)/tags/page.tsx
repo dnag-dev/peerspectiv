@@ -2,10 +2,12 @@ import { db } from '@/lib/db';
 import { tags, caseTags, companies } from '@/lib/db/schema';
 import { desc, eq, sql } from 'drizzle-orm';
 import { TagsView } from './TagsView';
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
 export default async function TagsPage() {
+  noStore();
   // Phase 6.3 — load tags with live case_count and the owning company name
   // (cadence-scoped tags only). Returned shape matches what TagsView expects.
   const rows = await db

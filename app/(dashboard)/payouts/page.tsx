@@ -1,8 +1,10 @@
 import { PayoutsView } from './PayoutsView';
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = 'force-dynamic';
 
 export default function PayoutsPage() {
+  noStore();
   return (
     <div className="space-y-6">
       <div>

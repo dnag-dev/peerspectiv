@@ -3,6 +3,7 @@ import { reviewCases, providers, reviewResults } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { getDemoCompany } from "@/lib/portal/queries";
 import { ReviewsTable } from "./ReviewsTable";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,7 @@ export default async function AllReviewsPage({
     quarter?: string;
   };
 }) {
+  noStore();
   const company = await getDemoCompany();
   const rows = await db
     .select({

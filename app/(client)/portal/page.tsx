@@ -14,10 +14,12 @@ import { db } from "@/lib/db";
 import { batches } from "@/lib/db/schema";
 import { and, desc, eq, isNotNull } from "drizzle-orm";
 import { DashboardView } from "./DashboardView";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
 export default async function ClientDashboardPage() {
+  noStore();
   const company = await getDemoCompany();
   const companyId = company.id;
 

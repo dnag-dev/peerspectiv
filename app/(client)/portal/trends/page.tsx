@@ -3,6 +3,7 @@ import { reviewResults, reviewCases, providers } from "@/lib/db/schema";
 import { eq, inArray, and } from "drizzle-orm";
 import { getDemoCompany } from "@/lib/portal/queries";
 import { TrendsCharts } from "./TrendsCharts";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ function quarterKeyFromDate(d: Date): string {
 }
 
 export default async function TrendsPage({ searchParams }: PageProps) {
+  noStore();
   const company = await getDemoCompany();
 
   // Specialty filter (multi-select via repeated query string)

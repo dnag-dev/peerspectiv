@@ -4,6 +4,7 @@ import { reviewCases, providers, peers, companies } from "@/lib/db/schema";
 import { and, desc, eq, gte, sql, type SQL } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,7 @@ export default async function CasesIndexPage({
 }: {
   searchParams: SearchParams;
 }) {
+  noStore();
   const filters: SQL[] = [];
   if (searchParams.status) {
     filters.push(eq(reviewCases.status, searchParams.status));

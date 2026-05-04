@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CanonicalReportPanel } from "@/components/reports/CanonicalReportsTabs";
 import { DownloadAllPanel } from "@/components/reports/DownloadAllPanel";
 import { QualityInsights } from "./QualityInsights";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ export const dynamic = "force-dynamic";
  * by lib/reports/persona-guard.ts).
  */
 export default async function QualityPage() {
+  noStore();
   const company = await getDemoCompany();
   const lockedCompanies = [{ id: company.id, name: company.name }];
 
