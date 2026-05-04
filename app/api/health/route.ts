@@ -10,6 +10,7 @@ export async function GET() {
     return NextResponse.json({
       status: 'ok',
       db: true,
+      version: '0.1.0',
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
