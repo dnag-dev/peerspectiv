@@ -23,6 +23,13 @@ async function getAdminUserId(req: NextRequest): Promise<string | null> {
   }
   const demo = req.headers.get('x-demo-user-id');
   if (demo && demo.trim()) return demo.trim();
+  const cookieRaw = req.cookies.get('demo_user')?.value;
+  if (cookieRaw) {
+    try {
+      const parsed = JSON.parse(cookieRaw);
+      if (parsed?.email) return `demo:${parsed.email}`;
+    } catch { /* malformed cookie */ }
+  }
   return null;
 }
 
