@@ -502,7 +502,43 @@ async function main() {
       console.error(`\nExpired peer insert failed for ${p.name}:`, e.message);
     }
   }
-  console.log(` ${pendingOk} pending_credentialing + ${expiredOk} license_expired peers added.`);
+  // Expiring Soon bucket — active peers with credential about to expire
+  // (3, 8, 12 days). Populates the third credentialing dashboard bucket.
+  const expiringPeers = [
+    { name: 'Dr. Sarah Okeke', spec: 'Family Medicine', state: 'TX', daysOut: 3,  lic: 'MD-EXP-001' },
+    { name: 'Dr. Owen Bailey', spec: 'Pediatrics',      state: 'CO', daysOut: 8,  lic: 'MD-EXP-002' },
+    { name: 'Dr. Priya Shah',  spec: 'Behavioral Health', state: 'NJ', daysOut: 12, lic: 'MD-EXP-003' },
+  ];
+  let expiringOk = 0;
+  for (const p of expiringPeers) {
+    const id = uuid();
+    const email = fallbackEmail(p.name).replace('reviewers', 'expiring.reviewers');
+    try {
+      await sql.query(
+        `insert into peers
+          (id, full_name, email, board_certification, license_state,
+           license_number, license_file_url,
+           credential_valid_until, max_case_load, rate_type, rate_amount,
+           active_cases_count, total_reviews_completed, status, availability_status, state)
+         values ($1,$2,$3,'ABFM',$4,
+                 $5, 'https://example.com/license.pdf',
+                 (CURRENT_DATE + ($6::int) * interval '1 day')::date, 75,
+                 'per_report', 100, 0, 0, 'active', 'available', 'active')
+         on conflict (email) do nothing`,
+        [id, p.name, email, p.state, p.lic, p.daysOut]
+      );
+      await sql.query(
+        `insert into peer_specialties (peer_id, specialty, verified_status)
+         values ($1, $2, 'verified')
+         on conflict (peer_id, specialty) do nothing`,
+        [id, p.spec]
+      );
+      expiringOk++;
+    } catch (e) {
+      console.error(`\nExpiring peer insert failed for ${p.name}:`, e.message);
+    }
+  }
+  console.log(` ${pendingOk} pending_credentialing + ${expiredOk} license_expired + ${expiringOk} expiring-soon peers added.`);
 
   // Grow cases beyond the original 21. Spread across all featured + 3 more
   // companies, mix of past_due / completed / in_progress, distinct batch periods.
