@@ -1,5 +1,6 @@
 import { CredentialerSidebar } from '@/components/layout/CredentialerSidebar';
 import { AshChat } from '@/components/ash/AshChat';
+import { BfcacheGuard } from '@/components/auth/BfcacheGuard';
 
 /**
  * Credentialer-role layout. Renders the standard SidebarShell tailored to
@@ -15,6 +16,7 @@ export default function CredentialingLayout({
 }) {
   return (
     <div className="flex h-screen overflow-hidden">
+      <BfcacheGuard />
       <CredentialerSidebar />
       <main className="flex-1 overflow-y-auto bg-paper-canvas p-4 md:p-6">
         {children}

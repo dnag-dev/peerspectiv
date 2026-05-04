@@ -3,6 +3,7 @@ import { companies, reviewResults, reviewCases } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { AshChat } from "@/components/ash/AshChat";
 import { ClientPortalShell } from "@/components/layout/ClientPortalShell";
+import { BfcacheGuard } from "@/components/auth/BfcacheGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,7 @@ export default async function ClientLayout({
 
   return (
     <ClientPortalShell companyName={company.name}>
+      <BfcacheGuard />
       {children}
       <AshChat
         portal="client"

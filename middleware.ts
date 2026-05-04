@@ -165,6 +165,47 @@ function redirectToHost(req: NextRequest, host: string, protocol: 'http:' | 'htt
   return NextResponse.redirect(target, status);
 }
 
+// AU-013 — Protected routes must never be cached by the browser. Without
+// these headers, pressing Back after logout briefly renders the cached HTML
+// of the previously authenticated page (server-side auth blocks the next
+// fetch, but the bfcache snapshot leaks until a navigation completes).
+const PROTECTED_PATH_PREFIXES = [
+  '/dashboard',
+  '/cases',
+  '/peers',
+  '/companies',
+  '/forms',
+  '/tags',
+  '/settings',
+  '/batches',
+  '/assignments',
+  '/credentials',
+  '/credentialing',
+  '/reports',
+  '/prospects',
+  '/portal',
+  '/peer',
+  '/payouts',
+  '/invoices',
+  '/assign',
+  '/command',
+];
+
+function isProtectedAppRoute(pathname: string): boolean {
+  for (const prefix of PROTECTED_PATH_PREFIXES) {
+    if (pathname === prefix || pathname.startsWith(prefix + '/')) return true;
+  }
+  return false;
+}
+
+function withSecurityHeaders(response: NextResponse, pathname: string): NextResponse {
+  if (!isProtectedAppRoute(pathname)) return response;
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  response.headers.set('Pragma', 'no-cache');
+  response.headers.set('Expires', '0');
+  return response;
+}
+
 // ────────────────────────────────────────────────────────────────────────
 
 export default async function middleware(request: NextRequest) {
@@ -283,7 +324,7 @@ export default async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/credentialing', request.url));
     }
 
-    return NextResponse.next();
+    return withSecurityHeaders(NextResponse.next(), pathname);
   }
 
   // Production mode: use Clerk
@@ -308,13 +349,18 @@ export default async function middleware(request: NextRequest) {
       '/portal(.*)',
     ]);
 
-    return clerkMiddleware((auth, req) => {
+    const clerkResponse = await clerkMiddleware((auth, req) => {
       if (!isPublicRoute(req) && isProtectedRoute(req)) {
         auth().protect();
       }
     })(request, {} as any);
+    // Apply no-store headers to the Clerk-returned response on protected routes.
+    if (clerkResponse instanceof NextResponse) {
+      return withSecurityHeaders(clerkResponse, pathname);
+    }
+    return clerkResponse;
   } catch {
-    return NextResponse.next();
+    return withSecurityHeaders(NextResponse.next(), pathname);
   }
 }
 
