@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { transitionPeer, PeerStateTransitionError, type PeerState } from '@/lib/peers/state-machine';
+import { db } from '@/lib/db';
+import { reviewCases } from '@/lib/db/schema';
+import { eq, and, inArray } from 'drizzle-orm';
 
 export async function POST(
   req: NextRequest,
@@ -38,6 +41,26 @@ export async function POST(
       const parsed = JSON.parse(cookieRaw);
       if (parsed?.email) actor = parsed.email;
     } catch { /* ignore */ }
+  }
+
+  // SA-030: Block archive/suspend if peer has active assignments
+  if (toState === 'archived' || toState === 'suspended') {
+    const activeCases = await db
+      .select({ id: reviewCases.id })
+      .from(reviewCases)
+      .where(
+        and(
+          eq(reviewCases.peerId, params.id),
+          inArray(reviewCases.status, ['assigned', 'in_progress'])
+        )
+      )
+      .limit(1);
+    if (activeCases.length > 0) {
+      return NextResponse.json(
+        { error: `Cannot ${toState === 'archived' ? 'archive' : 'suspend'} peer with active assignments. Reassign their cases first.` },
+        { status: 409 }
+      );
+    }
   }
 
   try {

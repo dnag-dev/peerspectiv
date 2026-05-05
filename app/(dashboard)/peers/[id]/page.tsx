@@ -17,6 +17,7 @@ import { CaseStatusBadge } from "@/components/batches/CaseStatusBadge";
 import { PeerOnboardCard } from "./PeerOnboardCard";
 import { PeerStateActions } from "./PeerStateActions";
 import { PeerStateHistory } from "./PeerStateHistory";
+import { PeerCredentialingLog } from "./PeerCredentialingLog";
 import {
   ArrowLeft,
   Mail,
@@ -422,6 +423,9 @@ export default async function PeerDetailPage({
           email: peer.email ?? null,
         }}
       />
+
+      {/* SA-126: Credentialing Log */}
+      <PeerCredentialingLog peerId={peer.id} />
 
       {/* SA-031L: State History */}
       <PeerStateHistory peerId={peer.id} />

@@ -87,7 +87,14 @@ export async function POST(request: NextRequest) {
           rateAmount: String(ra),
         })
         .returning();
-    } catch (err) {
+    } catch (err: any) {
+      // SA-023: friendly duplicate email error
+      if (err?.code === '23505' || err?.message?.includes('unique') || err?.message?.includes('duplicate')) {
+        return NextResponse.json(
+          { error: 'A peer with this email already exists.', code: 'DUPLICATE_EMAIL' },
+          { status: 409 }
+        );
+      }
       console.error('[API] POST /api/peers error:', err);
       return NextResponse.json(
         { error: 'Failed to create peer', code: 'DB_ERROR' },
