@@ -26,6 +26,7 @@ Phase 1 (Companies)
                                 |-> Phase 8 (Settings + Payments)
                                      |-> Phase 9 (Full E2E)
                                           |-> Phase 10 (Auth & RBAC)
+                                               |-> Phase 11 (HIPAA Compliance)
 ```
 
 ## Summary
@@ -42,5 +43,6 @@ Phase 1 (Companies)
 | 8 | [Settings, Payments & Remaining](Phase-08-Settings-Payments/plan.md) | ~25 | M | |
 | 9 | [Full E2E + Future](Phase-09-E2E-Future/plan.md) | ~263 | L | |
 | 10 | [Auth & RBAC](Phase-10-Auth-RBAC/plan.md) | ~18 | M | |
+| 11 | [HIPAA Compliance](Phase-11-HIPAA-Compliance/plan.md) | 10 tasks | L | CRITICAL |
 
-Auth moved to last (Phase 10) -- full E2E testing done first, auth hardening last.
+Auth (Phase 10) and HIPAA (Phase 11) must complete before production use with real patient data.
