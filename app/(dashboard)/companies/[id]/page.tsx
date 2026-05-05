@@ -17,6 +17,7 @@ import { AddProviderDialog } from "@/components/companies/AddProviderDialog";
 import { ImportProvidersDialog } from "@/components/companies/ImportProvidersDialog";
 import { LocationsSection } from "@/components/companies/LocationsSection";
 import { PricingSection } from "@/components/companies/PricingSection";
+import { CadenceSection } from "@/components/companies/CadenceSection";
 import { ProviderActions } from "@/components/companies/ProviderActions";
 import { Users } from "lucide-react";
 import type { Company, Provider } from "@/types";
@@ -161,6 +162,8 @@ export default async function CompanyDetailPage({
           )}
         </CardContent>
       </Card>
+
+      <CadenceSection companyId={company.id} />
 
       <PricingSection companyId={company.id} />
 

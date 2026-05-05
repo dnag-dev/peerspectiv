@@ -3,6 +3,23 @@ import { db, toCamel, toSnake } from "@/lib/db";
 import { companies, reviewCases } from "@/lib/db/schema";
 import { and, eq, inArray } from "drizzle-orm";
 
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const [row] = await db
+    .select()
+    .from(companies)
+    .where(eq(companies.id, params.id))
+    .limit(1);
+
+  if (!row) {
+    return NextResponse.json({ error: "Company not found" }, { status: 404 });
+  }
+
+  return NextResponse.json(toSnake(row));
+}
+
 async function getAdminUserId(req: NextRequest): Promise<string | null> {
   try {
     const { auth } = await import("@clerk/nextjs/server");
@@ -43,6 +60,8 @@ const ALLOWED_FIELDS = new Set([
   "billing_cycle_type",
   "billing_cycle",
   "fiscal_year_start_month",
+  "cadence_period_type",
+  "cadence_period_months",
   "delivery_preference",
   "delivery_method",
   "itemize_invoice",
