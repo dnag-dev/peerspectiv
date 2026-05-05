@@ -50,16 +50,22 @@ export function PeerStateHistory({ peerId }: { peerId: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
+    let cancelled = false;
+    async function load() {
       try {
         const res = await fetch(`/api/peers/${peerId}/state-audit`);
-        if (!res.ok) return;
+        if (!res.ok || cancelled) return;
         const data = await res.json();
-        setEntries(data.entries ?? []);
+        if (!cancelled) setEntries(data.entries ?? []);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
-    })();
+    }
+    load();
+    // Re-fetch when a state transition happens (custom event from PeerStateActions)
+    function onTransition() { load(); }
+    window.addEventListener("peer-state-changed", onTransition);
+    return () => { cancelled = true; window.removeEventListener("peer-state-changed", onTransition); };
   }, [peerId]);
 
   if (loading) {
