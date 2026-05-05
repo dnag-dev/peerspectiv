@@ -122,6 +122,19 @@ export async function PATCH(
     const action = body?.action as string | undefined;
 
     if (action === 'reassign') {
+      // SA-070: Block reassign of completed reviews
+      const [caseRow] = await db
+        .select({ status: reviewCases.status })
+        .from(reviewCases)
+        .where(eq(reviewCases.id, id))
+        .limit(1);
+      if (caseRow?.status === 'completed') {
+        return NextResponse.json(
+          { error: 'Cannot reassign a completed review.', code: 'COMPLETED_IMMUTABLE' },
+          { status: 409 }
+        );
+      }
+
       const peerId = body?.peer_id as string | undefined;
       if (!peerId) {
         return NextResponse.json(

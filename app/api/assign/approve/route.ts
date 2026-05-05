@@ -12,14 +12,36 @@ import { calculateProjectedCompletion } from '@/lib/utils/completion';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { case_id, batch_id, approve_all, reassign_to, company_form_id, case_ids } = body as {
+    const { case_id, batch_id, approve_all, reassign_to, company_form_id, case_ids, reject } = body as {
       case_id?: string;
       batch_id?: string;
       approve_all?: boolean;
       reassign_to?: string;
       company_form_id?: string;
       case_ids?: string[];
+      reject?: boolean;
     };
+
+    // SA-067D: Reject AI suggestion — reset case to unassigned
+    if (case_id && reject) {
+      await db
+        .update(reviewCases)
+        .set({
+          peerId: null,
+          status: 'unassigned',
+          assignmentSource: 'manual',
+          updatedAt: new Date(),
+        })
+        .where(eq(reviewCases.id, case_id));
+      await auditLog({
+        action: 'assignment_rejected',
+        resourceType: 'review_case',
+        resourceId: case_id,
+        metadata: { reason: 'AI suggestion rejected by admin' },
+        request,
+      });
+      return NextResponse.json({ ok: true, rejected: true });
+    }
 
     if (!case_id && !(batch_id && approve_all)) {
       return NextResponse.json(
