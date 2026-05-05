@@ -54,7 +54,7 @@ export function AttestationBlock({
             type="text"
             data-testid="attestation-mrn-input"
             value={mrn}
-            onChange={(e) => onMrnChange(e.target.value)}
+            onChange={(e) => onMrnChange(e.target.value.replace(/<[^>]*>/g, ""))}
             placeholder="Enter MRN"
             className="w-full rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm text-ink-900 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
           />

@@ -248,6 +248,40 @@ export function ReviewForm({
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [missingKeys, setMissingKeys] = useState<Set<string>>(new Set());
+  const [draftSaved, setDraftSaved] = useState(false);
+
+  // PR-014: Load draft from localStorage on mount
+  const draftKey = `peerspectiv.draft.${caseId}`;
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (draft.state) setState(draft.state);
+      if (draft.peerComments) setPeerComments(draft.peerComments);
+      if (draft.mrnNumber) setMrnNumber(draft.mrnNumber);
+      if (draft.licenseNumber) setLicenseNumber(draft.licenseNumber);
+      if (draft.licenseState) setLicenseState(draft.licenseState);
+    } catch { /* ignore corrupt draft */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // PR-014: Auto-save draft to localStorage on field changes (debounced)
+  useEffect(() => {
+    if (submitted) return;
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({
+          state,
+          peerComments,
+          mrnNumber,
+          licenseNumber,
+          licenseState,
+        }));
+      } catch { /* storage full or unavailable */ }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [state, peerComments, mrnNumber, licenseNumber, licenseState, draftKey, submitted]);
 
   const setFieldValue = useCallback((key: string, value: unknown) => {
     setState((prev) => ({
@@ -437,6 +471,8 @@ export function ReviewForm({
         }
       }
       setSubmitted(true);
+      // PR-014: Clear draft on successful submit
+      try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Submit failed");
     } finally {
@@ -901,8 +937,21 @@ export function ReviewForm({
       {/* Submit footer — relative + z-30 keeps it above the floating Ask Ash bubble */}
       <div className="sticky bottom-4 relative z-30 rounded-xl border border-ink-200 bg-paper-surface/95 p-4 shadow-sm backdrop-blur">
         <div className="flex items-center justify-between gap-3">
-          <div className="text-code text-ink-500">
-            Case: {caseId.slice(0, 8)}… · Peer: {peerId.slice(0, 8)}…
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setDraftSaved(true);
+                setTimeout(() => setDraftSaved(false), 2000);
+                window.location.href = "/peer/portal";
+              }}
+              className="rounded-md border border-ink-300 bg-white px-3 py-1.5 text-sm text-ink-700 hover:bg-ink-50"
+            >
+              {draftSaved ? "Saved!" : "Save & Exit"}
+            </button>
+            <span className="text-code text-ink-500">
+              Case: {caseId.slice(0, 8)}…
+            </span>
           </div>
           <button
             type="submit"
