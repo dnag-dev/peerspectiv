@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trash2, Upload, FileText, Copy, Sparkles, X } from "lucide-react";
+import { Loader2, Plus, Trash2, Upload, FileText, Copy, Sparkles, X, ChevronUp, ChevronDown } from "lucide-react";
 
 export interface BuiltFormField {
   field_key: string;
@@ -231,6 +231,15 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
   function removeField(idx: number) { setFields((prev) => prev.filter((_, i) => i !== idx)); }
   function updateField(idx: number, patch: Partial<BuiltFormField>) {
     setFields((prev) => prev.map((f, i) => (i === idx ? { ...f, ...patch } : f)));
+  }
+  function moveField(idx: number, dir: -1 | 1) {
+    setFields((prev) => {
+      const next = [...prev];
+      const target = idx + dir;
+      if (target < 0 || target >= next.length) return prev;
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
   }
 
   async function handleSave() {
@@ -511,6 +520,24 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
                           />
                           Required
                         </label>
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <button
+                          onClick={() => moveField(i, -1)}
+                          disabled={i === 0}
+                          className="rounded p-0.5 text-muted-foreground hover:bg-ink-100 disabled:opacity-30"
+                          title="Move up"
+                        >
+                          <ChevronUp className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => moveField(i, 1)}
+                          disabled={i === fields.length - 1}
+                          className="rounded p-0.5 text-muted-foreground hover:bg-ink-100 disabled:opacity-30"
+                          title="Move down"
+                        >
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                       <button
                         onClick={() => removeField(i)}

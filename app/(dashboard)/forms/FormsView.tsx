@@ -43,6 +43,8 @@ interface FormRow {
   templatePdfUrl: string | null;
   templatePdfName: string | null;
   scoringSystem?: string | null;
+  responseCount?: number;
+  avgDurationMin?: number | null;
 }
 
 const SCORING_LABEL: Record<string, string> = {
@@ -369,6 +371,8 @@ export function FormsView({ forms, companies }: Props) {
                 <SortHead label="Specialty" k="specialty" />
                 <SortHead label="Form Name" k="formName" />
                 <SortHead label="Fields" k="fieldCount" align="right" />
+                <th className="px-4 py-3 text-right">Responses</th>
+                <th className="px-4 py-3 text-right">Avg Duration</th>
                 <th className="px-4 py-3 text-left">Scoring</th>
                 <th className="px-4 py-3 text-left">Template</th>
                 <SortHead label="Status" k="isActive" />
@@ -378,7 +382,7 @@ export function FormsView({ forms, companies }: Props) {
             <tbody>
               {visible.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-ink-500">
+                  <td colSpan={10} className="px-4 py-12 text-center text-ink-500">
                     {forms.length === 0 ? (
                       <>No forms yet. Click <strong>New Form</strong> to build one.</>
                     ) : (
@@ -395,6 +399,10 @@ export function FormsView({ forms, companies }: Props) {
                     <td className="px-4 py-3 text-ink-700">{f.specialty}</td>
                     <td className="px-4 py-3 text-ink-900 font-medium">{f.formName}</td>
                     <td className="px-4 py-3 text-right text-ink-700">{fieldCount}</td>
+                    <td className="px-4 py-3 text-right text-ink-600">{f.responseCount ?? 0}</td>
+                    <td className="px-4 py-3 text-right text-ink-600">
+                      {f.avgDurationMin != null ? `${f.avgDurationMin}m` : "—"}
+                    </td>
                     <td className="px-4 py-3">
                       {(() => {
                         const sk = f.scoringSystem ?? "yes_no_na";
