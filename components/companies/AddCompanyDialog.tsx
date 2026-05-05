@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import { Plus } from "lucide-react";
 
 export function AddCompanyDialog() {
   const router = useRouter();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +60,7 @@ export function AddCompanyDialog() {
         throw new Error(body.error || "Failed to create company");
       }
 
+      toast({ title: "Company created", description: `${payload.name} has been added.` });
       setOpen(false);
       router.refresh();
     } catch (err) {
