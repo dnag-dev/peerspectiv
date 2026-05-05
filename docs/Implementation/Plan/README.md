@@ -40,7 +40,7 @@ Phase 1 (Companies)
 | 6 | [Peer Review Experience](Phase-06-Peer-Review/plan.md) | ~35 | XL | |
 | 7 | [Reports, Invoicing & Client Portal](Phase-07-Reports-Invoicing-Client/plan.md) | ~65 | L | |
 | 8 | [Settings, Payments & Remaining](Phase-08-Settings-Payments/plan.md) | ~25 | M | |
-| 9 | [Full E2E + Future](Phase-10-E2E-Future/plan.md) | ~263 | L | |
-| 10 | [Auth & RBAC](Phase-09-Auth-RBAC/plan.md) | ~18 | M | |
+| 9 | [Full E2E + Future](Phase-09-E2E-Future/plan.md) | ~263 | L | |
+| 10 | [Auth & RBAC](Phase-10-Auth-RBAC/plan.md) | ~18 | M | |
 
 Auth moved to last (Phase 10) -- full E2E testing done first, auth hardening last.
