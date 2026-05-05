@@ -8,35 +8,40 @@ import { Loader2, Plus, Trash2, Upload, FileText, Copy, Sparkles, X } from "luci
 export interface BuiltFormField {
   field_key: string;
   field_label: string;
-  field_type: "yes_no" | "rating" | "text";
+  /** Per-question option set (SA-044): yes_no_na, abc_na, or text. Legacy 'yes_no'/'rating' mapped on read. */
+  field_type: "yes_no_na" | "abc_na" | "text" | "yes_no" | "rating";
   is_required: boolean;
   display_order: number;
-  // Section C additions — all optional, defaults applied on read.
   allow_na?: boolean;
   default_value?: "yes" | "no" | "na" | null;
   required_text_on_non_default?: boolean;
   ops_term?: string | null;
-  // Phase 6.1 — per-question scoring metadata.
-  // default_answer's allowed values depend on the form's scoring_system:
-  //   yes_no_na  → 'yes' | 'no'   (N/A is never a default)
-  //   abc_na     → 'A' | 'B' | 'C'
-  //   pass_fail  → null (use is_critical instead)
-  default_answer?: "yes" | "no" | "A" | "B" | "C" | null;
+  /** Per-question default answer. Options depend on field_type:
+   *   yes_no_na → 'yes' | 'no' | 'na'
+   *   abc_na    → 'A' | 'B' | 'C' | 'na'
+   *   text      → null (no default)
+   */
+  default_answer?: "yes" | "no" | "na" | "A" | "B" | "C" | null;
   is_critical?: boolean;
 }
 
+/** @deprecated Scoring is now per-question via field_type, not per-form. Kept for backward compat. */
 export type ScoringSystem = "yes_no_na" | "abc_na" | "pass_fail";
 
-// Read helper: fill defaults for old rows missing the new keys.
-export function withFieldDefaults(f: BuiltFormField): Required<
-  Pick<BuiltFormField, "allow_na" | "required_text_on_non_default">
-> & { default_value: BuiltFormField["default_value"]; ops_term: BuiltFormField["ops_term"] } & BuiltFormField {
+/** Normalize legacy field_type values and fill defaults for old rows. */
+export function withFieldDefaults(f: BuiltFormField): BuiltFormField {
+  // Map legacy types to new per-question option sets
+  let fieldType = f.field_type;
+  if (fieldType === 'yes_no') fieldType = 'yes_no_na';
+  if (fieldType === 'rating') fieldType = 'yes_no_na';
   return {
     ...f,
+    field_type: fieldType,
     allow_na: f.allow_na ?? false,
     default_value: f.default_value ?? null,
     required_text_on_non_default: f.required_text_on_non_default ?? false,
     ops_term: f.ops_term ?? null,
+    default_answer: f.default_answer ?? null,
   };
 }
 
@@ -76,9 +81,8 @@ interface Props {
 type Mode = "upload" | "clone" | "scratch";
 
 const BLANK_FIELDS: BuiltFormField[] = [
-  { field_key: "documentation_complete", field_label: "Was documentation complete?", field_type: "yes_no", is_required: true, display_order: 0 },
-  { field_key: "overall_quality", field_label: "Overall quality rating", field_type: "rating", is_required: true, display_order: 1 },
-  { field_key: "narrative_final", field_label: "Review narrative", field_type: "text", is_required: true, display_order: 2 },
+  { field_key: "documentation_complete", field_label: "Was documentation complete?", field_type: "yes_no_na", is_required: true, display_order: 0 },
+  { field_key: "comments_and_recommendations", field_label: "Comments and Recommendations", field_type: "text", is_required: false, display_order: 1 },
 ];
 
 export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecialty, onCreated, editForm, prefill }: Props) {
@@ -94,8 +98,6 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [allowAiNarrative, setAllowAiNarrative] = useState(false);
-  const [scoringSystem, setScoringSystem] = useState<ScoringSystem>("yes_no_na");
-  const [failIfAnyCriticalNo, setFailIfAnyCriticalNo] = useState(true);
   const [aiDrafting, setAiDrafting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -114,10 +116,6 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
         }))
       );
       setAllowAiNarrative(!!editForm.allow_ai_generated_recommendations);
-      setScoringSystem(editForm.scoring_system ?? "yes_no_na");
-      setFailIfAnyCriticalNo(
-        editForm.pass_fail_threshold?.fail_if_any_critical_no !== false
-      );
       setMode("scratch");
     } else if (prefill) {
       setFormName(prefill.form_name);
@@ -129,18 +127,12 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
         }))
       );
       setAllowAiNarrative(!!prefill.allow_ai_generated_recommendations);
-      setScoringSystem(prefill.scoring_system ?? "yes_no_na");
-      setFailIfAnyCriticalNo(
-        prefill.pass_fail_threshold?.fail_if_any_critical_no !== false
-      );
       setMode("scratch");
     } else {
       setFormName("");
       setSpecialty(defaultSpecialty || "Family Medicine");
       setFields(BLANK_FIELDS);
       setAllowAiNarrative(false);
-      setScoringSystem("yes_no_na");
-      setFailIfAnyCriticalNo(true);
       setMode("scratch");
     }
     fetch(`/api/company-forms?company_id=${companyId}`)
@@ -210,7 +202,6 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
         body: JSON.stringify({
           specialty,
           form_name: formName || `${specialty} Peer Review`,
-          scoring_system: scoringSystem,
         }),
       });
       const j = await res.json();
@@ -235,7 +226,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
   }
 
   function addField() {
-    setFields((prev) => [...prev, { field_key: `field_${prev.length + 1}`, field_label: "New question", field_type: "yes_no", is_required: false, display_order: prev.length }]);
+    setFields((prev) => [...prev, { field_key: `field_${prev.length + 1}`, field_label: "New question", field_type: "yes_no_na", is_required: false, display_order: prev.length }]);
   }
   function removeField(idx: number) { setFields((prev) => prev.filter((_, i) => i !== idx)); }
   function updateField(idx: number, patch: Partial<BuiltFormField>) {
@@ -260,36 +251,21 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
           is_required: f.is_required,
           display_order: idx,
         };
-        if (f.field_type === "yes_no") {
-          if (f.allow_na) cleaned.allow_na = true;
-          if (f.default_value) cleaned.default_value = f.default_value;
+        if (f.field_type === "yes_no_na") {
           if (f.required_text_on_non_default) cleaned.required_text_on_non_default = true;
+          if (f.default_answer) cleaned.default_answer = f.default_answer;
         }
-        if (f.ops_term) cleaned.ops_term = f.ops_term;
-        // Phase 6.1 — bound default_answer values to the active scoring system.
-        if (scoringSystem === "yes_no_na" && (f.default_answer === "yes" || f.default_answer === "no")) {
-          cleaned.default_answer = f.default_answer;
-        } else if (
-          scoringSystem === "abc_na" &&
-          (f.default_answer === "A" || f.default_answer === "B" || f.default_answer === "C")
-        ) {
-          cleaned.default_answer = f.default_answer;
+        if (f.field_type === "abc_na") {
+          if (f.default_answer) cleaned.default_answer = f.default_answer;
         }
-        if (scoringSystem === "pass_fail" && f.is_critical) cleaned.is_critical = true;
         return cleaned;
       });
-      const passFailThreshold =
-        scoringSystem === "pass_fail"
-          ? { fail_if_any_critical_no: failIfAnyCriticalNo }
-          : null;
       const payload = isEdit
         ? {
             specialty,
             form_name: formName.trim(),
             form_fields: normalizedFields,
             allow_ai_generated_recommendations: allowAiNarrative,
-            scoring_system: scoringSystem,
-            pass_fail_threshold: passFailThreshold,
           }
         : {
             company_id: companyId,
@@ -299,8 +275,6 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
             template_pdf_url: templatePdfUrl,
             template_pdf_name: templatePdfName,
             allow_ai_generated_recommendations: allowAiNarrative,
-            scoring_system: scoringSystem,
-            pass_fail_threshold: passFailThreshold,
           };
       const res = await fetch(url, {
         method,
@@ -362,44 +336,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
             </span>
           </label>
 
-          {/* Phase 6.1 — Scoring system */}
-          <div className="rounded-md border border-ink-200 bg-ink-50/50 p-3">
-            <div className="text-xs font-medium text-ink-900">Scoring system</div>
-            <div className="mt-2 flex flex-wrap gap-3 text-xs text-ink-700">
-              {(
-                [
-                  ["yes_no_na", "Yes / No / NA"],
-                  ["abc_na", "A / B / C / NA"],
-                  ["pass_fail", "Pass / Fail"],
-                ] as Array<[ScoringSystem, string]>
-              ).map(([val, label]) => (
-                <label key={val} className="flex items-center gap-1">
-                  <input
-                    type="radio"
-                    name="scoring_system"
-                    value={val}
-                    checked={scoringSystem === val}
-                    onChange={() => setScoringSystem(val)}
-                  />
-                  {label}
-                </label>
-              ))}
-            </div>
-            {scoringSystem === "pass_fail" && (
-              <label className="mt-2 flex items-center gap-2 text-xs text-ink-700">
-                <input
-                  type="checkbox"
-                  checked={failIfAnyCriticalNo}
-                  onChange={(e) => setFailIfAnyCriticalNo(e.target.checked)}
-                />
-                Fail the form if any question marked
-                <strong className="text-ink-900">critical</strong>
-                is answered <strong className="text-ink-900">No</strong>.
-              </label>
-            )}
-          </div>
-
-          {/* Phase 6.1 — Draft with AI */}
+          {/* Draft with AI */}
           <div className="flex items-center justify-between rounded-md border border-cobalt-100 bg-cobalt-50/40 px-3 py-2">
             <div className="text-xs text-ink-700">
               <strong className="text-ink-900">Draft form with AI</strong> — generates
@@ -531,9 +468,9 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
             </div>
             <div className="space-y-2">
               {fields.map((f, i) => {
-                const isYesNo = f.field_type === "yes_no";
-                const allowNa = !!f.allow_na;
-                const defaultVal = f.default_value ?? "";
+                const isYesNoNa = f.field_type === "yes_no_na" || f.field_type === "yes_no";
+                const isAbcNa = f.field_type === "abc_na";
+                const isMultipleChoice = isYesNoNa || isAbcNa;
                 return (
                   <div key={i} className="rounded-md border p-2">
                     <div className="flex items-start gap-2">
@@ -541,26 +478,29 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
                         <input
                           value={f.field_label}
                           onChange={(e) => updateField(i, { field_label: e.target.value })}
-                          placeholder="Field label"
+                          placeholder="Question text"
                           className="col-span-7 rounded border px-2 py-1.5 text-sm"
                         />
                         <select
-                          value={f.field_type}
+                          value={isYesNoNa ? "yes_no_na" : f.field_type}
                           onChange={(e) => {
                             const newType = e.target.value as BuiltFormField["field_type"];
-                            // If changing away from yes_no, drop yes_no-only metadata
                             const patch: Partial<BuiltFormField> = { field_type: newType };
-                            if (newType !== "yes_no") {
-                              patch.allow_na = false;
-                              patch.default_value = null;
+                            // Clear metadata that doesn't apply to the new type
+                            if (newType === "text") {
+                              patch.default_answer = null;
                               patch.required_text_on_non_default = false;
+                            } else if (newType === "abc_na" && (f.default_answer === "yes" || f.default_answer === "no")) {
+                              patch.default_answer = null;
+                            } else if (newType === "yes_no_na" && (f.default_answer === "A" || f.default_answer === "B" || f.default_answer === "C")) {
+                              patch.default_answer = null;
                             }
                             updateField(i, patch);
                           }}
                           className="col-span-3 rounded border bg-background px-2 py-1.5 text-sm"
                         >
-                          <option value="yes_no">Yes / No</option>
-                          <option value="rating">Rating 0-100</option>
+                          <option value="yes_no_na">Yes / No / NA</option>
+                          <option value="abc_na">A / B / C / NA</option>
                           <option value="text">Text</option>
                         </select>
                         <label className="col-span-2 flex items-center gap-1 text-xs">
@@ -580,8 +520,8 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
-                    {/* Phase 6.1 — per-question scoring metadata */}
-                    {scoringSystem !== "pass_fail" && f.field_type !== "text" && (
+                    {/* Per-question options — SA-044 */}
+                    {isMultipleChoice && (
                       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-1 text-xs text-ink-700">
                         <label className="flex items-center gap-1">
                           <span>Default answer</span>
@@ -590,90 +530,41 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
                             onChange={(e) => {
                               const v = e.target.value;
                               updateField(i, {
-                                default_answer:
-                                  v === ""
-                                    ? null
-                                    : (v as "yes" | "no" | "A" | "B" | "C"),
+                                default_answer: v === "" ? null : (v as BuiltFormField["default_answer"]),
                               });
                             }}
                             className="rounded border bg-background px-1.5 py-0.5 text-xs"
                           >
                             <option value="">None</option>
-                            {scoringSystem === "yes_no_na" && (
+                            {isYesNoNa && (
                               <>
                                 <option value="yes">Yes</option>
                                 <option value="no">No</option>
+                                <option value="na">NA</option>
                               </>
                             )}
-                            {scoringSystem === "abc_na" && (
+                            {isAbcNa && (
                               <>
                                 <option value="A">A</option>
                                 <option value="B">B</option>
                                 <option value="C">C</option>
+                                <option value="na">NA</option>
                               </>
                             )}
                           </select>
                         </label>
-                      </div>
-                    )}
-                    {scoringSystem === "pass_fail" && f.field_type !== "text" && (
-                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-1 text-xs text-ink-700">
-                        <label className="flex items-center gap-1">
-                          <input
-                            type="checkbox"
-                            checked={!!f.is_critical}
-                            onChange={(e) =>
-                              updateField(i, { is_critical: e.target.checked })
-                            }
-                          />
-                          Critical (fail-on-No)
-                        </label>
-                      </div>
-                    )}
-                    {isYesNo && (
-                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-1 text-xs text-ink-700">
-                        <label className="flex items-center gap-1">
-                          <input
-                            type="checkbox"
-                            checked={allowNa}
-                            onChange={(e) => {
-                              const next = e.target.checked;
-                              const patch: Partial<BuiltFormField> = { allow_na: next };
-                              // If turning off NA while default is na, clear default
-                              if (!next && f.default_value === "na") patch.default_value = null;
-                              updateField(i, patch);
-                            }}
-                          />
-                          Allow N/A
-                        </label>
-                        <label className="flex items-center gap-1">
-                          <span>Default</span>
-                          <select
-                            value={defaultVal}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              updateField(i, {
-                                default_value: v === "" ? null : (v as "yes" | "no" | "na"),
-                              });
-                            }}
-                            className="rounded border bg-background px-1.5 py-0.5 text-xs"
-                          >
-                            <option value="">None</option>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                            <option value="na" disabled={!allowNa}>N/A</option>
-                          </select>
-                        </label>
-                        <label className="flex items-center gap-1">
-                          <input
-                            type="checkbox"
-                            checked={!!f.required_text_on_non_default}
-                            onChange={(e) =>
-                              updateField(i, { required_text_on_non_default: e.target.checked })
-                            }
-                          />
-                          Require comment when not default
-                        </label>
+                        {isYesNoNa && (
+                          <label className="flex items-center gap-1">
+                            <input
+                              type="checkbox"
+                              checked={!!f.required_text_on_non_default}
+                              onChange={(e) =>
+                                updateField(i, { required_text_on_non_default: e.target.checked })
+                              }
+                            />
+                            Require additional response if No
+                          </label>
+                        )}
                       </div>
                     )}
                   </div>
