@@ -114,6 +114,35 @@ export async function PATCH(
 
   const { id } = params;
 
+  // SA-063F: validate cadence configuration fields.
+  if (updateSnake.fiscal_year_start_month !== undefined) {
+    const fy = Number(updateSnake.fiscal_year_start_month);
+    if (!Number.isInteger(fy) || fy < 1 || fy > 12) {
+      return NextResponse.json(
+        { error: "Fiscal year start month must be between 1 and 12." },
+        { status: 400 }
+      );
+    }
+  }
+  if (updateSnake.cadence_period_type !== undefined) {
+    const validTypes = ["quarterly", "monthly", "custom_multi_month", "random"];
+    if (!validTypes.includes(updateSnake.cadence_period_type as string)) {
+      return NextResponse.json(
+        { error: "Invalid cadence period type." },
+        { status: 400 }
+      );
+    }
+  }
+  if (updateSnake.cadence_period_months !== undefined) {
+    const cm = Number(updateSnake.cadence_period_months);
+    if (!Number.isInteger(cm) || cm < 2 || cm > 12) {
+      return NextResponse.json(
+        { error: "Custom period length must be between 2 and 12 months." },
+        { status: 400 }
+      );
+    }
+  }
+
   // SA-042: refuse to archive a company that still has active review cases.
   // Active = anything not yet completed/cancelled. Forces the admin to
   // resolve the work first instead of orphaning in-flight reviews.

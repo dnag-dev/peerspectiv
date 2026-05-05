@@ -29,11 +29,13 @@ export function AddCompanyDialog() {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
+    const perReviewRate = formData.get("per_review_rate") as string;
     const payload = {
       name: formData.get("name") as string,
       contact_person: (formData.get("contact_person") as string) || null,
       contact_email: (formData.get("contact_email") as string) || null,
       contact_phone: (formData.get("contact_phone") as string) || null,
+      per_review_rate: perReviewRate ? Number(perReviewRate) : null,
       notes: (formData.get("notes") as string) || null,
       status: "active" as const,
     };
@@ -98,6 +100,11 @@ export function AddCompanyDialog() {
               <Label htmlFor="contact_phone">Contact Phone</Label>
               <Input id="contact_phone" name="contact_phone" placeholder="(555) 123-4567" />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="per_review_rate">Per-Review Rate ($)</Label>
+            <Input id="per_review_rate" name="per_review_rate" type="number" min="0" step="0.01" placeholder="90.00" />
+            <p className="text-xs text-muted-foreground">Default rate per review for invoicing. Leave blank to use global rate.</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>

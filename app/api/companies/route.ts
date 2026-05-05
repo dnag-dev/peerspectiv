@@ -5,7 +5,7 @@ import { companies } from "@/lib/db/schema";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, contact_person, contact_email, contact_phone, notes, status } = body;
+    const { name, contact_person, contact_email, contact_phone, per_review_rate, notes, status } = body;
 
     if (!name?.trim()) {
       return NextResponse.json({ error: "Company name is required" }, { status: 400 });
@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
         contactPerson: contact_person || null,
         contactEmail: contact_email || null,
         contactPhone: contact_phone || null,
+        perReviewRate: per_review_rate != null ? String(per_review_rate) : null,
         notes: notes || null,
         status: status || "active",
       })

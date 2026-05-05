@@ -362,6 +362,41 @@ describe('findPeriodForDate', () => {
   });
 });
 
+// ─── SA-063F: Invalid cadence config validation ──────────────────────────
+describe('buildCadencePeriods — SA-063F invalid configs', () => {
+  const may2 = utc('2026-05-02');
+
+  it('customMonths = 0 is clamped to 2 (minimum)', () => {
+    const config: CadenceConfig = { fiscalYearStartMonth: 1, type: 'custom_multi_month', customMonths: 0 };
+    const periods = buildCadencePeriods(config, may2, 0);
+    // 0 clamped to 2 → bi-monthly periods
+    expect(periods[0].start_date).toBe('2026-05-01');
+    expect(periods[0].end_date).toBe('2026-06-30');
+  });
+
+  it('customMonths = -1 is clamped to 2 (minimum)', () => {
+    const config: CadenceConfig = { fiscalYearStartMonth: 1, type: 'custom_multi_month', customMonths: -1 };
+    const periods = buildCadencePeriods(config, may2, 0);
+    expect(periods[0].label).toBe('May \u2013 Jun 2026');
+  });
+
+  it('customMonths = 13 is clamped to 12 (maximum)', () => {
+    const config: CadenceConfig = { fiscalYearStartMonth: 1, type: 'custom_multi_month', customMonths: 13 };
+    const periods = buildCadencePeriods(config, may2, 0);
+    // 13 clamped to 12 → annual periods starting Jan
+    expect(periods[0].label).toBe('Jan \u2013 Dec 2026');
+  });
+
+  it('fiscalYearStartMonth works for all 12 months', () => {
+    for (let month = 1; month <= 12; month++) {
+      const config: CadenceConfig = { fiscalYearStartMonth: month, type: 'quarterly' };
+      const periods = buildCadencePeriods(config, may2, 0);
+      expect(periods.length).toBeGreaterThan(0);
+      expect(periods[0].type).toBe('quarterly');
+    }
+  });
+});
+
 // ─── Edge cases ───────────────────────────────────────────────────────────
 describe('buildCadencePeriods — edge cases', () => {
   it('end dates use correct last day of month (Feb leap year)', () => {
