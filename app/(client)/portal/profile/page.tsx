@@ -218,7 +218,7 @@ export default function ClientProfilePage() {
             placeholder="Type your question here..."
             rows={4}
           />
-          {supportSent && <p className="text-sm text-emerald-600">Your question has been submitted. We'll get back to you soon.</p>}
+          {supportSent && <p className="text-sm text-emerald-600">Your question has been submitted. We&apos;ll get back to you soon.</p>}
           <Button onClick={handleSupportSubmit} disabled={supportSending || !supportMsg.trim()}>
             {supportSending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Submit Question
