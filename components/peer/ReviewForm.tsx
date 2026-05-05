@@ -250,7 +250,9 @@ export function ReviewForm({
   const [missingKeys, setMissingKeys] = useState<Set<string>>(new Set());
   const [draftSaved, setDraftSaved] = useState(false);
 
-  // PR-014: Load draft from localStorage on mount
+  // PR-014: Load draft from localStorage on mount.
+  // HIPAA: Only non-PHI data stored (form answers + comments). MRN, license
+  // number, and license state are NOT persisted to localStorage.
   const draftKey = `peerspectiv.draft.${caseId}`;
   useEffect(() => {
     try {
@@ -259,14 +261,12 @@ export function ReviewForm({
       const draft = JSON.parse(raw);
       if (draft.state) setState(draft.state);
       if (draft.peerComments) setPeerComments(draft.peerComments);
-      if (draft.mrnNumber) setMrnNumber(draft.mrnNumber);
-      if (draft.licenseNumber) setLicenseNumber(draft.licenseNumber);
-      if (draft.licenseState) setLicenseState(draft.licenseState);
     } catch { /* ignore corrupt draft */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // PR-014: Auto-save draft to localStorage on field changes (debounced)
+  // PR-014: Auto-save draft to localStorage on field changes (debounced).
+  // HIPAA: Only QA answers and general comments saved — no PHI (MRN, license).
   useEffect(() => {
     if (submitted) return;
     const timer = setTimeout(() => {
@@ -274,14 +274,11 @@ export function ReviewForm({
         localStorage.setItem(draftKey, JSON.stringify({
           state,
           peerComments,
-          mrnNumber,
-          licenseNumber,
-          licenseState,
         }));
       } catch { /* storage full or unavailable */ }
     }, 1000);
     return () => clearTimeout(timer);
-  }, [state, peerComments, mrnNumber, licenseNumber, licenseState, draftKey, submitted]);
+  }, [state, peerComments, draftKey, submitted]);
 
   const setFieldValue = useCallback((key: string, value: unknown) => {
     setState((prev) => ({
