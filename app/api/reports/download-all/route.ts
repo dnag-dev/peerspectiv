@@ -8,7 +8,7 @@
  *      {Company}_Specialty_Highlights_{Period}.pdf
  *      {Company}_Provider_Highlights_{Period}.pdf
  *      {Company}_Quality_Certificate_{Period}.pdf
- *      {Company}_Invoice_{Period}.pdf  (Phase 7 will plug in real per-specialty pricing)
+ *      {Company}_Invoice_{Period}.pdf  (real per-specialty pricing from SA-131)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -22,6 +22,7 @@ import * as questionAnalytics from '@/lib/reports/types/question-analytics';
 import * as specialtyHighlights from '@/lib/reports/types/specialty-highlights';
 import * as providerHighlights from '@/lib/reports/types/provider-highlights';
 import * as qualityCertificate from '@/lib/reports/types/quality-certificate';
+import { generateInvoice, type InvoiceCaseBreakdown } from '@/lib/invoices/generate';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -48,25 +49,50 @@ async function getCompanyName(companyId: string): Promise<string> {
   return rows?.[0]?.name ?? 'Company';
 }
 
-/** Lightweight invoice stub; Phase 7 will replace with real per-specialty pricing. */
-async function buildInvoiceStub(
-  companyName: string,
-  period: string
+/** SA-131: Generate real invoice PDF using per-specialty pricing from the cadence. */
+async function buildInvoicePdf(
+  companyId: string,
+  cadencePeriodLabel: string,
+  rangeStart: string,
+  rangeEnd: string
 ): Promise<Buffer> {
-  const { default: jsPDF } = await import('jspdf');
-  const doc = new jsPDF();
-  doc.setFontSize(20);
-  doc.text('Invoice (stub)', 14, 22);
-  doc.setFontSize(11);
-  doc.text(`Bill to: ${companyName}`, 14, 36);
-  doc.text(`Period: ${period}`, 14, 44);
-  doc.text(
-    'Phase 7 will replace this with real per-specialty pricing from the cadence.',
-    14,
-    60,
-    { maxWidth: 180 }
-  );
-  return Buffer.from(doc.output('arraybuffer'));
+  // Query case breakdown by specialty for the period
+  const breakdownRows = await db.execute<{ specialty: string; cnt: number }>(sql`
+    SELECT COALESCE(rc.specialty_required, 'General') AS specialty,
+           COUNT(*)::int AS cnt
+    FROM review_results rr
+    INNER JOIN review_cases rc ON rc.id = rr.case_id
+    WHERE rc.company_id = ${companyId}
+      AND rr.submitted_at::date >= ${rangeStart}::date
+      AND rr.submitted_at::date <= ${rangeEnd}::date
+    GROUP BY COALESCE(rc.specialty_required, 'General')
+  `);
+  const rows = ((breakdownRows as any).rows ?? breakdownRows) as Array<{ specialty: string; cnt: number }>;
+  const bySpecialty: Record<string, number> = {};
+  for (const r of rows) {
+    bySpecialty[r.specialty] = r.cnt;
+  }
+  const breakdown: InvoiceCaseBreakdown = { bySpecialty };
+
+  try {
+    const result = await generateInvoice({
+      companyId,
+      cadencePeriodLabel,
+      breakdown,
+    });
+    return result.pdfBuffer;
+  } catch (e) {
+    // Fallback: if invoice generation fails, produce a minimal placeholder
+    console.warn('[download-all] invoice generation failed, using fallback:', e);
+    const { default: jsPDF } = await import('jspdf');
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('Invoice', 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Period: ${cadencePeriodLabel}`, 14, 36);
+    doc.text('Invoice generation encountered an error. Please regenerate from the Invoices page.', 14, 48, { maxWidth: 180 });
+    return Buffer.from(doc.output('arraybuffer'));
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -161,7 +187,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const invoicePdf = await buildInvoiceStub(companyName, cadence_period_label);
+    const invoicePdf = await buildInvoicePdf(company_id, cadence_period_label, range_start, range_end);
 
     // Build the ZIP via streaming archiver.
     const archive = archiver('zip', { zlib: { level: 9 } });
