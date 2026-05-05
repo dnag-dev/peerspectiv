@@ -21,6 +21,35 @@ interface Row {
   errorMsg?: string;
 }
 
+const SPECIALTY_KEYWORDS: Record<string, string> = {
+  family: "Family Medicine",
+  internal: "Internal Medicine",
+  pediatric: "Pediatrics",
+  peds: "Pediatrics",
+  obgyn: "OB/GYN",
+  ob: "OB/GYN",
+  gyn: "OB/GYN",
+  behavioral: "Behavioral Health",
+  mental: "Behavioral Health",
+  dental: "Dental",
+  cardio: "Cardiology",
+  cardiology: "Cardiology",
+  chiro: "Chiropractic",
+  chiropractic: "Chiropractic",
+  acupuncture: "Acupuncture",
+  podiatry: "Podiatry",
+};
+
+/** SA-088: Extract specialty from filename patterns like "Family_Smith_1.pdf" */
+function parseSpecialtyFromFilename(name: string): string | null {
+  const base = name.replace(/\.pdf$/i, "").toLowerCase();
+  const tokens = base.split(/[\s_.\-]+/).filter(Boolean);
+  for (const t of tokens) {
+    if (SPECIALTY_KEYWORDS[t]) return SPECIALTY_KEYWORDS[t];
+  }
+  return null;
+}
+
 function parseLast(name: string): string | null {
   const base = name.replace(/\.pdf$/i, "");
   const tokens = base.split(/[\s_.\-]+/).filter(Boolean);
@@ -122,14 +151,17 @@ export function ClientSubmitWizard({
     );
     const next: Row[] = pdfs.map((f) => {
       const last = parseLast(f.name);
-      const match = last
-        ? specialtyProviders.find(
+      // SA-090: Find all matching providers by last name
+      const matches = last
+        ? specialtyProviders.filter(
             (p) => p.last_name?.toLowerCase() === last.toLowerCase()
           )
-        : null;
+        : [];
+      // If exactly 1 match, auto-select. If multiple or 0, leave empty so user must pick.
+      const autoId = matches.length === 1 ? matches[0].id : "";
       return {
         file: f,
-        providerId: match?.id ?? specialtyProviders[0]?.id ?? "",
+        providerId: autoId,
         status: "pending",
       };
     });

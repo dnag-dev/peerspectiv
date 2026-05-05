@@ -63,6 +63,17 @@ export async function POST(req: NextRequest) {
     }
     const finalScope =
       scope === 'cadence' || scope === 'global' ? scope : 'global';
+
+    // SA-053: Reject cadence-shaped names when creating global tags
+    if (finalScope === 'global') {
+      const cadencePattern = /^(Q[1-4]\s+\d{4}|[A-Z][a-z]{2}\s+\d{4}|[A-Z][a-z]{2}\s+[–-]\s+[A-Z][a-z]{2}\s+\d{4})/;
+      if (cadencePattern.test(name.trim())) {
+        return NextResponse.json(
+          { error: 'This looks like a cadence label (e.g., "Q1 2026"). Cadence tags are auto-generated — use a different name for ad-hoc tags.', code: 'CADENCE_NAME_CONFLICT' },
+          { status: 400 }
+        );
+      }
+    }
     const createdBy =
       req.headers.get('x-demo-user-id')?.trim() || 'admin-demo';
     const [row] = await db
