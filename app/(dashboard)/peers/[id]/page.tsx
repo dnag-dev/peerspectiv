@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/table";
 import { CaseStatusBadge } from "@/components/batches/CaseStatusBadge";
 import { PeerOnboardCard } from "./PeerOnboardCard";
+import { PeerStateActions } from "./PeerStateActions";
+import { PeerStateHistory } from "./PeerStateHistory";
 import {
   ArrowLeft,
   Mail,
@@ -192,6 +194,11 @@ export default async function PeerDetailPage({
                 )}
               </div>
               <div className="flex items-center gap-2 pt-2">
+                <PeerStateActions
+                  peerId={peer.id}
+                  currentState={peer.state ?? "active"}
+                  peerName={peer.full_name ?? "Peer"}
+                />
                 <Badge className={cn("border-0", availClass)}>
                   {availability.replace("_", " ")}
                 </Badge>
@@ -415,6 +422,9 @@ export default async function PeerDetailPage({
           email: peer.email ?? null,
         }}
       />
+
+      {/* SA-031L: State History */}
+      <PeerStateHistory peerId={peer.id} />
 
       {/* Availability */}
       {availability !== "available" && (
