@@ -68,7 +68,7 @@ export function CompanyHeader({ company }: CompanyHeaderProps) {
     }
   }
 
-  const status = company.status ?? "draft";
+  const status = company.status ?? "prospect";
   const statusLabel = status.replace(/_/g, " ");
   const badgeClass = STATUS_BADGE[status] ?? STATUS_BADGE.draft;
 
