@@ -3,6 +3,7 @@ import { db, toSnake } from '@/lib/db';
 import { batches, reviewCases, notifications } from '@/lib/db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { auditLog } from '@/lib/utils/audit';
+import { requireActiveCompany } from '@/lib/utils/company-guard';
 import {
   suggestAssignmentsForCases,
   type CaseInput as AssignCaseInput,
@@ -78,6 +79,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'batch_name, company_id, and a non-empty cases array are required', code: 'VALIDATION_ERROR' },
         { status: 400 }
+      );
+    }
+
+    // Company status guard: only Active companies can upload batches
+    const activeCompany = await requireActiveCompany(company_id);
+    if (!activeCompany) {
+      return NextResponse.json(
+        { error: 'Company must be Active to upload batches.', code: 'COMPANY_NOT_ACTIVE' },
+        { status: 403 }
       );
     }
 

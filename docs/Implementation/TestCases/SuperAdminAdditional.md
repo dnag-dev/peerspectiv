@@ -405,6 +405,108 @@
 
 ---
 
+
+## Company Status Guards
+
+> Operations are gated by company status. Setup allowed during Draft/Contract phases; operational activities only when Active.
+
+### SAA-027 — Draft company allows adding providers and forms
+
+**Module:** Companies | **Priority:** High
+
+**Pre-conditions:** Company in Draft status.
+
+**Steps:**
+1. Open company detail page.
+2. Add a provider.
+3. Create a form for this company.
+
+**Expected Result:** Both succeed. Providers and forms can be set up before activation.
+
+---
+
+### SAA-028 — Draft company blocks batch upload
+
+**Module:** Companies | **Priority:** Critical
+
+**Pre-conditions:** Company in Draft status.
+
+**Steps:**
+1. Try to upload a batch of charts for this company.
+
+**Expected Result:** Blocked with error: "Company must be Active to upload batches." Batch NOT created.
+
+---
+
+### SAA-029 — Draft company blocks case assignment
+
+**Module:** Companies | **Priority:** Critical
+
+**Pre-conditions:** Company in Draft status.
+
+**Steps:**
+1. Try to assign cases or trigger AI suggestions for this company.
+
+**Expected Result:** Blocked. Cases cannot be assigned for non-Active companies.
+
+---
+
+### SAA-030 — Draft company blocks invoice generation
+
+**Module:** Companies | **Priority:** Critical
+
+**Pre-conditions:** Company in Draft status.
+
+**Steps:**
+1. Try to generate an invoice for this company.
+
+**Expected Result:** Blocked with error: "Company must be Active to generate invoices."
+
+---
+
+### SAA-031 — Draft company blocks report generation
+
+**Module:** Companies | **Priority:** Critical
+
+**Pre-conditions:** Company in Draft status.
+
+**Steps:**
+1. Try to generate any of the 5 report types for this company.
+
+**Expected Result:** Blocked with error: "Company must be Active to generate reports."
+
+---
+
+### SAA-032 — Archived company blocks all operations
+
+**Module:** Companies | **Priority:** High
+
+**Pre-conditions:** Company in Archived status.
+
+**Steps:**
+1. Try to edit company details.
+2. Try to add providers.
+3. Try to upload batches.
+
+**Expected Result:** All operations blocked. Archived companies are read-only.
+
+---
+
+### SAA-033 — Active company allows all operations
+
+**Module:** Companies | **Priority:** High
+
+**Pre-conditions:** Company in Active status.
+
+**Steps:**
+1. Add a provider.
+2. Create a form.
+3. Upload a batch.
+4. Generate an invoice.
+5. Generate a report.
+
+**Expected Result:** All operations succeed for Active companies.
+
 ---
 
 ### SAA-021 — MRN field strips HTML tags (XSS prevention)

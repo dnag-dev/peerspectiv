@@ -20,6 +20,7 @@ import * as questionAnalytics from '@/lib/reports/types/question-analytics';
 import * as specialtyHighlights from '@/lib/reports/types/specialty-highlights';
 import * as providerHighlights from '@/lib/reports/types/provider-highlights';
 import * as qualityCertificate from '@/lib/reports/types/quality-certificate';
+import { requireActiveCompany } from '@/lib/utils/company-guard';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -82,6 +83,17 @@ export async function POST(req: NextRequest, { params }: { params: { type: strin
       { error: err instanceof Error ? err.message : 'Forbidden' },
       { status: 403 }
     );
+  }
+
+  // Company status guard: only Active companies can generate reports
+  if (companyId) {
+    const activeCompany = await requireActiveCompany(companyId);
+    if (!activeCompany) {
+      return NextResponse.json(
+        { error: 'Company must be Active to generate reports.', code: 'COMPANY_NOT_ACTIVE' },
+        { status: 403 }
+      );
+    }
   }
 
   try {

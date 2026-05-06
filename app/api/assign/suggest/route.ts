@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { suggestAssignments } from '@/lib/ai/assignment-engine';
 import { auditLog } from '@/lib/utils/audit';
+import { db } from '@/lib/db';
+import { batches } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import { requireActiveCompany } from '@/lib/utils/company-guard';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +16,18 @@ export async function POST(request: NextRequest) {
         { error: 'batch_id is required', code: 'VALIDATION_ERROR' },
         { status: 400 }
       );
+    }
+
+    // Company status guard
+    const [batch] = await db.select({ companyId: batches.companyId }).from(batches).where(eq(batches.id, batch_id)).limit(1);
+    if (batch?.companyId) {
+      const active = await requireActiveCompany(batch.companyId);
+      if (!active) {
+        return NextResponse.json(
+          { error: 'Company must be Active to suggest assignments.', code: 'COMPANY_NOT_ACTIVE' },
+          { status: 403 }
+        );
+      }
     }
 
     const result = await suggestAssignments(batch_id);

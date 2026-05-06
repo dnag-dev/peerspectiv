@@ -16,6 +16,7 @@ import archiver from 'archiver';
 import { Readable } from 'stream';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
+import { requireActiveCompany } from '@/lib/utils/company-guard';
 import { assertReportAccess, type Role } from '@/lib/reports/persona-guard';
 import * as perProvider from '@/lib/reports/types/per-provider-review-answers';
 import * as questionAnalytics from '@/lib/reports/types/question-analytics';
@@ -107,6 +108,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: 'company_id, cadence_period_label, range_start, range_end all required' },
       { status: 400 }
+    );
+  }
+
+  // Company status guard
+  const activeCompany = await requireActiveCompany(company_id);
+  if (!activeCompany) {
+    return NextResponse.json(
+      { error: 'Company must be Active to download reports.', code: 'COMPANY_NOT_ACTIVE' },
+      { status: 403 }
     );
   }
 
