@@ -42,6 +42,7 @@ Phase 1 (Companies)
 | 7 | [Reports, Invoicing & Client Portal](Phase-07-Reports-Invoicing-Client/plan.md) | ~65 | L | |
 | 8 | [Settings, Payments & Remaining](Phase-08-Settings-Payments/plan.md) | ~25 | M | |
 | 9 | [Full E2E + Future](Phase-09-E2E-Future/plan.md) | ~263 | L | |
+| 9A | [Testing Fixes & Enhancements](Phase-09A-Testing-Fixes/plan.md) | Ongoing | — | As found |
 | 10 | [Auth & RBAC](Phase-10-Auth-RBAC/plan.md) | ~18 | M | |
 | 11 | [HIPAA Compliance](Phase-11-HIPAA-Compliance/plan.md) | 10 tasks | L | CRITICAL |
 
