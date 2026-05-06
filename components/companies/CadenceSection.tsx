@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { buildCadencePeriods, findPeriodForDate, type CadencePeriod } from "@/lib/cadence/core";
 
-type Frequency = "quarterly" | "monthly" | "custom_multi_month";
+type Frequency = "quarterly" | "monthly" | "semi_annual" | "annual" | "custom_multi_month";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
