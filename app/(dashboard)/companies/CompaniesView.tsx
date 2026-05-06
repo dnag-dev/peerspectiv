@@ -177,7 +177,7 @@ export function CompaniesView({ companies }: Props) {
                 <SortHead label="Company Name" k="name" />
                 <SortHead label="Contact Person" k="contact_person" />
                 <th className="px-4 py-3 text-left">Contact Email</th>
-                <SortHead label="# of Doctors" k="provider_count" align="center" />
+                <SortHead label="Active Providers" k="provider_count" align="center" />
                 <SortHead label="Active Cases" k="active_case_count" align="center" />
                 <SortHead label="Status" k="status" />
                 <th className="px-4 py-3 text-left w-[100px]">Actions</th>
