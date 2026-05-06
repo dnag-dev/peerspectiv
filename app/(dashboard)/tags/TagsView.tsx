@@ -119,7 +119,7 @@ export function TagsView({ initialTags }: Props) {
       );
     }
     return entries.sort(([a], [b]) => a.localeCompare(b));
-  }, [cadenceTags, searchQ]);
+  }, [cadenceTags, searchQ, companyFilter]);
 
   async function handleCreate() {
     setErr(null);
