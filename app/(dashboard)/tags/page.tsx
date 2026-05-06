@@ -31,7 +31,13 @@ export default async function TagsPage() {
     .leftJoin(companies, eq(companies.id, tags.companyId))
     .orderBy(desc(tags.createdAt));
 
+  const companyList = await db
+    .select({ id: companies.id, name: companies.name })
+    .from(companies)
+    .where(eq(companies.status, 'active'))
+    .orderBy(companies.name);
+
   // Pass-through; TagsView splits by scope.
   void caseTags; // referenced for type-safety, query uses raw sql above
-  return <TagsView initialTags={rows} />;
+  return <TagsView initialTags={rows} companies={companyList} />;
 }

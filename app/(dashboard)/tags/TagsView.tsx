@@ -37,8 +37,14 @@ interface TagRow {
   caseCount: number | null;
 }
 
+interface CompanyOption {
+  id: string;
+  name: string;
+}
+
 interface Props {
   initialTags: TagRow[];
+  companies: CompanyOption[];
 }
 
 const COLOR_OPTS = ["cobalt", "mint", "amber", "critical", "ink"] as const;
@@ -53,7 +59,7 @@ const COLOR_CHIP: Record<string, string> = {
 
 type Tab = "cadence" | "global";
 
-export function TagsView({ initialTags }: Props) {
+export function TagsView({ initialTags, companies }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [busy, setBusy] = useState<string | null>(null);
@@ -65,6 +71,13 @@ export function TagsView({ initialTags }: Props) {
   const [description, setDescription] = useState("");
   const [searchQ, setSearchQ] = useState("");
   const [companyFilter, setCompanyFilter] = useState("all");
+
+  // Company tag creation state
+  const [companyTagName, setCompanyTagName] = useState("");
+  const [companyTagColor, setCompanyTagColor] = useState<string>("amber");
+  const [companyTagDescription, setCompanyTagDescription] = useState("");
+  const [companyTagCompanyId, setCompanyTagCompanyId] = useState("");
+  const [companyTagErr, setCompanyTagErr] = useState<string | null>(null);
 
   const cadenceTags = useMemo(
     () => initialTags.filter((t) => t.scope === "cadence"),
@@ -162,6 +175,45 @@ export function TagsView({ initialTags }: Props) {
       startTransition(() => router.refresh());
     } catch (e) {
       alert(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleCreateCompanyTag() {
+    setCompanyTagErr(null);
+    if (!companyTagName.trim()) {
+      setCompanyTagErr("Name is required");
+      return;
+    }
+    if (!companyTagCompanyId) {
+      setCompanyTagErr("Select a company");
+      return;
+    }
+    setBusy("create-company");
+    try {
+      const res = await fetch("/api/tags", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-demo-user-id": "admin-demo",
+        },
+        body: JSON.stringify({
+          name: companyTagName,
+          color: companyTagColor,
+          description: companyTagDescription,
+          scope: "cadence",
+          company_id: companyTagCompanyId,
+        }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || `HTTP ${res.status}`);
+      setCompanyTagName("");
+      setCompanyTagDescription("");
+      setCompanyTagCompanyId("");
+      startTransition(() => router.refresh());
+    } catch (e) {
+      setCompanyTagErr(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(null);
     }
@@ -366,6 +418,74 @@ export function TagsView({ initialTags }: Props) {
               </SelectContent>
             </Select>
           </div>
+          {/* Create Company Tag form */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-ink-900">Create Company Tag</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-4">
+                <div>
+                  <Label>Company</Label>
+                  <Select value={companyTagCompanyId} onValueChange={setCompanyTagCompanyId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select company" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {companies.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Name</Label>
+                  <Input
+                    value={companyTagName}
+                    onChange={(e) => setCompanyTagName(e.target.value)}
+                    placeholder="e.g. Priority, Audit"
+                  />
+                </div>
+                <div>
+                  <Label>Color</Label>
+                  <Select value={companyTagColor} onValueChange={setCompanyTagColor}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {COLOR_OPTS.map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Description</Label>
+                  <Input
+                    value={companyTagDescription}
+                    onChange={(e) => setCompanyTagDescription(e.target.value)}
+                    placeholder="optional"
+                  />
+                </div>
+              </div>
+              {companyTagErr && (
+                <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">
+                  {companyTagErr}
+                </p>
+              )}
+              <Button
+                onClick={handleCreateCompanyTag}
+                disabled={busy === "create-company"}
+                className="bg-cobalt-600 hover:bg-cobalt-700"
+              >
+                {busy === "create-company" ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Plus className="h-4 w-4 mr-2" />
+                )}
+                Create Company Tag
+              </Button>
+            </CardContent>
+          </Card>
+
           {cadenceByCompany.length === 0 && (
             <Card>
               <CardContent className="px-4 py-12 text-center text-sm text-ink-500">

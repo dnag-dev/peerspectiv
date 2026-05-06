@@ -76,15 +76,46 @@ export async function POST(req: NextRequest) {
     }
     const createdBy =
       req.headers.get('x-demo-user-id')?.trim() || 'admin-demo';
+
+    const trimmedName = name.trim();
+    const finalCompanyId = company_id ?? null;
+
+    // Duplicate check: reject if same name exists at global level OR same company level
+    const existingGlobal = await db
+      .select({ id: tags.id })
+      .from(tags)
+      .where(sql`${tags.name} = ${trimmedName} AND ${tags.scope} = 'global'`)
+      .limit(1);
+    if (existingGlobal.length > 0) {
+      return NextResponse.json(
+        { error: `Tag "${trimmedName}" already exists as a global tag.`, code: 'DUPLICATE' },
+        { status: 409 }
+      );
+    }
+
+    if (finalCompanyId) {
+      const existingCompany = await db
+        .select({ id: tags.id })
+        .from(tags)
+        .where(sql`${tags.name} = ${trimmedName} AND ${tags.companyId} = ${finalCompanyId}`)
+        .limit(1);
+      if (existingCompany.length > 0) {
+        return NextResponse.json(
+          { error: `Tag "${trimmedName}" already exists for this company.`, code: 'DUPLICATE' },
+          { status: 409 }
+        );
+      }
+    }
+
     const [row] = await db
       .insert(tags)
       .values({
-        name: name.trim(),
+        name: trimmedName,
         color: color?.trim() || 'cobalt',
         description: description?.trim() || null,
         createdBy,
         scope: finalScope,
-        companyId: finalScope === 'cadence' ? company_id ?? null : null,
+        companyId: finalCompanyId,
         periodLabel: finalScope === 'cadence' ? period_label ?? null : null,
       })
       .returning();
