@@ -155,9 +155,11 @@ export function CompaniesView({ companies }: Props) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="lead">Lead</SelectItem>
+                <SelectItem value="prospect">Prospect</SelectItem>
                 <SelectItem value="contract_sent">Contract Sent</SelectItem>
                 <SelectItem value="contract_signed">Contract Signed</SelectItem>
+                <SelectItem value="in_cycle">In Cycle</SelectItem>
                 <SelectItem value="archived">Archived</SelectItem>
                 <SelectItem value="all">All statuses</SelectItem>
               </SelectContent>

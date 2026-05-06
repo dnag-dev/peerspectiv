@@ -14,7 +14,9 @@ export async function requireActiveCompany(companyId: string): Promise<{ id: str
     .limit(1);
 
   if (!row) return null;
-  if (row.status !== 'active') return null;
+  // Active statuses that allow operational activities (uploads, assignments, invoices, reports)
+  const activeStatuses = ['active', 'active_client', 'in_cycle'];
+  if (!activeStatuses.includes(row.status ?? '')) return null;
   return row;
 }
 

@@ -15,10 +15,13 @@ interface CompanyHeaderProps {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  draft: "bg-ink-100 text-ink-700",
+  lead: "bg-ink-100 text-ink-700",
+  prospect: "bg-blue-100 text-blue-700",
   contract_sent: "bg-amber-100 text-amber-700",
   contract_signed: "bg-cobalt-100 text-cobalt-700",
   active: "bg-mint-100 text-mint-700",
+  active_client: "bg-mint-100 text-mint-700",
+  in_cycle: "bg-purple-100 text-purple-700",
   archived: "bg-ink-100 text-ink-500",
 };
 
@@ -93,7 +96,7 @@ export function CompanyHeader({ company }: CompanyHeaderProps) {
         </div>
         <div className="flex items-center gap-2">
           {/* Status transition buttons */}
-          {status === "draft" && (
+          {(status === "lead" || status === "prospect") && (
             <Button onClick={handleSendContract} disabled={busy} className="bg-cobalt-600 hover:bg-cobalt-700">
               {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
               Send Contract

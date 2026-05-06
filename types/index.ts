@@ -4,7 +4,7 @@ export interface Company {
   contact_person: string | null;
   contact_email: string | null;
   contact_phone: string | null;
-  status: 'draft' | 'contract_sent' | 'contract_signed' | 'active' | 'archived';
+  status: 'lead' | 'prospect' | 'contract_sent' | 'contract_signed' | 'active' | 'active_client' | 'in_cycle' | 'archived';
   notes: string | null;
   itemize_invoice?: boolean | null;
   delivery_preference?: 'email' | 'portal' | 'both' | null;
@@ -26,7 +26,7 @@ export interface Provider {
   specialty: string;
   npi: string | null;
   email: string | null;
-  status: 'draft' | 'contract_sent' | 'contract_signed' | 'active' | 'archived';
+  status: 'lead' | 'prospect' | 'contract_sent' | 'contract_signed' | 'active' | 'active_client' | 'in_cycle' | 'archived';
   created_at: string;
   updated_at: string;
   company?: Company;
