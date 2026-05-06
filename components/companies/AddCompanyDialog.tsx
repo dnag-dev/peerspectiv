@@ -39,7 +39,7 @@ export function AddCompanyDialog() {
       contact_phone: (formData.get("contact_phone") as string) || null,
       per_review_rate: perReviewRate ? Number(perReviewRate) : null,
       notes: (formData.get("notes") as string) || null,
-      status: "prospect" as const,
+      status: "lead" as const,
     };
 
     if (!payload.name.trim()) {
@@ -60,9 +60,15 @@ export function AddCompanyDialog() {
         throw new Error(body.error || "Failed to create company");
       }
 
+      const data = await res.json();
+      const newId = data?.id;
       toast({ title: "Company created", description: `${payload.name} has been added.` });
       setOpen(false);
-      router.refresh();
+      if (newId) {
+        router.push(`/companies/${newId}`);
+      } else {
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
