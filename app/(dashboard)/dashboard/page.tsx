@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { companies, batches, reviewCases, auditLogs } from "@/lib/db/schema";
-import { and, desc, eq, gte, isNotNull, lt, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, isNotNull, lt, lte, notInArray, sql } from "drizzle-orm";
 import { buildCadencePeriods, type CadenceConfig } from "@/lib/cadence/core";
 import { ClientOverviewCard } from "@/components/dashboard/ClientOverviewCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,10 +70,10 @@ export default async function DashboardPage({
     : undefined;
   const companyParam = filterCompanyId ? `&company=${filterCompanyId}` : "";
 
-  // Companies dropdown options (always full list — gating by status feels too clever).
   const companyOptions = await db
     .select({ id: companies.id, name: companies.name })
     .from(companies)
+    .where(notInArray(companies.status, ['lead', 'archived']))
     .orderBy(companies.name);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 86_400_000).toISOString();

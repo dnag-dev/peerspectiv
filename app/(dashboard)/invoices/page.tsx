@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { invoices, companies } from '@/lib/db/schema';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, notInArray } from 'drizzle-orm';
 import { unstable_noStore as noStore } from 'next/cache';
 import { InvoicesView } from './InvoicesView';
 
@@ -38,6 +38,7 @@ export default async function InvoicesPage() {
   const companyList = await db
     .select({ id: companies.id, name: companies.name })
     .from(companies)
+    .where(notInArray(companies.status, ['lead', 'archived']))
     .orderBy(companies.name);
 
   return <InvoicesView invoices={rows} companies={companyList} />;

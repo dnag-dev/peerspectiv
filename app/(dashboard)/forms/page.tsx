@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { companyForms, companies, reviewCases, reviewResults } from '@/lib/db/schema';
-import { eq, asc, sql } from 'drizzle-orm';
+import { eq, asc, notInArray, sql } from 'drizzle-orm';
 import { FormsView } from './FormsView';
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -61,6 +61,7 @@ export default async function FormsPage() {
   const companyList = await db
     .select({ id: companies.id, name: companies.name })
     .from(companies)
+    .where(notInArray(companies.status, ['lead', 'archived']))
     .orderBy(asc(companies.name));
 
   return <FormsView forms={formsWithStats} companies={companyList} />;
