@@ -80,6 +80,10 @@ export function AddProspectModal() {
   const [reviewCycle, setReviewCycle] = useState('quarterly');
   const [specialties, setSpecialties] = useState<string[]>([]);
   const [onboardingNotes, setOnboardingNotes] = useState('');
+  // Fields from Add Company
+  const [initialStatus, setInitialStatus] = useState('lead');
+  const [perReviewRate, setPerReviewRate] = useState('');
+  const [fyStartMonth, setFyStartMonth] = useState('1');
 
   function toggleSpecialty(s: string) {
     setSpecialties((prev) =>
@@ -100,6 +104,9 @@ export function AddProspectModal() {
     setReviewCycle('quarterly');
     setSpecialties([]);
     setOnboardingNotes('');
+    setInitialStatus('lead');
+    setPerReviewRate('');
+    setFyStartMonth('1');
     setError(null);
     setDuplicates(null);
   }
@@ -126,6 +133,12 @@ export function AddProspectModal() {
     setError(null);
 
     try {
+      // Map review cadence to DB fields
+      let cadencePeriodType = reviewCycle;
+      let cadencePeriodMonths: number | null = null;
+      if (reviewCycle === 'semi-annual') { cadencePeriodType = 'custom_multi_month'; cadencePeriodMonths = 6; }
+      if (reviewCycle === 'annual') { cadencePeriodType = 'custom_multi_month'; cadencePeriodMonths = 12; }
+
       const res = await fetch('/api/prospects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -142,6 +155,12 @@ export function AddProspectModal() {
           reviewCycle,
           onboardingNotes: composeNotes() || null,
           forceCreate,
+          // New fields
+          status: initialStatus,
+          perReviewRate: perReviewRate ? Number(perReviewRate) : null,
+          cadencePeriodType,
+          fiscalYearStartMonth: Number(fyStartMonth),
+          cadencePeriodMonths,
         }),
       });
 
@@ -178,14 +197,14 @@ export function AddProspectModal() {
       <DialogTrigger asChild>
         <Button data-testid="add-prospect" className="bg-[#2563EB] text-white hover:bg-[#2558bb]">
           <Plus className="mr-2 h-4 w-4" />
-          Add Prospect
+          Add New Company
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto sm:max-w-[640px]">
         <DialogHeader>
-          <DialogTitle>Add Prospect</DialogTitle>
+          <DialogTitle>Add New Company</DialogTitle>
           <DialogDescription>
-            Capture the basics — we can refine after the intro call.
+            Enter the company details. You can refine after the intro call.
           </DialogDescription>
         </DialogHeader>
 
@@ -287,7 +306,7 @@ export function AddProspectModal() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="reviewCycle">Review Cycle</Label>
+              <Label htmlFor="reviewCycle">Review Cadence</Label>
               <Select value={reviewCycle} onValueChange={setReviewCycle}>
                 <SelectTrigger id="reviewCycle">
                   <SelectValue />
@@ -297,6 +316,39 @@ export function AddProspectModal() {
                   <SelectItem value="quarterly">Quarterly</SelectItem>
                   <SelectItem value="semi-annual">Semi-Annual</SelectItem>
                   <SelectItem value="annual">Annual</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Fiscal Year Start</Label>
+              <Select value={fyStartMonth} onValueChange={setFyStartMonth}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m, i) => (
+                    <SelectItem key={i + 1} value={String(i + 1)}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Per-Review Rate ($)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="90.00"
+                value={perReviewRate}
+                onChange={(e) => setPerReviewRate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Initial Status</Label>
+              <Select value={initialStatus} onValueChange={setInitialStatus}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="lead">Lead</SelectItem>
+                  <SelectItem value="prospect">Prospect</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -395,7 +447,7 @@ export function AddProspectModal() {
               className="bg-[#2563EB] text-white hover:bg-[#2558bb]"
               disabled={loading}
             >
-              {loading ? 'Creating…' : 'Create Prospect'}
+              {loading ? 'Creating…' : 'Create Company'}
             </Button>
           </DialogFooter>
         </form>

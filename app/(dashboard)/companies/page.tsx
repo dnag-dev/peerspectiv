@@ -2,7 +2,7 @@ import { db, toSnake } from "@/lib/db";
 import { companies, providers, reviewCases } from "@/lib/db/schema";
 import { asc, eq, inArray } from "drizzle-orm";
 import { unstable_noStore as noStore } from "next/cache";
-import { AddCompanyDialog } from "@/components/companies/AddCompanyDialog";
+import { AddProspectModal } from "@/components/prospects/AddProspectModal";
 import type { Company } from "@/types";
 import { CompaniesView } from "./CompaniesView";
 
@@ -65,7 +65,7 @@ export default async function CompaniesPage() {
             Manage companies and their provider networks.
           </p>
         </div>
-        <AddCompanyDialog />
+        <AddProspectModal />
       </div>
 
       <CompaniesView companies={companyList} />
