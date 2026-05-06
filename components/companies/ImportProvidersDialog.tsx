@@ -11,7 +11,21 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Upload } from "lucide-react";
+import { Upload, Download } from "lucide-react";
+
+function downloadTemplate() {
+  const header = "first_name,last_name,specialty,npi,email";
+  const sample1 = "John,Smith,Family Medicine,1234567890,john.smith@clinic.com";
+  const sample2 = "Jane,Doe,Internal Medicine,0987654321,jane.doe@clinic.com";
+  const csv = [header, sample1, sample2].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "provider_import_template.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 interface Candidate {
   first_name: string | null;
@@ -133,11 +147,24 @@ export function ImportProvidersDialog({ companyId }: Props) {
             <input
               ref={fileRef}
               type="file"
-              accept=".csv,.tsv,.xlsx,.docx,.pdf"
+              accept=".csv,.tsv,.pdf"
               onChange={handleFileChange}
               disabled={uploading}
               className="block w-full text-sm text-ink-700 file:mr-4 file:rounded-md file:border-0 file:bg-cobalt-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-cobalt-700"
             />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={downloadTemplate}
+                className="inline-flex items-center gap-1 text-xs text-cobalt-700 hover:underline"
+              >
+                <Download className="h-3 w-3" />
+                Download CSV template
+              </button>
+              <span className="text-xs text-ink-400">
+                Columns: first_name, last_name, specialty, npi, email
+              </span>
+            </div>
             {uploading && <p className="text-sm text-muted-foreground">Parsing file...</p>}
           </div>
         )}
