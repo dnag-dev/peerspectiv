@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
  * Check if a company is in Active status.
  * Returns the company row if active, null if not found or not active.
  */
-export async function requireActiveCompany(companyId: string): Promise<{ id: string; status: string } | null> {
+export async function requireActiveCompany(companyId: string): Promise<{ id: string; status: string | null } | null> {
   const [row] = await db
     .select({ id: companies.id, status: companies.status })
     .from(companies)
@@ -23,7 +23,7 @@ export async function requireActiveCompany(companyId: string): Promise<{ id: str
  * Allowed for: draft, contract_sent, contract_signed, active.
  * Blocked for: archived.
  */
-export async function requireNonArchivedCompany(companyId: string): Promise<{ id: string; status: string } | null> {
+export async function requireNonArchivedCompany(companyId: string): Promise<{ id: string; status: string | null } | null> {
   const [row] = await db
     .select({ id: companies.id, status: companies.status })
     .from(companies)
