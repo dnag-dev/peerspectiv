@@ -19,7 +19,7 @@ import { LocationsSection } from "@/components/companies/LocationsSection";
 import { PricingSection } from "@/components/companies/PricingSection";
 import { CadenceSection } from "@/components/companies/CadenceSection";
 import { ProviderActions } from "@/components/companies/ProviderActions";
-import { Users } from "lucide-react";
+import { Users, Building2 } from "lucide-react";
 import type { Company, Provider } from "@/types";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -83,13 +83,60 @@ export default async function CompanyDetailPage({
     <div className="space-y-6">
       <CompanyHeader company={company} />
 
-      {company.notes && (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">{company.notes}</p>
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Building2 className="h-5 w-5" />
+            Company Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm md:grid-cols-4">
+            {company.address && (
+              <div>
+                <span className="text-muted-foreground">Address</span>
+                <p className="font-medium">{company.address}</p>
+              </div>
+            )}
+            {(company.city || company.state) && (
+              <div>
+                <span className="text-muted-foreground">City / State</span>
+                <p className="font-medium">{[company.city, company.state].filter(Boolean).join(', ')}</p>
+              </div>
+            )}
+            {company.annual_review_count != null && (
+              <div>
+                <span className="text-muted-foreground">Annual Review Count</span>
+                <p className="font-medium">{company.annual_review_count}</p>
+              </div>
+            )}
+            {company.per_review_rate != null && (
+              <div>
+                <span className="text-muted-foreground">Per-Review Rate</span>
+                <p className="font-medium">${Number(company.per_review_rate).toFixed(2)}</p>
+              </div>
+            )}
+            <div>
+              <span className="text-muted-foreground">Itemize Invoices</span>
+              <p className="font-medium">{company.itemize_invoice ? 'Yes' : 'No'}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Report Delivery</span>
+              <p className="font-medium capitalize">{(company.delivery_preference ?? 'portal').replace(/_/g, ' ')}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Report Bundle Delivery</span>
+              <p className="font-medium capitalize">{(company.delivery_method ?? 'portal').replace(/_/g, ' ')}</p>
+            </div>
+          </div>
+          {company.notes && (
+            <div className="mt-4 border-t pt-3">
+              <span className="text-sm text-muted-foreground">Notes</span>
+              <p className="mt-1 text-sm whitespace-pre-wrap">{company.notes}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">

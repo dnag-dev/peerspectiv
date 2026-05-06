@@ -62,7 +62,12 @@ interface DuplicateMatch {
   status: string | null;
 }
 
-export function AddProspectModal() {
+interface AddProspectModalProps {
+  /** When true, stays on current page after creation instead of navigating to company detail */
+  stayOnPage?: boolean;
+}
+
+export function AddProspectModal({ stayOnPage = false }: AddProspectModalProps = {}) {
   const router = useRouter();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -186,7 +191,9 @@ export function AddProspectModal() {
       toast({ title: 'Company created', description: `${name.trim()} has been added.` });
       setOpen(false);
       resetForm();
-      if (newId) {
+      if (stayOnPage) {
+        router.refresh();
+      } else if (newId) {
         router.push(`/companies/${newId}`);
       } else {
         router.refresh();

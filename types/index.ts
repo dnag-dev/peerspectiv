@@ -10,6 +10,13 @@ export interface Company {
   delivery_preference?: 'email' | 'portal' | 'both' | null;
   /** Phase 8.2 — secure-email channel for the per-cadence report ZIP. */
   delivery_method?: 'portal' | 'secure_email' | 'both' | null;
+  annual_review_count?: number | null;
+  per_review_rate?: string | null;
+  review_cycle?: string | null;
+  prospect_source?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
   /** Review Cadence — SA-063A/B/C */
   cadence_period_type?: 'quarterly' | 'monthly' | 'custom_multi_month' | 'random' | null;
   cadence_period_months?: number | null;

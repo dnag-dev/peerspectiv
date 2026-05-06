@@ -71,7 +71,7 @@ export default async function ProspectsPage() {
             Track potential FQHC clients from first contact through contract signing, activation, and active review cycles.
           </p>
         </div>
-        <AddProspectModal />
+        <AddProspectModal stayOnPage />
       </div>
 
       <PipelineBoard initialPipeline={serialized} />

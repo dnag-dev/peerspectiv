@@ -44,11 +44,18 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
     setError(null);
 
     const formData = new FormData(e.currentTarget);
+    const annualRaw = formData.get("annual_review_count") as string;
+    const rateRaw = formData.get("per_review_rate") as string;
     const payload = {
       name: formData.get("name") as string,
       contact_person: (formData.get("contact_person") as string) || null,
       contact_email: (formData.get("contact_email") as string) || null,
       contact_phone: (formData.get("contact_phone") as string) || null,
+      address: (formData.get("address") as string) || null,
+      city: (formData.get("city") as string) || null,
+      state: (formData.get("state") as string) || null,
+      annual_review_count: annualRaw ? Number(annualRaw) : null,
+      per_review_rate: rateRaw ? Number(rateRaw) : null,
       notes: (formData.get("notes") as string) || null,
       itemize_invoice: itemizeInvoice,
       delivery_preference: deliveryPreference,
@@ -84,7 +91,7 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl sm:max-w-[500px]">
+      <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto sm:max-w-[540px]">
         <DialogHeader>
           <DialogTitle>Edit Company</DialogTitle>
           <DialogDescription>Update the company information below.</DialogDescription>
@@ -106,6 +113,30 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
             <div className="space-y-2">
               <Label htmlFor="edit-contact_phone">Contact Phone</Label>
               <Input id="edit-contact_phone" name="contact_phone" defaultValue={company.contact_phone ?? ""} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-address">Address</Label>
+            <Input id="edit-address" name="address" defaultValue={company.address ?? ""} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-city">City</Label>
+              <Input id="edit-city" name="city" defaultValue={company.city ?? ""} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-state">State</Label>
+              <Input id="edit-state" name="state" defaultValue={company.state ?? ""} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-annual_review_count">Annual Review Count</Label>
+              <Input id="edit-annual_review_count" name="annual_review_count" type="number" min="0" defaultValue={company.annual_review_count ?? ""} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-per_review_rate">Per-Review Rate ($)</Label>
+              <Input id="edit-per_review_rate" name="per_review_rate" type="number" min="0" step="0.01" defaultValue={company.per_review_rate ?? ""} />
             </div>
           </div>
           <div className="space-y-2">
