@@ -623,6 +623,7 @@ export const companyForms = pgTable('company_forms', {
   companyId: uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }),
   specialty: text('specialty').notNull(),
   formName: text('form_name').notNull(),
+  formIdentifier: text('form_identifier'),
   formFields: jsonb('form_fields').notNull(),
   isActive: boolean('is_active').default(true),
   approvedBy: text('approved_by'),

@@ -87,9 +87,11 @@ export function FormsView({ forms, companies }: Props) {
 
   const [showBuilder, setShowBuilder] = useState(false);
   const [builderCompanyId, setBuilderCompanyId] = useState<string>("");
+  const [builderCompanyName, setBuilderCompanyName] = useState<string>("");
   const [editing, setEditing] = useState<{
     id: string;
     form_name: string;
+    form_identifier?: string | null;
     specialty: string;
     form_fields: any[];
     allow_ai_generated_recommendations?: boolean;
@@ -98,6 +100,7 @@ export function FormsView({ forms, companies }: Props) {
   } | null>(null);
   const [prefill, setPrefill] = useState<{
     form_name: string;
+    form_identifier?: string | null;
     specialty: string;
     form_fields: any[];
     allow_ai_generated_recommendations?: boolean;
@@ -211,10 +214,11 @@ export function FormsView({ forms, companies }: Props) {
     if (res.ok) startTransition(() => router.refresh());
   }
 
-  function openBuilder(companyId: string) {
+  function openBuilder(companyId: string, companyNameVal?: string) {
     setEditing(null);
     setPrefill(null);
     setBuilderCompanyId(companyId);
+    setBuilderCompanyName(companyNameVal || "");
     setShowBuilder(true);
   }
 
@@ -229,6 +233,7 @@ export function FormsView({ forms, companies }: Props) {
       setEditing({
         id: f.id,
         form_name: j.form.form_name,
+        form_identifier: j.form.form_identifier ?? null,
         specialty: j.form.specialty,
         form_fields: Array.isArray(j.form.form_fields) ? j.form.form_fields : [],
         allow_ai_generated_recommendations: !!j.form.allow_ai_generated_recommendations,
@@ -236,6 +241,7 @@ export function FormsView({ forms, companies }: Props) {
         pass_fail_threshold: j.form.pass_fail_threshold ?? null,
       });
       setBuilderCompanyId(f.companyId);
+      setBuilderCompanyName(f.companyName || "");
       setShowBuilder(true);
     } catch (e) {
       alert(e instanceof Error ? e.message : String(e));
@@ -271,6 +277,7 @@ export function FormsView({ forms, companies }: Props) {
       setEditing(null);
       setPrefill({
         form_name: `${f.formName} (Copy)`,
+        form_identifier: j.form.form_identifier ? `${j.form.form_identifier} (Copy)` : null,
         specialty: f.specialty,
         form_fields: fields,
         allow_ai_generated_recommendations: !!j.form.allow_ai_generated_recommendations,
@@ -278,6 +285,7 @@ export function FormsView({ forms, companies }: Props) {
         pass_fail_threshold: j.form.pass_fail_threshold ?? null,
       });
       setBuilderCompanyId(f.companyId);
+      setBuilderCompanyName(f.companyName || "");
       setShowBuilder(true);
     } catch (e) {
       alert(e instanceof Error ? e.message : String(e));
@@ -296,9 +304,12 @@ export function FormsView({ forms, companies }: Props) {
           </p>
         </div>
         <Button
-          onClick={() =>
-            openBuilder(companyFilter !== "all" ? companyFilter : companies[0]?.id ?? "")
-          }
+          onClick={() => {
+            const c = companyFilter !== "all"
+              ? companies.find((x) => x.id === companyFilter)
+              : companies[0];
+            openBuilder(c?.id ?? "", c?.name);
+          }}
           disabled={companies.length === 0}
           className="bg-cobalt-600 hover:bg-cobalt-700"
         >
@@ -525,6 +536,7 @@ export function FormsView({ forms, companies }: Props) {
             }
           }}
           companyId={builderCompanyId}
+          companyName={builderCompanyName}
           editForm={editing ?? undefined}
           prefill={prefill ?? undefined}
           onCreated={() => {

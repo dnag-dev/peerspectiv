@@ -952,6 +952,7 @@ export function NewBatchModal({
           open={formBuilderOpen}
           onOpenChange={setFormBuilderOpen}
           companyId={companyId}
+          companyName={companies.find((c) => c.id === companyId)?.name}
           defaultSpecialty={specialty || undefined}
           onCreated={(form) => {
             const next: BatchWizardForm = {

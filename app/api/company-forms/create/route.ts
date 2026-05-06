@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { companyForms } from '@/lib/db/schema';
+import { companies, companyForms } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { auditLog } from '@/lib/utils/audit';
 
 interface FormFieldInput {
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
       company_id,
       specialty,
       form_name,
+      form_identifier,
       form_fields,
       template_pdf_url,
       template_pdf_name,
@@ -37,7 +39,8 @@ export async function POST(request: NextRequest) {
     } = body as {
       company_id: string;
       specialty: string;
-      form_name: string;
+      form_name?: string;
+      form_identifier?: string;
       form_fields: FormFieldInput[];
       template_pdf_url?: string;
       template_pdf_name?: string;
@@ -46,11 +49,29 @@ export async function POST(request: NextRequest) {
       pass_fail_threshold?: unknown;
     };
 
-    if (!company_id || !specialty || !form_name || !Array.isArray(form_fields) || form_fields.length === 0) {
+    const identifier = (form_identifier || '').trim();
+    if (!company_id || !specialty || !Array.isArray(form_fields) || form_fields.length === 0) {
       return NextResponse.json(
-        { error: 'company_id, specialty, form_name, and at least one form field are required' },
+        { error: 'company_id, specialty, and at least one form field are required' },
         { status: 400 }
       );
+    }
+    if (!identifier && !form_name) {
+      return NextResponse.json(
+        { error: 'form_identifier is required' },
+        { status: 400 }
+      );
+    }
+
+    // Look up company name to build the display form_name
+    let computedFormName: string;
+    if (identifier) {
+      const [company] = await db.select({ name: companies.name }).from(companies).where(eq(companies.id, company_id)).limit(1);
+      const companyName = company?.name || 'Unknown';
+      computedFormName = `${companyName} - ${specialty} - ${identifier}`;
+    } else {
+      // Backward compat: if form_name passed directly (legacy callers)
+      computedFormName = form_name!;
     }
 
     // Normalize fields — ensure unique, stable field_keys and ordering
@@ -111,7 +132,8 @@ export async function POST(request: NextRequest) {
         .values({
           companyId: company_id,
           specialty,
-          formName: form_name,
+          formName: computedFormName,
+          formIdentifier: identifier || null,
           formFields: normalizedFields,
           isActive: true,
           templatePdfUrl: template_pdf_url || null,
@@ -125,6 +147,7 @@ export async function POST(request: NextRequest) {
           company_id: companyForms.companyId,
           specialty: companyForms.specialty,
           form_name: companyForms.formName,
+          form_identifier: companyForms.formIdentifier,
           is_active: companyForms.isActive,
         });
     } catch (err: any) {

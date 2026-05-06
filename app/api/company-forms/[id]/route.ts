@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, toSnake } from '@/lib/db';
-import { companyForms, reviewCases, reviewResults } from '@/lib/db/schema';
+import { companies, companyForms, reviewCases, reviewResults } from '@/lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
 
 // GET /api/company-forms/[id] — fetch full form incl form_fields (for cloning)
@@ -16,6 +16,7 @@ export async function GET(
         companyId: companyForms.companyId,
         specialty: companyForms.specialty,
         formName: companyForms.formName,
+        formIdentifier: companyForms.formIdentifier,
         formFields: companyForms.formFields,
         isActive: companyForms.isActive,
         allowAiGeneratedRecommendations: companyForms.allowAiGeneratedRecommendations,
@@ -44,7 +45,7 @@ export async function PATCH(
     const body = await req.json();
     const updates: Record<string, any> = {};
     if (typeof body.is_active === 'boolean') updates.isActive = body.is_active;
-    if (typeof body.form_name === 'string') updates.formName = body.form_name;
+    if (typeof body.form_identifier === 'string') updates.formIdentifier = body.form_identifier.trim();
     if (typeof body.specialty === 'string') updates.specialty = body.specialty;
     if (Array.isArray(body.form_fields)) updates.formFields = body.form_fields;
     if (typeof body.allow_ai_generated_recommendations === 'boolean') {
@@ -60,9 +61,41 @@ export async function PATCH(
     if (body.pass_fail_threshold === null || typeof body.pass_fail_threshold === 'object') {
       updates.passFailThreshold = body.pass_fail_threshold;
     }
+    // Legacy: accept form_name directly (backward compat)
+    if (typeof body.form_name === 'string' && !body.form_identifier) {
+      updates.formName = body.form_name;
+    }
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
     }
+
+    // If identifier or specialty changed, recompute form_name
+    if (updates.formIdentifier || updates.specialty) {
+      // Fetch current form + company to build the display name
+      const [existing] = await db
+        .select({
+          companyId: companyForms.companyId,
+          specialty: companyForms.specialty,
+          formIdentifier: companyForms.formIdentifier,
+        })
+        .from(companyForms)
+        .where(eq(companyForms.id, id))
+        .limit(1);
+      if (existing?.companyId) {
+        const [company] = await db
+          .select({ name: companies.name })
+          .from(companies)
+          .where(eq(companies.id, existing.companyId))
+          .limit(1);
+        const companyName = company?.name || 'Unknown';
+        const finalSpecialty = updates.specialty || existing.specialty;
+        const finalIdentifier = updates.formIdentifier || existing.formIdentifier;
+        if (finalIdentifier) {
+          updates.formName = `${companyName} - ${finalSpecialty} - ${finalIdentifier}`;
+        }
+      }
+    }
+
     const [row] = await db
       .update(companyForms)
       .set(updates)

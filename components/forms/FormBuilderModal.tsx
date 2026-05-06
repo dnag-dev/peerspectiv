@@ -57,10 +57,12 @@ interface Props {
   companyId: string;
   defaultSpecialty?: string;
   onCreated: (form: CreatedForm) => void;
+  companyName?: string;
   /** When provided, the modal opens in edit mode and PATCHes this form. */
   editForm?: {
     id: string;
     form_name: string;
+    form_identifier?: string | null;
     specialty: string;
     form_fields: BuiltFormField[];
     allow_ai_generated_recommendations?: boolean;
@@ -70,6 +72,7 @@ interface Props {
   /** When provided (and editForm is not), opens in create mode with these values prefilled (used by Clone). */
   prefill?: {
     form_name: string;
+    form_identifier?: string | null;
     specialty: string;
     form_fields: BuiltFormField[];
     allow_ai_generated_recommendations?: boolean;
@@ -85,10 +88,10 @@ const BLANK_FIELDS: BuiltFormField[] = [
   { field_key: "comments_and_recommendations", field_label: "Comments and Recommendations", field_type: "text", is_required: false, display_order: 1 },
 ];
 
-export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecialty, onCreated, editForm, prefill }: Props) {
+export function FormBuilderModal({ open, onOpenChange, companyId, companyName, defaultSpecialty, onCreated, editForm, prefill }: Props) {
   const isEdit = !!editForm;
   const [mode, setMode] = useState<Mode>("scratch");
-  const [formName, setFormName] = useState("");
+  const [formIdentifier, setFormIdentifier] = useState("");
   const [specialty, setSpecialty] = useState(defaultSpecialty || "Family Medicine");
   const [fields, setFields] = useState<BuiltFormField[]>(BLANK_FIELDS);
   const [templates, setTemplates] = useState<Array<{ id: string; form_name: string; specialty: string }>>([]);
@@ -107,7 +110,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
     setTemplatePdfUrl(null);
     setTemplatePdfName(null);
     if (editForm) {
-      setFormName(editForm.form_name);
+      setFormIdentifier(editForm.form_identifier || editForm.form_name || "");
       setSpecialty(editForm.specialty);
       setFields(
         (editForm.form_fields ?? []).map((f, idx) => ({
@@ -118,7 +121,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
       setAllowAiNarrative(!!editForm.allow_ai_generated_recommendations);
       setMode("scratch");
     } else if (prefill) {
-      setFormName(prefill.form_name);
+      setFormIdentifier(prefill.form_identifier || prefill.form_name || "");
       setSpecialty(prefill.specialty);
       setFields(
         (prefill.form_fields ?? []).map((f, idx) => ({
@@ -129,7 +132,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
       setAllowAiNarrative(!!prefill.allow_ai_generated_recommendations);
       setMode("scratch");
     } else {
-      setFormName("");
+      setFormIdentifier("");
       setSpecialty(defaultSpecialty || "Family Medicine");
       setFields(BLANK_FIELDS);
       setAllowAiNarrative(false);
@@ -180,7 +183,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
       const d = await res.json();
       setTemplatePdfUrl(d.url);
       setTemplatePdfName(d.name);
-      if (!formName) setFormName(file.name.replace(/\.pdf$/i, ""));
+      if (!formIdentifier) setFormIdentifier(file.name.replace(/\.pdf$/i, ""));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -201,7 +204,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           specialty,
-          form_name: formName || `${specialty} Peer Review`,
+          form_name: formIdentifier || `${specialty} Peer Review`,
         }),
       });
       const j = await res.json();
@@ -217,7 +220,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
         return;
       }
       setFields(drafted);
-      if (!formName) setFormName(`${specialty} Peer Review`);
+      if (!formIdentifier) setFormIdentifier("Peer Review Form v1");
     } catch (err) {
       setError(err instanceof Error ? err.message : "AI draft failed");
     } finally {
@@ -244,7 +247,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
 
   async function handleSave() {
     setError(null);
-    if (!formName.trim()) { setError("Form name is required"); return; }
+    if (!formIdentifier.trim()) { setError("Form identifier is required"); return; }
     if (mode === "upload" && !templatePdfUrl) { setError("Upload a PDF template first"); return; }
     if (fields.length === 0) { setError("Add at least one field"); return; }
     if (fields.some((f) => !f.field_label.trim())) { setError("Every field needs a label"); return; }
@@ -272,14 +275,14 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
       const payload = isEdit
         ? {
             specialty,
-            form_name: formName.trim(),
+            form_identifier: formIdentifier.trim(),
             form_fields: normalizedFields,
             allow_ai_generated_recommendations: allowAiNarrative,
           }
         : {
             company_id: companyId,
             specialty,
-            form_name: formName.trim(),
+            form_identifier: formIdentifier.trim(),
             form_fields: normalizedFields,
             template_pdf_url: templatePdfUrl,
             template_pdf_name: templatePdfName,
@@ -368,11 +371,11 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground">Form name</label>
+              <label className="text-xs font-medium text-muted-foreground">Form Identifier</label>
               <input
-                value={formName}
-                onChange={(e) => setFormName(e.target.value)}
-                placeholder="e.g. Hunter Health FM 2026"
+                value={formIdentifier}
+                onChange={(e) => setFormIdentifier(e.target.value)}
+                placeholder="e.g. Peer Review Form v1"
                 className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
               />
             </div>
@@ -392,6 +395,12 @@ export function FormBuilderModal({ open, onOpenChange, companyId, defaultSpecial
               </select>
             </div>
           </div>
+          {formIdentifier.trim() && (
+            <div className="rounded-md bg-muted/50 px-3 py-2">
+              <span className="text-xs text-muted-foreground">Display name: </span>
+              <span className="text-sm font-medium">{companyName || 'Company'} - {specialty} - {formIdentifier.trim()}</span>
+            </div>
+          )}
 
           {/* Upload PDF mode */}
           {mode === "upload" && (
