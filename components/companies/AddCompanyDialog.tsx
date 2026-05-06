@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -24,6 +27,7 @@ export function AddCompanyDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [initialStatus, setInitialStatus] = useState("lead");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,7 +43,7 @@ export function AddCompanyDialog() {
       contact_phone: (formData.get("contact_phone") as string) || null,
       per_review_rate: perReviewRate ? Number(perReviewRate) : null,
       notes: (formData.get("notes") as string) || null,
-      status: "lead" as const,
+      status: initialStatus,
     };
 
     if (!payload.name.trim()) {
@@ -110,10 +114,23 @@ export function AddCompanyDialog() {
               <Input id="contact_phone" name="contact_phone" placeholder="(555) 123-4567" />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="per_review_rate">Per-Review Rate ($)</Label>
-            <Input id="per_review_rate" name="per_review_rate" type="number" min="0" step="0.01" placeholder="90.00" />
-            <p className="text-xs text-muted-foreground">Default rate per review for invoicing. Leave blank to use global rate.</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="per_review_rate">Per-Review Rate ($)</Label>
+              <Input id="per_review_rate" name="per_review_rate" type="number" min="0" step="0.01" placeholder="90.00" />
+              <p className="text-xs text-muted-foreground">Leave blank to use global rate.</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Initial Status</Label>
+              <Select value={initialStatus} onValueChange={setInitialStatus}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="lead">Lead</SelectItem>
+                  <SelectItem value="prospect">Prospect</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Lead = first contact. Prospect = qualified.</p>
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
