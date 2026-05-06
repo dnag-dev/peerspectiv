@@ -509,16 +509,270 @@
 
 ---
 
-### SAA-021 — MRN field strips HTML tags (XSS prevention)
 
-**Module:** Peer Review | **Priority:** High
+## Company Detail Page — Visible Fields
 
-**Pre-conditions:** Peer is on a review form.
+### SAA-034 — Company detail page shows Company Details card
+
+**Module:** Companies | **Priority:** High
+
+**Pre-conditions:** Company exists with address, city, state, annual review count, and notes populated.
 
 **Steps:**
-1. In the MRN field, type: `<script>alert(1)</script>`
-2. Inspect the stored value.
+1. Navigate to /companies/{id}.
+2. Locate the "Company Details" card below the header.
 
-**Expected Result:** HTML tags are stripped. The field value shows `alert(1)` with no HTML. No script execution.
+**Expected Result:** Card displays: Address, City/State, Annual Review Count, Itemize Invoices (Yes/No), Report Delivery preference, Report Bundle Delivery preference, and Notes (if present). Per-review rate is NOT shown here (managed in Pricing section only).
+
+---
+
+### SAA-035 — Edit Company dialog includes address, city, state, annual review count
+
+**Module:** Companies | **Priority:** High
+
+**Pre-conditions:** Company exists.
+
+**Steps:**
+1. Click "Edit Company" on the company detail page.
+2. Verify all fields are present: Name, Contact Person, Email, Phone, Address, City, State, Annual Review Count, Notes, Itemize Invoices, Report Delivery, Report Bundle Delivery.
+
+**Expected Result:** All fields are visible and editable. Per-review rate is NOT in this dialog (managed in Pricing section). No "(Phase 8.2)" label on Report Bundle Delivery. Dialog is scrollable if content overflows.
+
+---
+
+### SAA-036A — Per-review rate is managed only in Pricing section
+
+**Module:** Companies — Pricing | **Priority:** Medium
+
+**Pre-conditions:** Company exists with a per-review rate set.
+
+**Steps:**
+1. Open company detail page.
+2. Verify per-review rate appears ONLY in the Pricing section.
+3. Open Edit Company dialog — verify no per-review rate field.
+4. Change rate in Pricing section and save.
+5. Refresh page.
+
+**Expected Result:** Rate change persists. Rate is shown only in Pricing section, not duplicated in Edit Company dialog or Company Details card.
+
+---
+
+
+## Prospects Pipeline — Navigation & Toast
+
+### SAA-037A — Adding company from Prospects page stays on Prospects page
+
+**Module:** Prospects | **Priority:** High
+
+**Pre-conditions:** User is on the Prospects Pipeline page (/prospects).
+
+**Steps:**
+1. Click "Add New Company".
+2. Fill in required fields (Name, Contact, Email, State).
+3. Set Initial Status = Lead.
+4. Click "Create Company".
+
+**Expected Result:** Toast notification appears with solid white background and readable text. User stays on the Prospects page (not navigated away). The new company appears in the Lead column immediately without a full page refresh.
+
+---
+
+### SAA-038A — Adding company from Companies page navigates to detail page
+
+**Module:** Companies | **Priority:** Medium
+
+**Pre-conditions:** User is on the Companies page (/companies).
+
+**Steps:**
+1. Click "Add New Company".
+2. Fill in required fields and submit.
+
+**Expected Result:** After creation, user is navigated to the new company's detail page (/companies/{id}).
+
+---
+
+### SAA-039A — Toast notifications are readable on dark backgrounds
+
+**Module:** UI | **Priority:** Medium
+
+**Pre-conditions:** User is on a dark-themed page (e.g., Prospects Pipeline).
+
+**Steps:**
+1. Trigger any toast notification (create company, generate contract, etc.).
+
+**Expected Result:** Toast has a solid white background with border and shadow. Text is clearly readable against any page background.
+
+---
+
+### SAA-040A — Pipeline board syncs after adding company
+
+**Module:** Prospects | **Priority:** High
+
+**Pre-conditions:** User is on the Prospects Pipeline page.
+
+**Steps:**
+1. Add a new company with status = Lead.
+2. Observe the Lead column.
+
+**Expected Result:** The new company card appears in the Lead column immediately. The column count badge updates. No full page reload required.
+
+---
+
+
+## Company Dropdowns — Status Filtering
+
+### SAA-041A — Lead and archived companies excluded from operational dropdowns
+
+**Module:** Companies — Dropdowns | **Priority:** High
+
+**Pre-conditions:** Companies exist in various statuses including Lead and Archived.
+
+**Steps:**
+1. Navigate to Dashboard — check company filter dropdown.
+2. Navigate to Forms page — check company filter and form builder company picker.
+3. Navigate to Batches page — check batch wizard company selector.
+4. Navigate to Invoices page — check company dropdown.
+
+**Expected Result:** Lead and Archived companies do NOT appear in any of these dropdowns. Only companies in Prospect, Contract Sent, Contract Signed, Active, Active Client, and In Cycle statuses are shown.
+
+---
+
+### SAA-042A — Companies list page still shows all statuses
+
+**Module:** Companies | **Priority:** Medium
+
+**Pre-conditions:** Companies exist in all statuses including Lead and Archived.
+
+**Steps:**
+1. Navigate to /companies.
+2. Check the full company list.
+
+**Expected Result:** All companies are visible regardless of status, including Lead and Archived. This is the admin view for managing all companies.
+
+---
+
+
+## Forms — Form Identifier & Company Selector
+
+### SAA-043A — Form builder shows company selector in create mode
+
+**Module:** Forms | **Priority:** High
+
+**Pre-conditions:** Multiple active companies exist.
+
+**Steps:**
+1. Navigate to Forms page.
+2. Click "New Form".
+3. Observe the form builder modal.
+
+**Expected Result:** A "Company *" dropdown is visible at the top. It lists all non-lead, non-archived companies. User must select a company before creating the form.
+
+---
+
+### SAA-044A — Form builder shows company as read-only in edit mode
+
+**Module:** Forms | **Priority:** Medium
+
+**Pre-conditions:** A form exists for a company.
+
+**Steps:**
+1. On the Forms page, click Edit on an existing form.
+
+**Expected Result:** The company is shown as a read-only field with a muted background. It cannot be changed. All other fields (specialty, form identifier, questions) are editable.
+
+---
+
+### SAA-045A — Form Identifier field and computed Form Name
+
+**Module:** Forms | **Priority:** High
+
+**Pre-conditions:** None.
+
+**Steps:**
+1. Open the form builder (create mode).
+2. Select a company (e.g., "Aira").
+3. Select a specialty (e.g., "Family Medicine").
+4. Enter a Form Identifier (e.g., "Peer Review Form v1").
+
+**Expected Result:** Fields are ordered: Company, Specialty, Form Identifier. Below the fields, a "Form Name:" preview shows the computed display name: "Aira - Family Medicine - Peer Review Form v1".
+
+---
+
+### SAA-046A — Form display name computed and stored correctly
+
+**Module:** Forms | **Priority:** High
+
+**Pre-conditions:** None.
+
+**Steps:**
+1. Create a new form: Company = "Sunrise", Specialty = "Pediatrics", Form Identifier = "Q2 Review".
+2. Save the form.
+3. Check the Forms list page.
+
+**Expected Result:** The form_name in the database shows "Sunrise - Pediatrics - Q2 Review". The form_identifier shows "Q2 Review". The Forms list page displays the full computed name.
+
+---
+
+### SAA-047A — Editing form recomputes display name
+
+**Module:** Forms | **Priority:** Medium
+
+**Pre-conditions:** Form exists with identifier "Peer Review Form v1".
+
+**Steps:**
+1. Edit the form.
+2. Change specialty from "Family Medicine" to "Pediatrics".
+3. Save.
+
+**Expected Result:** The form_name is recomputed to "{Company} - Pediatrics - Peer Review Form v1". The form_identifier remains unchanged.
+
+---
+
+
+## Specialty Dropdowns — Taxonomy API
+
+### SAA-048A — All specialty dropdowns use taxonomy API
+
+**Module:** Forms, Providers | **Priority:** High
+
+**Pre-conditions:** Specialty taxonomy has 18+ active specialties.
+
+**Steps:**
+1. Open Form Builder — check specialty dropdown.
+2. Open Add Provider dialog — check specialty dropdown.
+3. Open Client Portal > Profile > Add Doctor — check specialty dropdown.
+
+**Expected Result:** All three dropdowns show the same complete list of specialties from the taxonomy table (e.g., Family Medicine, Pediatrics, Cardiology, Acupuncture, Podiatry, etc.). No dropdown shows a hardcoded subset of 6.
+
+---
+
+
+## UI Cleanup
+
+### SAA-049A — No internal test case IDs in user-facing UI
+
+**Module:** UI | **Priority:** Low
+
+**Pre-conditions:** None.
+
+**Steps:**
+1. Navigate to Pricing section on a company detail page.
+2. Navigate to Settings page.
+3. Check all helper text and labels.
+
+**Expected Result:** No references to SA-xxx, SAA-xxx, or any internal test case IDs appear in the UI. Helper text reads naturally without internal codes.
+
+---
+
+### SAA-050A — Prospect card company name is clickable
+
+**Module:** Prospects | **Priority:** Medium
+
+**Pre-conditions:** Companies exist in the pipeline.
+
+**Steps:**
+1. Navigate to Prospects Pipeline page.
+2. Click on a company name in any card.
+
+**Expected Result:** Clicking the company name navigates to /companies/{id} (the company detail page). The name appears as a link with hover underline.
 
 ---
