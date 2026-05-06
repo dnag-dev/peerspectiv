@@ -84,6 +84,7 @@ export function AddProspectModal() {
   const [initialStatus, setInitialStatus] = useState('lead');
   const [perReviewRate, setPerReviewRate] = useState('');
   const [fyStartMonth, setFyStartMonth] = useState('1');
+  const [customMonths, setCustomMonths] = useState('');
 
   function toggleSpecialty(s: string) {
     setSpecialties((prev) =>
@@ -107,6 +108,7 @@ export function AddProspectModal() {
     setInitialStatus('lead');
     setPerReviewRate('');
     setFyStartMonth('1');
+    setCustomMonths('');
     setError(null);
     setDuplicates(null);
   }
@@ -137,7 +139,8 @@ export function AddProspectModal() {
       let cadencePeriodType = reviewCycle;
       let cadencePeriodMonths: number | null = null;
       if (reviewCycle === 'semi-annual') { cadencePeriodType = 'custom_multi_month'; cadencePeriodMonths = 6; }
-      if (reviewCycle === 'annual') { cadencePeriodType = 'custom_multi_month'; cadencePeriodMonths = 12; }
+      else if (reviewCycle === 'annual') { cadencePeriodType = 'custom_multi_month'; cadencePeriodMonths = 12; }
+      else if (reviewCycle === 'custom') { cadencePeriodType = 'custom_multi_month'; cadencePeriodMonths = customMonths ? Number(customMonths) : 3; }
 
       const res = await fetch('/api/prospects', {
         method: 'POST',
@@ -316,9 +319,23 @@ export function AddProspectModal() {
                   <SelectItem value="quarterly">Quarterly</SelectItem>
                   <SelectItem value="semi-annual">Semi-Annual</SelectItem>
                   <SelectItem value="annual">Annual</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            {reviewCycle === 'custom' && (
+              <div className="space-y-2">
+                <Label>Period Length (months)</Label>
+                <Input
+                  type="number"
+                  min={2}
+                  max={12}
+                  placeholder="e.g. 2"
+                  value={customMonths}
+                  onChange={(e) => setCustomMonths(e.target.value)}
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Fiscal Year Start</Label>
@@ -355,32 +372,13 @@ export function AddProspectModal() {
           </div>
 
           <div className="space-y-2">
-            <Label>Specialty Mix</Label>
-            <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-              {SPECIALTIES.map((s) => (
-                <label
-                  key={s}
-                  className="flex items-center gap-2 rounded-md border border-ink-700 bg-[#172554] px-2 py-1.5 text-xs text-ink-200"
-                >
-                  <input
-                    type="checkbox"
-                    checked={specialties.includes(s)}
-                    onChange={() => toggleSpecialty(s)}
-                    className="h-4 w-4 accent-[#2563EB]"
-                  />
-                  {s}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="onboardingNotes">Onboarding Notes</Label>
+            <Label htmlFor="onboardingNotes">Notes</Label>
             <Textarea
               id="onboardingNotes"
               value={onboardingNotes}
               onChange={(e) => setOnboardingNotes(e.target.value)}
-              rows={3}
+              rows={2}
+              placeholder="Optional notes about this company..."
             />
           </div>
 
