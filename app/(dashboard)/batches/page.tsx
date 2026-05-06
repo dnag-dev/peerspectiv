@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { batches as batchesTable, companies as companiesTable, providers as providersTable, companyForms } from "@/lib/db/schema";
-import { asc, desc, eq, notInArray } from "drizzle-orm";
+import { asc, desc, eq, inArray } from "drizzle-orm";
 import type { Batch } from "@/types";
 import {
   NewBatchModal,
@@ -57,7 +57,7 @@ async function getWizardData(): Promise<{
         fiscal_year_start_month: companiesTable.fiscalYearStartMonth,
       })
       .from(companiesTable)
-      .where(notInArray(companiesTable.status, ['lead', 'archived']))
+      .where(inArray(companiesTable.status, ['active', 'active_client', 'in_cycle']))
       .orderBy(asc(companiesTable.name)),
     db
       .select({

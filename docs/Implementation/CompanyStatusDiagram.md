@@ -140,8 +140,8 @@
 | Companies List Page | Y | Y | Y | Y | Y | Y |
 | Dashboard Filter | - | Y | Y | Y | Y | - |
 | Forms Company Picker | - | Y | Y | Y | Y | - |
-| Batch Wizard | - | Y | Y | Y | Y | - |
-| Invoices Dropdown | - | Y | Y | Y | Y | - |
+| Batch Wizard | - | - | - | - | Y | - |
+| Invoices Dropdown | - | - | - | - | Y | - |
 | Reports Page | - | - | - | - | Active only | - |
 
 \* "Active" column includes Active, Active Client, and In Cycle.
