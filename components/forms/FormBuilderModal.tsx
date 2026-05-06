@@ -389,8 +389,13 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
             </Button>
           </div>
 
-          {/* Company selector — shown in create mode when companies list provided */}
-          {!isEdit && companiesProp && companiesProp.length > 0 && (
+          {/* Company — editable dropdown in create mode, read-only in edit mode */}
+          {isEdit ? (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Company</label>
+              <div className="mt-1 w-full rounded-md border bg-muted/50 px-3 py-2 text-sm">{selectedCompanyName || companyName || '—'}</div>
+            </div>
+          ) : companiesProp && companiesProp.length > 0 ? (
             <div>
               <label className="text-xs font-medium text-muted-foreground">Company *</label>
               <Select value={selectedCompanyId || undefined} onValueChange={setSelectedCompanyId}>
@@ -404,7 +409,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
                 </SelectContent>
               </Select>
             </div>
-          )}
+          ) : null}
 
           <div className="grid grid-cols-2 gap-3">
             <div>
