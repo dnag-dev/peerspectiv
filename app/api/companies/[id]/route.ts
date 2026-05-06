@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, toCamel, toSnake } from "@/lib/db";
 import { companies, reviewCases } from "@/lib/db/schema";
 import { and, eq, inArray } from "drizzle-orm";
+import { getNextPeriodStartDate, type CadenceConfig } from "@/lib/cadence/core";
 
 export async function GET(
   _req: NextRequest,
@@ -172,6 +173,37 @@ export async function PATCH(
         },
         { status: 409 }
       );
+    }
+  }
+
+  // Phase 9A: Auto-calculate next_cycle_due when cadence config changes
+  const cadenceChanged =
+    updateSnake.cadence_period_type !== undefined ||
+    updateSnake.fiscal_year_start_month !== undefined ||
+    updateSnake.cadence_period_months !== undefined;
+
+  if (cadenceChanged) {
+    // Read current + incoming values to build the config
+    const [current] = await db
+      .select({
+        cadencePeriodType: companies.cadencePeriodType,
+        fiscalYearStartMonth: companies.fiscalYearStartMonth,
+        cadencePeriodMonths: companies.cadencePeriodMonths,
+      })
+      .from(companies)
+      .where(eq(companies.id, id))
+      .limit(1);
+
+    if (current) {
+      const config: CadenceConfig = {
+        fiscalYearStartMonth:
+          (updateSnake.fiscal_year_start_month as number) ?? current.fiscalYearStartMonth ?? 1,
+        type: ((updateSnake.cadence_period_type as string) ?? current.cadencePeriodType ?? 'quarterly') as CadenceConfig['type'],
+        customMonths:
+          (updateSnake.cadence_period_months as number) ?? current.cadencePeriodMonths ?? undefined,
+      };
+      const nextStart = getNextPeriodStartDate(config, new Date());
+      updateSnake.next_cycle_due = nextStart;
     }
   }
 

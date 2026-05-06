@@ -186,3 +186,24 @@ export function findPeriodForDate(
   const d = dateStr.slice(0, 10);
   return periods.find((p) => p.start_date <= d && d <= p.end_date) ?? periods[periods.length - 1];
 }
+
+/**
+ * Get the next period's start date given a cadence config and reference date.
+ * Returns ISO date string (YYYY-MM-DD) for the start of the period AFTER
+ * the one containing referenceDate.
+ */
+export function getNextPeriodStartDate(
+  config: CadenceConfig,
+  referenceDate: Date
+): string {
+  // Build periods with 0 lookback (just current) then build 1 more forward
+  // by advancing the reference date past the current period's end.
+  const current = buildCadencePeriods(config, referenceDate, 0);
+  if (current.length === 0) return referenceDate.toISOString().slice(0, 10);
+
+  const currentEnd = current[current.length - 1].end_date;
+  // Next period starts the day after current period ends
+  const endDate = new Date(currentEnd + 'T00:00:00Z');
+  endDate.setUTCDate(endDate.getUTCDate() + 1);
+  return endDate.toISOString().slice(0, 10);
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarClock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,27 @@ export function CadenceSection({ companyId }: { companyId: string }) {
   const [frequency, setFrequency] = useState<Frequency>("quarterly");
   const [fyStartMonth, setFyStartMonth] = useState(1);
   const [customMonths, setCustomMonths] = useState(2);
+  const [activePeriodLabels, setActivePeriodLabels] = useState<Set<string>>(new Set());
+
+  // Load periods that have actual batches/reviews
+  const loadActivePeriods = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/companies/${companyId}/cadence-periods?lookback_years=2`);
+      if (!res.ok) return;
+      const data = await res.json();
+      // Check which period labels have batches
+      const batchRes = await fetch(`/api/batches?company_id=${companyId}&limit=500`);
+      if (!batchRes.ok) return;
+      const batchData = await batchRes.json();
+      const batches = batchData.data ?? batchData.batches ?? batchData ?? [];
+      const labels = new Set<string>();
+      for (const b of batches) {
+        const name = b.batch_name ?? b.batchName ?? "";
+        if (name) labels.add(name);
+      }
+      setActivePeriodLabels(labels);
+    } catch { /* ignore */ }
+  }, [companyId]);
 
   // Initial data load
   useEffect(() => {
@@ -55,7 +76,8 @@ export function CadenceSection({ companyId }: { companyId: string }) {
         setLoading(false);
       }
     })();
-  }, [companyId]);
+    loadActivePeriods();
+  }, [companyId, loadActivePeriods]);
 
   // Compute periods client-side from the current UI state — instant preview
   const { periods, currentPeriod } = useMemo(() => {
@@ -201,30 +223,34 @@ export function CadenceSection({ companyId }: { companyId: string }) {
           </div>
         )}
 
-        {/* Period sequence */}
-        {periods.length > 0 && (
-          <div className="space-y-2">
-            <Label className="text-sm text-ink-600">Period sequence (last {periods.length} periods)</Label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {periods.map((p, i) => {
-                const isCurrent = p.start_date <= todayStr && todayStr <= p.end_date;
-                return (
-                  <div
-                    key={i}
-                    className={`text-xs rounded px-3 py-2 border ${
-                      isCurrent
-                        ? "border-cobalt-400 bg-cobalt-50 text-cobalt-800 font-medium"
-                        : "border-ink-200 bg-white text-ink-600"
-                    }`}
-                  >
-                    <div className="font-medium">{p.label}</div>
-                    <div className="text-ink-400 mt-0.5">{p.start_date} → {p.end_date}</div>
-                  </div>
-                );
-              })}
+        {/* Period sequence — only show periods with actual reviews/batches */}
+        {(() => {
+          const periodsWithData = periods.filter((p) => activePeriodLabels.has(p.label));
+          if (periodsWithData.length === 0) return null;
+          return (
+            <div className="space-y-2">
+              <Label className="text-sm text-ink-600">Review periods with data ({periodsWithData.length})</Label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {periodsWithData.map((p, i) => {
+                  const isCurrent = p.start_date <= todayStr && todayStr <= p.end_date;
+                  return (
+                    <div
+                      key={i}
+                      className={`text-xs rounded px-3 py-2 border ${
+                        isCurrent
+                          ? "border-cobalt-400 bg-cobalt-50 text-cobalt-800 font-medium"
+                          : "border-ink-200 bg-white text-ink-600"
+                      }`}
+                    >
+                      <div className="font-medium">{p.label}</div>
+                      <div className="text-ink-400 mt-0.5">{p.start_date} → {p.end_date}</div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </CardContent>
     </Card>
   );

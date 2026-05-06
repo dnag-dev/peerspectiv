@@ -3,6 +3,7 @@ import {
   formatCadenceLabel,
   buildCadencePeriods,
   findPeriodForDate,
+  getNextPeriodStartDate,
   type CadencePeriod,
   type CadenceConfig,
 } from './core';
@@ -440,5 +441,38 @@ describe('buildCadencePeriods — edge cases', () => {
     for (let i = 1; i < periods.length; i++) {
       expect(periods[i].start_date > periods[i - 1].start_date).toBe(true);
     }
+  });
+});
+
+// ─── getNextPeriodStartDate ───────────────────────────────────────────────
+describe('getNextPeriodStartDate', () => {
+  it('quarterly FY-Jan: May 2026 → next period starts Jul 1 2026', () => {
+    const config: CadenceConfig = { fiscalYearStartMonth: 1, type: 'quarterly' };
+    const result = getNextPeriodStartDate(config, utc('2026-05-15'));
+    expect(result).toBe('2026-07-01');
+  });
+
+  it('quarterly FY-Apr: May 2026 → next period starts Jul 1 2026', () => {
+    const config: CadenceConfig = { fiscalYearStartMonth: 4, type: 'quarterly' };
+    const result = getNextPeriodStartDate(config, utc('2026-05-15'));
+    expect(result).toBe('2026-07-01');
+  });
+
+  it('monthly FY-Jan: May 2026 → next period starts Jun 1 2026', () => {
+    const config: CadenceConfig = { fiscalYearStartMonth: 1, type: 'monthly' };
+    const result = getNextPeriodStartDate(config, utc('2026-05-15'));
+    expect(result).toBe('2026-06-01');
+  });
+
+  it('bi-monthly FY-Jan: May 2026 (in May-Jun period) → next starts Jul 1', () => {
+    const config: CadenceConfig = { fiscalYearStartMonth: 1, type: 'custom_multi_month', customMonths: 2 };
+    const result = getNextPeriodStartDate(config, utc('2026-05-15'));
+    expect(result).toBe('2026-07-01');
+  });
+
+  it('year boundary: Dec 2026 quarterly → next starts Jan 1 2027', () => {
+    const config: CadenceConfig = { fiscalYearStartMonth: 1, type: 'quarterly' };
+    const result = getNextPeriodStartDate(config, utc('2026-12-15'));
+    expect(result).toBe('2027-01-01');
   });
 });
