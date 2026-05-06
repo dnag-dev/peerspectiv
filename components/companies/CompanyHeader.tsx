@@ -41,7 +41,7 @@ export function CompanyHeader({ company }: CompanyHeaderProps) {
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || "Failed to send contract");
-      toast({ title: "Contract sent", description: `DocuSign envelope created for ${company.name}.` });
+      toast({ title: "Contract generated & sent", description: `${company.name} status updated to Contract Sent.` });
       router.refresh();
     } catch (e) {
       toast({ title: "Error", description: e instanceof Error ? e.message : "Failed" });

@@ -157,6 +157,12 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
+    // Update company status to contract_sent
+    await db
+      .update(companies)
+      .set({ status: 'contract_sent', contractSentAt: new Date(), updatedAt: new Date() })
+      .where(eq(companies.id, companyId));
+
     await db.insert(auditLogs).values({
       userId: null,
       action: 'contract_generated',
