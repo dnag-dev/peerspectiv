@@ -351,7 +351,7 @@ export default async function DashboardPage({
                       </span>
                       <span className="flex items-center gap-3 text-xs text-ink-500">
                         {nextLabel && (
-                          <Badge variant="outline" className="border-cobalt-300 text-cobalt-700 bg-cobalt-50">
+                          <Badge variant="outline" className="border-cobalt-300 text-cobalt-700 bg-cobalt-50 normal-case">
                             {nextLabel}
                           </Badge>
                         )}
