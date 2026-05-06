@@ -103,6 +103,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
   const [formIdentifier, setFormIdentifier] = useState("");
   const [specialty, setSpecialty] = useState(defaultSpecialty || "Family Medicine");
   const selectedCompanyName = companiesProp?.find((c) => c.id === selectedCompanyId)?.name || companyName || "";
+  const [specialtyOptions, setSpecialtyOptions] = useState<string[]>([]);
   const [fields, setFields] = useState<BuiltFormField[]>(BLANK_FIELDS);
   const [templates, setTemplates] = useState<Array<{ id: string; form_name: string; specialty: string }>>([]);
   const [templatePdfUrl, setTemplatePdfUrl] = useState<string | null>(null);
@@ -149,6 +150,11 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
       setAllowAiNarrative(false);
       setMode("scratch");
     }
+    // Fetch specialty taxonomy
+    fetch('/api/specialties')
+      .then((r) => r.json())
+      .then((d) => setSpecialtyOptions((d.data ?? []).map((s: { name: string }) => s.name)))
+      .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, companyId, defaultSpecialty, editForm, prefill]);
 
@@ -419,12 +425,9 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Family Medicine">Family Medicine</SelectItem>
-                  <SelectItem value="Internal Medicine">Internal Medicine</SelectItem>
-                  <SelectItem value="Pediatrics">Pediatrics</SelectItem>
-                  <SelectItem value="OB/GYN">OB/GYN</SelectItem>
-                  <SelectItem value="Behavioral Health">Behavioral Health</SelectItem>
-                  <SelectItem value="Dental">Dental</SelectItem>
+                  {specialtyOptions.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -54,6 +54,14 @@ export default function ClientProfilePage() {
   const [docSaving, setDocSaving] = useState(false);
   const [docMsg, setDocMsg] = useState<string | null>(null);
   const [docErr, setDocErr] = useState<string | null>(null);
+  const [specialtyOptions, setSpecialtyOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch('/api/specialties')
+      .then((r) => r.json())
+      .then((d) => setSpecialtyOptions((d.data ?? []).map((s: { name: string }) => s.name)))
+      .catch(() => {});
+  }, []);
 
   // Add Location state
   const [locName, setLocName] = useState("");
@@ -468,12 +476,9 @@ export default function ClientProfilePage() {
             <Select value={docSpecialty} onValueChange={setDocSpecialty}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="Family Medicine">Family Medicine</SelectItem>
-                <SelectItem value="Internal Medicine">Internal Medicine</SelectItem>
-                <SelectItem value="Pediatrics">Pediatrics</SelectItem>
-                <SelectItem value="OB/GYN">OB/GYN</SelectItem>
-                <SelectItem value="Behavioral Health">Behavioral Health</SelectItem>
-                <SelectItem value="Dental">Dental</SelectItem>
+                {specialtyOptions.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
