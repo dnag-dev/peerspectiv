@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const companyId: string | undefined = body.company_id;
+    const companyId: string | undefined = body.company_id ?? body.companyId;
     if (!companyId) {
       return NextResponse.json(
         { error: 'company_id is required' },
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     if (!company) {
       return NextResponse.json({ error: 'Company not found' }, { status: 404 });
     }
-    if (company.status !== 'prospect') {
+    if (company.status !== 'lead' && company.status !== 'prospect') {
       return NextResponse.json(
         {
           error: `Company status must be 'prospect' to generate a contract (current: ${company.status})`,
