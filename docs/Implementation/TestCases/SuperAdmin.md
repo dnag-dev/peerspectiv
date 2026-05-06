@@ -1049,18 +1049,26 @@ All three paths converge at **Pending Credentialing**, then proceed identically 
 Contact: Tester One
 Email: qa.client+timestamp@example.com
 
-**Expected Result:** Success toast. Company appears in list. A Client account/password is generated (verify password is shown OR sent via email).
+**Expected Result:** Success toast. Company appears in list with status = **Draft**. No client account is created yet — account creation happens at activation (SA-034). Company status flow: Draft → Contract Sent → Contract Signed → Active → Archived.
+
+**Notes:** Updated May 2026 — new company starts in Draft status. Client account/password is generated only when admin activates portal access (after contract is signed). See SA-034 for the activation flow.
 
 ---
 
-### SA-034 — Generated Client login works
+### SA-034 — Activate company portal access (generates client login)
 
 **Module:** Companies | **Priority:** High
 
-**Pre-conditions:** Company SA-033 created; password obtained.
+**Pre-conditions:** Company created (SA-033) with status = contract_signed. Contract has been signed via DocuSign.
 
 **Steps:**
-1. Open incognito window.
+1. Open company detail page.
+2. Click "Activate Portal Access" (or equivalent).
+3. Verify a Clerk user is created with the company's contact email.
+4. Verify a 16-character secure password is generated.
+5. Verify a welcome email is sent to the contact email with login credentials.
+6. Verify company status changes to **Active**.
+7. Open incognito window.
 2. Log in with new client email + generated password.
 
 **Test Data:** _(none)_

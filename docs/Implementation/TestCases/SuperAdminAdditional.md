@@ -328,3 +328,95 @@
 **Expected Result:** HTML tags are stripped. The field value shows `alert(1)` with no HTML. No script execution.
 
 ---
+
+
+## Company Status Flow
+
+### SAA-022 — New company created with Draft status
+
+**Module:** Companies | **Priority:** High
+
+**Pre-conditions:** —
+
+**Steps:**
+1. Click + Add Company.
+2. Fill in name, contact, email, per-review rate.
+3. Save.
+
+**Expected Result:** Company created with status = **Draft**. No client account generated. Company visible in list when "Draft" filter is selected.
+
+---
+
+### SAA-023 — Companies list defaults to Active filter
+
+**Module:** Companies | **Priority:** Medium
+
+**Pre-conditions:** Companies exist with various statuses (draft, active, archived).
+
+**Steps:**
+1. Navigate to Companies page.
+2. Observe the status filter dropdown.
+
+**Expected Result:** Default filter is "Active" — only active companies shown. Dropdown includes: Active, Draft, Contract Sent, Contract Signed, Archived, All statuses.
+
+---
+
+### SAA-024 — Company status flow: Draft → Contract Sent → Contract Signed → Active → Archived
+
+**Module:** Companies | **Priority:** High
+
+**Pre-conditions:** Company in Draft status.
+
+**Steps:**
+1. Send contract via DocuSign → status = Contract Sent.
+2. Contract signed webhook → status = Contract Signed.
+3. Admin activates portal access → status = Active. Client account created + welcome email sent.
+4. Admin archives company → status = Archived (blocked if active cases exist per SA-042).
+
+**Expected Result:** Each status transition is valid. Company cannot skip statuses. Active status is only reached via activation (not direct edit).
+
+---
+
+### SAA-025 — Status badges display correctly for all statuses
+
+**Module:** Companies | **Priority:** Low
+
+**Pre-conditions:** Companies with various statuses.
+
+**Steps:**
+1. View companies list with "All statuses" filter.
+2. Inspect status badges.
+
+**Expected Result:** Draft = outline badge. Active = green badge. Contract Sent / Contract Signed / Archived = secondary badge. Underscores replaced with spaces in display (e.g., "contract sent" not "contract_sent").
+
+---
+
+### SAA-026 — Provider import CSV template downloadable
+
+**Module:** Companies — Providers | **Priority:** Medium
+
+**Pre-conditions:** On company detail page.
+
+**Steps:**
+1. Click "Import providers".
+2. Click "Download CSV template" link.
+
+**Expected Result:** Downloads `provider_import_template.csv` with headers: first_name, last_name, specialty, npi, email. Includes 2 sample rows. PDF guidance note shown below.
+
+---
+
+---
+
+### SAA-021 — MRN field strips HTML tags (XSS prevention)
+
+**Module:** Peer Review | **Priority:** High
+
+**Pre-conditions:** Peer is on a review form.
+
+**Steps:**
+1. In the MRN field, type: `<script>alert(1)</script>`
+2. Inspect the stored value.
+
+**Expected Result:** HTML tags are stripped. The field value shows `alert(1)` with no HTML. No script execution.
+
+---

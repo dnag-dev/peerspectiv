@@ -35,15 +35,14 @@ type SortDir = "asc" | "desc";
 
 export function CompaniesView({ companies }: Props) {
   const [searchQ, setSearchQ] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("active");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const filtered = useMemo(() => {
     const q = searchQ.trim().toLowerCase();
     return companies.filter((c) => {
-      if (statusFilter === "active" && c.status !== "active") return false;
-      if (statusFilter === "inactive" && c.status === "active") return false;
+      if (statusFilter !== "all" && c.status !== statusFilter) return false;
       if (!q) return true;
       return (
         c.name.toLowerCase().includes(q) ||
@@ -155,9 +154,12 @@ export function CompaniesView({ companies }: Props) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Any status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="contract_sent">Contract Sent</SelectItem>
+                <SelectItem value="contract_signed">Contract Signed</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+                <SelectItem value="all">All statuses</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -204,8 +206,8 @@ export function CompaniesView({ companies }: Props) {
                   <td className="px-4 py-3 text-center text-ink-700">{company.provider_count}</td>
                   <td className="px-4 py-3 text-center text-ink-700">{company.active_case_count}</td>
                   <td className="px-4 py-3">
-                    <Badge variant={company.status === "active" ? "success" : "secondary"}>
-                      {company.status}
+                    <Badge variant={company.status === "active" ? "success" : company.status === "draft" ? "outline" : "secondary"}>
+                      {(company.status ?? "draft").replace(/_/g, " ")}
                     </Badge>
                   </td>
                   <td className="px-4 py-3">

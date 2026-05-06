@@ -39,7 +39,7 @@ export function AddCompanyDialog() {
       contact_phone: (formData.get("contact_phone") as string) || null,
       per_review_rate: perReviewRate ? Number(perReviewRate) : null,
       notes: (formData.get("notes") as string) || null,
-      status: "active" as const,
+      status: "draft" as const,
     };
 
     if (!payload.name.trim()) {
