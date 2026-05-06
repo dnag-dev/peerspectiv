@@ -307,7 +307,7 @@ export function FormsView({ forms, companies }: Props) {
           onClick={() => {
             const c = companyFilter !== "all"
               ? companies.find((x) => x.id === companyFilter)
-              : companies[0];
+              : undefined;
             openBuilder(c?.id ?? "", c?.name);
           }}
           disabled={companies.length === 0}
@@ -525,7 +525,7 @@ export function FormsView({ forms, companies }: Props) {
         </CardContent>
       </Card>
 
-      {showBuilder && builderCompanyId && (
+      {showBuilder && (
         <FormBuilderModal
           open={showBuilder}
           onOpenChange={(o) => {
@@ -537,6 +537,7 @@ export function FormsView({ forms, companies }: Props) {
           }}
           companyId={builderCompanyId}
           companyName={builderCompanyName}
+          companies={companies}
           editForm={editing ?? undefined}
           prefill={prefill ?? undefined}
           onCreated={() => {

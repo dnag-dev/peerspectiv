@@ -51,6 +51,11 @@ export interface CreatedForm {
   specialty: string;
 }
 
+interface CompanyOption {
+  id: string;
+  name: string;
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -58,6 +63,8 @@ interface Props {
   defaultSpecialty?: string;
   onCreated: (form: CreatedForm) => void;
   companyName?: string;
+  /** List of companies for the company picker (create mode). If omitted, company is fixed to companyId. */
+  companies?: CompanyOption[];
   /** When provided, the modal opens in edit mode and PATCHes this form. */
   editForm?: {
     id: string;
@@ -88,11 +95,13 @@ const BLANK_FIELDS: BuiltFormField[] = [
   { field_key: "comments_and_recommendations", field_label: "Comments and Recommendations", field_type: "text", is_required: false, display_order: 1 },
 ];
 
-export function FormBuilderModal({ open, onOpenChange, companyId, companyName, defaultSpecialty, onCreated, editForm, prefill }: Props) {
+export function FormBuilderModal({ open, onOpenChange, companyId, companyName, companies: companiesProp, defaultSpecialty, onCreated, editForm, prefill }: Props) {
   const isEdit = !!editForm;
   const [mode, setMode] = useState<Mode>("scratch");
+  const [selectedCompanyId, setSelectedCompanyId] = useState(companyId);
   const [formIdentifier, setFormIdentifier] = useState("");
   const [specialty, setSpecialty] = useState(defaultSpecialty || "Family Medicine");
+  const selectedCompanyName = companiesProp?.find((c) => c.id === selectedCompanyId)?.name || companyName || "";
   const [fields, setFields] = useState<BuiltFormField[]>(BLANK_FIELDS);
   const [templates, setTemplates] = useState<Array<{ id: string; form_name: string; specialty: string }>>([]);
   const [templatePdfUrl, setTemplatePdfUrl] = useState<string | null>(null);
@@ -109,6 +118,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, d
     setError(null);
     setTemplatePdfUrl(null);
     setTemplatePdfName(null);
+    setSelectedCompanyId(companyId);
     if (editForm) {
       setFormIdentifier(editForm.form_identifier || editForm.form_name || "");
       setSpecialty(editForm.specialty);
@@ -138,11 +148,11 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, d
       setAllowAiNarrative(false);
       setMode("scratch");
     }
-    fetch(`/api/company-forms?company_id=${companyId}`)
+    fetch(`/api/company-forms?company_id=${selectedCompanyId || companyId}`)
       .then((r) => r.json())
       .then((d) => setTemplates(d.forms ?? []))
       .catch(() => setTemplates([]));
-  }, [open, companyId, defaultSpecialty, editForm, prefill]);
+  }, [open, companyId, selectedCompanyId, defaultSpecialty, editForm, prefill]);
 
   async function cloneFrom(formId: string) {
     if (!formId) return;
@@ -247,6 +257,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, d
 
   async function handleSave() {
     setError(null);
+    if (!selectedCompanyId && !companyId) { setError("Please select a company"); return; }
     if (!formIdentifier.trim()) { setError("Form identifier is required"); return; }
     if (mode === "upload" && !templatePdfUrl) { setError("Upload a PDF template first"); return; }
     if (fields.length === 0) { setError("Add at least one field"); return; }
@@ -280,7 +291,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, d
             allow_ai_generated_recommendations: allowAiNarrative,
           }
         : {
-            company_id: companyId,
+            company_id: selectedCompanyId || companyId,
             specialty,
             form_identifier: formIdentifier.trim(),
             form_fields: normalizedFields,
@@ -369,6 +380,23 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, d
             </Button>
           </div>
 
+          {/* Company selector — shown in create mode when companies list provided */}
+          {!isEdit && companiesProp && companiesProp.length > 0 && (
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Company *</label>
+              <select
+                value={selectedCompanyId}
+                onChange={(e) => setSelectedCompanyId(e.target.value)}
+                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+              >
+                <option value="">Select a company...</option>
+                {companiesProp.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-muted-foreground">Form Identifier</label>
@@ -398,7 +426,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, d
           {formIdentifier.trim() && (
             <div className="rounded-md bg-muted/50 px-3 py-2">
               <span className="text-xs text-muted-foreground">Display name: </span>
-              <span className="text-sm font-medium">{companyName || 'Company'} - {specialty} - {formIdentifier.trim()}</span>
+              <span className="text-sm font-medium">{selectedCompanyName || 'Company'} - {specialty} - {formIdentifier.trim()}</span>
             </div>
           )}
 
