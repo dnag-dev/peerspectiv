@@ -57,7 +57,7 @@ async function getWizardData(): Promise<{
         fiscal_year_start_month: companiesTable.fiscalYearStartMonth,
       })
       .from(companiesTable)
-      .where(inArray(companiesTable.status, ['active', 'active_client', 'in_cycle']))
+      .where(inArray(companiesTable.status, ['active', 'active_client']))
       .orderBy(asc(companiesTable.name)),
     db
       .select({

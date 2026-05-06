@@ -38,12 +38,6 @@ const STAGES = [
     accent: 'border-l-4 border-cobalt-500',
     badgeClass: 'bg-cobalt-500 text-white',
   },
-  {
-    key: 'in_cycle',
-    title: 'In Cycle',
-    accent: 'border-l-4 border-[#8B5CF6]',
-    badgeClass: 'bg-[#8B5CF6] text-white',
-  },
 ] as const;
 
 type StageKey = (typeof STAGES)[number]['key'];

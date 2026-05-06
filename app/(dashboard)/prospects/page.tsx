@@ -13,7 +13,6 @@ const STAGE_KEYS = [
   'contract_sent',
   'contract_signed',
   'active_client',
-  'in_cycle',
 ] as const;
 
 async function getPipeline() {
@@ -29,7 +28,6 @@ async function getPipeline() {
         // Backwards compat: legacy 'active' rows still flow into Active Client.
         'active',
         'active_client',
-        'in_cycle',
       ])
     )
     .orderBy(desc(companies.createdAt));
@@ -40,7 +38,6 @@ async function getPipeline() {
     contract_sent: [],
     contract_signed: [],
     active_client: [],
-    in_cycle: [],
   };
 
   for (const row of rows) {

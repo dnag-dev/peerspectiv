@@ -632,7 +632,7 @@
 3. Navigate to Batches page — check batch wizard company selector.
 4. Navigate to Invoices page — check company dropdown.
 
-**Expected Result:** Lead and Archived companies do NOT appear in any of these dropdowns. Only companies in Prospect, Contract Sent, Contract Signed, Active, Active Client, and In Cycle statuses are shown.
+**Expected Result:** Lead and Archived companies do NOT appear in any of these dropdowns. Only companies in Prospect, Contract Sent, Contract Signed, Active, and Active Client statuses are shown. Batch and Invoice dropdowns are further restricted to Active and Active Client only.
 
 ---
 

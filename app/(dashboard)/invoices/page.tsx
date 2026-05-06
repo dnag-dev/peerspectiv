@@ -38,7 +38,7 @@ export default async function InvoicesPage() {
   const companyList = await db
     .select({ id: companies.id, name: companies.name })
     .from(companies)
-    .where(inArray(companies.status, ['active', 'active_client', 'in_cycle']))
+    .where(inArray(companies.status, ['active', 'active_client']))
     .orderBy(companies.name);
 
   return <InvoicesView invoices={rows} companies={companyList} />;

@@ -21,7 +21,6 @@ const STATUS_BADGE: Record<string, string> = {
   contract_signed: "bg-cobalt-100 text-cobalt-700",
   active: "bg-mint-100 text-mint-700",
   active_client: "bg-mint-100 text-mint-700",
-  in_cycle: "bg-purple-100 text-purple-700",
   archived: "bg-ink-100 text-ink-500",
 };
 

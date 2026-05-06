@@ -28,16 +28,14 @@
               +------+-------+     +----------+
                      |
            [Activate Portal]
-                     |                  +-------v--------+
+                     |                  +----------------+
                      |    [auto via     | ACTIVE_CLIENT  |
                      +--- DocuSign]--->  | (auto-promoted)|
                      |                  +-------+--------+
                  +---v---+                      |
-                 | ACTIVE |         [Admin sets in_cycle]
+                 | ACTIVE |                     |
                  |(legacy)|                     |
-                 +---+----+              +------v-----+
-                     |                   |  IN_CYCLE   |
-                     |                   +------+------+
+                 +---+----+                     |
                      |                          |
                      +---------+----------------+
                                |
@@ -59,7 +57,6 @@
 | **Contract Signed** | DocuSign completed (if not auto-promoted to Active Client). |
 | **Active** | Legacy status. Portal activated manually via admin. |
 | **Active Client** | Modern flow. Auto-promoted when DocuSign envelope is signed. |
-| **In Cycle** | Active client with review cycles running. Admin-set. |
 | **Archived** | Deactivated. No operations allowed. Requires no active cases. |
 
 ## Transition Triggers
@@ -76,25 +73,25 @@
 
 ## Operations Matrix by Status
 
-| Operation | Lead | Prospect | Contract Sent | Contract Signed | Active | Active Client | In Cycle | Archived |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Edit Company** | Y | Y | Y | Y | Y | Y | Y | Y* |
-| **Add Providers** | Y | Y | Y | Y | Y | Y | Y | Y |
-| **Import Providers (CSV)** | Y | Y | Y | Y | Y | Y | Y | Y |
-| **Create Forms** | Y | Y | Y | Y | Y | Y | Y | Y |
-| **Send Contract** | Y | Y | - | - | - | - | - | - |
-| **Activate Portal** | - | - | - | Y | - | - | - | - |
-| **Upload Batches** | - | - | - | - | Y | Y | Y | - |
-| **Suggest Assignments** | - | - | - | - | Y | Y | Y | - |
-| **Generate Invoices** | - | - | - | - | Y | Y | Y | - |
-| **Generate Reports** | - | - | - | - | Y | Y | Y | - |
-| **Download All Reports** | - | - | - | - | Y | Y | Y | - |
-| **Archive Company** | Y | Y | Y | Y | Y** | Y** | Y** | - |
+| Operation | Lead | Prospect | Contract Sent | Contract Signed | Active | Active Client | Archived |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Edit Company** | Y | Y | Y | Y | Y | Y | Y* |
+| **Add Providers** | Y | Y | Y | Y | Y | Y | Y |
+| **Import Providers (CSV)** | Y | Y | Y | Y | Y | Y | Y |
+| **Create Forms** | Y | Y | Y | Y | Y | Y | Y |
+| **Send Contract** | Y | Y | - | - | - | - | - |
+| **Activate Portal** | - | - | - | Y | - | - | - |
+| **Upload Batches** | - | - | - | - | Y | Y | - |
+| **Suggest Assignments** | - | - | - | - | Y | Y | - |
+| **Generate Invoices** | - | - | - | - | Y | Y | - |
+| **Generate Reports** | - | - | - | - | Y | Y | - |
+| **Download All Reports** | - | - | - | - | Y | Y | - |
+| **Archive Company** | Y | Y | Y | Y | Y** | Y** | - |
 
 **Legend:** Y = Allowed, - = Blocked
 
 \* Archived: Edit allowed but cannot re-archive with active cases.
-\** Active/Active Client/In Cycle: Archive blocked if company has active review cases (unassigned, assigned, in_progress). Must complete or reassign all cases first.
+\** Active/Active Client: Archive blocked if company has active review cases (unassigned, assigned, in_progress). Must complete or reassign all cases first.
 
 ## UI Elements by Status
 
@@ -107,7 +104,6 @@
 | Contract Sent | Resend / View | Amber outline (warns if >7 days) |
 | Contract Signed | Grant Portal Access | Green |
 | Active Client | View | Blue outline |
-| In Cycle | _(managed from detail page)_ | — |
 
 ### Company Detail Page Header Buttons
 
@@ -117,7 +113,7 @@
 | Prospect | Send Contract, Edit Company |
 | Contract Sent | Edit Company |
 | Contract Signed | Activate Portal, Edit Company |
-| Active / Active Client / In Cycle | Edit Company |
+| Active / Active Client | Edit Company |
 | Archived | _(no buttons)_ |
 
 ### Status Badge Colors
@@ -130,7 +126,6 @@
 | Contract Signed | Cobalt |
 | Active | Mint (green) |
 | Active Client | Mint (green) |
-| In Cycle | Purple |
 | Archived | Muted gray |
 
 ## Dropdown Visibility
@@ -144,13 +139,13 @@
 | Invoices Dropdown | - | - | - | - | Y | - |
 | Reports Page | - | - | - | - | Active only | - |
 
-\* "Active" column includes Active, Active Client, and In Cycle.
+\* "Active" column includes both Active and Active Client.
 
 ## Guard Implementation
 
 The status guards are implemented in `lib/utils/company-guard.ts`:
 
-- **`requireActiveCompany(companyId)`** — Returns true only for `['active', 'active_client', 'in_cycle']`. Used by batches, invoices, reports, and assignment APIs.
+- **`requireActiveCompany(companyId)`** — Returns true only for `['active', 'active_client']`. Used by batches, invoices, reports, and assignment APIs.
 - **`requireNonArchivedCompany(companyId)`** — Returns true for all statuses except `'archived'`. Used for general write operations.
 
 ## Notes
@@ -159,3 +154,4 @@ The status guards are implemented in `lib/utils/company-guard.ts`:
 2. **Setup before activation**: Providers and forms can be configured from the Lead stage onward, so companies are ready to go when they reach Active.
 3. **DocuSign auto-promotion**: When DocuSign webhook fires with a signed envelope, the company jumps directly from Contract Sent to Active Client, skipping Contract Signed.
 4. **Archival safety**: Companies with in-flight cases (unassigned, assigned, or in_progress) cannot be archived until all cases are completed or reassigned.
+5. **Review cycles**: Tracked by the cadence system (quarterly/monthly periods, tags, next_cycle_due) — not by company status.

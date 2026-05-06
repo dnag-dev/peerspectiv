@@ -159,7 +159,6 @@ export function CompaniesView({ companies }: Props) {
                 <SelectItem value="prospect">Prospect</SelectItem>
                 <SelectItem value="contract_sent">Contract Sent</SelectItem>
                 <SelectItem value="contract_signed">Contract Signed</SelectItem>
-                <SelectItem value="in_cycle">In Cycle</SelectItem>
                 <SelectItem value="archived">Archived</SelectItem>
                 <SelectItem value="all">All statuses</SelectItem>
               </SelectContent>
@@ -208,7 +207,7 @@ export function CompaniesView({ companies }: Props) {
                   <td className="px-4 py-3 text-center text-ink-700">{company.provider_count}</td>
                   <td className="px-4 py-3 text-center text-ink-700">{company.active_case_count}</td>
                   <td className="px-4 py-3">
-                    <Badge variant={company.status === "active" || company.status === "active_client" || company.status === "in_cycle" ? "success" : "secondary"}>
+                    <Badge variant={company.status === "active" || company.status === "active_client" ? "success" : "secondary"}>
                       {(company.status ?? "prospect").replace(/_/g, " ")}
                     </Badge>
                   </td>
