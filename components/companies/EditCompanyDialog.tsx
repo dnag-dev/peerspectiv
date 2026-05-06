@@ -45,7 +45,6 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
 
     const formData = new FormData(e.currentTarget);
     const annualRaw = formData.get("annual_review_count") as string;
-    const rateRaw = formData.get("per_review_rate") as string;
     const payload = {
       name: formData.get("name") as string,
       contact_person: (formData.get("contact_person") as string) || null,
@@ -55,7 +54,6 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
       city: (formData.get("city") as string) || null,
       state: (formData.get("state") as string) || null,
       annual_review_count: annualRaw ? Number(annualRaw) : null,
-      per_review_rate: rateRaw ? Number(rateRaw) : null,
       notes: (formData.get("notes") as string) || null,
       itemize_invoice: itemizeInvoice,
       delivery_preference: deliveryPreference,
@@ -129,15 +127,9 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
               <Input id="edit-state" name="state" defaultValue={company.state ?? ""} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-annual_review_count">Annual Review Count</Label>
-              <Input id="edit-annual_review_count" name="annual_review_count" type="number" min="0" defaultValue={company.annual_review_count ?? ""} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-per_review_rate">Per-Review Rate ($)</Label>
-              <Input id="edit-per_review_rate" name="per_review_rate" type="number" min="0" step="0.01" defaultValue={company.per_review_rate ?? ""} />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-annual_review_count">Annual Review Count</Label>
+            <Input id="edit-annual_review_count" name="annual_review_count" type="number" min="0" defaultValue={company.annual_review_count ?? ""} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-notes">Notes</Label>
@@ -171,7 +163,7 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
             </p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-delivery_method">Report Bundle Delivery (Phase 8.2)</Label>
+            <Label htmlFor="edit-delivery_method">Report Bundle Delivery</Label>
             <select
               id="edit-delivery_method"
               value={deliveryMethod}

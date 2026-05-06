@@ -110,12 +110,6 @@ export default async function CompanyDetailPage({
                 <p className="font-medium">{company.annual_review_count}</p>
               </div>
             )}
-            {company.per_review_rate != null && (
-              <div>
-                <span className="text-muted-foreground">Per-Review Rate</span>
-                <p className="font-medium">${Number(company.per_review_rate).toFixed(2)}</p>
-              </div>
-            )}
             <div>
               <span className="text-muted-foreground">Itemize Invoices</span>
               <p className="font-medium">{company.itemize_invoice ? 'Yes' : 'No'}</p>
