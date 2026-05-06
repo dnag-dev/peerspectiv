@@ -95,7 +95,9 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
       <CardContent className="space-y-2 p-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
-            <h3 className="text-base font-semibold leading-tight text-white">{company.name}</h3>
+            <Link href={`/companies/${company.id}`} className="text-base font-semibold leading-tight text-white hover:underline">
+              {company.name}
+            </Link>
             {company.contactPerson && (
               <p className="text-xs text-ink-300">{company.contactPerson}</p>
             )}
