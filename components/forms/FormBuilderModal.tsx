@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, Trash2, Upload, FileText, Copy, Sparkles, X, ChevronUp, ChevronDown } from "lucide-react";
 
 export interface BuiltFormField {
@@ -384,16 +385,16 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
           {!isEdit && companiesProp && companiesProp.length > 0 && (
             <div>
               <label className="text-xs font-medium text-muted-foreground">Company *</label>
-              <select
-                value={selectedCompanyId}
-                onChange={(e) => setSelectedCompanyId(e.target.value)}
-                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-              >
-                <option value="">Select a company...</option>
-                {companiesProp.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+              <Select value={selectedCompanyId || undefined} onValueChange={setSelectedCompanyId}>
+                <SelectTrigger className="mt-1 w-full">
+                  <SelectValue placeholder="Select a company..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {companiesProp.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
@@ -409,18 +410,19 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground">Specialty</label>
-              <select
-                value={specialty}
-                onChange={(e) => setSpecialty(e.target.value)}
-                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-              >
-                <option>Family Medicine</option>
-                <option>Internal Medicine</option>
-                <option>Pediatrics</option>
-                <option>OB/GYN</option>
-                <option>Behavioral Health</option>
-                <option>Dental</option>
-              </select>
+              <Select value={specialty} onValueChange={setSpecialty}>
+                <SelectTrigger className="mt-1 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Family Medicine">Family Medicine</SelectItem>
+                  <SelectItem value="Internal Medicine">Internal Medicine</SelectItem>
+                  <SelectItem value="Pediatrics">Pediatrics</SelectItem>
+                  <SelectItem value="OB/GYN">OB/GYN</SelectItem>
+                  <SelectItem value="Behavioral Health">Behavioral Health</SelectItem>
+                  <SelectItem value="Dental">Dental</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           {formIdentifier.trim() && (
@@ -488,18 +490,18 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
                   No existing forms for this client yet.
                 </div>
               ) : (
-                <select
-                  onChange={(e) => cloneFrom(e.target.value)}
-                  defaultValue=""
-                  className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-                >
-                  <option value="">— Select a form to clone —</option>
-                  {templates.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.form_name} ({t.specialty})
-                    </option>
-                  ))}
-                </select>
+                <Select onValueChange={(v) => cloneFrom(v)}>
+                  <SelectTrigger className="mt-1 w-full">
+                    <SelectValue placeholder="Select a form to clone..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {templates.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.form_name} ({t.specialty})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
           )}
