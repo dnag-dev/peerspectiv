@@ -13,6 +13,7 @@ import {
 import { db } from "@/lib/db";
 import { companies, batches, reviewCases, auditLogs } from "@/lib/db/schema";
 import { and, desc, eq, gte, isNotNull, lt, lte, sql } from "drizzle-orm";
+import { buildCadencePeriods, type CadenceConfig } from "@/lib/cadence/core";
 import { ClientOverviewCard } from "@/components/dashboard/ClientOverviewCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -122,6 +123,9 @@ export default async function DashboardPage({
         id: companies.id,
         name: companies.name,
         nextCycleDue: companies.nextCycleDue,
+        cadencePeriodType: companies.cadencePeriodType,
+        fiscalYearStartMonth: companies.fiscalYearStartMonth,
+        cadencePeriodMonths: companies.cadencePeriodMonths,
       })
       .from(companies)
       .where(
@@ -327,6 +331,15 @@ export default async function DashboardPage({
                       )
                     )
                   : 0;
+                // Compute the next period label from cadence config
+                const cadenceConfig: CadenceConfig = {
+                  fiscalYearStartMonth: c.fiscalYearStartMonth ?? 1,
+                  type: (c.cadencePeriodType ?? 'quarterly') as CadenceConfig['type'],
+                  customMonths: c.cadencePeriodMonths ?? undefined,
+                };
+                const nextRefDate = dueDate ?? now;
+                const nextPeriods = buildCadencePeriods(cadenceConfig, nextRefDate, 0);
+                const nextLabel = nextPeriods.length > 0 ? nextPeriods[nextPeriods.length - 1].label : null;
                 return (
                   <li key={c.id}>
                     <Link
@@ -337,6 +350,11 @@ export default async function DashboardPage({
                         {c.name}
                       </span>
                       <span className="flex items-center gap-3 text-xs text-ink-500">
+                        {nextLabel && (
+                          <Badge variant="outline" className="border-cobalt-300 text-cobalt-700 bg-cobalt-50">
+                            {nextLabel}
+                          </Badge>
+                        )}
                         <span>{c.nextCycleDue}</span>
                         <Badge
                           variant="outline"
