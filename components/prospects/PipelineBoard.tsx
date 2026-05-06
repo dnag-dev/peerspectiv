@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -58,6 +58,11 @@ export function PipelineBoard({ initialPipeline }: PipelineBoardProps) {
   const [pipeline, setPipeline] =
     useState<Record<string, ProspectCardCompany[]>>(initialPipeline);
   const [dragOver, setDragOver] = useState<StageKey | null>(null);
+
+  // Sync with server data when initialPipeline changes (e.g. after router.refresh)
+  useEffect(() => {
+    setPipeline(initialPipeline);
+  }, [initialPipeline]);
 
   async function promoteCompany(id: string, stage: StageKey) {
     if (!id) return;
