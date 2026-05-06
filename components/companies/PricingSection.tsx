@@ -163,7 +163,7 @@ export function PricingSection({ companyId }: { companyId: string }) {
         {mode === "flat" && (
           <div className="grid gap-2 max-w-md">
             <Label>Flat rate per review ($)</Label>
-            <p className="text-xs text-ink-500">Used for all invoices. Falls back to global pay rate if blank (SA-058 / SA-106B).</p>
+            <p className="text-xs text-ink-500">Used for all invoices. Falls back to global pay rate if blank.</p>
             <div className="flex gap-2">
               <Input type="number" min={0.01} step={0.01} value={flatRate}
                 onChange={(e) => setFlatRate(e.target.value)} className="w-32" />
@@ -184,8 +184,8 @@ export function PricingSection({ companyId }: { companyId: string }) {
         {mode === "per_specialty" && (
           <div className="space-y-4">
             <p className="text-xs text-ink-500">
-              One row per specialty. Mark a row as <strong>default</strong> to use its rate when a case has a specialty without an explicit row (SA-111).
-              Rate changes apply from <strong>today forward</strong>; existing invoices are unaffected (SA-115).
+              One row per specialty. Mark a row as <strong>default</strong> to use its rate when a case has a specialty without an explicit row.
+              Rate changes apply from <strong>today forward</strong>; existing invoices are unaffected.
             </p>
 
             <table className="w-full text-sm">

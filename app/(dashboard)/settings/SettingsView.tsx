@@ -112,7 +112,7 @@ function GeneralTab({ byKey }: { byKey: Map<string, unknown> }) {
 
         <div className="grid gap-2 max-w-md">
           <Label>File expiration (days)</Label>
-          <p className="text-xs text-ink-500">Uploaded chart files auto-deleted after this many days (SA-084).</p>
+          <p className="text-xs text-ink-500">Uploaded chart files auto-deleted after this many days.</p>
           <div className="flex gap-2">
             <Input type="number" min={1} step={1} value={fileDays}
               onChange={(e) => setFileDays(e.target.value)} className="w-32" />
@@ -130,7 +130,7 @@ function GeneralTab({ byKey }: { byKey: Map<string, unknown> }) {
 
         <div className="grid gap-2 max-w-md">
           <Label>Global Pay Rate per Review ($)</Label>
-          <p className="text-xs text-ink-500">Default per-review pay rate for peers (SA-058). Negative values are rejected (SA-060).</p>
+          <p className="text-xs text-ink-500">Default per-review pay rate for peers. Negative values are rejected.</p>
           <div className="flex gap-2">
             <Input type="number" min={0.01} step={0.01} value={payRate}
               onChange={(e) => setPayRate(e.target.value)} className="w-32" />
@@ -152,7 +152,7 @@ function GeneralTab({ byKey }: { byKey: Map<string, unknown> }) {
             onChange={(e) => { setFirewallAfter(e.target.checked); save("files_behind_firewall_after_retention", e.target.checked); }} />
           <div>
             <Label htmlFor="firewall">Move files behind firewall after retention</Label>
-            <p className="text-xs text-ink-500 mt-0.5">When enabled, files past their expiration are archived behind firewall instead of being deleted (SA-085).</p>
+            <p className="text-xs text-ink-500 mt-0.5">When enabled, files past their expiration are archived behind firewall instead of being deleted.</p>
           </div>
         </div>
       </CardContent>
