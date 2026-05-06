@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Tag as TagIcon,
   Plus,
@@ -63,6 +64,7 @@ export function TagsView({ initialTags }: Props) {
   const [color, setColor] = useState<string>("cobalt");
   const [description, setDescription] = useState("");
   const [searchQ, setSearchQ] = useState("");
+  const [companyFilter, setCompanyFilter] = useState("all");
 
   const cadenceTags = useMemo(
     () => initialTags.filter((t) => t.scope === "cadence"),
@@ -83,12 +85,25 @@ export function TagsView({ initialTags }: Props) {
     );
   }, [globalTags, searchQ]);
 
+  // Unique company names for filter dropdown
+  const cadenceCompanies = useMemo(() => {
+    const names = new Set<string>();
+    for (const t of cadenceTags) {
+      if (t.companyName) names.add(t.companyName);
+    }
+    return Array.from(names).sort();
+  }, [cadenceTags]);
+
   // Cadence: group by companyName (or "(No company)") then by periodLabel.
   const cadenceByCompany = useMemo(() => {
     const q = searchQ.trim().toLowerCase();
-    const filtered = q
-      ? cadenceTags.filter((t) => t.name.toLowerCase().includes(q))
-      : cadenceTags;
+    let filtered = cadenceTags;
+    if (companyFilter !== "all") {
+      filtered = filtered.filter((t) => t.companyName === companyFilter);
+    }
+    if (q) {
+      filtered = filtered.filter((t) => t.name.toLowerCase().includes(q) || (t.companyName ?? "").toLowerCase().includes(q));
+    }
     const groups = new Map<string, TagRow[]>();
     for (const t of filtered) {
       const key = t.companyName || "(No company)";
@@ -334,10 +349,23 @@ export function TagsView({ initialTags }: Props) {
 
       {tab === "cadence" && (
         <div className="space-y-4">
-          <p className="text-xs text-ink-500">
-            Cadence tags are auto-generated when charts are uploaded — one tag
-            per (company, billing period). Read-only.
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="flex-1 text-xs text-ink-500">
+              Cadence tags are auto-generated when charts are uploaded — one tag
+              per (company, billing period). Read-only.
+            </p>
+            <Select value={companyFilter} onValueChange={setCompanyFilter}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="All companies" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All companies</SelectItem>
+                {cadenceCompanies.map((c) => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           {cadenceByCompany.length === 0 && (
             <Card>
               <CardContent className="px-4 py-12 text-center text-sm text-ink-500">
@@ -347,11 +375,19 @@ export function TagsView({ initialTags }: Props) {
               </CardContent>
             </Card>
           )}
-          {cadenceByCompany.map(([companyName, list]) => (
+          {cadenceByCompany.map(([companyName, list]) => {
+            const companyId = list[0]?.companyId;
+            return (
             <Card key={companyName}>
               <CardHeader>
                 <CardTitle className="text-base text-ink-900">
-                  {companyName}
+                  {companyId ? (
+                    <Link href={`/companies/${companyId}`} className="text-cobalt-700 hover:underline">
+                      {companyName}
+                    </Link>
+                  ) : (
+                    companyName
+                  )}
                   <span className="ml-2 text-xs font-normal text-ink-500">
                     ({list.length})
                   </span>
@@ -391,7 +427,8 @@ export function TagsView({ initialTags }: Props) {
                 </table>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
