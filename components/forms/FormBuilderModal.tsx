@@ -149,11 +149,19 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
       setAllowAiNarrative(false);
       setMode("scratch");
     }
-    fetch(`/api/company-forms?company_id=${selectedCompanyId || companyId}`)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, companyId, defaultSpecialty, editForm, prefill]);
+
+  // Fetch clone templates when company selection changes
+  useEffect(() => {
+    if (!open) return;
+    const cid = selectedCompanyId || companyId;
+    if (!cid) { setTemplates([]); return; }
+    fetch(`/api/company-forms?company_id=${cid}`)
       .then((r) => r.json())
       .then((d) => setTemplates(d.forms ?? []))
       .catch(() => setTemplates([]));
-  }, [open, companyId, selectedCompanyId, defaultSpecialty, editForm, prefill]);
+  }, [open, selectedCompanyId, companyId]);
 
   async function cloneFrom(formId: string) {
     if (!formId) return;
@@ -400,15 +408,6 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground">Form Identifier</label>
-              <input
-                value={formIdentifier}
-                onChange={(e) => setFormIdentifier(e.target.value)}
-                placeholder="e.g. Peer Review Form v1"
-                className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-              />
-            </div>
-            <div>
               <label className="text-xs font-medium text-muted-foreground">Specialty</label>
               <Select value={specialty} onValueChange={setSpecialty}>
                 <SelectTrigger className="mt-1 w-full">
@@ -424,11 +423,20 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Form Identifier</label>
+              <input
+                value={formIdentifier}
+                onChange={(e) => setFormIdentifier(e.target.value)}
+                placeholder="e.g. Peer Review Form v1"
+                className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+              />
+            </div>
           </div>
-          {formIdentifier.trim() && (
+          {formIdentifier.trim() && selectedCompanyName && (
             <div className="rounded-md bg-muted/50 px-3 py-2">
-              <span className="text-xs text-muted-foreground">Display name: </span>
-              <span className="text-sm font-medium">{selectedCompanyName || 'Company'} - {specialty} - {formIdentifier.trim()}</span>
+              <span className="text-xs text-muted-foreground">Form Name: </span>
+              <span className="text-sm font-medium">{selectedCompanyName} - {specialty} - {formIdentifier.trim()}</span>
             </div>
           )}
 
