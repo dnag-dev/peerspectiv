@@ -5,7 +5,11 @@ import { companies } from "@/lib/db/schema";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, contact_person, contact_email, contact_phone, per_review_rate, notes, status } = body;
+    const {
+      name, contact_person, contact_email, contact_phone,
+      per_review_rate, notes, status,
+      cadence_period_type, fiscal_year_start_month, cadence_period_months,
+    } = body;
 
     if (!name?.trim()) {
       return NextResponse.json({ error: "Company name is required" }, { status: 400 });
@@ -20,7 +24,10 @@ export async function POST(req: NextRequest) {
         contactPhone: contact_phone || null,
         perReviewRate: per_review_rate != null ? String(per_review_rate) : null,
         notes: notes || null,
-        status: status || "active",
+        status: status || "lead",
+        cadencePeriodType: cadence_period_type || "quarterly",
+        fiscalYearStartMonth: fiscal_year_start_month != null ? Number(fiscal_year_start_month) : 1,
+        cadencePeriodMonths: cadence_period_months != null ? Number(cadence_period_months) : null,
       })
       .returning();
 

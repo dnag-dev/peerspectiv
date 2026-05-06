@@ -28,6 +28,8 @@ export function AddCompanyDialog() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialStatus, setInitialStatus] = useState("lead");
+  const [cadenceFrequency, setCadenceFrequency] = useState("quarterly");
+  const [fyStartMonth, setFyStartMonth] = useState("1");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -36,6 +38,17 @@ export function AddCompanyDialog() {
 
     const formData = new FormData(e.currentTarget);
     const perReviewRate = formData.get("per_review_rate") as string;
+    // Map frequency to cadence fields
+    let cadencePeriodType = cadenceFrequency;
+    let cadencePeriodMonths: number | null = null;
+    if (cadenceFrequency === "semi_annual") {
+      cadencePeriodType = "custom_multi_month";
+      cadencePeriodMonths = 6;
+    } else if (cadenceFrequency === "annual") {
+      cadencePeriodType = "custom_multi_month";
+      cadencePeriodMonths = 12;
+    }
+
     const payload = {
       name: formData.get("name") as string,
       contact_person: (formData.get("contact_person") as string) || null,
@@ -44,6 +57,9 @@ export function AddCompanyDialog() {
       per_review_rate: perReviewRate ? Number(perReviewRate) : null,
       notes: (formData.get("notes") as string) || null,
       status: initialStatus,
+      cadence_period_type: cadencePeriodType,
+      fiscal_year_start_month: Number(fyStartMonth),
+      cadence_period_months: cadencePeriodMonths,
     };
 
     if (!payload.name.trim()) {
@@ -132,9 +148,39 @@ export function AddCompanyDialog() {
               <p className="text-xs text-muted-foreground">Lead = first contact. Prospect = qualified.</p>
             </div>
           </div>
+          {/* Review Cadence */}
+          <div className="rounded-md border border-ink-200 p-3 space-y-3">
+            <Label className="text-sm font-medium">Review Cadence</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Frequency</Label>
+                <Select value={cadenceFrequency} onValueChange={setCadenceFrequency}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                    <SelectItem value="semi_annual">Semi-Annual</SelectItem>
+                    <SelectItem value="annual">Annual</SelectItem>
+                    <SelectItem value="custom_multi_month">Custom</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Fiscal Year Start</Label>
+                <Select value={fyStartMonth} onValueChange={setFyStartMonth}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m, i) => (
+                      <SelectItem key={i + 1} value={String(i + 1)}>{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
-            <Textarea id="notes" name="notes" placeholder="Optional notes about this company..." rows={3} />
+            <Textarea id="notes" name="notes" placeholder="Optional notes about this company..." rows={2} />
           </div>
           {error && <p className="text-sm text-critical-600">{error}</p>}
           <DialogFooter>

@@ -66,9 +66,12 @@ export function CadenceSection({ companyId }: { companyId: string }) {
         const res = await fetch(`/api/companies/${companyId}`);
         if (!res.ok) return;
         const company = await res.json();
-        const f = company.cadence_period_type ?? "quarterly";
+        let f = company.cadence_period_type ?? "quarterly";
         const fy = company.fiscal_year_start_month ?? 1;
         const cm = company.cadence_period_months ?? 2;
+        // Map custom_multi_month with known periods to friendly names
+        if (f === "custom_multi_month" && cm === 6) f = "semi_annual";
+        if (f === "custom_multi_month" && cm === 12) f = "annual";
         setFrequency(f);
         setFyStartMonth(fy);
         setCustomMonths(cm);
@@ -81,11 +84,16 @@ export function CadenceSection({ companyId }: { companyId: string }) {
 
   // Compute periods client-side from the current UI state — instant preview
   const { periods, currentPeriod } = useMemo(() => {
+    let computeType: string = frequency;
+    let computeMonths: number | undefined = frequency === "custom_multi_month" ? customMonths : undefined;
+    if (frequency === "semi_annual") { computeType = "custom_multi_month"; computeMonths = 6; }
+    if (frequency === "annual") { computeType = "custom_multi_month"; computeMonths = 12; }
+
     const p = buildCadencePeriods(
       {
         fiscalYearStartMonth: fyStartMonth,
-        type: frequency,
-        customMonths: frequency === "custom_multi_month" ? customMonths : undefined,
+        type: computeType as any,
+        customMonths: computeMonths,
       },
       new Date(),
       1
@@ -109,12 +117,23 @@ export function CadenceSection({ companyId }: { companyId: string }) {
     }
 
     try {
+      // Map semi_annual and annual to custom_multi_month
+      let apiFrequency = frequency;
+      let apiMonths = customMonths;
+      if (frequency === "semi_annual") {
+        apiFrequency = "custom_multi_month";
+        apiMonths = 6;
+      } else if (frequency === "annual") {
+        apiFrequency = "custom_multi_month";
+        apiMonths = 12;
+      }
+
       const payload: Record<string, unknown> = {
-        cadence_period_type: frequency,
+        cadence_period_type: apiFrequency,
         fiscal_year_start_month: fyStartMonth,
       };
-      if (frequency === "custom_multi_month") {
-        payload.cadence_period_months = customMonths;
+      if (apiFrequency === "custom_multi_month") {
+        payload.cadence_period_months = apiMonths;
       }
 
       const res = await fetch(`/api/companies/${companyId}`, {
@@ -171,9 +190,11 @@ export function CadenceSection({ companyId }: { companyId: string }) {
             <Select value={frequency} onValueChange={(v) => setFrequency(v as Frequency)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="quarterly">Quarterly</SelectItem>
                 <SelectItem value="monthly">Monthly</SelectItem>
-                <SelectItem value="custom_multi_month">Custom (multi-month)</SelectItem>
+                <SelectItem value="quarterly">Quarterly</SelectItem>
+                <SelectItem value="semi_annual">Semi-Annual</SelectItem>
+                <SelectItem value="annual">Annual</SelectItem>
+                <SelectItem value="custom_multi_month">Custom</SelectItem>
               </SelectContent>
             </Select>
           </div>
