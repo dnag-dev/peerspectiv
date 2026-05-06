@@ -162,8 +162,13 @@ export function ImportProvidersDialog({ companyId }: Props) {
                 Download CSV template
               </button>
               <span className="text-xs text-ink-400">
-                Columns: first_name, last_name, specialty, npi, email
+                CSV/TSV columns: first_name, last_name, specialty, npi, email
               </span>
+            </div>
+            <div className="rounded-md bg-ink-50 border border-ink-200 px-3 py-2">
+              <p className="text-xs text-ink-600">
+                <strong>PDF rosters:</strong> AI will extract provider details automatically. For best results, ensure the PDF contains provider names, specialties, NPI numbers, and email addresses in a readable format (tables or lists work best).
+              </p>
             </div>
             {uploading && <p className="text-sm text-muted-foreground">Parsing file...</p>}
           </div>
