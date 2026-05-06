@@ -72,6 +72,12 @@ export async function POST(req: NextRequest) {
     reviewCycle,
     onboardingNotes,
     forceCreate,
+    // New fields from unified Add Company dialog
+    status: requestedStatus,
+    perReviewRate,
+    cadencePeriodType,
+    fiscalYearStartMonth,
+    cadencePeriodMonths,
   } = body ?? {};
 
   if (!name || typeof name !== 'string' || !name.trim()) {
@@ -136,8 +142,12 @@ export async function POST(req: NextRequest) {
       annualReviewCount: Number.isFinite(parsedReviewCount) ? parsedReviewCount : null,
       reviewCycle: reviewCycle || null,
       onboardingNotes: onboardingNotes || null,
-      status: 'prospect',
+      status: requestedStatus || 'lead',
       createdBy: userId,
+      perReviewRate: perReviewRate != null ? String(perReviewRate) : null,
+      cadencePeriodType: cadencePeriodType || 'quarterly',
+      fiscalYearStartMonth: fiscalYearStartMonth != null ? Number(fiscalYearStartMonth) : 1,
+      cadencePeriodMonths: cadencePeriodMonths != null ? Number(cadencePeriodMonths) : null,
     })
     .returning();
 
