@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -63,6 +64,7 @@ interface DuplicateMatch {
 
 export function AddProspectModal() {
   const router = useRouter();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -179,9 +181,16 @@ export function AddProspectModal() {
         throw new Error(body.error || 'Failed to create prospect.');
       }
 
+      const data = await res.json();
+      const newId = data?.id;
+      toast({ title: 'Company created', description: `${name.trim()} has been added.` });
       setOpen(false);
       resetForm();
-      router.refresh();
+      if (newId) {
+        router.push(`/companies/${newId}`);
+      } else {
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
