@@ -319,14 +319,16 @@ export function AssignmentsTable({
                           Approve
                         </button>
                       )}
-                      <button
-                        onClick={() => setPickerCase(r)}
-                        disabled={busyId === r.id}
-                        className="rounded border border-border-subtle px-2 py-0.5 text-xs hover:border-status-info-dot hover:text-status-info-fg disabled:opacity-50"
-                      >
-                        Reassign
-                      </button>
-                      {r.peerId && (
+                      {r.status !== "completed" && r.status !== "unassigned" && (
+                        <button
+                          onClick={() => setPickerCase(r)}
+                          disabled={busyId === r.id}
+                          className="rounded border border-border-subtle px-2 py-0.5 text-xs hover:border-status-info-dot hover:text-status-info-fg disabled:opacity-50"
+                        >
+                          Reassign
+                        </button>
+                      )}
+                      {r.peerId && r.status !== "completed" && (
                         <button
                           onClick={() => handleUnassign(r)}
                           disabled={busyId === r.id}
