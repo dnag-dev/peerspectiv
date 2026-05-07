@@ -1393,3 +1393,93 @@
 **Expected Result:** Specialties display correctly on all pages. No "—" or empty values when the peer has specialties assigned. AI assignment engine correctly matches case specialty to peer specialties.
 
 ---
+
+
+## Reviews Page — Filters & Columns
+
+### SAA-090 — Reviews page filters use name-based search (not UUIDs)
+
+**Module:** Reviews | **Priority:** High
+
+**Pre-conditions:** Cases exist with various peers and companies.
+
+**Steps:**
+1. Navigate to Reviews page.
+2. Type a partial company name in the "Company" filter (e.g., "Hunter").
+3. Press Enter or click outside.
+
+**Expected Result:** Cases for Hunter Health are shown. No error. Filter uses partial name match (ilike), not UUID. Same for "Peer name" and "Specialty" filters.
+
+---
+
+### SAA-091 — Reviews page shows Company column
+
+**Module:** Reviews | **Priority:** Medium
+
+**Pre-conditions:** Cases exist.
+
+**Steps:**
+1. Navigate to Reviews page.
+
+**Expected Result:** Table shows columns: Case Ref, Provider, Company, Specialty, Peer, Status, Days, Due, Notes, Actions. Company column shows the company name for each case.
+
+---
+
+### SAA-092 — Reviews page Enter key triggers filter search
+
+**Module:** Reviews | **Priority:** Medium
+
+**Pre-conditions:** None.
+
+**Steps:**
+1. Type "Hunter" in the Company filter.
+2. Press Enter (without clicking outside).
+
+**Expected Result:** Filter applies immediately on Enter key. Results update to show only Hunter Health cases.
+
+---
+
+### SAA-093 — Reviews page cadence filter uses partial match
+
+**Module:** Reviews | **Priority:** Medium
+
+**Pre-conditions:** Cases exist with cadence_period_label like "Q4 2025".
+
+**Steps:**
+1. Type "Q4" in the Cadence filter.
+2. Press Enter.
+
+**Expected Result:** All cases with cadence labels containing "Q4" are shown (e.g., "Q4 2025", "Q4 2024"). Placeholder shows "Cadence (e.g. Q4 2025)".
+
+---
+
+### SAA-094 — Past Due status chip available in Reviews filter
+
+**Module:** Reviews | **Priority:** Medium
+
+**Pre-conditions:** None.
+
+**Steps:**
+1. Navigate to Reviews page.
+2. Look at the status filter chips.
+
+**Expected Result:** Seven status chips shown: Unassigned, Pending approval, Assigned, In progress, Completed, Past due, Returned by peer. Past due chip filters to cases where the deadline has passed.
+
+---
+
+
+## Peer Portal — Incomplete Tile
+
+### SAA-095 — Peer portal Incomplete tile shows only past due cases
+
+**Module:** Peer Portal | **Priority:** High
+
+**Pre-conditions:** Peer has cases in various statuses.
+
+**Steps:**
+1. Log in as a peer (e.g., Dr. Richard Johnson).
+2. Check the "Incomplete" KPI tile count and description.
+
+**Expected Result:** Incomplete count shows only `past_due` cases for this peer. Description reads "Past due — deadline passed". Does NOT include unassigned or pending_approval cases (those don't belong to the peer).
+
+---
