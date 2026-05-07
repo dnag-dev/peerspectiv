@@ -106,6 +106,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
   const [specialtyFilter, setSpecialtyFilter] = useState<string>('all');
   const [availFilter, setAvailFilter] = useState<string>('all');
   const [stateFilter, setStateFilter] = useState<string>('all');
+  const [peerStatusFilter, setPeerStatusFilter] = useState<string>('active');
   const [sortKey, setSortKey] = useState<SortKey>('full_name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
@@ -130,10 +131,18 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
     return Array.from(s).sort();
   }, [peers]);
 
-  const states = useMemo(() => {
+  const licenseStates = useMemo(() => {
     const s = new Set<string>();
     for (const r of peers) {
       if (r.license_state) s.add(r.license_state);
+    }
+    return Array.from(s).sort();
+  }, [peers]);
+
+  const peerStatuses = useMemo(() => {
+    const s = new Set<string>();
+    for (const r of peers) {
+      s.add(r.state || 'pending_credentialing');
     }
     return Array.from(s).sort();
   }, [peers]);
@@ -151,6 +160,8 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
       const status = r.availability_status || 'available';
       if (availFilter !== 'all' && status !== availFilter) return false;
       if (stateFilter !== 'all' && r.license_state !== stateFilter) return false;
+      const peerState = r.state || 'pending_credentialing';
+      if (peerStatusFilter !== 'all' && peerState !== peerStatusFilter) return false;
       if (!q) return true;
       const specHaystack = specialtiesAsList(r).join(' ').toLowerCase();
       return (
@@ -159,7 +170,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
         specHaystack.includes(q)
       );
     });
-  }, [peers, specialtyFilter, availFilter, stateFilter, searchQ]);
+  }, [peers, specialtyFilter, availFilter, stateFilter, peerStatusFilter, searchQ]);
 
   const visible = useMemo(() => {
     const arr = [...filtered];
@@ -310,7 +321,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
 
       <Card>
         <CardContent className="p-4">
-          <div className="grid gap-3 md:grid-cols-[1fr_180px_180px_140px]">
+          <div className="grid gap-3 md:grid-cols-[1fr_160px_160px_140px_130px]">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-tertiary" />
               <Input
@@ -320,6 +331,19 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
                 className="pl-9"
               />
             </div>
+            <Select value={peerStatusFilter} onValueChange={setPeerStatusFilter}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                {peerStatuses.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s.replace(/_/g, ' ')}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
               <SelectTrigger>
                 <SelectValue />
@@ -351,8 +375,8 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Any state</SelectItem>
-                {states.map((s) => (
+                <SelectItem value="all">Any license state</SelectItem>
+                {licenseStates.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
                   </SelectItem>
