@@ -29,6 +29,10 @@ const caseStatusConfig: Record<
     label: "Past Due",
     className: "bg-critical-100 text-status-danger-fg ring-2 ring-critical-600",
   },
+  returned_by_peer: {
+    label: "Returned by Peer",
+    className: "bg-critical-100 text-status-danger-fg",
+  },
 };
 
 const aiStatusConfig: Record<
