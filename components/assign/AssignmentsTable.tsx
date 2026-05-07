@@ -5,7 +5,7 @@
  * Filters update the URL (server re-renders); row actions hit
  * /api/cases/[id] PATCH (reassign / unassign) and reuse PeerPickerModal.
  */
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -79,6 +79,11 @@ export function AssignmentsTable({
   const params = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [filters, setFilters] = useState<InitialFilters>(initialFilters);
+
+  // Sync filters when initialFilters changes (e.g., navigating to page with defaults)
+  useEffect(() => {
+    setFilters(initialFilters);
+  }, [initialFilters]);
 
   const [pickerCase, setPickerCase] = useState<AssignmentRow | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
