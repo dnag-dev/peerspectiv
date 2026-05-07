@@ -136,17 +136,18 @@ export function DashboardView(props: Props) {
       >
         <ComplianceRing score={compliance} variant="dark" />
         <div className="relative z-10 flex-1">
-          <div className="text-eyebrow text-ink-primary/85 mb-2">
+          <div className="text-eyebrow text-white/85 mb-2">
             {companyName} · Q1 2026 compliance
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-stat-hero text-ink-primary">{compliance}</span>
-            <span className="text-h1 text-ink-primary/85">%</span>
-            <span className="ml-2 inline-flex items-center px-2 py-1 rounded-md bg-white/20 backdrop-blur text-code text-ink-primary">
+            <span className="text-stat-hero text-white">{compliance}</span>
+            <span className="text-h1 text-white/85">%</span>
+            <span className="ml-2 inline-flex items-center gap-1.5 rounded-full bg-status-warning-bg px-2 py-0.5 text-2xs font-medium text-status-warning-fg">
+              <span className="h-1.5 w-1.5 rounded-full bg-status-warning-dot" />
               {complianceLabel(compliance)}
             </span>
           </div>
-          <p className="mt-3 text-body text-ink-primary/90">
+          <p className="mt-3 text-body text-white/90">
             QoQ trend: +2.4% — click to view completed reviews.
           </p>
         </div>

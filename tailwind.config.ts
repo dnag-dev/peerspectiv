@@ -96,8 +96,8 @@ const config: Config = {
           950: "var(--ink-950)",
           // Design Overhaul aliases
           primary:     "#1A1A1A",
-          secondary:   "#5F5E5A",
-          tertiary:    "#888780",
+          secondary:   "#4D4C48",
+          tertiary:    "#6A6964",
           onDark:      "#FFFFFF",
           onDarkMuted: "rgba(255,255,255,0.55)",
         },
@@ -164,9 +164,11 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
         "cobalt-hero":
-          "linear-gradient(135deg, var(--cobalt-500) 0%, var(--cobalt-700) 100%)",
+          "linear-gradient(135deg, #0F6E56 0%, #085041 100%)",
         "cobalt-soft":
-          "linear-gradient(135deg, var(--cobalt-50) 0%, var(--cobalt-100) 100%)",
+          "linear-gradient(135deg, rgba(15,110,86,0.05) 0%, rgba(15,110,86,0.10) 100%)",
+        "brand-hero":
+          "linear-gradient(135deg, #0F6E56 0%, #085041 100%)",
       },
       boxShadow: {
         sm:    "var(--shadow-sm)",

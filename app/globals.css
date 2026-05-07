@@ -239,8 +239,8 @@ html, body {
   --color-brand:          #0F6E56;
   --color-brand-hover:    #085041;
   --color-ink-primary:    #1A1A1A;
-  --color-ink-secondary:  #5F5E5A;
-  --color-ink-tertiary:   #888780;
+  --color-ink-secondary:  #4D4C48;
+  --color-ink-tertiary:   #6A6964;
   --color-border-subtle:  rgba(0,0,0,0.10);
   --color-border-default: rgba(0,0,0,0.15);
 }
