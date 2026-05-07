@@ -14,6 +14,7 @@ export default async function OverduePage() {
       id: reviewCases.id,
       status: reviewCases.status,
       chartFileName: reviewCases.chartFileName,
+      chartFilePath: reviewCases.chartFilePath,
       assignedAt: reviewCases.assignedAt,
       dueDate: reviewCases.dueDate,
       specialty: reviewCases.specialtyRequired,
@@ -59,8 +60,14 @@ export default async function OverduePage() {
               >
                 {daysLate}d late
               </div>
-              <div className="mt-2 text-sm font-medium text-ink-primary truncate">
-                {r.chartFileName ?? "Case"}
+              <div className="mt-2 text-sm font-medium truncate">
+                {r.chartFilePath ? (
+                  <a href={r.chartFilePath} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
+                    {r.chartFileName ?? "Case"}
+                  </a>
+                ) : (
+                  <span className="text-ink-primary">{r.chartFileName ?? "Case"}</span>
+                )}
               </div>
               <div className="text-xs text-ink-tertiary mt-1">{providerName}</div>
               <div className="text-xs text-ink-tertiary">{r.specialty ?? "—"}</div>
