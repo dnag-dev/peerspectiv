@@ -122,6 +122,7 @@ export default async function BatchDetailPage({
   }
 
   const hasUnassigned = batch.cases.some((c) => c.status === "unassigned");
+  const hasPendingApproval = batch.cases.some((c) => c.status === "pending_approval");
 
   return (
     <div className="space-y-6">
@@ -139,7 +140,7 @@ export default async function BatchDetailPage({
             <BatchStatusBadge status={batch.status} />
           </div>
         </div>
-        <BatchActions batchId={batch.id} hasUnassigned={hasUnassigned} />
+        <BatchActions batchId={batch.id} hasUnassigned={hasUnassigned} hasPendingApproval={hasPendingApproval} />
       </div>
 
       {/* Batch Info */}

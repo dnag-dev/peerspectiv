@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,14 +12,15 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, ExternalLink } from "lucide-react";
 
 interface BatchActionsProps {
   batchId: string;
   hasUnassigned: boolean;
+  hasPendingApproval?: boolean;
 }
 
-export function BatchActions({ batchId, hasUnassigned }: BatchActionsProps) {
+export function BatchActions({ batchId, hasUnassigned, hasPendingApproval }: BatchActionsProps) {
   const router = useRouter();
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [running, setRunning] = useState(false);
@@ -54,14 +56,24 @@ export function BatchActions({ batchId, hasUnassigned }: BatchActionsProps) {
 
   return (
     <>
-      <Button
-        onClick={() => setAiDialogOpen(true)}
-        disabled={!hasUnassigned}
-        title={hasUnassigned ? "Run AI assignment suggestions" : "No unassigned cases"}
-      >
-        <Sparkles className="mr-2 h-4 w-4" />
-        Run AI Assignment
-      </Button>
+      <div className="flex items-center gap-2">
+        {hasPendingApproval && (
+          <Link href="/assign">
+            <Button variant="outline">
+              <ExternalLink className="mr-2 h-4 w-4" />
+              View AI Queue
+            </Button>
+          </Link>
+        )}
+        <Button
+          onClick={() => setAiDialogOpen(true)}
+          disabled={!hasUnassigned}
+          title={hasUnassigned ? "Run AI assignment suggestions" : "No unassigned cases"}
+        >
+          <Sparkles className="mr-2 h-4 w-4" />
+          Run AI Assignment
+        </Button>
+      </div>
 
       <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
         <DialogContent className="bg-white border border-border-subtle shadow-2xl rounded-xl sm:max-w-[500px]">
@@ -89,6 +101,14 @@ export function BatchActions({ batchId, hasUnassigned }: BatchActionsProps) {
             <Button variant="outline" onClick={() => setAiDialogOpen(false)}>
               {result ? "Done" : "Cancel"}
             </Button>
+            {result && (
+              <Link href="/assign">
+                <Button>
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Review & Approve
+                </Button>
+              </Link>
+            )}
             {!result && (
               <Button onClick={handleRunAI} disabled={running}>
                 {running ? (

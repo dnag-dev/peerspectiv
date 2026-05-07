@@ -299,7 +299,7 @@ function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
   return [
     // Primary tier
     { label: "Dashboard",       href: "/dashboard",  icon: LayoutDashboard,  group: "Workspace" },
-    { label: "Reviews",         href: "/cases",      icon: ClipboardCheck,   group: "Workspace" },
+    { label: "Reviews",         href: "/assignments", icon: ClipboardCheck,  group: "Workspace" },
     { label: "Reports",         href: "/reports",    icon: BarChart3,        group: "Workspace" },
     { label: "Peers",           href: "/peers",      icon: UserCheck,        group: "Workspace" },
     { label: "Onboarding Queue",href: "/peers/onboarding-queue", icon: UserCheck, group: "Workspace" },
@@ -310,7 +310,7 @@ function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
     { label: "Settings",        href: "/settings",   icon: Settings,         group: "Workspace" },
     // Second-tier admin tools
     { label: "Batches",         href: "/batches",    icon: FolderOpen,       group: "Admin Tools" },
-    { label: "Assignments",     href: "/assignments", icon: ArrowUpDown,     group: "Admin Tools", badge: openReassignmentCount },
+    { label: "AI Assignments",  href: "/assign",     icon: ArrowUpDown,      group: "Admin Tools", badge: openReassignmentCount },
     { label: "Credentials",     href: "/credentials", icon: ShieldCheck,     group: "Admin Tools" },
     { label: "Payouts",         href: "/payouts",    icon: DollarSign,       group: "Admin Tools" },
     { label: "Invoices",        href: "/invoices",   icon: Receipt,          group: "Admin Tools" },
