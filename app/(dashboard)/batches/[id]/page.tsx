@@ -17,6 +17,7 @@ import { CaseStatusBadge, AIStatusBadge } from "@/components/batches/CaseStatusB
 import { BatchActions } from "@/components/batches/BatchActions";
 import { PDFUploader } from "@/components/batches/PDFUploader";
 import { BatchFormSection } from "@/components/batches/BatchFormSection";
+import { BatchCaseActions } from "@/components/batches/BatchCaseActions";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, FileStack, Calendar, Building2, Hash } from "lucide-react";
 import type { Batch, ReviewCase, Provider, Peer } from "@/types";
@@ -233,6 +234,7 @@ export default async function BatchDetailPage({
                   <TableHead>Due Date</TableHead>
                   <TableHead>AI Analysis</TableHead>
                   <TableHead>Chart</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -268,6 +270,13 @@ export default async function BatchDetailPage({
                       <PDFUploader
                         caseId={reviewCase.id}
                         existingFileName={reviewCase.chart_file_name}
+                      />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <BatchCaseActions
+                        caseId={reviewCase.id}
+                        status={reviewCase.status}
+                        peerId={reviewCase.peer?.id ?? null}
                       />
                     </TableCell>
                   </TableRow>
