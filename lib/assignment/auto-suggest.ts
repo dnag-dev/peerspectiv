@@ -72,7 +72,7 @@ export function pickAssignments(
 }
 
 /**
- * DB-backed wrapper. Loads all state='active' peers with their specialties
+ * DB-backed wrapper. Loads all status='active' peers with their specialties
  * and current free capacity, then delegates to `pickAssignments`.
  */
 export async function suggestAssignmentsForCases(
@@ -83,12 +83,12 @@ export async function suggestAssignmentsForCases(
   const peerRows = await db
     .select({
       id: peers.id,
-      state: peers.state,
+      status: peers.status,
       maxCaseLoad: peers.maxCaseLoad,
       credentialValidUntil: peers.credentialValidUntil,
     })
     .from(peers)
-    .where(eq(peers.state, 'active'));
+    .where(eq(peers.status, 'active'));
 
   if (peerRows.length === 0) {
     return cases.map((c) => ({
@@ -143,7 +143,7 @@ export async function suggestAssignmentsForCases(
       id: p.id,
       specialties: specByPeer.get(p.id) ?? [],
       freeCapacity: Math.max(0, max - load),
-      isActive: p.state === 'active',
+      isActive: p.status === 'active',
       licenseValid,
     };
   });

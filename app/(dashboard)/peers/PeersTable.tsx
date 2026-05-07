@@ -28,11 +28,10 @@ interface Peer {
   specialty: string | null;
   specialties: string[] | null;
   board_certification: string | null;
-  state: string | null;
+  status: string | null;
   active_cases_count: number | null;
   total_reviews_completed: number | null;
   availability_status: string | null;
-  status: string | null;
   rate_type: string | null;
   rate_amount: string | number | null;
   license_number: string | null;
@@ -162,7 +161,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
       const status = r.availability_status || 'available';
       if (availFilter !== 'all' && status !== availFilter) return false;
       if (stateFilter !== 'all' && r.license_state !== stateFilter) return false;
-      const peerState = r.state || 'pending_credentialing';
+      const peerState = r.status || 'pending_credentialing';
       if (peerStatusFilter !== 'all' && peerState !== peerStatusFilter) return false;
       if (!q) return true;
       const specHaystack = specialtiesAsList(r).join(' ').toLowerCase();
@@ -434,7 +433,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
                   </td>
                   <td className="px-4 py-3">
                     {(() => {
-                      const peerState = r.state || 'pending_credentialing';
+                      const peerState = r.status || 'pending_credentialing';
                       const sc = STATE_COLORS[peerState] || STATE_COLORS.pending_credentialing;
                       return (
                         <Badge className={`${sc.bg} ${sc.text} border-0 text-[10px]`}>

@@ -14,7 +14,7 @@ Rules:
 3. Efficiency-aware: prefer peers with lower avg_minutes_per_chart when available.
 4. Capacity: never assign beyond a peer's max_case_load (active_cases_count + new <= max_case_load).
 5. Spread cases evenly across specialty-matched peers when multiple qualify.
-6. Only suggest peers from the input list — they have already been filtered to state='active' (Phase 4 CR-006). Never invent or include any other peer.
+6. Only suggest peers from the input list — they have already been filtered to status='active' (Phase 4 CR-006). Never invent or include any other peer.
 
 You will receive:
 - A list of cases (id, specialty_required, provider_name, company_name)
@@ -88,8 +88,8 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
     .from(peers)
     .where(
       and(
-        // Phase 4 (CR-006/SA-031F): only state='active' peers are assignable.
-        eq(peers.state, 'active'),
+        // Phase 4 (CR-006/SA-031F): only status='active' peers are assignable.
+        eq(peers.status, 'active'),
         eq(peers.availabilityStatus, 'available')
       )
     );

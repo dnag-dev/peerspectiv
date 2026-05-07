@@ -22,7 +22,7 @@ function isAdmin(): boolean {
  * POST /api/peers/invite/[token] — admin approves or rejects a Path A
  * submission.
  *   Body: { action: 'approve' | 'reject', reason?: string }
- * Approve creates a peer in state='pending_credentialing' and writes
+ * Approve creates a peer in status='pending_credentialing' and writes
  * peer_specialties rows.
  */
 export async function POST(req: NextRequest, { params }: { params: { token: string } }) {
@@ -88,11 +88,10 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
       licenseState: sub.license_state ? String(sub.license_state) : null,
       licenseFileUrl: sub.license_document_url ? String(sub.license_document_url) : null,
       credentialValidUntil: sub.license_expiry ? String(sub.license_expiry) : null,
-      status: 'inactive',
-      state: 'pending_credentialing',
-      stateChangedAt: new Date(),
-      stateChangedBy: 'admin',
-      stateChangeReason: 'path-a invite approved',
+      status: 'pending_credentialing',
+      statusChangedAt: new Date(),
+      statusChangedBy: 'admin',
+      statusChangeReason: 'path-a invite approved',
     })
     .returning({ id: peers.id });
 

@@ -17,8 +17,8 @@ export async function GET(
   return NextResponse.json({
     entries: rows.map((r) => ({
       id: r.id,
-      from_state: r.fromState,
-      to_state: r.toState,
+      from_status: r.fromState,
+      to_status: r.toState,
       changed_by: r.changedBy,
       change_reason: r.changeReason,
       changed_at: r.changedAt?.toISOString() ?? null,

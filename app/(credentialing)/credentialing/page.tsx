@@ -27,7 +27,7 @@ export default async function CredentialingDashboard() {
   const [newlyAdded] = await db
     .select({ n: count() })
     .from(peers)
-    .where(and(eq(peers.state, 'pending_credentialing'), isNull(peers.licenseFileUrl)));
+    .where(and(eq(peers.status, 'pending_credentialing'), isNull(peers.licenseFileUrl)));
 
   // Bucket 2: Expiring Soon (active, expiry within 14 days but still future)
   const [expiringSoon] = await db
@@ -35,7 +35,7 @@ export default async function CredentialingDashboard() {
     .from(peers)
     .where(
       and(
-        eq(peers.state, 'active'),
+        eq(peers.status, 'active'),
         sql`${peers.credentialValidUntil} is not null`,
         sql`${peers.credentialValidUntil} >= ${todayIso}::date`,
         sql`${peers.credentialValidUntil} <= ${in14Iso}::date`
@@ -48,9 +48,9 @@ export default async function CredentialingDashboard() {
     .from(peers)
     .where(
       or(
-        eq(peers.state, 'license_expired'),
+        eq(peers.status, 'license_expired'),
         and(
-          eq(peers.state, 'active'),
+          eq(peers.status, 'active'),
           sql`${peers.credentialValidUntil} is not null`,
           sql`${peers.credentialValidUntil} < ${todayIso}::date`
         )

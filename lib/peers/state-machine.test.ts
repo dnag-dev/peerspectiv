@@ -11,7 +11,7 @@ import {
   canTransition,
   isAssignable,
   transitionPeer,
-  type PeerState,
+  type PeerStatus,
 } from './state-machine';
 import { computeFree, getPeerCapacity } from './capacity';
 
@@ -24,7 +24,7 @@ describe('peer state machine — pure transition rules', () => {
   });
 
   it('all 7 documented allowed transitions return true', () => {
-    const allowed: Array<[PeerState, PeerState]> = [
+    const allowed: Array<[PeerStatus, PeerStatus]> = [
       ['invited', 'pending_admin_review'],
       ['pending_admin_review', 'pending_credentialing'],
       ['pending_credentialing', 'active'],
@@ -39,7 +39,7 @@ describe('peer state machine — pure transition rules', () => {
   });
 
   it('every state can transition to archived (except archived itself)', () => {
-    const fromStates: PeerState[] = [
+    const fromStates: PeerStatus[] = [
       'invited',
       'pending_admin_review',
       'pending_credentialing',
@@ -53,7 +53,7 @@ describe('peer state machine — pure transition rules', () => {
   });
 
   it('archived is terminal — no outbound transitions', () => {
-    const targets: PeerState[] = [
+    const targets: PeerStatus[] = [
       'invited',
       'pending_admin_review',
       'pending_credentialing',
@@ -114,8 +114,7 @@ dbDescribe('peer state machine — DB-backed', () => {
       .values({
         fullName: 'TEST Phase 1.3 SM',
         email: `test-sm-${Date.now()}@example.test`,
-        state: 'pending_credentialing',
-        status: 'inactive',
+        status: 'pending_credentialing',
       })
       .returning({ id: peers.id });
     testPeerId = row.id;

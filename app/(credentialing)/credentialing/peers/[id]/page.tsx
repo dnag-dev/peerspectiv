@@ -25,10 +25,10 @@ export default async function CredentialingPeerDetailPage({
       fullName: peers.fullName,
       email: peers.email,
       npi: peers.npi,
-      state: peers.state,
-      stateChangedAt: peers.stateChangedAt,
-      stateChangedBy: peers.stateChangedBy,
-      stateChangeReason: peers.stateChangeReason,
+      status: peers.status,
+      statusChangedAt: peers.statusChangedAt,
+      statusChangedBy: peers.statusChangedBy,
+      statusChangeReason: peers.statusChangeReason,
       licenseNumber: peers.licenseNumber,
       licenseState: peers.licenseState,
       licenseFileUrl: peers.licenseFileUrl,
@@ -82,7 +82,7 @@ export default async function CredentialingPeerDetailPage({
           ← Dashboard
         </Link>
         <h1 className="text-2xl font-medium tracking-tight text-ink-primary">{peer.fullName ?? 'Peer'}</h1>
-        <Badge className="bg-ink-100 text-ink-primary border-0">{peer.state}</Badge>
+        <Badge className="bg-ink-100 text-ink-primary border-0">{peer.status}</Badge>
       </div>
 
       <Card>
@@ -93,10 +93,10 @@ export default async function CredentialingPeerDetailPage({
           <div><span className="text-ink-secondary">Email</span><div>{peer.email ?? '—'}</div></div>
           <div><span className="text-ink-secondary">NPI</span><div>{peer.npi ?? '—'}</div></div>
           <div className="col-span-2">
-            <span className="text-ink-secondary">Last state change</span>
+            <span className="text-ink-secondary">Last status change</span>
             <div>
-              {peer.stateChangedAt
-                ? `${new Date(peer.stateChangedAt).toLocaleString()} by ${peer.stateChangedBy ?? '—'}${peer.stateChangeReason ? ` — ${peer.stateChangeReason}` : ''}`
+              {peer.statusChangedAt
+                ? `${new Date(peer.statusChangedAt).toLocaleString()} by ${peer.statusChangedBy ?? '—'}${peer.statusChangeReason ? ` — ${peer.statusChangeReason}` : ''}`
                 : '—'}
             </div>
           </div>
@@ -106,7 +106,7 @@ export default async function CredentialingPeerDetailPage({
       <PeerCredentialingDetail
         peer={{
           id: peer.id,
-          state: peer.state,
+          status: peer.status,
           license_number: peer.licenseNumber,
           license_state: peer.licenseState,
           license_document_url: peer.licenseFileUrl,

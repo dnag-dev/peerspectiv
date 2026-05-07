@@ -197,7 +197,7 @@ export default async function PeerDetailPage({
               <div className="flex items-center gap-2 pt-2">
                 <PeerStateActions
                   peerId={peer.id}
-                  currentState={peer.state ?? "active"}
+                  currentState={peer.status ?? "active"}
                   peerName={peer.full_name ?? "Peer"}
                 />
                 <Badge className={cn("border-0", availClass)}>

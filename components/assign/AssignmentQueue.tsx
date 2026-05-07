@@ -177,7 +177,7 @@ export function AssignmentQueue({
             .toUpperCase();
 
           const availability: "available" | "busy" | "unavailable" =
-            c.peer.state !== "active"
+            c.peer.status !== "active"
               ? "unavailable"
               : activeCases >= 8
                 ? "busy"

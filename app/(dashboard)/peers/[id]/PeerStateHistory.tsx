@@ -7,8 +7,8 @@ import { History } from "lucide-react";
 
 interface AuditEntry {
   id: string;
-  from_state: string | null;
-  to_state: string;
+  from_status: string | null;
+  to_status: string;
   changed_by: string | null;
   change_reason: string | null;
   changed_at: string | null;
@@ -64,8 +64,8 @@ export function PeerStateHistory({ peerId }: { peerId: string }) {
     load();
     // Re-fetch when a state transition happens (custom event from PeerStateActions)
     function onTransition() { load(); }
-    window.addEventListener("peer-state-changed", onTransition);
-    return () => { cancelled = true; window.removeEventListener("peer-state-changed", onTransition); };
+    window.addEventListener("peer-status-changed", onTransition);
+    return () => { cancelled = true; window.removeEventListener("peer-status-changed", onTransition); };
   }, [peerId]);
 
   if (loading) {
@@ -104,16 +104,16 @@ export function PeerStateHistory({ peerId }: { peerId: string }) {
                 </div>
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    {entry.from_state && (
+                    {entry.from_status && (
                       <>
-                        <Badge variant="outline" className={`text-xs border-0 ${STATE_COLORS[entry.from_state] ?? ""}`}>
-                          {STATE_LABELS[entry.from_state] ?? entry.from_state}
+                        <Badge variant="outline" className={`text-xs border-0 ${STATE_COLORS[entry.from_status] ?? ""}`}>
+                          {STATE_LABELS[entry.from_status] ?? entry.from_status}
                         </Badge>
                         <span className="text-xs text-ink-tertiary">&rarr;</span>
                       </>
                     )}
-                    <Badge variant="outline" className={`text-xs border-0 ${STATE_COLORS[entry.to_state] ?? ""}`}>
-                      {STATE_LABELS[entry.to_state] ?? entry.to_state}
+                    <Badge variant="outline" className={`text-xs border-0 ${STATE_COLORS[entry.to_status] ?? ""}`}>
+                      {STATE_LABELS[entry.to_status] ?? entry.to_status}
                     </Badge>
                   </div>
                   <div className="text-xs text-ink-secondary">

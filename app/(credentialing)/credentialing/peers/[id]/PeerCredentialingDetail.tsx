@@ -13,7 +13,7 @@ interface SpecialtyRow {
 interface Props {
   peer: {
     id: string;
-    state: string;
+    status: string;
     license_number: string | null;
     license_state: string | null;
     license_document_url: string | null;
@@ -37,7 +37,7 @@ export function PeerCredentialingDetail({ peer, specialties: initialSpecs }: Pro
   const [info, setInfo] = useState<string | null>(null);
 
   const hasDocument = Boolean(docUrl || peer.license_document_url);
-  const isPending_ = peer.state === 'pending_credentialing';
+  const isPending_ = peer.status === 'pending_credentialing';
 
   function refresh() {
     startTransition(() => router.refresh());

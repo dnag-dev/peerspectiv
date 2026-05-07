@@ -72,8 +72,8 @@ async function getAlternatePeers(
     .from(peersTable)
     .where(
       and(
-        // Phase 4 (CR-006/SA-031F): only state='active' peers are assignable.
-        eq(peersTable.state, "active"),
+        // Phase 4 (CR-006/SA-031F): only status='active' peers are assignable.
+        eq(peersTable.status, "active"),
         inArray(peersTable.id, matchingPeerIds)
       )
     )

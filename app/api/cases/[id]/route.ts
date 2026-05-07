@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db, toSnake, getCallerScope } from '@/lib/db';
 import { reviewCases, peers } from '@/lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
-import { isAssignable, type PeerState } from '@/lib/peers/state-machine';
+import { isAssignable, type PeerStatus } from '@/lib/peers/state-machine';
 import { auditLog } from '@/lib/utils/audit';
 
 export async function GET(
@@ -109,7 +109,7 @@ export async function GET(
  *                                       assignment_source='reassigned'
  *   { action: 'unassign' }            → clear peer_id, status='unassigned'
  *
- * Reassign validates the target peer is state='active'; otherwise returns
+ * Reassign validates the target peer is status='active'; otherwise returns
  * 422 PEER_NOT_ACTIVE (matches Phase 4 contract on /api/assign/approve).
  */
 export async function PATCH(
@@ -143,13 +143,13 @@ export async function PATCH(
         );
       }
       const [target] = await db
-        .select({ state: peers.state })
+        .select({ status: peers.status })
         .from(peers)
         .where(eq(peers.id, peerId))
         .limit(1);
-      if (!target || !isAssignable(target.state as PeerState)) {
+      if (!target || !isAssignable(target.status as PeerStatus)) {
         return NextResponse.json(
-          { error: 'Peer not in Active state. Cannot assign.', code: 'PEER_NOT_ACTIVE' },
+          { error: 'Peer not in Active status. Cannot assign.', code: 'PEER_NOT_ACTIVE' },
           { status: 422 }
         );
       }

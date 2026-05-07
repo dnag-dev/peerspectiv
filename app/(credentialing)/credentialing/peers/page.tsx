@@ -18,7 +18,7 @@ const BUCKET_META: Record<string, { title: string; empty: string }> = {
     empty: 'No active peers with licenses expiring soon.',
   },
   expired: {
-    title: 'Expired — license past expiry or peer in license_expired state',
+    title: 'Expired — license past expiry or peer in license_expired status',
     empty: 'No expired licenses on file.',
   },
 };
@@ -40,22 +40,22 @@ export default async function CredentialingPeersListPage({
   let where;
   if (bucket === 'expiring') {
     where = and(
-      eq(peers.state, 'active'),
+      eq(peers.status, 'active'),
       sql`${peers.credentialValidUntil} is not null`,
       sql`${peers.credentialValidUntil} >= ${todayIso}::date`,
       sql`${peers.credentialValidUntil} <= ${in14Iso}::date`
     );
   } else if (bucket === 'expired') {
     where = or(
-      eq(peers.state, 'license_expired'),
+      eq(peers.status, 'license_expired'),
       and(
-        eq(peers.state, 'active'),
+        eq(peers.status, 'active'),
         sql`${peers.credentialValidUntil} is not null`,
         sql`${peers.credentialValidUntil} < ${todayIso}::date`
       )
     );
   } else {
-    where = and(eq(peers.state, 'pending_credentialing'), isNull(peers.licenseFileUrl));
+    where = and(eq(peers.status, 'pending_credentialing'), isNull(peers.licenseFileUrl));
   }
 
   const rows = await db
@@ -63,7 +63,7 @@ export default async function CredentialingPeersListPage({
       id: peers.id,
       fullName: peers.fullName,
       email: peers.email,
-      state: peers.state,
+      status: peers.status,
       licenseNumber: peers.licenseNumber,
       licenseState: peers.licenseState,
       credentialValidUntil: peers.credentialValidUntil,
@@ -109,7 +109,7 @@ export default async function CredentialingPeersListPage({
                         <div className="text-xs text-ink-secondary">{r.email ?? '—'}</div>
                       </td>
                       <td className="px-4 py-2">
-                        <Badge className="bg-ink-100 text-ink-primary border-0">{r.state}</Badge>
+                        <Badge className="bg-ink-100 text-ink-primary border-0">{r.status}</Badge>
                       </td>
                       <td className="px-4 py-2 text-ink-secondary">
                         {r.licenseNumber

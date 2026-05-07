@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const specialty = searchParams.get('specialty');
 
-  // Phase 4 (CR-006): only state='active' peers are eligible for assignment.
-  const conditions = [eq(peers.state, 'active')];
+  // Phase 4 (CR-006): only status='active' peers are eligible for assignment.
+  const conditions = [eq(peers.status, 'active')];
   // Phase 1.3: filter via peer_specialties join (replaces dropped peers.specialty col)
   if (specialty) conditions.push(sql`exists (select 1 from peer_specialties where peer_id = ${peers.id} and specialty = ${specialty})`);
 

@@ -103,7 +103,7 @@ export function PeerStateActions({ peerId, currentState, peerName }: Props) {
       if (!res.ok) throw new Error(body.error || "Transition failed");
       setDialogAction(null);
       setReason("");
-      window.dispatchEvent(new Event("peer-state-changed"));
+      window.dispatchEvent(new Event("peer-status-changed"));
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
