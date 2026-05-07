@@ -135,16 +135,34 @@ export function ReviewsTable({
         </div>
       )}
 
+      {/* Status chips */}
+      <div className="flex flex-wrap gap-2">
+        {[
+          { key: "all", label: "All" },
+          { key: "assigned", label: "Assigned" },
+          { key: "in_progress", label: "In Progress" },
+          { key: "completed", label: "Completed" },
+          { key: "past_due", label: "Overdue" },
+          { key: "unassigned", label: "Unassigned" },
+        ].map((s) => (
+          <button
+            key={s.key}
+            onClick={() => setStatus(s.key)}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              status === s.key
+                ? "border-brand bg-brand/10 text-brand"
+                : "border-border-subtle text-ink-secondary hover:border-brand"
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+
       <div
         className="flex flex-wrap gap-3 rounded-lg p-4"
         style={{ backgroundColor: 'var(--color-card)' }}
       >
-        <FilterSelect
-          label="Status"
-          value={status}
-          onChange={setStatus}
-          options={["all", "unassigned", "assigned", "in_progress", "completed", "past_due"]}
-        />
         <FilterSelect
           label="Specialty"
           value={specialty}

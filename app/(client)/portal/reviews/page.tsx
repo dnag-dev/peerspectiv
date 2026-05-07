@@ -60,9 +60,9 @@ export default async function AllReviewsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">All reviews</h1>
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Reviews</h1>
         <p className="text-sm text-ink-secondary">
-          All peer review cases for {company.name}
+          Peer review cases for {company.name}
         </p>
       </div>
       <ReviewsTable

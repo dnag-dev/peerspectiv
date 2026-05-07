@@ -29,9 +29,7 @@ const NAV: SidebarNavItem[] = [
   { label: "Dashboard",          href: "/portal",            icon: LayoutDashboard,  group: "Overview" },
   { label: "Submit Records",     href: "/portal/upload",     icon: UploadCloud,      group: "Overview" },
   { label: "My Files",           href: "/portal/files",      icon: Folder,           group: "Overview" },
-  { label: "All Reviews",        href: "/portal/reviews",    icon: ClipboardList,    group: "Reviews" },
-  { label: "In Progress",        href: "/portal/inprogress", icon: Clock,            group: "Reviews" },
-  { label: "Overdue",            href: "/portal/overdue",    icon: AlertTriangle,    group: "Reviews" },
+  { label: "Reviews",             href: "/portal/reviews",    icon: ClipboardList,    group: "Reviews" },
   { label: "Trends",             href: "/portal/trends",     icon: TrendingUp,       group: "Analytics" },
   { label: "Quality Reports",    href: "/portal/quality",    icon: FileBarChart,     group: "Analytics" },
   { label: "Providers",          href: "/portal/providers",  icon: Users,            group: "Analytics" },
@@ -46,7 +44,7 @@ const NAV: SidebarNavItem[] = [
 const GROUPS = ["Overview", "Reviews", "Analytics", "Compliance", "Account"];
 
 const DIM_FOR: Record<ClientRole, string[]> = {
-  cmo:        ["/portal/inprogress", "/portal/overdue"],
+  cmo:        [],
   quality:    [],
   operations: ["/portal/trends", "/portal/quality"],
 };

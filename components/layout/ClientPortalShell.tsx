@@ -7,9 +7,7 @@ import { ClientSidebar, ClientRole } from "./ClientSidebar";
 const PAGE_TITLES: Record<string, string> = {
   "/portal":             "Compliance dashboard",
   "/portal/quality":     "Quality reports",
-  "/portal/reviews":     "All reviews",
-  "/portal/inprogress":  "In progress",
-  "/portal/overdue":     "Overdue",
+  "/portal/reviews":     "Reviews",
   "/portal/trends":      "Trends",
   "/portal/providers":   "Providers",
   "/portal/invoices":    "Invoices",
