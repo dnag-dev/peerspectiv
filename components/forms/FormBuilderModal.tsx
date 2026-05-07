@@ -64,6 +64,8 @@ interface Props {
   companyName?: string;
   /** List of companies for the company picker (create mode). If omitted, company is fixed to companyId. */
   companies?: CompanyOption[];
+  /** Hide mode selector, AI narrative, Draft with AI, company picker (for client portal) */
+  clientMode?: boolean;
   /** When provided, the modal opens in edit mode and PATCHes this form. */
   editForm?: {
     id: string;
@@ -90,7 +92,7 @@ const BLANK_FIELDS: BuiltFormField[] = [
   { field_key: "comments_and_recommendations", field_label: "Comments and Recommendations", field_type: "text", is_required: false, display_order: 1 },
 ];
 
-export function FormBuilderModal({ open, onOpenChange, companyId, companyName, companies: companiesProp, defaultSpecialty, onCreated, editForm, prefill }: Props) {
+export function FormBuilderModal({ open, onOpenChange, companyId, companyName, companies: companiesProp, clientMode, defaultSpecialty, onCreated, editForm, prefill }: Props) {
   const isEdit = !!editForm;
   const [mode, setMode] = useState<Mode>("scratch");
   const [selectedCompanyId, setSelectedCompanyId] = useState(companyId);
@@ -347,8 +349,8 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Mode selector — hidden in edit mode */}
-          {!isEdit && (
+          {/* Mode selector — hidden in edit mode and client mode */}
+          {!isEdit && !clientMode && (
             <div className="flex gap-2">
               {tabBtn("upload", <Upload className="h-4 w-4" />, "Upload PDF", "Use existing PDF template")}
               {tabBtn("clone", <Copy className="h-4 w-4" />, "Clone existing", "Start from a current form")}
@@ -356,41 +358,45 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
             </div>
           )}
 
-          <label className="flex items-center gap-2 rounded-md border border-status-info-bg bg-status-info-bg/40 px-3 py-2 text-xs text-ink-primary">
-            <input
-              type="checkbox"
-              checked={allowAiNarrative}
-              onChange={(e) => setAllowAiNarrative(e.target.checked)}
-            />
-            <span>
-              <strong className="font-medium text-ink-primary">Allow peer to use AI-drafted narrative</strong>
-              <span className="ml-1 text-ink-secondary">— shows a &ldquo;Generate AI suggestion&rdquo; button next to the comments box.</span>
-            </span>
-          </label>
+          {!clientMode && (
+            <label className="flex items-center gap-2 rounded-md border border-status-info-bg bg-status-info-bg/40 px-3 py-2 text-xs text-ink-primary">
+              <input
+                type="checkbox"
+                checked={allowAiNarrative}
+                onChange={(e) => setAllowAiNarrative(e.target.checked)}
+              />
+              <span>
+                <strong className="font-medium text-ink-primary">Allow peer to use AI-drafted narrative</strong>
+                <span className="ml-1 text-ink-secondary">— shows a &ldquo;Generate AI suggestion&rdquo; button next to the comments box.</span>
+              </span>
+            </label>
+          )}
 
-          {/* Draft with AI */}
-          <div className="flex items-center justify-between rounded-md border border-status-info-bg bg-status-info-bg/40 px-3 py-2">
-            <div className="text-xs text-ink-primary">
-              <strong className="text-ink-primary">Draft form with AI</strong> — generates
-              10–20 questions appropriate for the chosen specialty.
+          {/* Draft with AI — hidden in client mode */}
+          {!clientMode && (
+            <div className="flex items-center justify-between rounded-md border border-status-info-bg bg-status-info-bg/40 px-3 py-2">
+              <div className="text-xs text-ink-primary">
+                <strong className="text-ink-primary">Draft form with AI</strong> — generates
+                10–20 questions appropriate for the chosen specialty.
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={draftWithAi}
+                disabled={aiDrafting || !specialty}
+              >
+                {aiDrafting ? (
+                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-1 h-3 w-3" />
+                )}
+                {aiDrafting ? "Drafting…" : "Draft with AI"}
+              </Button>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={draftWithAi}
-              disabled={aiDrafting || !specialty}
-            >
-              {aiDrafting ? (
-                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-              ) : (
-                <Sparkles className="mr-1 h-3 w-3" />
-              )}
-              {aiDrafting ? "Drafting…" : "Draft with AI"}
-            </Button>
-          </div>
+          )}
 
-          {/* Company — editable dropdown in create mode, read-only in edit mode */}
-          {isEdit ? (
+          {/* Company — hidden in client mode, editable in admin create, read-only in edit */}
+          {clientMode ? null : isEdit ? (
             <div>
               <label className="text-xs font-medium text-muted-foreground">Company</label>
               <div className="mt-1 w-full rounded-md border bg-muted/50 px-3 py-2 text-sm">{selectedCompanyName || companyName || '—'}</div>
