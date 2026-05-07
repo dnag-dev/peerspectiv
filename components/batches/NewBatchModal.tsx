@@ -252,15 +252,24 @@ export function NewBatchModal({
   companies,
   providers,
   forms,
+  open: controlledOpen,
+  onOpenChange,
+  defaultCompanyId,
 }: {
   companies: BatchWizardCompany[];
   providers: BatchWizardProvider[];
   forms: BatchWizardForm[];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  defaultCompanyId?: string;
 }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [step, setStep] = useState(1);
-  const [companyId, setCompanyId] = useState("");
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
+  const skipCompanyStep = !!defaultCompanyId;
+  const [step, setStep] = useState(skipCompanyStep ? 2 : 1);
+  const [companyId, setCompanyId] = useState(defaultCompanyId ?? "");
   const [specialty, setSpecialty] = useState("");
   const [companyFormId, setCompanyFormId] = useState("");
   const [batchName, setBatchName] = useState("");
@@ -348,8 +357,8 @@ export function NewBatchModal({
   }, [companyId]);
 
   function reset() {
-    setStep(1);
-    setCompanyId("");
+    setStep(skipCompanyStep ? 2 : 1);
+    setCompanyId(defaultCompanyId ?? "");
     setSpecialty("");
     setCompanyFormId("");
     setBatchName("");
@@ -615,10 +624,12 @@ export function NewBatchModal({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} className="gap-2">
-        <Plus className="h-4 w-4" />
-        New Batch
-      </Button>
+      {controlledOpen === undefined && (
+        <Button onClick={() => setOpen(true)} className="gap-2">
+          <Plus className="h-4 w-4" />
+          New Batch
+        </Button>
+      )}
 
       {open && (
         <div
@@ -632,7 +643,7 @@ export function NewBatchModal({
             <div className="flex items-center justify-between border-b px-5 py-4">
               <div>
                 <h2 className="text-base font-medium text-ink-primary">New Batch</h2>
-                <p className="text-xs text-ink-secondary">Step {step} of 5</p>
+                <p className="text-xs text-ink-secondary">Step {skipCompanyStep ? step - 1 : step} of {skipCompanyStep ? 4 : 5}</p>
               </div>
               <button
                 onClick={handleClose}
