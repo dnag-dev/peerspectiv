@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { ReviewCase } from "@/types";
+import StatusPill from "@/components/ui/StatusPill";
+import KPICard from "@/components/ui/KPICard";
 
 function daysUntilDue(date: string): number {
   return Math.ceil(
@@ -30,39 +31,43 @@ interface PeerPortalClientProps {
   };
 }
 
-function StatusCircle({
+// Drill-down KPI tile — replaces the bubble-circle row. Same data, cleaner shell.
+const dotByTone: Record<string, string> = {
+  warning: "bg-status-warning-dot",
+  success: "bg-status-success-dot",
+  info:    "bg-status-info-dot",
+};
+function KPITile({
   label,
   count,
   href,
   active,
   tone,
+  sub,
 }: {
   label: string;
   count: number;
   href: string;
   active: boolean;
-  tone: "mint" | "amber" | "ink";
+  tone: "warning" | "success" | "info";
+  sub?: string;
 }) {
-  const ringByTone: Record<string, string> = {
-    mint: "border-mint-300 text-mint-700",
-    amber: "border-amber-300 text-amber-700",
-    ink: "border-ink-300 text-ink-700",
-  };
   return (
     <Link
       href={href}
       data-testid="peer-status-circle"
       data-active={active ? "true" : "false"}
       className={cn(
-        "flex h-24 w-24 flex-col items-center justify-center rounded-full border-4 bg-white shadow-sm transition-all hover:shadow-md",
-        ringByTone[tone],
-        active ? "ring-4 ring-cobalt-200" : ""
+        "block rounded-md border bg-surface-card p-3 transition hover:shadow-sm",
+        active ? "border-brand" : "border-border-subtle"
       )}
     >
-      <div className="text-2xl font-bold leading-none">{count}</div>
-      <div className="mt-1 text-[10px] font-medium uppercase tracking-wider">
-        {label}
+      <div className="mb-1.5 flex items-center gap-1.5">
+        <span className={cn("h-1.5 w-1.5 rounded-full", dotByTone[tone])} />
+        <span className="eyebrow">{label}</span>
       </div>
+      <p className="display-number mb-0.5">{count}</p>
+      {sub && <p className="text-2xs text-ink-tertiary">{sub}</p>}
     </Link>
   );
 }
@@ -106,32 +111,33 @@ export function PeerPortalClient({
   counts = { in_progress: 0, completed: 0, incomplete: 0 },
 }: PeerPortalClientProps) {
   const statusCircles = (
-    <div className="flex flex-wrap items-center gap-4">
-      <StatusCircle
-        label="In Progress"
+    <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+      <KPITile
+        label="In progress"
         count={counts.in_progress}
         href="/peer/portal?status=in_progress"
         active={activeStatus === "in_progress" || activeStatus === "all"}
-        tone="amber"
+        tone="warning"
       />
-      <StatusCircle
+      <KPITile
         label="Completed"
         count={counts.completed}
         href="/peer/portal?status=completed"
         active={activeStatus === "completed"}
-        tone="mint"
+        tone="success"
+        sub="Lifetime · all clinics"
       />
-      <StatusCircle
+      <KPITile
         label="Incomplete"
         count={counts.incomplete}
         href="/peer/portal?status=incomplete"
         active={activeStatus === "incomplete"}
-        tone="ink"
+        tone="info"
       />
       {activeStatus !== "all" && (
         <Link
           href="/peer/portal"
-          className="text-xs text-cobalt-600 underline hover:text-cobalt-700"
+          className="col-span-full text-xs text-brand underline hover:text-brand-hover"
         >
           Clear filter
         </Link>
@@ -143,7 +149,7 @@ export function PeerPortalClient({
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold text-ink-900">My Queue</h1>
+          <h1 className="text-2xl font-medium tracking-tight text-ink-primary">My queue</h1>
           <p className="mt-1 text-sm text-ink-500">
             {activeStatus === "all"
               ? "No cases assigned"
@@ -167,8 +173,8 @@ export function PeerPortalClient({
             />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-ink-900">
-          No Assigned Cases
+        <h2 className="text-lg font-medium tracking-tight text-ink-primary">
+          No assigned cases
         </h2>
         <p className="mt-1 text-sm text-ink-500">
           You have no cases in your queue. Check back later for new assignments.
@@ -236,7 +242,7 @@ export function PeerPortalClient({
               data-testid="case-card"
               data-case-id={c.id}
               data-group-size={group.cases.length}
-              className="group flex flex-col rounded-lg border border-ink-200 bg-white p-4 shadow-sm transition-all hover:border-brand-blue/40 hover:shadow-md"
+              className="group flex h-full flex-col rounded-md border border-border-subtle bg-surface-card p-4 transition hover:shadow-sm"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
@@ -245,24 +251,14 @@ export function PeerPortalClient({
                       {c.provider?.first_name} {c.provider?.last_name}
                     </h3>
                     {displayedPriority !== "normal" && (
-                      <Badge
-                        variant={
-                          displayedPriority === "urgent"
-                            ? "destructive"
-                            : "warning"
-                        }
-                        className="text-[10px]"
-                      >
+                      <StatusPill variant={displayedPriority === "urgent" ? "danger" : "warning"}>
                         {displayedPriority}
-                      </Badge>
+                      </StatusPill>
                     )}
                     {isMulti && (
-                      <Badge
-                        variant="secondary"
-                        className="bg-cobalt-50 text-[10px] text-cobalt-700"
-                      >
+                      <StatusPill variant="info">
                         {group.cases.length} charts
-                      </Badge>
+                      </StatusPill>
                     )}
                   </div>
                   <p className="mt-0.5 truncate text-xs text-ink-500">
@@ -297,25 +293,28 @@ export function PeerPortalClient({
               )}
 
               <div className="mt-2 flex items-center gap-1.5">
-                <Badge
-                  variant={anyInProgress ? "warning" : "secondary"}
-                  className="text-[10px]"
-                >
-                  {anyInProgress ? "In Progress" : "Assigned"}
-                </Badge>
+                <StatusPill variant={anyInProgress ? "warning" : "neutral"}>
+                  {anyInProgress ? "In progress" : "Assigned"}
+                </StatusPill>
                 {anyAiReady && (
-                  <Badge variant="ai" className="text-[10px]">
-                    AI Ready
-                  </Badge>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EEEDFE] px-2 py-0.5 text-2xs font-medium text-[#3C3489]">
+                    AI ready
+                  </span>
                 )}
               </div>
 
-              <div className="mt-4 border-t border-ink-100 pt-3">
+              {/* mt-auto pins button to bottom — alignment fix across cards in a row */}
+              <div className="mt-auto pt-4">
                 <Link
                   href={href}
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-brand-blue px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-blue/90"
+                  className={cn(
+                    "inline-flex w-full items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition",
+                    anyAiReady
+                      ? "bg-brand text-white hover:bg-brand-hover"
+                      : "border border-border-default bg-surface-card text-ink-primary hover:bg-surface-muted"
+                  )}
                 >
-                  {isMulti ? "Open Charts" : "Start Review"}
+                  {isMulti ? "Open charts" : anyAiReady ? "Open prefilled review" : "Start review"}
                   <svg
                     className="h-3.5 w-3.5"
                     fill="none"
