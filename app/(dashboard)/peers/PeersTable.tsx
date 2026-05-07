@@ -28,6 +28,7 @@ interface Peer {
   specialty: string | null;
   specialties: string[] | null;
   board_certification: string | null;
+  state: string | null;
   active_cases_count: number | null;
   total_reviews_completed: number | null;
   availability_status: string | null;
@@ -59,6 +60,16 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   vacation: { bg: 'bg-critical-100', text: 'text-status-danger-fg' },
   on_leave: { bg: 'bg-amber-100', text: 'text-status-warning-fg' },
   inactive: { bg: 'bg-ink-100', text: 'text-ink-800' },
+};
+
+const STATE_COLORS: Record<string, { bg: string; text: string }> = {
+  invited: { bg: 'bg-ink-100', text: 'text-ink-600' },
+  pending_admin_review: { bg: 'bg-amber-100', text: 'text-amber-700' },
+  pending_credentialing: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  active: { bg: 'bg-mint-100', text: 'text-mint-700' },
+  license_expired: { bg: 'bg-critical-100', text: 'text-critical-700' },
+  suspended: { bg: 'bg-red-100', text: 'text-red-700' },
+  archived: { bg: 'bg-ink-100', text: 'text-ink-500' },
 };
 
 const RATE_SUFFIX: Record<RateType, string> = {
@@ -360,6 +371,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
           <thead>
             <tr className="border-b border-border-subtle bg-ink-50 text-xs uppercase tracking-wider text-ink-secondary">
               <SortHead label="Name" k="full_name" />
+              <th className="px-4 py-3 text-left">Status</th>
               <th className="px-4 py-3 text-left">Email</th>
               <SortHead label="Specialties" k="specialty" />
               <th className="px-4 py-3 text-left">License</th>
@@ -373,7 +385,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
           <tbody>
             {visible.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-8 text-center text-ink-tertiary">
+                <td colSpan={10} className="px-4 py-8 text-center text-ink-tertiary">
                   {peers.length === 0 ? 'No peers found.' : 'No peers match your filters.'}
                 </td>
               </tr>
@@ -393,6 +405,17 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
                     >
                       {r.full_name ?? '—'}
                     </Link>
+                  </td>
+                  <td className="px-4 py-3">
+                    {(() => {
+                      const peerState = r.state || 'pending_credentialing';
+                      const sc = STATE_COLORS[peerState] || STATE_COLORS.pending_credentialing;
+                      return (
+                        <Badge className={`${sc.bg} ${sc.text} border-0 text-[10px]`}>
+                          {peerState.replace(/_/g, ' ')}
+                        </Badge>
+                      );
+                    })()}
                   </td>
                   <td className="px-4 py-3 text-ink-secondary text-xs">{r.email ?? '—'}</td>
                   <td className="px-4 py-3" data-testid="peers-row-specialties">
