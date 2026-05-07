@@ -91,7 +91,7 @@ export function CaseStatusChart({
                 />
                 <Bar
                   dataKey="count"
-                  fill="#1D4ED8"
+                  fill="#0F6E56"
                   radius={[4, 4, 0, 0]}
                   maxBarSize={48}
                 />
