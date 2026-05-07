@@ -47,7 +47,16 @@ interface Props {
   companies: CompanyOption[];
 }
 
+// DB stores legacy palette names; UI renders friendlier labels.
 const COLOR_OPTS = ["cobalt", "mint", "amber", "critical", "ink"] as const;
+
+const COLOR_LABEL: Record<string, string> = {
+  cobalt: "Blue",
+  mint: "Green",
+  amber: "Amber",
+  critical: "Red",
+  ink: "Gray",
+};
 
 const COLOR_CHIP: Record<string, string> = {
   cobalt: "bg-status-info-bg text-status-info-fg border-status-info-fg/30",
@@ -294,7 +303,7 @@ export function TagsView({ initialTags, companies }: Props) {
                     <SelectContent>
                       {COLOR_OPTS.map((c) => (
                         <SelectItem key={c} value={c}>
-                          {c}
+                          {COLOR_LABEL[c] ?? c}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -413,7 +422,7 @@ export function TagsView({ initialTags, companies }: Props) {
               <SelectContent>
                 <SelectItem value="all">All companies</SelectItem>
                 {cadenceCompanies.map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                  <SelectItem key={c} value={c}>{COLOR_LABEL[c] ?? c}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -452,7 +461,7 @@ export function TagsView({ initialTags, companies }: Props) {
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {COLOR_OPTS.map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                        <SelectItem key={c} value={c}>{COLOR_LABEL[c] ?? c}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
