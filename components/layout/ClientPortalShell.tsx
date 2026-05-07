@@ -29,11 +29,13 @@ export function ClientPortalShell({
 
   return (
     <RoleContext.Provider value={{ role, setRole }}>
-      <div className="flex h-screen overflow-hidden" style={{ backgroundColor: "#172554" }}>
+      {/* Design Overhaul: kill the navy canvas. Light surface across the
+          client portal — pages render on the same surface tones as admin. */}
+      <div className="flex h-screen overflow-hidden bg-surface-canvas">
         <ClientSidebar companyName={companyName} role={role} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <TopBar companyName={companyName} />
-          <main className="flex-1 overflow-y-auto p-6" style={{ backgroundColor: "#172554" }}>
+          <ClientTopBar companyName={companyName} />
+          <main className="flex-1 overflow-y-auto bg-surface-canvas p-6">
             {children}
           </main>
         </div>
@@ -42,17 +44,20 @@ export function ClientPortalShell({
   );
 }
 
-function TopBar({ companyName }: { companyName: string }) {
+function ClientTopBar({ companyName }: { companyName: string }) {
   return (
-    <header
-      className="flex h-16 flex-shrink-0 items-center justify-between border-b px-6 lg:px-6"
-      style={{ backgroundColor: "#0F2040", borderColor: "#1E3A8A" }}
-    >
-      <h1 className="pl-10 lg:pl-0 text-base font-semibold text-white">
-        {companyName} — Client Portal
-      </h1>
+    <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border-subtle bg-surface-card px-6">
+      <div className="min-w-0">
+        <p className="eyebrow">{companyName} · client portal</p>
+        <p className="mt-0.5 truncate text-lg font-medium tracking-tight text-ink-primary">
+          Compliance dashboard
+        </p>
+      </div>
       <div className="flex items-center gap-3">
-        <span className="text-xs uppercase tracking-wider text-ink-400">Q1 2026</span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-status-info-bg px-2 py-0.5 text-2xs font-medium text-status-info-fg">
+          <span className="h-1.5 w-1.5 rounded-full bg-status-info-dot" />
+          Q1 2026
+        </span>
       </div>
     </header>
   );
