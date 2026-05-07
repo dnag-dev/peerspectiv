@@ -258,3 +258,102 @@
 **Expected Result:** "Returned by peer" chip is available in the status chip bar. When selected, cases with status `returned_by_peer` are shown. The chip follows the same multi-select toggle behavior as other status chips.
 
 ---
+
+
+## Client Portal — Forms Page
+
+### CLA-018 — Form names visible and clickable on client Forms page
+
+**Module:** Client Portal — Forms | **Priority:** High
+
+**Pre-conditions:** Company has active forms configured.
+
+**Steps:**
+1. Login as client.
+2. Navigate to Forms page.
+
+**Expected Result:** Form names are visible as blue clickable links (not invisible/white text). Table has white background with gray header. Columns: Form Name, Specialty, Questions, Status.
+
+---
+
+### CLA-019 — Client can view form detail (read-only)
+
+**Module:** Client Portal — Forms | **Priority:** High
+
+**Pre-conditions:** Forms exist for the client's company.
+
+**Steps:**
+1. Click a form name on the Forms list page.
+2. Observe the form detail page.
+
+**Expected Result:** Shows read-only table of all questions: #, Question text, Type (Yes/No/NA, A/B/C/NA, Text), Default Answer, Required (Yes/No). Back link to forms list. No edit, delete, or modify actions available. Form name and specialty shown in header.
+
+---
+
+### CLA-020A — Client form detail shows correct question count and types
+
+**Module:** Client Portal — Forms | **Priority:** Medium
+
+**Pre-conditions:** Form exists with mixed question types.
+
+**Steps:**
+1. Navigate to form detail page.
+2. Verify question count matches the Forms list page.
+3. Check question types display correctly.
+
+**Expected Result:** Question count matches. Types show as: "Yes / No / NA", "A / B / C / NA", "Text". Default answers show the configured value or "—" if none.
+
+---
+
+
+## Client Portal — Overdue Page
+
+### CLA-021A — Chart filenames clickable on client Overdue page
+
+**Module:** Client Portal — Overdue | **Priority:** Medium
+
+**Pre-conditions:** Past-due cases exist with uploaded chart files.
+
+**Steps:**
+1. Navigate to client Overdue page.
+2. Click a chart filename on a card.
+
+**Expected Result:** PDF opens in a new browser tab. Filename is blue with hover underline. Cards without file URLs show plain text.
+
+---
+
+
+## Returned by Peer — Client vs Admin Display
+
+### CLA-022 — Returned by peer shows neutral color on client pages
+
+**Module:** Client Portal — Reviews | **Priority:** Medium
+
+**Pre-conditions:** A case has been returned by a peer.
+
+**Steps:**
+1. As client, navigate to Reviews and filter by "Returned by peer".
+2. Observe the status badge color.
+
+**Expected Result:** Status badge shows in neutral gray/slate (not red). Client doesn't need to act on returned cases — that's the admin's responsibility.
+
+---
+
+
+## Client Reviews — Server-Side Filtering
+
+### CLA-023 — Client Reviews uses server-side filtering
+
+**Module:** Client Portal — Reviews | **Priority:** High
+
+**Pre-conditions:** Cases exist for the client's company.
+
+**Steps:**
+1. Login as client.
+2. Navigate to Reviews page.
+3. Type in Provider filter and press Enter or click outside.
+4. Toggle status chips.
+
+**Expected Result:** Filters trigger server-side queries (URL updates with params). Text inputs apply on blur/Enter (not as-you-type). Date pickers apply immediately. Scales to large datasets.
+
+---
