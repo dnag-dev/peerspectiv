@@ -649,15 +649,10 @@ export function NewBatchModal({
                 <h2 className="text-base font-medium text-ink-primary">New Batch</h2>
                 <p className="text-xs text-ink-secondary">
                   {(() => {
-                    const visibleSteps = [
-                      ...(!skipCompanyStep ? [1] : []),
-                      2,
-                      ...(!skipFormStep ? [3] : []),
-                      4,
-                      5,
-                    ];
-                    const displayStep = visibleSteps.indexOf(step) + 1;
-                    return `Step ${displayStep} of ${visibleSteps.length}`;
+                    // Stable step count — doesn't change mid-flow
+                    const totalSteps = skipCompanyStep ? 4 : 5;
+                    const displayStep = skipCompanyStep ? step - 1 : step;
+                    return `Step ${displayStep} of ${totalSteps}`;
                   })()}
                 </p>
               </div>
@@ -669,25 +664,16 @@ export function NewBatchModal({
               </button>
             </div>
 
-            {/* Progress bar */}
+            {/* Progress bar — stable count, skipped steps still fill */}
             <div className="flex gap-1 border-b bg-ink-50 px-5 py-2">
-              {(() => {
-                const visibleSteps = [
-                  ...(!skipCompanyStep ? [1] : []),
-                  2,
-                  ...(!skipFormStep ? [3] : []),
-                  4,
-                  5,
-                ];
-                return visibleSteps.map((n) => (
-                  <div
-                    key={n}
-                    className={`h-1 flex-1 rounded-full ${
-                      n <= step ? "bg-brand" : "bg-ink-200"
-                    }`}
-                  />
-                ));
-              })()}
+              {(skipCompanyStep ? [2, 3, 4, 5] : [1, 2, 3, 4, 5]).map((n) => (
+                <div
+                  key={n}
+                  className={`h-1 flex-1 rounded-full ${
+                    n <= step ? "bg-brand" : "bg-ink-200"
+                  }`}
+                />
+              ))}
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-5">
