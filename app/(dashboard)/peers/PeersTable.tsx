@@ -139,13 +139,15 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
     return Array.from(s).sort();
   }, [peers]);
 
-  const peerStatuses = useMemo(() => {
-    const s = new Set<string>();
-    for (const r of peers) {
-      s.add(r.state || 'pending_credentialing');
-    }
-    return Array.from(s).sort();
-  }, [peers]);
+  const ALL_PEER_STATUSES = [
+    { value: 'active', label: 'Active' },
+    { value: 'invited', label: 'Invited' },
+    { value: 'pending_admin_review', label: 'Pending Admin Review' },
+    { value: 'pending_credentialing', label: 'Pending Credentialing' },
+    { value: 'license_expired', label: 'License Expired' },
+    { value: 'suspended', label: 'Suspended' },
+    { value: 'archived', label: 'Archived' },
+  ];
 
   const filtered = useMemo(() => {
     const q = searchQ.trim().toLowerCase();
@@ -336,10 +338,10 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                {peerStatuses.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s.replace(/_/g, ' ')}
+                <SelectItem value="all">All Statuses</SelectItem>
+                {ALL_PEER_STATUSES.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
                   </SelectItem>
                 ))}
               </SelectContent>
