@@ -100,24 +100,30 @@ async function loadFormFields(
           ops_term?: string | null;
           default_answer?: "yes" | "no" | "A" | "B" | "C" | null;
           is_critical?: boolean;
-        }>).map((r, idx) => ({
+        }>).map((r, idx) => {
+          // Map form builder types to ReviewForm types:
+          // yes_no_na / abc_na → yes_no (with allowNa: true)
+          // yes_no / rating → yes_no
+          // text → text
+          const ft = r.field_type;
+          const isChoice = ft === "yes_no_na" || ft === "abc_na" || ft === "yes_no" || ft === "rating";
+          return {
           id: `${companyFormId}-${idx}`,
           fieldKey: r.field_key,
           fieldLabel: r.field_label,
-          fieldType: (["yes_no", "rating", "text"].includes(r.field_type)
-            ? r.field_type
-            : "text") as FormField["fieldType"],
+          fieldType: (isChoice ? "yes_no" : "text") as FormField["fieldType"],
           isRequired: !!r.is_required,
           displayOrder: r.display_order ?? idx,
           // Section C metadata — defaults applied on read.
-          allowNa: r.allow_na ?? false,
+          allowNa: r.allow_na ?? (ft === "yes_no_na" || ft === "abc_na"),
           defaultValue: r.default_value ?? null,
           requiredTextOnNonDefault: r.required_text_on_non_default ?? false,
           opsTerm: r.ops_term ?? null,
           // Phase 6.2 — per-question form-default fallback used when AI prefill is absent.
           defaultAnswer: r.default_answer ?? null,
           isCritical: r.is_critical ?? false,
-        }));
+        };
+        });
       }
     } catch {
       // fall through to legacy lookup
@@ -145,16 +151,19 @@ async function loadFormFields(
       is_required: boolean;
       display_order: number;
     }>;
-    return rows.map((r) => ({
-      id: r.id,
-      fieldKey: r.field_key,
-      fieldLabel: r.field_label,
-      fieldType: (["yes_no", "rating", "text"].includes(r.field_type)
-        ? r.field_type
-        : "text") as FormField["fieldType"],
-      isRequired: !!r.is_required,
-      displayOrder: r.display_order ?? 0,
-    }));
+    return rows.map((r) => {
+      const ft = r.field_type;
+      const isChoice = ft === "yes_no_na" || ft === "abc_na" || ft === "yes_no" || ft === "rating";
+      return {
+        id: r.id,
+        fieldKey: r.field_key,
+        fieldLabel: r.field_label,
+        fieldType: (isChoice ? "yes_no" : "text") as FormField["fieldType"],
+        isRequired: !!r.is_required,
+        displayOrder: r.display_order ?? 0,
+        allowNa: ft === "yes_no_na" || ft === "abc_na",
+      };
+    });
   } catch {
     return [];
   }
