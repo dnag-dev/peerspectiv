@@ -283,6 +283,7 @@ export default async function BatchDetailPage({
                         caseId={reviewCase.id}
                         status={reviewCase.status}
                         peerId={reviewCase.peer?.id ?? null}
+                        specialty={reviewCase.specialty_required ?? null}
                       />
                     </TableCell>
                   </TableRow>
