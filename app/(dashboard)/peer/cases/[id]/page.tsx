@@ -12,7 +12,6 @@ import {
 } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { PeerCaseSplit } from "@/components/peer/PeerCaseSplit";
-import { RequestReassignmentButton } from "@/components/peer/RequestReassignmentButton";
 import { ReturnCaseButton } from "@/components/peer/ReturnCaseButton";
 import { auth } from "@clerk/nextjs/server";
 import { unstable_noStore as noStore } from "next/cache";
@@ -450,16 +449,7 @@ export async function renderPeerCaseDetail(caseId: string) {
             </div>
             <div className="ml-auto flex items-center gap-2">
               {!existingResult && (
-                <>
-                  <ReturnCaseButton caseId={caseId} />
-                  <RequestReassignmentButton
-                    caseId={caseId}
-                    alreadyRequested={
-                      (reviewCase as unknown as { reassignmentRequested?: boolean })
-                        .reassignmentRequested === true
-                    }
-                  />
-                </>
+                <ReturnCaseButton caseId={caseId} />
               )}
               <span
                 className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${dueColorClass}`}
