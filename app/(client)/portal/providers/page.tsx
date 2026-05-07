@@ -73,7 +73,7 @@ export default async function ProvidersIndex({ searchParams }: PageProps) {
         <button
           type="submit"
           className="rounded-md px-4 py-2 text-sm font-medium text-ink-primary"
-          style={{ backgroundColor: "#2563EB" }}
+          style={{ backgroundColor: "#0F6E56" }}
         >
           Filter
         </button>

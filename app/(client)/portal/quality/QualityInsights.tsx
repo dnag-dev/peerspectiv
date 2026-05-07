@@ -13,7 +13,7 @@ const BORDER_COLORS: Record<Insight["type"], string> = {
   positive: "#22C55E",
   urgent: "#EF4444",
   warning: "#F59E0B",
-  info: "#2563EB",
+  info: "#0F6E56",
 };
 
 export function QualityInsights({
@@ -103,7 +103,7 @@ export function QualityInsights({
           className="rounded-lg p-5 border-l-[4px]"
           style={{
             backgroundColor: 'var(--color-card)',
-            borderLeftColor: BORDER_COLORS[insight.type] ?? "#2563EB",
+            borderLeftColor: BORDER_COLORS[insight.type] ?? "#0F6E56",
           }}
         >
           <div className="flex items-center gap-2 mb-2">

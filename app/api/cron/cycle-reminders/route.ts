@@ -125,8 +125,8 @@ export async function GET(request: NextRequest) {
 
   const upcomingHtml = upcoming.length
     ? `
-      <div style="background:#eff6ff;border-left:4px solid #2563eb;padding:16px;margin:16px 0;border-radius:4px;">
-        <h3 style="margin:0 0 8px 0;color:#1e3a8a;">Upcoming Cycles (${upcoming.length})</h3>
+      <div style="background:#eff6ff;border-left:4px solid #0F6E56;padding:16px;margin:16px 0;border-radius:4px;">
+        <h3 style="margin:0 0 8px 0;color:#085041;">Upcoming Cycles (${upcoming.length})</h3>
         <table style="width:100%;border-collapse:collapse;font-size:14px;">
           <tr style="color:#1e40af;"><th style="text-align:left;padding:4px 8px;">Company</th><th style="text-align:left;padding:4px 8px;">Due</th><th style="text-align:left;padding:4px 8px;">Days Out</th></tr>
           ${upcoming

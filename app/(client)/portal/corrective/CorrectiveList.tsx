@@ -161,7 +161,7 @@ export function CorrectiveList({ actions }: { actions: Action[] }) {
               step={5}
               value={a.progress}
               onChange={(e) => updateProgress(a.id, parseInt(e.target.value, 10))}
-              className="mt-2 w-full accent-[#2563EB]"
+              className="mt-2 w-full accent-[#0F6E56]"
             />
           </div>
         </div>

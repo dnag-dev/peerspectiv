@@ -172,7 +172,7 @@ export function ExportGrid({
           onClick={handleDownloadAll}
           disabled={bulkBusy}
           className="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-ink-primary disabled:opacity-50"
-          style={{ backgroundColor: "#2563EB" }}
+          style={{ backgroundColor: "#0F6E56" }}
         >
           {bulkBusy ? (
             <>
@@ -202,7 +202,7 @@ export function ExportGrid({
             {r.icon === "csv" ? (
               <FileSpreadsheet className="h-8 w-8" style={{ color: "#22C55E" }} />
             ) : (
-              <FileText className="h-8 w-8" style={{ color: "#2563EB" }} />
+              <FileText className="h-8 w-8" style={{ color: "#0F6E56" }} />
             )}
             <h3 className="text-sm font-medium text-ink-primary flex-1">{r.title}</h3>
           </div>
@@ -211,7 +211,7 @@ export function ExportGrid({
             onClick={() => handleDownload(r.key, r.title)}
             disabled={busy === r.key}
             className="mt-4 inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-ink-primary disabled:opacity-50"
-            style={{ backgroundColor: "#2563EB" }}
+            style={{ backgroundColor: "#0F6E56" }}
           >
             {busy === r.key ? (
               <>

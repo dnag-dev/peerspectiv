@@ -125,7 +125,7 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
           {company.status === 'prospect' && (
             <Button
               size="sm"
-              className="w-full bg-[#2563EB] text-white hover:bg-[#2558bb]"
+              className="w-full bg-[#0F6E56] text-white hover:bg-[#2558bb]"
               onClick={handleGenerateContract}
               disabled={loading}
             >

@@ -137,7 +137,7 @@ export default function FeedbackPage() {
                 onClick={() => setWouldRecommend('true')}
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition-colors ${
                   wouldRecommend === 'true'
-                    ? 'bg-[#2563EB] text-ink-primary'
+                    ? 'bg-[#0F6E56] text-ink-primary'
                     : 'bg-white/10 text-ink-tertiary hover:bg-white/20'
                 }`}
               >
@@ -148,7 +148,7 @@ export default function FeedbackPage() {
                 onClick={() => setWouldRecommend('false')}
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition-colors ${
                   wouldRecommend === 'false'
-                    ? 'bg-[#2563EB] text-ink-primary'
+                    ? 'bg-[#0F6E56] text-ink-primary'
                     : 'bg-white/10 text-ink-tertiary hover:bg-white/20'
                 }`}
               >
@@ -169,7 +169,7 @@ export default function FeedbackPage() {
               rows={4}
               value={openFeedback}
               onChange={(e) => setOpenFeedback(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-ink-primary placeholder-ink-500 focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+              className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-ink-primary placeholder-ink-500 focus:border-[#0F6E56] focus:outline-none focus:ring-1 focus:ring-[#0F6E56]"
               placeholder="Share your thoughts..."
             />
           </div>
@@ -179,7 +179,7 @@ export default function FeedbackPage() {
           type="submit"
           disabled={submitting}
           className="w-full rounded-lg py-3 text-sm font-medium text-ink-primary transition-colors disabled:opacity-50"
-          style={{ backgroundColor: '#2563EB' }}
+          style={{ backgroundColor: '#0F6E56' }}
         >
           {submitting ? 'Submitting...' : 'Submit Feedback'}
         </button>

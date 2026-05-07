@@ -109,7 +109,7 @@ export default async function ProviderDetailPage({
       >
         <div
           className="flex h-20 w-20 items-center justify-center rounded-full text-xl font-medium"
-          style={{ backgroundColor: "#2563EB" }}
+          style={{ backgroundColor: "#0F6E56" }}
         >
           {initials}
         </div>

@@ -35,9 +35,9 @@ export function ProviderCharts({
             <Line
               type="monotone"
               dataKey="score"
-              stroke="#2563EB"
+              stroke="#0F6E56"
               strokeWidth={2}
-              dot={{ fill: "#2563EB" }}
+              dot={{ fill: "#0F6E56" }}
             />
           </LineChart>
         </ResponsiveContainer>

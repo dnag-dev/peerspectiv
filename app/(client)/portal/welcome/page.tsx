@@ -135,7 +135,7 @@ export default function ClientWelcomePage() {
               style={{
                 fontSize: 14,
                 letterSpacing: 3,
-                color: '#2563EB',
+                color: '#0F6E56',
                 fontWeight: 600,
                 marginBottom: 8,
               }}
@@ -292,7 +292,7 @@ function ProgressDots({ current, total }: { current: number; total: number }) {
               flex: 1,
               height: 4,
               borderRadius: 2,
-              background: active || done ? '#2563EB' : 'rgba(255,255,255,0.08)',
+              background: active || done ? '#0F6E56' : 'rgba(255,255,255,0.08)',
               transition: 'background 180ms ease',
             }}
           />
@@ -353,7 +353,7 @@ function PrimaryButton(props: {
       onClick={props.onClick}
       disabled={props.disabled}
       style={{
-        background: '#2563EB',
+        background: '#0F6E56',
         color: 'white',
         padding: '12px 24px',
         borderRadius: 8,
@@ -407,7 +407,7 @@ function TimelineItem(props: { num: string; title: string; body: string }) {
           width: 32,
           height: 32,
           borderRadius: '50%',
-          background: '#2563EB',
+          background: '#0F6E56',
           color: 'white',
           display: 'grid',
           placeItems: 'center',

@@ -214,7 +214,7 @@ export function AddProspectModal({ stayOnPage = false }: AddProspectModalProps =
       }}
     >
       <DialogTrigger asChild>
-        <Button data-testid="add-prospect" className="bg-[#2563EB] text-white hover:bg-[#2558bb]">
+        <Button data-testid="add-prospect" className="bg-[#0F6E56] text-white hover:bg-[#2558bb]">
           <Plus className="mr-2 h-4 w-4" />
           Add New Company
         </Button>
@@ -458,7 +458,7 @@ export function AddProspectModal({ stayOnPage = false }: AddProspectModalProps =
             </Button>
             <Button
               type="submit"
-              className="bg-[#2563EB] text-white hover:bg-[#2558bb]"
+              className="bg-[#0F6E56] text-white hover:bg-[#2558bb]"
               disabled={loading}
             >
               {loading ? 'Creating…' : 'Create Company'}
