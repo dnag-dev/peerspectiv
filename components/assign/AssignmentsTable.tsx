@@ -206,6 +206,7 @@ export function AssignmentsTable({
             value={filters.peer}
             onChange={(e) => setFilters({ ...filters, peer: e.target.value })}
             onBlur={() => applyFilters(filters)}
+            onKeyDown={(e) => e.key === "Enter" && applyFilters(filters)}
             placeholder="Peer name"
             className="rounded-md border border-border-subtle bg-surface-card px-3 py-1.5 text-sm"
           />
@@ -213,6 +214,7 @@ export function AssignmentsTable({
             value={filters.company}
             onChange={(e) => setFilters({ ...filters, company: e.target.value })}
             onBlur={() => applyFilters(filters)}
+            onKeyDown={(e) => e.key === "Enter" && applyFilters(filters)}
             placeholder="Company"
             className="rounded-md border border-border-subtle bg-surface-card px-3 py-1.5 text-sm"
           />
@@ -220,6 +222,7 @@ export function AssignmentsTable({
             value={filters.specialty}
             onChange={(e) => setFilters({ ...filters, specialty: e.target.value })}
             onBlur={() => applyFilters(filters)}
+            onKeyDown={(e) => e.key === "Enter" && applyFilters(filters)}
             placeholder="Specialty"
             className="rounded-md border border-border-subtle bg-surface-card px-3 py-1.5 text-sm"
           />
@@ -227,6 +230,7 @@ export function AssignmentsTable({
             value={filters.cadence}
             onChange={(e) => setFilters({ ...filters, cadence: e.target.value })}
             onBlur={() => applyFilters(filters)}
+            onKeyDown={(e) => e.key === "Enter" && applyFilters(filters)}
             placeholder="Cadence (e.g. Q4 2025)"
             className="rounded-md border border-border-subtle bg-surface-card px-3 py-1.5 text-sm"
           />
