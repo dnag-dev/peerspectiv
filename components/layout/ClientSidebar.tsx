@@ -19,6 +19,7 @@ import {
   Folder,
   FileText,
   User as UserIcon,
+  FolderOpen,
 } from "lucide-react";
 import { useClerkSession } from "./useClerkSession";
 import { SidebarShell, type SidebarNavItem, type SidebarRole } from "./Sidebar";
@@ -27,8 +28,7 @@ export type ClientRole = "cmo" | "quality" | "operations";
 
 const NAV: SidebarNavItem[] = [
   { label: "Dashboard",          href: "/portal",            icon: LayoutDashboard,  group: "Overview" },
-  { label: "Submit Records",     href: "/portal/upload",     icon: UploadCloud,      group: "Overview" },
-  { label: "My Files",           href: "/portal/files",      icon: Folder,           group: "Overview" },
+  { label: "Batches",            href: "/portal/batches",    icon: FolderOpen,       group: "Overview" },
   { label: "Reviews",             href: "/portal/reviews",    icon: ClipboardList,    group: "Reviews" },
   { label: "Trends",             href: "/portal/trends",     icon: TrendingUp,       group: "Analytics" },
   { label: "Quality Reports",    href: "/portal/quality",    icon: FileBarChart,     group: "Analytics" },
