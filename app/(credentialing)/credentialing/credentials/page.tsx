@@ -12,8 +12,8 @@ export default async function CredentialingCredentialsPage() {
       fullName: peers.fullName,
       email: peers.email,
       // Phase 1.3: pull from peer_specialties join. specialty = first element for back-compat.
-      specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty), '{}'::text[])`,
-      specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
+      specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = peers.id order by specialty), '{}'::text[])`,
+      specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = peers.id order by specialty limit 1)`,
       credentialValidUntil: peers.credentialValidUntil,
       status: peers.status,
       licenseNumber: peers.licenseNumber,

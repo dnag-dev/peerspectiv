@@ -168,7 +168,7 @@ export async function GET(request: NextRequest) {
             and(
               eq(peers.status, 'active'),
               eq(peers.availabilityStatus, 'available'),
-              sql`exists (select 1 from peer_specialties ps where ps.peer_id = ${peers.id} and ps.specialty = ${specialty})`
+              sql`exists (select 1 from peer_specialties ps where ps.peer_id = peers.id and ps.specialty = ${specialty})`
             )
           );
         const eligible = candidates

@@ -10,7 +10,7 @@ export async function GET() {
       .select({
         id: peers.id,
         full_name: peers.fullName,
-        specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
+        specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = peers.id order by specialty limit 1)`,
         total_reviews_completed: peers.totalReviewsCompleted,
         ai_agreement_score: peers.aiAgreementScore,
         status: peers.status,

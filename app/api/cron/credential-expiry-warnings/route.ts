@@ -37,8 +37,8 @@ export async function GET(request: NextRequest) {
         id: peers.id,
         fullName: peers.fullName,
         email: peers.email,
-        specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty), '{}'::text[])`,
-        specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
+        specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = peers.id order by specialty), '{}'::text[])`,
+        specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = peers.id order by specialty limit 1)`,
         credentialValidUntil: peers.credentialValidUntil,
       })
       .from(peers)

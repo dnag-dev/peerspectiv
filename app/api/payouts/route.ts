@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       .select({
         id: peers.id,
         full_name: peers.fullName,
-        specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
+        specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = peers.id order by specialty limit 1)`,
         rate_type: peers.rateType,
         rate_amount: peers.rateAmount,
         status: peers.status,

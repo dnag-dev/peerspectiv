@@ -76,8 +76,8 @@ export async function suggestAssignments(batchId: string): Promise<AssignmentRes
     .select({
       id: peers.id,
       full_name: peers.fullName,
-      specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
-      specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty), '{}'::text[])`,
+      specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = peers.id order by specialty limit 1)`,
+      specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = peers.id order by specialty), '{}'::text[])`,
       active_cases_count: peers.activeCasesCount,
       max_case_load: peers.maxCaseLoad,
       avg_minutes_per_chart: peers.avgMinutesPerChart,

@@ -13,14 +13,14 @@ export async function GET(request: NextRequest) {
   // Phase 4 (CR-006): only status='active' peers are eligible for assignment.
   const conditions = [eq(peers.status, 'active')];
   // Phase 1.3: filter via peer_specialties join (replaces dropped peers.specialty col)
-  if (specialty) conditions.push(sql`exists (select 1 from peer_specialties where peer_id = ${peers.id} and specialty = ${specialty})`);
+  if (specialty) conditions.push(sql`exists (select 1 from peer_specialties where peer_id = peers.id and specialty = ${specialty})`);
 
   const rows = await db
     .select({
       id: peers.id,
       fullName: peers.fullName,
       email: peers.email,
-      specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = ${peers.id} order by specialty limit 1)`,
+      specialty: sql<string | null>`(select specialty from peer_specialties where peer_id = peers.id order by specialty limit 1)`,
       boardCertification: peers.boardCertification,
       activeCasesCount: peers.activeCasesCount,
       totalReviewsCompleted: peers.totalReviewsCompleted,
