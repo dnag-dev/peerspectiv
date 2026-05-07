@@ -15,21 +15,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Company name is required" }, { status: 400 });
     }
 
-    const [row] = await db
-      .insert(companies)
-      .values({
-        name: name.trim(),
-        contactPerson: contact_person || null,
-        contactEmail: contact_email || null,
-        contactPhone: contact_phone || null,
-        perReviewRate: per_review_rate != null ? String(per_review_rate) : null,
-        notes: notes || null,
-        status: status || "lead",
-        cadencePeriodType: cadence_period_type || "quarterly",
-        fiscalYearStartMonth: fiscal_year_start_month != null ? Number(fiscal_year_start_month) : 1,
-        cadencePeriodMonths: cadence_period_months != null ? Number(cadence_period_months) : null,
-      })
-      .returning();
+    let row;
+    try {
+      [row] = await db
+        .insert(companies)
+        .values({
+          name: name.trim(),
+          contactPerson: contact_person || null,
+          contactEmail: contact_email || null,
+          contactPhone: contact_phone || null,
+          perReviewRate: per_review_rate != null ? String(per_review_rate) : null,
+          notes: notes || null,
+          status: status || "lead",
+          cadencePeriodType: cadence_period_type || "quarterly",
+          fiscalYearStartMonth: fiscal_year_start_month != null ? Number(fiscal_year_start_month) : 1,
+          cadencePeriodMonths: cadence_period_months != null ? Number(cadence_period_months) : null,
+        })
+        .returning();
+    } catch (err: any) {
+      if (err?.code === '23505' || err?.message?.includes('unique')) {
+        return NextResponse.json(
+          { error: `A company named "${name.trim()}" already exists.` },
+          { status: 409 }
+        );
+      }
+      throw err;
+    }
 
     return NextResponse.json(toSnake(row), { status: 201 });
   } catch {

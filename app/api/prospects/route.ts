@@ -128,28 +128,39 @@ export async function POST(req: NextRequest) {
       ? null
       : Number(annualReviewCount);
 
-  const [created] = await db
-    .insert(companies)
-    .values({
-      name: name.trim(),
-      contactPerson: contactPerson || null,
-      contactEmail: contactEmail || null,
-      contactPhone: contactPhone || null,
-      address: address || null,
-      city: city || null,
-      state: state || null,
-      prospectSource: prospectSource || null,
-      annualReviewCount: Number.isFinite(parsedReviewCount) ? parsedReviewCount : null,
-      reviewCycle: reviewCycle || null,
-      onboardingNotes: onboardingNotes || null,
-      status: requestedStatus || 'lead',
-      createdBy: userId,
-      perReviewRate: perReviewRate != null ? String(perReviewRate) : null,
-      cadencePeriodType: cadencePeriodType || 'quarterly',
-      fiscalYearStartMonth: fiscalYearStartMonth != null ? Number(fiscalYearStartMonth) : 1,
-      cadencePeriodMonths: cadencePeriodMonths != null ? Number(cadencePeriodMonths) : null,
-    })
-    .returning();
+  let created;
+  try {
+    [created] = await db
+      .insert(companies)
+      .values({
+        name: name.trim(),
+        contactPerson: contactPerson || null,
+        contactEmail: contactEmail || null,
+        contactPhone: contactPhone || null,
+        address: address || null,
+        city: city || null,
+        state: state || null,
+        prospectSource: prospectSource || null,
+        annualReviewCount: Number.isFinite(parsedReviewCount) ? parsedReviewCount : null,
+        reviewCycle: reviewCycle || null,
+        onboardingNotes: onboardingNotes || null,
+        status: requestedStatus || 'lead',
+        createdBy: userId,
+        perReviewRate: perReviewRate != null ? String(perReviewRate) : null,
+        cadencePeriodType: cadencePeriodType || 'quarterly',
+        fiscalYearStartMonth: fiscalYearStartMonth != null ? Number(fiscalYearStartMonth) : 1,
+        cadencePeriodMonths: cadencePeriodMonths != null ? Number(cadencePeriodMonths) : null,
+      })
+      .returning();
+  } catch (err: any) {
+    if (err?.code === '23505' || err?.message?.includes('unique')) {
+      return NextResponse.json(
+        { error: `A company named "${name.trim()}" already exists.` },
+        { status: 409 }
+      );
+    }
+    throw err;
+  }
 
   try {
     await db.insert(auditLogs).values({
