@@ -42,7 +42,7 @@ async function loadRows(sp: SearchParams): Promise<AssignmentRow[]> {
   if (sp.peer) conditions.push(ilike(peers.fullName, `%${sp.peer}%`));
   if (sp.company) conditions.push(ilike(companies.name, `%${sp.company}%`));
   if (sp.specialty) conditions.push(ilike(reviewCases.specialtyRequired, `%${sp.specialty}%`));
-  if (sp.cadence) conditions.push(eq(reviewCases.cadencePeriodLabel, sp.cadence));
+  if (sp.cadence) conditions.push(ilike(reviewCases.cadencePeriodLabel, `%${sp.cadence}%`));
   if (sp.dateFrom) {
     conditions.push(gte(reviewCases.createdAt, new Date(`${sp.dateFrom}T00:00:00Z`)));
   }

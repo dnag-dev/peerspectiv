@@ -227,7 +227,7 @@ export function AssignmentsTable({
             value={filters.cadence}
             onChange={(e) => setFilters({ ...filters, cadence: e.target.value })}
             onBlur={() => applyFilters(filters)}
-            placeholder="Cadence period (e.g. 2026-Q1)"
+            placeholder="Cadence (e.g. Q4 2025)"
             className="rounded-md border border-border-subtle bg-surface-card px-3 py-1.5 text-sm"
           />
           <input
