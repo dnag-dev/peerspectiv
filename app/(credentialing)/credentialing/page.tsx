@@ -99,19 +99,21 @@ export default async function CredentialingDashboard() {
   const buckets = [
     {
       key: 'new',
-      title: 'Newly Added',
+      title: 'Newly added',
       description: 'Pending credentialing — license document not yet uploaded.',
       icon: UserPlus,
       count: Number(newlyAdded?.n ?? 0),
-      tone: 'bg-cobalt-50 border-cobalt-200 text-cobalt-900',
+      dot: 'bg-status-info-dot',
+      iconClass: 'text-status-info-dot',
     },
     {
       key: 'expiring',
-      title: 'Expiring Soon',
+      title: 'Expiring soon',
       description: 'Active peers whose license expires in the next 14 days.',
       icon: Clock3,
       count: Number(expiringSoon?.n ?? 0),
-      tone: 'bg-amber-50 border-amber-200 text-amber-900',
+      dot: 'bg-status-warning-dot',
+      iconClass: 'text-status-warning-dot',
     },
     {
       key: 'expired',
@@ -119,34 +121,38 @@ export default async function CredentialingDashboard() {
       description: 'License past expiry — peer cannot accept new assignments.',
       icon: AlertOctagon,
       count: Number(expired?.n ?? 0),
-      tone: 'bg-rose-50 border-rose-200 text-rose-900',
+      dot: 'bg-status-danger-dot',
+      iconClass: 'text-status-danger-dot',
     },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink-900">Credentialing Dashboard</h1>
-        <p className="text-sm text-ink-500">
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Credentialing dashboard</h1>
+        <p className="text-sm text-ink-secondary">
           Triage peer license status. Click a bucket to drill into matching peers.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3">
         {buckets.map((b) => (
           <Link
             key={b.key}
             href={`/credentialing/peers?bucket=${b.key}`}
-            className={`rounded-lg border p-5 transition hover:shadow-sm ${b.tone}`}
+            className="rounded-md border border-border-subtle bg-surface-card p-4 transition hover:shadow-sm"
           >
             <div className="flex items-start justify-between">
-              <div>
-                <div className="text-sm font-medium opacity-80">{b.title}</div>
-                <div className="mt-2 text-4xl font-semibold">{b.count}</div>
+              <div className="min-w-0">
+                <div className="mb-1.5 flex items-center gap-1.5">
+                  <span className={`h-1.5 w-1.5 rounded-full ${b.dot}`} />
+                  <span className="eyebrow">{b.title}</span>
+                </div>
+                <div className="display-number">{b.count}</div>
               </div>
-              <b.icon className="h-6 w-6 opacity-70" />
+              <b.icon className={`h-5 w-5 ${b.iconClass}`} />
             </div>
-            <p className="mt-3 text-xs opacity-80">{b.description}</p>
+            <p className="mt-3 text-xs text-ink-secondary">{b.description}</p>
           </Link>
         ))}
       </div>

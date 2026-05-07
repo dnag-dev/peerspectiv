@@ -15,28 +15,28 @@ const DEMO_USERS = [
     label: 'Continue as Admin (Ashton)',
     email: 'admin@peerspectiv.com',
     blurb: 'Full access — pipeline, batches, peers, finance.',
-    accent: '#2563EB',
+    accent: '#1D9E75',
   },
   {
     role: 'client' as const,
     label: 'Continue as Client CMO (Kelli)',
     email: 'kelli@horizonhealth.org',
     blurb: 'Hunter Health portal — compliance, providers, reports.',
-    accent: '#22C55E',
+    accent: '#534AB7',
   },
   {
     role: 'peer' as const,
     label: 'Continue as Peer (Dr. Johnson)',
     email: 'rjohnson@peerspectiv.com',
     blurb: 'Peer queue + AI-prefilled split-screen review.',
-    accent: '#F59E0B',
+    accent: '#185FA5',
   },
   {
     role: 'credentialer' as const,
     label: 'Continue as Credentialing (Renée)',
     email: 'credentialing@peerspectiv.com',
     blurb: 'Credentials + new-peer inbox. Scoped, no admin access.',
-    accent: '#A855F7',
+    accent: '#BA7517',
   },
 ];
 
@@ -77,7 +77,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#0F2044' }}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-surface-sidebar">
       <div className="text-center w-full max-w-md">
         <div className="flex justify-center mb-4">
           <div className="rounded-lg bg-white px-6 py-4 shadow-lg">
@@ -95,9 +95,9 @@ export default function LoginPage() {
 
         {showDemo ? (
           <div className="bg-white rounded-xl shadow-xl p-8">
-            <div className="mb-5 flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold uppercase">
-              <span className="w-2 h-2 bg-amber-600 rounded-full animate-pulse" />
-              Demo Mode — Pick a Persona
+            <div className="mb-5 inline-flex items-center justify-center gap-1.5 rounded-full bg-status-warning-bg px-2 py-0.5 text-2xs font-medium text-status-warning-fg">
+              <span className="h-1.5 w-1.5 rounded-full bg-status-warning-dot" />
+              Demo mode — pick a persona
             </div>
             <div className="space-y-3 text-left">
               {DEMO_USERS.map((u) => (
