@@ -68,10 +68,10 @@ export function BatchActions({ batchId, hasUnassigned, hasPendingApproval }: Bat
         <Button
           onClick={() => setAiDialogOpen(true)}
           disabled={!hasUnassigned}
-          title={hasUnassigned ? "Run AI assignment suggestions" : "No unassigned cases"}
+          title={hasUnassigned ? "Run AI assignment suggestions" : "All cases already assigned or pending approval"}
         >
           <Sparkles className="mr-2 h-4 w-4" />
-          Run AI Assignment
+          {hasUnassigned ? "Run AI Assignment" : "All Assigned"}
         </Button>
       </div>
 
