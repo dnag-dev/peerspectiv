@@ -47,16 +47,6 @@ interface FormRow {
   avgDurationMin?: number | null;
 }
 
-const SCORING_LABEL: Record<string, string> = {
-  yes_no_na: "Yes / No / NA",
-  abc_na: "A / B / C / NA",
-  pass_fail: "Pass / Fail",
-};
-const SCORING_CHIP: Record<string, string> = {
-  yes_no_na: "bg-status-info-bg text-status-info-fg border-status-info-fg/30",
-  abc_na: "bg-amber-50 text-status-warning-fg border-status-warning-fg/30",
-  pass_fail: "bg-mint-50 text-status-success-fg border-status-success-fg/30",
-};
 
 interface Props {
   forms: FormRow[];
@@ -384,7 +374,6 @@ export function FormsView({ forms, companies }: Props) {
                 <SortHead label="Fields" k="fieldCount" align="right" />
                 <th className="px-4 py-3 text-right">Responses</th>
                 <th className="px-4 py-3 text-right">Avg Duration</th>
-                <th className="px-4 py-3 text-left">Scoring</th>
                 <th className="px-4 py-3 text-left">Template</th>
                 <SortHead label="Status" k="isActive" />
                 <th className="px-4 py-3 text-right">Actions</th>
@@ -393,7 +382,7 @@ export function FormsView({ forms, companies }: Props) {
             <tbody>
               {visible.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-ink-secondary">
+                  <td colSpan={9} className="px-4 py-12 text-center text-ink-secondary">
                     {forms.length === 0 ? (
                       <>No forms yet. Click <strong>New Form</strong> to build one.</>
                     ) : (
@@ -413,19 +402,6 @@ export function FormsView({ forms, companies }: Props) {
                     <td className="px-4 py-3 text-right text-ink-secondary">{f.responseCount ?? 0}</td>
                     <td className="px-4 py-3 text-right text-ink-secondary">
                       {f.avgDurationMin != null ? `${f.avgDurationMin}m` : "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      {(() => {
-                        const sk = f.scoringSystem ?? "yes_no_na";
-                        const cls = SCORING_CHIP[sk] ?? SCORING_CHIP.yes_no_na;
-                        return (
-                          <span
-                            className={`inline-flex rounded border px-2 py-0.5 text-xs font-medium ${cls}`}
-                          >
-                            {SCORING_LABEL[sk] ?? sk}
-                          </span>
-                        );
-                      })()}
                     </td>
                     <td className="px-4 py-3">
                       {f.templatePdfUrl ? (
