@@ -6,6 +6,7 @@ import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from "reac
 const STORAGE_KEY = "peerspectiv.reviewer.caseSplitLayout";
 import { FileText, Sparkles, ExternalLink, GripVertical } from "lucide-react";
 import { ReviewForm } from "@/components/peer/ReviewForm";
+import { ReviewAnswersTable } from "@/components/peer/ReviewAnswersTable";
 
 interface RiskFlag {
   label: string;
@@ -33,11 +34,26 @@ interface AiPrefill {
   pageReference?: string;
 }
 
+interface ReviewQuestionRow {
+  field_label: string;
+  default_answer: string | null;
+  peer_answer: string | null;
+  score: 100 | 0 | null;
+  excluded: boolean;
+  comment?: string | null;
+}
+
 interface ExistingResult {
+  id?: string;
   submittedAt: string | Date | null;
-  // numeric(5,2) — drizzle returns string from postgres; consumers Number() it.
   overallScore: number | string | null;
   narrativeFinal: string | null;
+  questions?: ReviewQuestionRow[];
+  totalMeasuresMetPct?: number | null;
+  numerator?: number;
+  denominator?: number;
+  peerNameSnapshot?: string | null;
+  mrnNumber?: string | null;
 }
 
 interface PeerLicense {
@@ -342,43 +358,55 @@ export function PeerCaseSplit({
           <div className="h-full overflow-y-auto rounded-xl">
             {existingResult ? (
               <div className="space-y-4">
-                <div className="rounded-xl border border-status-success-fg/30 bg-mint-50 p-6 text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-mint-100">
-                    <svg className="h-6 w-6 text-status-success-fg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <div className="rounded-xl border border-status-success-fg/30 bg-mint-50 p-5 text-center">
+                  <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-mint-100">
+                    <svg className="h-5 w-5 text-status-success-fg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                   </div>
-                  <h2 className="text-h2 text-ink-primary">Review Submitted</h2>
-                  <p className="mt-1 text-small text-ink-secondary">
+                  <h2 className="text-lg font-medium text-ink-primary">Review Submitted</h2>
+                  <p className="mt-0.5 text-xs text-ink-secondary">
                     {existingResult.submittedAt
                       ? `Submitted ${new Date(existingResult.submittedAt).toLocaleString()}`
                       : "This case has already been reviewed."}
                   </p>
                 </div>
-                {(existingResult.overallScore != null || existingResult.narrativeFinal) && (
-                  <div className="rounded-xl border border-border-subtle bg-surface-card p-5">
-                    {existingResult.overallScore != null && (
-                      <div
-                        className="mb-3"
-                        title="Yes/No score = (yes − no) ÷ (yes + no), N/A excluded"
-                      >
-                        <div className="text-eyebrow text-ink-secondary">Overall Score</div>
-                        <div className="mt-1 text-h1 text-ink-primary">
-                          {existingResult.overallScore}
-                          <span className="ml-1 text-small text-ink-tertiary">/ 100</span>
+
+                {/* Full review answers table */}
+                {existingResult.questions && existingResult.questions.length > 0 ? (
+                  <ReviewAnswersTable
+                    questions={existingResult.questions}
+                    totalMeasuresMetPct={existingResult.totalMeasuresMetPct ?? null}
+                    numerator={existingResult.numerator ?? 0}
+                    denominator={existingResult.denominator ?? 0}
+                    generalComments={existingResult.narrativeFinal}
+                    resultId={existingResult.id}
+                  />
+                ) : (
+                  /* Fallback for legacy results without question data */
+                  (existingResult.overallScore != null || existingResult.narrativeFinal) && (
+                    <div className="rounded-xl border border-border-subtle bg-surface-card p-5">
+                      {existingResult.overallScore != null && (
+                        <div className="mb-3">
+                          <div className="text-eyebrow text-ink-secondary">Overall Score</div>
+                          <div className="mt-1 text-h1 text-ink-primary">
+                            {existingResult.overallScore}
+                            <span className="ml-1 text-small text-ink-tertiary">/ 100</span>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {existingResult.narrativeFinal && (
-                      <div>
-                        <div className="text-eyebrow text-ink-secondary">Peer Narrative</div>
-                        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-ink-primary">
-                          {existingResult.narrativeFinal}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                      {existingResult.narrativeFinal && (
+                        <div>
+                          <div className="text-eyebrow text-ink-secondary">Peer Narrative</div>
+                          <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-ink-primary">
+                            {existingResult.narrativeFinal}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )
                 )}
+
                 <a href="/peer/portal" className="btn-secondary block text-center">
                   Back to My Queue
                 </a>

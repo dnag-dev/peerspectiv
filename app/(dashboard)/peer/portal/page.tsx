@@ -50,6 +50,7 @@ export default async function PeerPortalPage({
         peer: true,
         company: true,
         aiAnalysis: true,
+        reviewResult: true,
       },
     });
     cases = rows.map((r) => {

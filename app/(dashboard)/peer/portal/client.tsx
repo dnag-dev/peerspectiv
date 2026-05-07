@@ -411,6 +411,19 @@ export function PeerPortalClient({
                     : anyInProgress ? "In progress"
                     : "Assigned"}
                 </StatusPill>
+                {c.status === "completed" && c.review_result?.overall_score != null && (
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      Number(c.review_result.overall_score) >= 80
+                        ? "bg-mint-100 text-status-success-fg"
+                        : Number(c.review_result.overall_score) >= 50
+                          ? "bg-amber-100 text-status-warning-fg"
+                          : "bg-critical-100 text-status-danger-fg"
+                    }`}
+                  >
+                    {Math.round(Number(c.review_result.overall_score))}%
+                  </span>
+                )}
                 {anyAiReady && c.status !== "completed" && (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EEEDFE] px-2 py-0.5 text-2xs font-medium text-[#3C3489]">
                     AI ready

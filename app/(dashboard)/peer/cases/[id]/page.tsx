@@ -13,6 +13,7 @@ import {
 import { eq, sql } from "drizzle-orm";
 import { PeerCaseSplit } from "@/components/peer/PeerCaseSplit";
 import { ReturnCaseButton } from "@/components/peer/ReturnCaseButton";
+import { buildQuestionsFromResult } from "@/lib/reports/types/per-provider-review-answers";
 import { auth } from "@clerk/nextjs/server";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -474,11 +475,32 @@ export async function renderPeerCaseDetail(caseId: string) {
           aiPrefills={aiPrefills}
           existingResult={
             existingResult
-              ? {
-                  submittedAt: existingResult.submittedAt,
-                  overallScore: existingResult.overallScore,
-                  narrativeFinal: existingResult.narrativeFinal,
-                }
+              ? await (async () => {
+                  // Build per-question answers for the completed review view
+                  let rawFormFields: unknown = null;
+                  if (companyFormId) {
+                    const [ff] = await db
+                      .select({ formFields: companyForms.formFields })
+                      .from(companyForms)
+                      .where(eq(companyForms.id, companyFormId))
+                      .limit(1);
+                    rawFormFields = ff?.formFields;
+                  }
+                  const qs = buildQuestionsFromResult(
+                    rawFormFields,
+                    existingResult.scoringBreakdown,
+                    existingResult.criteriaScores,
+                  );
+                  return {
+                    id: existingResult.id,
+                    submittedAt: existingResult.submittedAt,
+                    overallScore: existingResult.overallScore,
+                    narrativeFinal: existingResult.narrativeFinal,
+                    peerNameSnapshot: existingResult.peerNameSnapshot ?? null,
+                    mrnNumber: existingResult.mrnNumber ?? null,
+                    ...qs,
+                  };
+                })()
               : null
           }
           peerLicense={peerLicense}

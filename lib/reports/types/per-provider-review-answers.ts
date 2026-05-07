@@ -109,6 +109,104 @@ function asCriteria(raw: unknown): CriterionItem[] {
     .filter((x) => x.criterion);
 }
 
+/** Reusable question row type — shared between PDF generation and inline HTML view. */
+export type QuestionRow = PerProviderReviewAnswersData['questions'][number];
+
+export interface QuestionsSummary {
+  questions: QuestionRow[];
+  totalMeasuresMetPct: number | null;
+  numerator: number;
+  denominator: number;
+}
+
+/**
+ * Build the per-question answers + roll-up score from raw form fields and
+ * review result data. Used by both the PDF generator and the inline completed
+ * review view in the peer portal.
+ */
+export function buildQuestionsFromResult(
+  rawFormFields: unknown,
+  scoringBreakdown: unknown,
+  criteriaScores: unknown,
+): QuestionsSummary {
+  const fields = asFormFields(rawFormFields);
+  const breakdown = asBreakdown(scoringBreakdown);
+  const criteria = asCriteria(criteriaScores);
+  const criteriaByKey = new Map(criteria.map((c) => [c.criterion, c] as const));
+
+  const breakdownByKey = breakdown
+    ? new Map(breakdown.map((b) => [b.field_key, b] as const))
+    : null;
+
+  const questions: QuestionRow[] = (
+    fields.length > 0
+      ? fields
+      : criteria.map<FormField>((c) => ({
+          field_key: c.criterion,
+          field_label: c.criterion,
+          field_type: 'yes_no_na',
+          default_answer: 'yes',
+        }))
+  ).map((f) => {
+    const b = breakdownByKey?.get(f.field_key) ?? null;
+    const c = criteriaByKey.get(f.field_key);
+    let excluded = false;
+    let score: 100 | 0 | null = 0;
+    let peerAnswer: string | null = null;
+
+    if (b) {
+      excluded = b.excluded;
+      score = excluded ? null : b.score_pct === 100 ? 100 : 0;
+      peerAnswer =
+        b.raw_value == null
+          ? null
+          : typeof b.raw_value === 'string'
+          ? b.raw_value
+          : String(b.raw_value);
+      if (!peerAnswer && b.normalized_value) {
+        peerAnswer =
+          b.normalized_value === 'default'
+            ? f.default_answer ?? 'default'
+            : b.normalized_value === 'na'
+            ? 'NA'
+            : '';
+      }
+    } else if (c) {
+      excluded = f.field_type === 'text' || f.field_type === 'rating';
+      if (!excluded) {
+        score = c.score >= 4 ? 100 : 0;
+      } else {
+        score = null;
+      }
+      peerAnswer = c.score_label ?? (c.score >= 4 ? f.default_answer ?? 'yes' : 'no');
+    } else {
+      excluded = f.field_type === 'text' || f.field_type === 'rating';
+      score = excluded ? null : 0;
+    }
+
+    return {
+      field_label: f.field_label,
+      default_answer: f.default_answer,
+      peer_answer: peerAnswer,
+      score,
+      excluded,
+      comment: c?.rationale ?? null,
+    };
+  });
+
+  let numerator = 0;
+  let denominator = 0;
+  for (const q of questions) {
+    if (q.excluded) continue;
+    denominator += 1;
+    if (q.score === 100) numerator += 1;
+  }
+  const totalMeasuresMetPct =
+    denominator === 0 ? null : Math.round((numerator / denominator) * 10000) / 100;
+
+  return { questions, totalMeasuresMetPct, numerator, denominator };
+}
+
 export interface GenerateInput {
   resultId: string;
 }
@@ -146,88 +244,8 @@ export async function generate(input: GenerateInput): Promise<Buffer> {
   const row = rows[0];
   if (!row) throw new Error(`Review result not found: ${input.resultId}`);
 
-  const fields = asFormFields(row.form_fields);
-  const breakdown = asBreakdown(row.scoring_breakdown);
-  const criteria = asCriteria(row.criteria_scores);
-  const criteriaByKey = new Map(criteria.map((c) => [c.criterion, c] as const));
-
-  // Build per-question rows. Prefer breakdown for per-question score/excluded
-  // (it's the engine's authoritative output), fall back to criteria_scores.
-  const breakdownByKey = breakdown
-    ? new Map(breakdown.map((b) => [b.field_key, b] as const))
-    : null;
-
-  const questions: PerProviderReviewAnswersData['questions'] = (
-    fields.length > 0
-      ? fields
-      : // Legacy path: no form attached. Synthesize from criteria_scores.
-        criteria.map<FormField>((c) => ({
-          field_key: c.criterion,
-          field_label: c.criterion,
-          field_type: 'yes_no_na',
-          default_answer: 'yes',
-        }))
-  ).map((f) => {
-    const b = breakdownByKey?.get(f.field_key) ?? null;
-    const c = criteriaByKey.get(f.field_key);
-    let excluded = false;
-    let score: 100 | 0 | null = 0;
-    let peerAnswer: string | null = null;
-
-    if (b) {
-      excluded = b.excluded;
-      score = excluded ? null : b.score_pct === 100 ? 100 : 0;
-      peerAnswer =
-        b.raw_value == null
-          ? null
-          : typeof b.raw_value === 'string'
-          ? b.raw_value
-          : String(b.raw_value);
-      if (!peerAnswer && b.normalized_value) {
-        peerAnswer =
-          b.normalized_value === 'default'
-            ? f.default_answer ?? 'default'
-            : b.normalized_value === 'na'
-            ? 'NA'
-            : '';
-      }
-    } else if (c) {
-      // criteria_scores: 4 = default-match, 0 = non-default, in-between = partial
-      excluded = f.field_type === 'text' || f.field_type === 'rating';
-      if (!excluded) {
-        score = c.score >= 4 ? 100 : 0;
-      } else {
-        score = null;
-      }
-      peerAnswer = c.score_label ?? (c.score >= 4 ? f.default_answer ?? 'yes' : 'no');
-    } else {
-      // Question wasn't answered (or excluded narrative).
-      excluded = f.field_type === 'text' || f.field_type === 'rating';
-      score = excluded ? null : 0;
-    }
-
-    return {
-      field_label: f.field_label,
-      default_answer: f.default_answer,
-      peer_answer: peerAnswer,
-      score,
-      excluded,
-      comment: c?.rationale ?? null,
-    };
-  });
-
-  // Compute roll-up directly from per-question scores so the % matches the
-  // engine's logic exactly (numerator = #score===100 non-excluded;
-  // denominator = #non-excluded).
-  let numerator = 0;
-  let denominator = 0;
-  for (const q of questions) {
-    if (q.excluded) continue;
-    denominator += 1;
-    if (q.score === 100) numerator += 1;
-  }
-  const totalMeasuresMetPct =
-    denominator === 0 ? null : Math.round((numerator / denominator) * 10000) / 100;
+  const { questions, totalMeasuresMetPct, numerator, denominator } =
+    buildQuestionsFromResult(row.form_fields, row.scoring_breakdown, row.criteria_scores);
 
   const providerName =
     [row.provider_first, row.provider_last].filter(Boolean).join(' ').trim() || 'Unknown provider';
