@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Search } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -49,8 +51,21 @@ export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
   const [editValue, setEditValue] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [searchQ, setSearchQ] = useState('');
 
   const today = new Date().toISOString().slice(0, 10);
+
+  const filtered = useMemo(() => {
+    const q = searchQ.trim().toLowerCase();
+    if (!q) return peers;
+    return peers.filter((r) =>
+      (r.full_name ?? '').toLowerCase().includes(q) ||
+      (r.email ?? '').toLowerCase().includes(q) ||
+      specialtiesText(r).toLowerCase().includes(q) ||
+      (r.license_number ?? '').toLowerCase().includes(q) ||
+      (r.license_state ?? '').toLowerCase().includes(q)
+    );
+  }, [peers, searchQ]);
 
   const grouped = useMemo(() => {
     const buckets: Record<Bucket, Peer[]> = {
@@ -59,7 +74,7 @@ export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
       expiring: [],
       valid: [],
     };
-    for (const r of peers) buckets[bucketize(r, today)].push(r);
+    for (const r of filtered) buckets[bucketize(r, today)].push(r);
     // Sort within bucket: soonest expiring first
     const cmp = (a: Peer, b: Peer) => {
       const av = a.credential_valid_until ?? '9999-12-31';
@@ -68,7 +83,7 @@ export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
     };
     for (const k of Object.keys(buckets) as Bucket[]) buckets[k].sort(cmp);
     return buckets;
-  }, [peers, today]);
+  }, [filtered, today]);
 
   function startEdit(r: Peer) {
     setEditingId(r.id);
@@ -121,6 +136,16 @@ export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
           {error}
         </div>
       )}
+
+      <div className="relative max-w-sm">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-tertiary" />
+        <Input
+          value={searchQ}
+          onChange={(e) => setSearchQ(e.target.value)}
+          placeholder="Search name, email, specialty, license…"
+          className="pl-9"
+        />
+      </div>
 
       <BucketCard
         title="Missing credential"
