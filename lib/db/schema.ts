@@ -633,9 +633,6 @@ export const companyForms = pgTable('company_forms', {
   templatePdfName: text('template_pdf_name'),
   // Post-Ashton review (009): allow peer to invoke AI-drafted narrative on this form
   allowAiGeneratedRecommendations: boolean('allow_ai_generated_recommendations').default(false),
-  // Phase 1.3
-  scoringSystem: text('scoring_system').notNull().default('yes_no_na'),
-  passFailThreshold: jsonb('pass_fail_threshold'),
 });
 
 // ─── Clinics (FQHC sub-locations) — 009 ──────────────────────────────────────

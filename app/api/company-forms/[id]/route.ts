@@ -20,8 +20,6 @@ export async function GET(
         formFields: companyForms.formFields,
         isActive: companyForms.isActive,
         allowAiGeneratedRecommendations: companyForms.allowAiGeneratedRecommendations,
-        scoringSystem: companyForms.scoringSystem,
-        passFailThreshold: companyForms.passFailThreshold,
       })
       .from(companyForms)
       .where(eq(companyForms.id, id))
@@ -50,16 +48,6 @@ export async function PATCH(
     if (Array.isArray(body.form_fields)) updates.formFields = body.form_fields;
     if (typeof body.allow_ai_generated_recommendations === 'boolean') {
       updates.allowAiGeneratedRecommendations = body.allow_ai_generated_recommendations;
-    }
-    if (
-      body.scoring_system === 'yes_no_na' ||
-      body.scoring_system === 'abc_na' ||
-      body.scoring_system === 'pass_fail'
-    ) {
-      updates.scoringSystem = body.scoring_system;
-    }
-    if (body.pass_fail_threshold === null || typeof body.pass_fail_threshold === 'object') {
-      updates.passFailThreshold = body.pass_fail_threshold;
     }
     // Legacy: accept form_name directly (backward compat)
     if (typeof body.form_name === 'string' && !body.form_identifier) {

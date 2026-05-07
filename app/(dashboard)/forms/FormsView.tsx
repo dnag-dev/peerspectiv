@@ -42,7 +42,6 @@ interface FormRow {
   createdAt: Date | null;
   templatePdfUrl: string | null;
   templatePdfName: string | null;
-  scoringSystem?: string | null;
   responseCount?: number;
   avgDurationMin?: number | null;
 }
@@ -85,8 +84,6 @@ export function FormsView({ forms, companies }: Props) {
     specialty: string;
     form_fields: any[];
     allow_ai_generated_recommendations?: boolean;
-    scoring_system?: "yes_no_na" | "abc_na" | "pass_fail";
-    pass_fail_threshold?: { fail_if_any_critical_no?: boolean } | null;
   } | null>(null);
   const [prefill, setPrefill] = useState<{
     form_name: string;
@@ -94,8 +91,6 @@ export function FormsView({ forms, companies }: Props) {
     specialty: string;
     form_fields: any[];
     allow_ai_generated_recommendations?: boolean;
-    scoring_system?: "yes_no_na" | "abc_na" | "pass_fail";
-    pass_fail_threshold?: { fail_if_any_critical_no?: boolean } | null;
   } | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [cloningId, setCloningId] = useState<string | null>(null);
@@ -227,8 +222,6 @@ export function FormsView({ forms, companies }: Props) {
         specialty: j.form.specialty,
         form_fields: Array.isArray(j.form.form_fields) ? j.form.form_fields : [],
         allow_ai_generated_recommendations: !!j.form.allow_ai_generated_recommendations,
-        scoring_system: j.form.scoring_system ?? "yes_no_na",
-        pass_fail_threshold: j.form.pass_fail_threshold ?? null,
       });
       setBuilderCompanyId(f.companyId);
       setBuilderCompanyName(f.companyName || "");
@@ -271,8 +264,6 @@ export function FormsView({ forms, companies }: Props) {
         specialty: f.specialty,
         form_fields: fields,
         allow_ai_generated_recommendations: !!j.form.allow_ai_generated_recommendations,
-        scoring_system: j.form.scoring_system ?? "yes_no_na",
-        pass_fail_threshold: j.form.pass_fail_threshold ?? null,
       });
       setBuilderCompanyId(f.companyId);
       setBuilderCompanyName(f.companyName || "");

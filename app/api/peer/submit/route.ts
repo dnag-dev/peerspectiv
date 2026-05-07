@@ -13,7 +13,7 @@ import {
   correctiveActions,
 } from '@/lib/db/schema';
 import { generateCorrectiveActionPlan } from '@/lib/ai/report-generator';
-import { scoreReview, type FormField, type ResponseValue, type ScoringSystem } from '@/lib/scoring/default-based';
+import { scoreReview, type FormField, type ResponseValue } from '@/lib/scoring/default-based';
 import { companyForms } from '@/lib/db/schema';
 import type { CriterionScore, Deficiency, PeerChange } from '@/types';
 
@@ -69,22 +69,16 @@ export async function POST(request: NextRequest) {
         .where(eq(reviewCases.id, case_id))
         .limit(1);
       let formFields: FormField[] = [];
-      let scoringSystem: ScoringSystem = 'yes_no_na';
-      let passFailThreshold: any = null;
       if (caseRow?.companyFormId) {
         const [formRow] = await db
           .select({
             formFields: companyForms.formFields,
-            scoringSystem: companyForms.scoringSystem,
-            passFailThreshold: companyForms.passFailThreshold,
           })
           .from(companyForms)
           .where(eq(companyForms.id, caseRow.companyFormId))
           .limit(1);
         if (formRow) {
           formFields = (formRow.formFields as FormField[]) ?? [];
-          scoringSystem = (formRow.scoringSystem as ScoringSystem) ?? 'yes_no_na';
-          passFailThreshold = formRow.passFailThreshold ?? null;
         }
       }
 
@@ -96,7 +90,7 @@ export async function POST(request: NextRequest) {
 
       if (formFields.length > 0) {
         scoringResult = scoreReview(
-          { scoring_system: scoringSystem, pass_fail_threshold: passFailThreshold, form_fields: formFields },
+          { form_fields: formFields },
           responses
         );
         if (scoringResult.total_measures_met_pct != null) {

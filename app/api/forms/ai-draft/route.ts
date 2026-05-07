@@ -5,17 +5,14 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
- * Phase 6.1 — AI form draft.
+ * AI form draft.
  *
  * POST /api/forms/ai-draft
- * Body: { specialty: string, form_name: string, scoring_system: 'yes_no_na'|'abc_na'|'pass_fail' }
+ * Body: { specialty: string, form_name: string }
  *
- * Returns: { form_fields: BuiltFormField[] } — 10–20 questions appropriate for
- * the specialty. For yes_no_na / abc_na the AI sets a sensible default_answer
- * per question; for pass_fail it marks 1–3 questions as is_critical.
- *
- * Admin-gated via demo_user cookie / x-demo-user-id header (matches the rest
- * of the admin API surface in this app).
+ * Returns: { form_fields: BuiltFormField[] } — 10-20 questions appropriate for
+ * the specialty. Each question uses yes_no_na field_type with a sensible
+ * default_answer per question.
  */
 
 async function getAdminUserId(req: NextRequest): Promise<string | null> {
@@ -40,7 +37,6 @@ interface DraftField {
   is_required: boolean;
   display_order: number;
   default_answer?: 'yes' | 'no' | 'A' | 'B' | 'C' | null;
-  is_critical?: boolean;
 }
 
 function safeKey(label: string, idx: number): string {
@@ -54,23 +50,15 @@ function safeKey(label: string, idx: number): string {
 
 function buildPrompt(
   specialty: string,
-  formName: string,
-  scoring: 'yes_no_na' | 'abc_na' | 'pass_fail'
+  formName: string
 ): { system: string; user: string } {
-  const scoringHelp =
-    scoring === 'yes_no_na'
-      ? `Each question is answered Yes / No / N/A. Set "default_answer" to "yes" for items where compliant charts almost always answer Yes (most items); set "no" only when expected default differs. Never set N/A as a default.`
-      : scoring === 'abc_na'
-        ? `Each question is answered A (best) / B (acceptable) / C (deficient) / N/A. Set "default_answer" to "A" for items where compliant charts typically score top tier.`
-        : `Pass/Fail scoring. Do NOT set "default_answer". Instead mark 1–3 high-stakes patient-safety items as "is_critical": true. The form fails if any critical item is answered No.`;
-
   const system = `You are an expert in primary-care peer chart review for FQHCs. You design HRSA-compliant peer-review forms used by clinical reviewers to score visit notes. Output only valid JSON — no prose, no markdown fences.`;
 
   const user = `Draft a peer-review form for the specialty "${specialty}".
 
 Form name: "${formName}"
-Scoring system: ${scoring}
-${scoringHelp}
+
+Each question is answered Yes / No / N/A. Set "default_answer" to "yes" for items where compliant charts almost always answer Yes (most items); set "no" only when expected default differs. Never set N/A as a default.
 
 Return a JSON object exactly matching this shape:
 {
@@ -81,19 +69,17 @@ Return a JSON object exactly matching this shape:
       "field_type": "yes_no",
       "is_required": true,
       "display_order": 0,
-      "default_answer": "yes" | "no" | "A" | "B" | "C" | null,
-      "is_critical": false
+      "default_answer": "yes" | "no" | null
     }
   ]
 }
 
 Requirements:
 - 10 to 20 questions covering documentation completeness, history & physical, assessment/plan, medication review, preventive care, care coordination, and any specialty-specific elements.
-- All questions use field_type "yes_no" (the scoring system controls how the answer renders, not the field_type).
+- All questions use field_type "yes_no".
 - The last question should always be a free-text "narrative" wrap-up with field_type "text" and default_answer null.
 - field_key must be snake_case, unique, ≤ 60 chars.
 - display_order is a 0-based sequence.
-- is_critical only applies when scoring_system is pass_fail. Otherwise omit or set false.
 
 Output ONLY the JSON object. No commentary.`;
 
@@ -109,7 +95,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let body: { specialty?: string; form_name?: string; scoring_system?: string };
+  let body: { specialty?: string; form_name?: string };
   try {
     body = await req.json();
   } catch {
@@ -121,10 +107,6 @@ export async function POST(req: NextRequest) {
 
   const specialty = body.specialty?.trim();
   const formName = body.form_name?.trim();
-  const scoring = (body.scoring_system ?? 'yes_no_na') as
-    | 'yes_no_na'
-    | 'abc_na'
-    | 'pass_fail';
 
   if (!specialty || !formName) {
     return NextResponse.json(
@@ -132,86 +114,53 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  if (!['yes_no_na', 'abc_na', 'pass_fail'].includes(scoring)) {
-    return NextResponse.json(
-      { error: 'invalid scoring_system', code: 'VALIDATION_ERROR' },
-      { status: 400 }
-    );
-  }
 
-  const { system, user } = buildPrompt(specialty, formName, scoring);
+  const { system, user } = buildPrompt(specialty, formName);
 
   let raw: string;
   try {
     raw = await callClaude(system, user, 4096);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'AI call failed';
-    console.error('[forms/ai-draft] callClaude failed:', msg);
+  } catch (err: any) {
+    console.error('[ai-draft] Claude call failed:', err);
     return NextResponse.json(
-      { error: msg, code: 'AI_UNAVAILABLE' },
-      { status: 503 }
+      { error: err?.message || 'AI call failed', code: 'AI_ERROR' },
+      { status: 502 }
     );
   }
 
-  // Strip code fences if Claude added them despite instructions.
-  const cleaned = raw
-    .replace(/^```(?:json)?\s*/i, '')
-    .replace(/```\s*$/i, '')
-    .trim();
-
-  let parsed: { form_fields?: DraftField[] };
+  let parsed: { form_fields: DraftField[] };
   try {
-    parsed = JSON.parse(cleaned);
-  } catch {
-    console.error('[forms/ai-draft] JSON parse failed; raw:', raw.slice(0, 500));
+    let text = raw.trim();
+    text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    const first = text.indexOf('{');
+    const last = text.lastIndexOf('}');
+    if (first >= 0 && last > first) text = text.slice(first, last + 1);
+    parsed = JSON.parse(text);
+    if (!Array.isArray(parsed.form_fields)) throw new Error('Missing form_fields array');
+  } catch (err: any) {
+    console.error('[ai-draft] Failed to parse AI response:', err, raw);
     return NextResponse.json(
-      { error: 'AI returned non-JSON output', code: 'AI_PARSE_ERROR' },
+      { error: 'Failed to parse AI response', code: 'PARSE_ERROR', detail: err?.message },
       { status: 502 }
     );
   }
 
-  const fieldsIn = Array.isArray(parsed.form_fields) ? parsed.form_fields : [];
-  if (fieldsIn.length === 0) {
-    return NextResponse.json(
-      { error: 'AI returned no fields', code: 'AI_EMPTY' },
-      { status: 502 }
-    );
-  }
-
-  // Normalize: enforce field_key uniqueness, display_order, default_answer
-  // bounds per scoring system, is_critical only for pass_fail.
-  const seenKeys = new Set<string>();
-  const form_fields = fieldsIn.map((f, i): DraftField => {
-    let key = (f.field_key || safeKey(f.field_label || '', i)).trim();
-    if (!key) key = `q_${i + 1}`;
-    if (seenKeys.has(key)) key = `${key}_${i + 1}`;
-    seenKeys.add(key);
-
-    const fieldType: DraftField['field_type'] =
-      f.field_type === 'rating' || f.field_type === 'text' ? f.field_type : 'yes_no';
-
-    let defaultAnswer: DraftField['default_answer'] = null;
-    if (scoring === 'yes_no_na' && (f.default_answer === 'yes' || f.default_answer === 'no')) {
-      defaultAnswer = f.default_answer;
-    } else if (
-      scoring === 'abc_na' &&
-      (f.default_answer === 'A' || f.default_answer === 'B' || f.default_answer === 'C')
-    ) {
-      defaultAnswer = f.default_answer;
-    }
-
-    const isCritical = scoring === 'pass_fail' ? !!f.is_critical : false;
-
+  const seen = new Set<string>();
+  const fields = parsed.form_fields.map((f, idx) => {
+    let key = safeKey(f.field_key || f.field_label || '', idx);
+    let unique = key;
+    let suffix = 1;
+    while (seen.has(unique)) unique = `${key}_${suffix++}`;
+    seen.add(unique);
     return {
-      field_key: key,
-      field_label: (f.field_label || '').toString().slice(0, 200) || `Question ${i + 1}`,
-      field_type: fieldType,
-      is_required: f.is_required !== false,
-      display_order: i,
-      default_answer: defaultAnswer,
-      is_critical: isCritical,
+      field_key: unique,
+      field_label: f.field_label || `Question ${idx + 1}`,
+      field_type: f.field_type === 'text' ? 'text' : 'yes_no',
+      is_required: f.is_required ?? true,
+      display_order: idx,
+      default_answer: f.default_answer ?? null,
     };
   });
 
-  return NextResponse.json({ data: { form_fields } });
+  return NextResponse.json({ data: { form_fields: fields } });
 }

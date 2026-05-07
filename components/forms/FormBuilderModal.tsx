@@ -26,8 +26,6 @@ export interface BuiltFormField {
   is_critical?: boolean;
 }
 
-/** @deprecated Scoring is now per-question via field_type, not per-form. Kept for backward compat. */
-export type ScoringSystem = "yes_no_na" | "abc_na" | "pass_fail";
 
 /** Normalize legacy field_type values and fill defaults for old rows. */
 export function withFieldDefaults(f: BuiltFormField): BuiltFormField {
@@ -74,8 +72,6 @@ interface Props {
     specialty: string;
     form_fields: BuiltFormField[];
     allow_ai_generated_recommendations?: boolean;
-    scoring_system?: ScoringSystem;
-    pass_fail_threshold?: { fail_if_any_critical_no?: boolean } | null;
   };
   /** When provided (and editForm is not), opens in create mode with these values prefilled (used by Clone). */
   prefill?: {
@@ -84,8 +80,6 @@ interface Props {
     specialty: string;
     form_fields: BuiltFormField[];
     allow_ai_generated_recommendations?: boolean;
-    scoring_system?: ScoringSystem;
-    pass_fail_threshold?: { fail_if_any_critical_no?: boolean } | null;
   };
 }
 

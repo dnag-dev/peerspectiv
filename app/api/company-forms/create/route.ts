@@ -34,8 +34,6 @@ export async function POST(request: NextRequest) {
       template_pdf_url,
       template_pdf_name,
       allow_ai_generated_recommendations,
-      scoring_system,
-      pass_fail_threshold,
     } = body as {
       company_id: string;
       specialty: string;
@@ -45,8 +43,6 @@ export async function POST(request: NextRequest) {
       template_pdf_url?: string;
       template_pdf_name?: string;
       allow_ai_generated_recommendations?: boolean;
-      scoring_system?: 'yes_no_na' | 'abc_na' | 'pass_fail';
-      pass_fail_threshold?: unknown;
     };
 
     const identifier = (form_identifier || '').trim();
@@ -116,15 +112,6 @@ export async function POST(request: NextRequest) {
       return out;
     });
 
-    const scoring: 'yes_no_na' | 'abc_na' | 'pass_fail' =
-      scoring_system === 'abc_na' || scoring_system === 'pass_fail'
-        ? scoring_system
-        : 'yes_no_na';
-    const passFail =
-      scoring === 'pass_fail' && pass_fail_threshold && typeof pass_fail_threshold === 'object'
-        ? pass_fail_threshold
-        : null;
-
     let row;
     try {
       [row] = await db
@@ -139,8 +126,6 @@ export async function POST(request: NextRequest) {
           templatePdfUrl: template_pdf_url || null,
           templatePdfName: template_pdf_name || null,
           allowAiGeneratedRecommendations: !!allow_ai_generated_recommendations,
-          scoringSystem: scoring,
-          passFailThreshold: passFail as any,
         })
         .returning({
           id: companyForms.id,

@@ -15,8 +15,6 @@ export interface PerProviderReviewAnswersData {
   totalMeasuresMetPct: number | null;
   numerator: number;
   denominator: number;
-  scoringSystem: 'yes_no_na' | 'abc_na' | 'pass_fail';
-  passFailOutcome?: 'pass' | 'fail';
   questions: Array<{
     field_label: string;
     default_answer: string | null;
@@ -59,19 +57,6 @@ export function PerProviderReviewAnswersPdf({ data }: { data: PerProviderReviewA
             <Text style={styles.scoreLabel}>
               Total measures met ({data.numerator}/{data.denominator})
             </Text>
-            {data.passFailOutcome && (
-              <Text
-                style={{
-                  fontSize: 9,
-                  marginTop: 4,
-                  color: data.passFailOutcome === 'pass' ? colors.mint700 : colors.critical700,
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                }}
-              >
-                {data.passFailOutcome}
-              </Text>
-            )}
           </View>
         </View>
 

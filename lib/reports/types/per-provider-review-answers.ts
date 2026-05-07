@@ -24,7 +24,7 @@ import {
   PerProviderReviewAnswersPdf,
   type PerProviderReviewAnswersData,
 } from '@/lib/pdf/templates/PerProviderReviewAnswersPdf';
-import type { FormField, ScoringSystem } from '@/lib/scoring/default-based';
+import type { FormField } from '@/lib/scoring/default-based';
 
 interface RowShape {
   result_id: string;
@@ -44,8 +44,6 @@ interface RowShape {
   narrative_final: string | null;
   form_name: string | null;
   form_fields: unknown;
-  scoring_system: string | null;
-  pass_fail_threshold: unknown;
 }
 
 interface BreakdownItem {
@@ -135,9 +133,7 @@ export async function generate(input: GenerateInput): Promise<Buffer> {
         rr.criteria_scores,
         rr.narrative_final,
         cf.form_name,
-        cf.form_fields,
-        cf.scoring_system,
-        cf.pass_fail_threshold
+        cf.form_fields
       FROM review_results rr
       INNER JOIN review_cases rc ON rc.id = rr.case_id
       INNER JOIN providers     p  ON p.id  = rc.provider_id
@@ -249,7 +245,6 @@ export async function generate(input: GenerateInput): Promise<Buffer> {
     totalMeasuresMetPct,
     numerator,
     denominator,
-    scoringSystem: (row.scoring_system as ScoringSystem) ?? 'yes_no_na',
     questions,
     generalComments: row.narrative_final,
   };

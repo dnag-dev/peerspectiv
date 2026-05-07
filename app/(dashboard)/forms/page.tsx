@@ -22,7 +22,6 @@ export default async function FormsPage() {
       createdAt: companyForms.createdAt,
       templatePdfUrl: companyForms.templatePdfUrl,
       templatePdfName: companyForms.templatePdfName,
-      scoringSystem: companyForms.scoringSystem,
     })
     .from(companyForms)
     .leftJoin(companies, eq(companies.id, companyForms.companyId))
