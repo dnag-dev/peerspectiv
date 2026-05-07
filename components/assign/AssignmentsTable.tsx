@@ -206,14 +206,14 @@ export function AssignmentsTable({
             value={filters.peer}
             onChange={(e) => setFilters({ ...filters, peer: e.target.value })}
             onBlur={() => applyFilters(filters)}
-            placeholder="Peer ID"
+            placeholder="Peer name"
             className="rounded-md border border-border-subtle bg-surface-card px-3 py-1.5 text-sm"
           />
           <input
             value={filters.company}
             onChange={(e) => setFilters({ ...filters, company: e.target.value })}
             onBlur={() => applyFilters(filters)}
-            placeholder="Company ID"
+            placeholder="Company"
             className="rounded-md border border-border-subtle bg-surface-card px-3 py-1.5 text-sm"
           />
           <input
@@ -270,6 +270,7 @@ export function AssignmentsTable({
             <tr className="text-eyebrow text-ink-secondary">
               <th className="px-3 py-2">Case ref</th>
               <th className="px-3 py-2">Provider</th>
+              <th className="px-3 py-2">Company</th>
               <th className="px-3 py-2">Specialty</th>
               <th className="px-3 py-2">Peer</th>
               <th className="px-3 py-2">Status</th>
@@ -282,7 +283,7 @@ export function AssignmentsTable({
           <tbody>
             {visible.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-3 py-12 text-center text-sm text-ink-secondary">
+                <td colSpan={10} className="px-3 py-12 text-center text-sm text-ink-secondary">
                   No cases match these filters.
                 </td>
               </tr>
@@ -293,6 +294,7 @@ export function AssignmentsTable({
                     <Link href={`/cases/${r.id}`} className="text-status-info-fg hover:underline">#{r.caseRef}</Link>
                   </td>
                   <td className="px-3 py-2">{r.providerName}</td>
+                  <td className="px-3 py-2 text-ink-secondary">{r.companyName ?? "—"}</td>
                   <td className="px-3 py-2 text-ink-primary">{r.specialty ?? "—"}</td>
                   <td className="px-3 py-2 text-ink-primary">{r.peerName ?? <span className="text-ink-tertiary">unassigned</span>}</td>
                   <td className="px-3 py-2">

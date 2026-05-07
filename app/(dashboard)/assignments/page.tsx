@@ -5,7 +5,7 @@
  * dateTo, cadence). Row actions (View, Reassign, Unassign) live in the
  * client `AssignmentsTable`.
  */
-import { and, eq, gte, inArray, lte } from 'drizzle-orm';
+import { and, eq, gte, ilike, inArray, lte } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { reviewCases, peers, providers, companies, batches } from '@/lib/db/schema';
 import { AssignmentsTable, type AssignmentRow } from '@/components/assign/AssignmentsTable';
@@ -39,9 +39,9 @@ async function loadRows(sp: SearchParams): Promise<AssignmentRow[]> {
   const statuses = parseStatusList(sp.status);
   const conditions: any[] = [];
   if (statuses.length > 0) conditions.push(inArray(reviewCases.status, statuses));
-  if (sp.peer) conditions.push(eq(reviewCases.peerId, sp.peer));
-  if (sp.company) conditions.push(eq(reviewCases.companyId, sp.company));
-  if (sp.specialty) conditions.push(eq(reviewCases.specialtyRequired, sp.specialty));
+  if (sp.peer) conditions.push(ilike(peers.fullName, `%${sp.peer}%`));
+  if (sp.company) conditions.push(ilike(companies.name, `%${sp.company}%`));
+  if (sp.specialty) conditions.push(ilike(reviewCases.specialtyRequired, `%${sp.specialty}%`));
   if (sp.cadence) conditions.push(eq(reviewCases.cadencePeriodLabel, sp.cadence));
   if (sp.dateFrom) {
     conditions.push(gte(reviewCases.createdAt, new Date(`${sp.dateFrom}T00:00:00Z`)));
