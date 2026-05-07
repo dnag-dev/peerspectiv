@@ -264,7 +264,7 @@ export function PeerCredentialingDetail({ peer, specialties: initialSpecs }: Pro
               type="button"
               onClick={saveLicense}
               disabled={isPending}
-              className="rounded-md bg-cobalt-700 px-4 py-2 text-sm font-medium text-white hover:bg-cobalt-800 disabled:opacity-50"
+              className="rounded-md bg-brand-hover px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
             >
               Save license
             </button>

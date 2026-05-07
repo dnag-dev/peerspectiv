@@ -311,7 +311,7 @@ export function FormsView({ forms, companies }: Props) {
             openBuilder(c?.id ?? "", c?.name);
           }}
           disabled={companies.length === 0}
-          className="bg-cobalt-600 hover:bg-cobalt-700"
+          className="bg-brand hover:bg-brand-hover"
         >
           <Plus className="h-4 w-4 mr-2" /> New Form
         </Button>

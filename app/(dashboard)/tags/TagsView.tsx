@@ -317,7 +317,7 @@ export function TagsView({ initialTags, companies }: Props) {
               <Button
                 onClick={handleCreate}
                 disabled={busy === "create"}
-                className="bg-cobalt-600 hover:bg-cobalt-700"
+                className="bg-brand hover:bg-brand-hover"
               >
                 {busy === "create" ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -474,7 +474,7 @@ export function TagsView({ initialTags, companies }: Props) {
               <Button
                 onClick={handleCreateCompanyTag}
                 disabled={busy === "create-company"}
-                className="bg-cobalt-600 hover:bg-cobalt-700"
+                className="bg-brand hover:bg-brand-hover"
               >
                 {busy === "create-company" ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />

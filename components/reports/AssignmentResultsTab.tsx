@@ -300,7 +300,7 @@ export function AssignmentResultsTab({ companies }: Props) {
                         {row.peer_id ? (
                           <Link
                             href={`/peers/${row.peer_id}`}
-                            className="text-brand-navy hover:underline"
+                            className="text-ink-primary hover:underline"
                           >
                             {row.peer_name}
                           </Link>
@@ -326,7 +326,7 @@ export function AssignmentResultsTab({ companies }: Props) {
                       <TableCell>
                         <Link
                           href={`/cases/${row.id}`}
-                          className="text-sm text-brand-navy hover:underline"
+                          className="text-sm text-ink-primary hover:underline"
                         >
                           Open →
                         </Link>

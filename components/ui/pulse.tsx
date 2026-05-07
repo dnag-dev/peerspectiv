@@ -178,7 +178,7 @@ export function HeroGradientCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl bg-cobalt-hero p-6 text-white shadow-lg",
+        "relative overflow-hidden rounded-xl bg-brand p-6 text-white shadow-lg",
         className
       )}
     >

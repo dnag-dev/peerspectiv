@@ -333,7 +333,7 @@ function ConfidenceDot({ variant }: { variant: "standard" | "high" | "review" })
   const config = {
     standard: {
       bg: "bg-status-info-bg",
-      dot: "bg-cobalt-700",
+      dot: "bg-brand-hover",
       text: "text-status-info-fg",
       label: "Standard",
     },
@@ -400,7 +400,7 @@ function PeerAvatar({
         : "bg-ink-400";
   return (
     <div className="relative w-9 h-9 flex-shrink-0">
-      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cobalt-100 to-cobalt-200 flex items-center justify-center text-status-info-fg text-xs font-medium">
+      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand/10 to-brand/15 flex items-center justify-center text-status-info-fg text-xs font-medium">
         {initials || "?"}
       </div>
       {availability && (

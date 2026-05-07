@@ -56,7 +56,7 @@ export function AttestationBlock({
             value={mrn}
             onChange={(e) => onMrnChange(e.target.value.replace(/<[^>]*>/g, ""))}
             placeholder="Enter MRN"
-            className="w-full rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
+            className="w-full rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-brand/30"
           />
           {showAiHint && (
             <p className="mt-1 text-[11px] text-status-info-fg">

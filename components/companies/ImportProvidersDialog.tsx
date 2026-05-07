@@ -150,7 +150,7 @@ export function ImportProvidersDialog({ companyId }: Props) {
               accept=".csv,.tsv,.pdf"
               onChange={handleFileChange}
               disabled={uploading}
-              className="block w-full text-sm text-ink-primary file:mr-4 file:rounded-md file:border-0 file:bg-cobalt-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-cobalt-700"
+              className="block w-full text-sm text-ink-primary file:mr-4 file:rounded-md file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-hover"
             />
             <div className="flex items-center gap-2">
               <button

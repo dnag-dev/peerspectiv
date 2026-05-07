@@ -170,7 +170,7 @@ export default async function PeerDetailPage({
       <Card>
         <CardContent className="flex items-start justify-between gap-6 pt-6">
           <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-brand-navy text-lg font-medium text-white">
+            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-surface-sidebar text-lg font-medium text-white">
               {initials(peer.full_name)}
             </div>
             <div className="space-y-1">

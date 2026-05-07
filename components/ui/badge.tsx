@@ -19,7 +19,7 @@ const badgeVariants = cva(
         overdue:    "bg-critical-100 text-status-danger-fg",
         assigned:   "bg-amber-100 text-status-warning-fg",
         approved:   "bg-mint-100 text-status-success-fg",
-        paid:       "bg-cobalt-700 text-cobalt-50",
+        paid:       "bg-brand-hover text-white/80",
         ai:         "bg-status-info-bg text-status-info-fg",
         // Legacy aliases
         secondary:    "bg-ink-100 text-ink-primary",

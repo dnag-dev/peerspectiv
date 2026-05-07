@@ -389,7 +389,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
                   <td className="px-4 py-3 font-medium text-ink-primary">
                     <Link
                       href={`/peers/${r.id}`}
-                      className="hover:text-brand-navy hover:underline"
+                      className="hover:text-ink-primary hover:underline"
                     >
                       {r.full_name ?? '—'}
                     </Link>

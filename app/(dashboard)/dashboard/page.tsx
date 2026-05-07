@@ -412,10 +412,10 @@ export default async function DashboardPage({
             <KPICard title="Past due" value={pastDue} icon={<AlertTriangle className="h-5 w-5 text-status-danger-dot" />} color="bg-status-danger-dot" />
           </Link>
           <Link href={`/cases?status=completed&month=current${companyParam}`} data-testid="kpi-link" className="block">
-            <KPICard title="Completed this month" value={completedThisMonth} icon={<CheckCircle2 className="h-5 w-5 text-status-info-dot" />} color="bg-cobalt-500" />
+            <KPICard title="Completed this month" value={completedThisMonth} icon={<CheckCircle2 className="h-5 w-5 text-status-info-dot" />} color="bg-brand" />
           </Link>
           <Link href={`/cases?ai_status=processing${companyParam}`} data-testid="kpi-link" className="block">
-            <KPICard title="AI analyses running" value={aiProcessing} icon={<Brain className="h-5 w-5 text-status-info-dot" />} color="bg-cobalt-600" />
+            <KPICard title="AI analyses running" value={aiProcessing} icon={<Brain className="h-5 w-5 text-status-info-dot" />} color="bg-brand" />
           </Link>
         </div>
       </div>

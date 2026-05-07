@@ -120,7 +120,7 @@ export default async function BatchDetailPage({
                           href={c.chartFilePath}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-cobalt-400 hover:underline"
+                          className="inline-flex items-center gap-1 text-xs text-white/50 hover:underline"
                         >
                           <Download className="h-3.5 w-3.5" />
                           Download

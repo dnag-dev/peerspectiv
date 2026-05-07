@@ -138,7 +138,7 @@ export function SidebarShell({
         className={`group relative flex items-center ${collapsed ? "justify-center" : "gap-3"} rounded-md px-3 py-2 text-sm font-medium transition-all ${
           isActive
             ? "bg-surface-card text-ink-primary shadow-sm"
-            : "text-cobalt-100 hover:bg-cobalt-700/40 hover:text-white"
+            : "text-white/80 hover:bg-brand/20 hover:text-white"
         } ${item.dim ? "opacity-50" : ""}`}
       >
         <Icon
@@ -161,7 +161,7 @@ export function SidebarShell({
   };
 
   const aside = (
-    <aside className={`flex h-full ${collapsed ? "w-16" : "w-64"} flex-shrink-0 flex-col bg-cobalt-900 transition-[width] duration-150`}>
+    <aside className={`flex h-full ${collapsed ? "w-16" : "w-64"} flex-shrink-0 flex-col bg-surface-sidebar transition-[width] duration-150`}>
       {/* Logo lockup */}
       <div className={`flex h-20 items-center ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
         {!collapsed && (
@@ -182,7 +182,7 @@ export function SidebarShell({
           </div>
         )}
         <button
-          className="lg:hidden md:hidden text-cobalt-100 hover:text-white"
+          className="lg:hidden md:hidden text-white/80 hover:text-white"
           onClick={onCloseMobile}
           aria-label="Close menu"
         >
@@ -191,7 +191,7 @@ export function SidebarShell({
       </div>
 
       {contextLabel && !collapsed && (
-        <div className="px-6 pb-2 text-eyebrow text-cobalt-200">
+        <div className="px-6 pb-2 text-eyebrow text-white/60">
           {contextLabel}
         </div>
       )}
@@ -202,7 +202,7 @@ export function SidebarShell({
           groups.map((g) => (
             <div key={g}>
               {!collapsed && (
-                <p className="px-3 pb-2 text-eyebrow text-cobalt-200">{g}</p>
+                <p className="px-3 pb-2 text-eyebrow text-white/60">{g}</p>
               )}
               <div className="space-y-0.5">
                 {nav.filter((i) => i.group === g).map(renderItem)}
@@ -220,7 +220,7 @@ export function SidebarShell({
         data-testid="sidebar-collapse-toggle"
         onClick={toggleCollapsed}
         title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        className="mx-3 mb-2 flex items-center justify-center rounded-md border border-status-info-fg/50 bg-cobalt-800/40 px-2 py-1.5 text-cobalt-100 hover:bg-cobalt-700/40 hover:text-white transition-colors"
+        className="mx-3 mb-2 flex items-center justify-center rounded-md border border-status-info-fg/50 bg-brand-hover/40 px-2 py-1.5 text-white/80 hover:bg-brand/20 hover:text-white transition-colors"
       >
         {collapsed ? (
           <ChevronsRight className="h-4 w-4" />
@@ -240,10 +240,10 @@ export function SidebarShell({
       )}
 
       {/* User card on white-tint surface */}
-      <div className="border-t border-cobalt-800/60 bg-white/5 px-3 py-3">
+      <div className="border-t border-brand-hover/60 bg-white/5 px-3 py-3">
         <div className={`flex items-center ${collapsed ? "flex-col gap-2" : "gap-3 px-2"}`}>
-          <div className="flex h-9 w-9 items-center justify-center rounded-pill bg-cobalt-700">
-            <User className="h-4 w-4 text-cobalt-100" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-pill bg-brand-hover">
+            <User className="h-4 w-4 text-white/80" />
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1">
@@ -254,7 +254,7 @@ export function SidebarShell({
                 >
                   {chip.label}
                 </span>
-                <span className="truncate text-[11px] text-cobalt-200">{userSubtitle}</span>
+                <span className="truncate text-[11px] text-white/60">{userSubtitle}</span>
               </div>
             </div>
           )}
@@ -262,7 +262,7 @@ export function SidebarShell({
             onClick={onSignOut}
             title="Sign out"
             data-testid="sign-out"
-            className="rounded-md p-2 text-cobalt-200 hover:bg-cobalt-700/50 hover:text-white transition-colors"
+            className="rounded-md p-2 text-white/60 hover:bg-brand-hover/50 hover:text-white transition-colors"
           >
             <LogOut className="h-4 w-4" />
           </button>

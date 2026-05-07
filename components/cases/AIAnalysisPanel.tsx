@@ -352,7 +352,7 @@ export function AIAnalysisPanel({
             icon={FileText}
             defaultOpen={false}
           >
-            <div className="rounded-md border-l-4 border-status-success-fg/30 bg-mint-50 p-4 dark:bg-cobalt-700/20">
+            <div className="rounded-md border-l-4 border-status-success-fg/30 bg-mint-50 p-4 dark:bg-brand/15">
               <p className="whitespace-pre-wrap text-sm leading-relaxed">
                 {analysis.narrative_draft}
               </p>

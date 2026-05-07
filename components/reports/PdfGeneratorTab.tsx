@@ -216,7 +216,7 @@ export function PdfGeneratorTab({ companies }: Props) {
         )}
 
         <div className="flex gap-2">
-          <Button onClick={() => generate(false)} disabled={busy} className="bg-cobalt-600 hover:bg-cobalt-700">
+          <Button onClick={() => generate(false)} disabled={busy} className="bg-brand hover:bg-brand-hover">
             {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
             Generate &amp; Download
           </Button>

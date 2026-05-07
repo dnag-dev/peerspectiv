@@ -140,7 +140,7 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
               type="checkbox"
               checked={itemizeInvoice}
               onChange={(e) => setItemizeInvoice(e.target.checked)}
-              className="h-4 w-4 rounded border-border-default text-status-info-dot focus:ring-cobalt-600"
+              className="h-4 w-4 rounded border-border-default text-status-info-dot focus:ring-brand"
             />
             Itemize invoices (show per-provider breakdown on PDF)
           </label>
@@ -152,7 +152,7 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
               onChange={(e) =>
                 setDeliveryPreference(e.target.value as 'email' | 'portal' | 'both')
               }
-              className="flex h-10 w-full rounded-md border border-border-default bg-white px-3 py-2 text-sm text-ink-primary focus:outline-none focus:ring-2 focus:ring-cobalt-600"
+              className="flex h-10 w-full rounded-md border border-border-default bg-white px-3 py-2 text-sm text-ink-primary focus:outline-none focus:ring-2 focus:ring-brand"
             >
               <option value="portal">Portal only</option>
               <option value="email">Email only</option>
@@ -170,7 +170,7 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
               onChange={(e) =>
                 setDeliveryMethod(e.target.value as 'portal' | 'secure_email' | 'both')
               }
-              className="flex h-10 w-full rounded-md border border-border-default bg-white px-3 py-2 text-sm text-ink-primary focus:outline-none focus:ring-2 focus:ring-cobalt-600"
+              className="flex h-10 w-full rounded-md border border-border-default bg-white px-3 py-2 text-sm text-ink-primary focus:outline-none focus:ring-2 focus:ring-brand"
             >
               <option value="portal">Portal only (no email)</option>
               <option value="secure_email">Secure email (Resend with ZIP attachment + audit log)</option>

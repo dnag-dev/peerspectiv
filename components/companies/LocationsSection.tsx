@@ -282,7 +282,7 @@ export function LocationsSection({ companyId }: Props) {
                         type="button"
                         onClick={() => handleToggleActive(c)}
                         className={`inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                          c.isActive ? "bg-cobalt-600" : "bg-ink-300"
+                          c.isActive ? "bg-brand" : "bg-ink-300"
                         }`}
                         aria-label={c.isActive ? "Deactivate" : "Activate"}
                       >

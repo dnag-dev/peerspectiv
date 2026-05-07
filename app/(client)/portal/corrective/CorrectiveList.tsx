@@ -26,7 +26,7 @@ function UpToDateBanner() {
   if (dismissed) return null;
 
   return (
-    <div className="flex items-start justify-between gap-3 rounded-lg border border-cobalt-500/40 bg-status-info-bg px-4 py-3 text-sm text-cobalt-100">
+    <div className="flex items-start justify-between gap-3 rounded-lg border border-brand/40 bg-status-info-bg px-4 py-3 text-sm text-white/80">
       <p className="flex-1 text-ink-100">
         Want industry-standard guidelines? Talk to us about UpToDate
         integration.

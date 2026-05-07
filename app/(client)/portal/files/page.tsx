@@ -111,7 +111,7 @@ export default async function ClientFilesPage() {
             <FolderOpen className="mb-4 h-12 w-12 text-ink-tertiary" />
             <h3 className="text-lg font-medium text-ink-200">No files uploaded yet</h3>
             <p className="mt-1 text-sm text-ink-tertiary">
-              Upload charts via <Link href="/portal/submit" className="text-cobalt-400 hover:underline">Submit Records</Link> to get started.
+              Upload charts via <Link href="/portal/submit" className="text-white/50 hover:underline">Submit Records</Link> to get started.
             </p>
           </CardContent>
         </Card>
@@ -137,7 +137,7 @@ export default async function ClientFilesPage() {
                       <td className="px-4 py-3 font-medium text-ink-100">
                         <Link
                           href={`/portal/files/${batch.id}`}
-                          className="text-cobalt-400 hover:underline flex items-center gap-2"
+                          className="text-white/50 hover:underline flex items-center gap-2"
                         >
                           <FileText className="h-4 w-4" />
                           {batch.batch_name || "Untitled batch"}

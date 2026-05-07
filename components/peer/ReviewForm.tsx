@@ -534,7 +534,7 @@ export function ReviewForm({
                 data-testid="hover-jump-toggle"
                 checked={hoverJumpEnabled}
                 onChange={(e) => setHoverJumpEnabled(e.target.checked)}
-                className="h-4 w-4 rounded border-border-default text-status-info-fg focus:ring-cobalt-200"
+                className="h-4 w-4 rounded border-border-default text-status-info-fg focus:ring-brand/30"
               />
               Highlight on hover
             </label>
@@ -590,7 +590,7 @@ export function ReviewForm({
               value={licenseNumber}
               onChange={(e) => setLicenseNumber(e.target.value)}
               placeholder="e.g. MD123456"
-              className="w-full rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
+              className="w-full rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-brand/30"
             />
           </div>
           <div>
@@ -606,7 +606,7 @@ export function ReviewForm({
                 setLicenseState(e.target.value.toUpperCase().slice(0, 2))
               }
               placeholder="e.g. CA"
-              className="w-full rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm uppercase text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
+              className="w-full rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm uppercase text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-brand/30"
             />
           </div>
         </div>
@@ -617,7 +617,7 @@ export function ReviewForm({
             data-testid="license-attest-checkbox"
             checked={attested}
             onChange={(e) => setAttested(e.target.checked)}
-            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-border-default text-status-info-fg focus:ring-cobalt-200"
+            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-border-default text-status-info-fg focus:ring-brand/30"
           />
           <span>
             I attest that the above license is current, in good standing, and
@@ -752,7 +752,7 @@ export function ReviewForm({
                   onClick={() => setFieldValue(field.fieldKey, true)}
                   className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all ${
                     fieldState.value === true
-                      ? "border-status-info-fg bg-cobalt-700 text-white"
+                      ? "border-status-info-fg bg-brand-hover text-white"
                       : "border-border-subtle bg-surface-card text-ink-primary hover:bg-ink-50"
                   }`}
                 >
@@ -815,7 +815,7 @@ export function ReviewForm({
                         setFieldValue(field.fieldKey, n);
                       }
                     }}
-                    className="w-28 rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
+                    className="w-28 rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-brand/30"
                     placeholder="0-100"
                   />
                   <span className="text-xs text-ink-tertiary">/ 100</span>
@@ -835,7 +835,7 @@ export function ReviewForm({
                 value={String(fieldState.value ?? "")}
                 onChange={(e) => setFieldValue(field.fieldKey, e.target.value)}
                 rows={4}
-                className="w-full resize-y rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary placeholder:text-ink-tertiary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
+                className="w-full resize-y rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary placeholder:text-ink-tertiary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-brand/30"
                 placeholder="Enter your assessment..."
               />
             )}
@@ -917,7 +917,7 @@ export function ReviewForm({
           value={peerComments}
           onChange={(e) => setPeerComments(e.target.value)}
           rows={4}
-          className="w-full resize-y rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary placeholder:text-ink-tertiary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
+          className="w-full resize-y rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary placeholder:text-ink-tertiary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-brand/30"
           placeholder="Any additional commentary for this case..."
         />
         {aiSuggestError && (

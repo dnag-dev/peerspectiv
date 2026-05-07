@@ -337,7 +337,7 @@ export function InvoicesView({ invoices, companies }: Props) {
           <Button variant="outline" onClick={() => setShowCadence(true)}>
             <FileText className="h-4 w-4 mr-2" /> By Cadence Period
           </Button>
-          <Button onClick={() => setShowCreate(true)} className="bg-cobalt-600 hover:bg-cobalt-700">
+          <Button onClick={() => setShowCreate(true)} className="bg-brand hover:bg-brand-hover">
             <Plus className="h-4 w-4 mr-2" /> New Invoice
           </Button>
         </div>
@@ -388,7 +388,7 @@ export function InvoicesView({ invoices, companies }: Props) {
             </label>
             {err && <p className="text-sm text-status-danger-fg bg-critical-50 px-3 py-2 rounded">{err}</p>}
             <Button onClick={handleGenerateCadence} disabled={busy === "cadence"}
-              className="bg-cobalt-600 hover:bg-cobalt-700">
+              className="bg-brand hover:bg-brand-hover">
               {busy === "cadence" ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
               Generate Invoice
             </Button>
@@ -472,7 +472,7 @@ export function InvoicesView({ invoices, companies }: Props) {
             <Button
               onClick={handleCreate}
               disabled={busy === "create"}
-              className="bg-cobalt-600 hover:bg-cobalt-700"
+              className="bg-brand hover:bg-brand-hover"
             >
               {busy === "create" ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
               Generate Invoice

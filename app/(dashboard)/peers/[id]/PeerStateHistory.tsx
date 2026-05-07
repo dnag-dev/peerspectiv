@@ -99,7 +99,7 @@ export function PeerStateHistory({ peerId }: { peerId: string }) {
             {entries.map((entry) => (
               <div key={entry.id} className="flex items-start gap-3 rounded-md border border-border-subtle px-3 py-2">
                 <div className="flex flex-col items-center gap-1 pt-0.5">
-                  <div className="h-2 w-2 rounded-full bg-cobalt-400" />
+                  <div className="h-2 w-2 rounded-full bg-brand" />
                   <div className="w-px flex-1 bg-ink-200" />
                 </div>
                 <div className="flex-1 min-w-0 space-y-1">

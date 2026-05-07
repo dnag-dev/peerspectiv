@@ -11,12 +11,12 @@ import { cn } from "@/lib/utils";
  * Legacy variants kept as aliases for in-flight call sites.
  */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-cobalt-300/40 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-cobalt-700 text-white hover:bg-cobalt-800 active:bg-cobalt-800 shadow-sm",
+          "bg-brand-hover text-white hover:bg-brand-hover active:bg-brand-hover shadow-sm",
         secondary:
           "border border-border-subtle bg-surface-card text-ink-primary hover:bg-ink-50 hover:border-border-default",
         ghost:

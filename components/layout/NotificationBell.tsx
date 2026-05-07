@@ -132,7 +132,7 @@ export function NotificationBell() {
                         {n.title}
                       </p>
                       {!n.readAt && (
-                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-cobalt-600" />
+                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-brand" />
                       )}
                     </div>
                     {n.body && (

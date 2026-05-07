@@ -504,7 +504,7 @@ export function NewBatchModal({
                 <div
                   key={n}
                   className={`h-1 flex-1 rounded-full ${
-                    n <= step ? "bg-cobalt-600" : "bg-ink-200"
+                    n <= step ? "bg-brand" : "bg-ink-200"
                   }`}
                 />
               ))}

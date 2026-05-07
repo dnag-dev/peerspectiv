@@ -251,7 +251,7 @@ export function ClientSubmitWizard({
   if (submittedBatchId) {
     return (
       <div className="space-y-4 py-4 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-cobalt-500/20 text-status-info-dot">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand/15 text-status-info-dot">
           <Check className="h-6 w-6" />
         </div>
         <div>
@@ -333,7 +333,7 @@ export function ClientSubmitWizard({
             </p>
           )}
           {specialty && skipFormStep && (
-            <p className="rounded-lg border border-cobalt-500/30 bg-status-info-bg px-4 py-3 text-xs text-mint-200">
+            <p className="rounded-lg border border-brand/30 bg-status-info-bg px-4 py-3 text-xs text-mint-200">
               <Check className="mr-1 inline h-3 w-3" />
               <strong>{specialtyForms[0].form_name}</strong> will be auto-attached
               — it&rsquo;s your only approved form for {specialty}.
@@ -480,7 +480,7 @@ export function ClientSubmitWizard({
               <dd className="font-medium text-white">
                 {forms.find((f) => f.id === effectiveFormId)?.form_name}
                 {skipFormStep && (
-                  <span className="ml-2 rounded bg-cobalt-500/20 px-1.5 py-0.5 text-[10px] font-medium text-mint-200">
+                  <span className="ml-2 rounded bg-brand/15 px-1.5 py-0.5 text-[10px] font-medium text-mint-200">
                     AUTO
                   </span>
                 )}

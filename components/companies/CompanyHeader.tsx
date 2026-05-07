@@ -96,7 +96,7 @@ export function CompanyHeader({ company }: CompanyHeaderProps) {
         <div className="flex items-center gap-2">
           {/* Status transition buttons */}
           {(status === "lead" || status === "prospect") && (
-            <Button onClick={handleSendContract} disabled={busy} className="bg-cobalt-600 hover:bg-cobalt-700">
+            <Button onClick={handleSendContract} disabled={busy} className="bg-brand hover:bg-brand-hover">
               {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
               Send Contract
             </Button>

@@ -110,7 +110,7 @@ type LeftTab = "ash" | "chart";
 const SEV_META = {
   high:   { dot: "bg-status-danger-dot", text: "text-status-danger-fg", bg: "bg-critical-50", border: "border-status-danger-fg/20", label: "HIGH" },
   medium: { dot: "bg-status-warning-dot",    text: "text-status-warning-fg",    bg: "bg-amber-50",    border: "border-amber-100",    label: "MED"  },
-  low:    { dot: "bg-cobalt-600",   text: "text-status-info-fg",   bg: "bg-status-info-bg",   border: "border-cobalt-100",   label: "LOW"  },
+  low:    { dot: "bg-brand",   text: "text-status-info-fg",   bg: "bg-status-info-bg",   border: "border-status-info-bg",   label: "LOW"  },
 };
 
 export function PeerCaseSplit({
@@ -326,7 +326,7 @@ export function PeerCaseSplit({
 
         {/* Drag handle */}
         <PanelResizeHandle className="group mx-2 flex w-1.5 cursor-col-resize items-center justify-center">
-          <div className="flex h-full w-full items-center justify-center rounded-full bg-ink-50 transition-colors group-hover:bg-cobalt-200 group-data-[resize-handle-state=drag]:bg-cobalt-400">
+          <div className="flex h-full w-full items-center justify-center rounded-full bg-ink-50 transition-colors group-hover:bg-brand/15 group-data-[resize-handle-state=drag]:bg-brand">
             <GripVertical className="h-4 w-4 text-ink-tertiary group-hover:text-ink-secondary" />
           </div>
         </PanelResizeHandle>

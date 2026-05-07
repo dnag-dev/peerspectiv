@@ -118,7 +118,7 @@ export function ClientInvoicesView({ companyName, invoices }: Props) {
                         href={inv.paymentLinkUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 rounded-md bg-cobalt-600 px-3 py-1 text-xs font-medium text-ink-primary hover:bg-cobalt-700"
+                        className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1 text-xs font-medium text-ink-primary hover:bg-brand-hover"
                       >
                         <ExternalLink className="h-3 w-3" /> Pay Now
                       </a>

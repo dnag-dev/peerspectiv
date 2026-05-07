@@ -362,7 +362,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
             </div>
           )}
 
-          <label className="flex items-center gap-2 rounded-md border border-cobalt-100 bg-status-info-bg/40 px-3 py-2 text-xs text-ink-primary">
+          <label className="flex items-center gap-2 rounded-md border border-status-info-bg bg-status-info-bg/40 px-3 py-2 text-xs text-ink-primary">
             <input
               type="checkbox"
               checked={allowAiNarrative}
@@ -375,7 +375,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
           </label>
 
           {/* Draft with AI */}
-          <div className="flex items-center justify-between rounded-md border border-cobalt-100 bg-status-info-bg/40 px-3 py-2">
+          <div className="flex items-center justify-between rounded-md border border-status-info-bg bg-status-info-bg/40 px-3 py-2">
             <div className="text-xs text-ink-primary">
               <strong className="text-ink-primary">Draft form with AI</strong> — generates
               10–20 questions appropriate for the chosen specialty.

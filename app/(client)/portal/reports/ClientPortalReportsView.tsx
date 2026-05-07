@@ -108,7 +108,7 @@ export function ClientPortalReportsView({ companyId, companyName }: Props) {
           type="button"
           onClick={generate}
           disabled={busy}
-          className="inline-flex items-center gap-2 rounded-md bg-cobalt-600 px-4 py-2 text-sm font-medium text-ink-primary hover:bg-cobalt-700 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-medium text-ink-primary hover:bg-brand-hover disabled:opacity-50"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
           Generate &amp; Download

@@ -110,7 +110,7 @@ export function ReviewsTable({
           {month && (
             <button
               onClick={() => setMonth(null)}
-              className="flex items-center gap-1 rounded-full bg-cobalt-500/20 px-2.5 py-1 text-xs text-mint-200 hover:bg-cobalt-500/30"
+              className="flex items-center gap-1 rounded-full bg-brand/15 px-2.5 py-1 text-xs text-mint-200 hover:bg-brand/20"
             >
               Month: {monthLabel} <X className="h-3 w-3" />
             </button>
@@ -118,7 +118,7 @@ export function ReviewsTable({
           {criterion && (
             <button
               onClick={() => setCriterion(null)}
-              className="flex items-center gap-1 rounded-full bg-cobalt-500/20 px-2.5 py-1 text-xs text-mint-200 hover:bg-cobalt-500/30"
+              className="flex items-center gap-1 rounded-full bg-brand/15 px-2.5 py-1 text-xs text-mint-200 hover:bg-brand/20"
             >
               Criterion: {criterion} <X className="h-3 w-3" />
             </button>

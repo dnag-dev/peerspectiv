@@ -209,7 +209,7 @@ export function PeerOnboardCard({
                 type="submit"
                 size="sm"
                 disabled={submitting}
-                className="bg-cobalt-600 hover:bg-cobalt-700"
+                className="bg-brand hover:bg-brand-hover"
               >
                 {submitting && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                 Submit
@@ -231,7 +231,7 @@ function Input({
       <span className="mb-1 block text-xs font-medium text-ink-primary">{label}</span>
       <input
         {...rest}
-        className="w-full rounded-md border border-border-subtle bg-surface-card px-2.5 py-1.5 text-sm outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
+        className="w-full rounded-md border border-border-subtle bg-surface-card px-2.5 py-1.5 text-sm outline-none focus:border-status-info-fg focus:ring-1 focus:ring-brand/30"
       />
     </label>
   );

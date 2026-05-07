@@ -23,8 +23,8 @@ interface KPICardProps {
  */
 function tintBg(color?: string): string {
   switch (color) {
-    case "bg-cobalt-500":   return "bg-status-info-bg";
-    case "bg-cobalt-600":   return "bg-status-info-bg";
+    case "bg-brand":   return "bg-status-info-bg";
+    case "bg-brand":   return "bg-status-info-bg";
     case "bg-status-success-dot":     return "bg-status-success-dot/10";
     case "bg-status-warning-dot":    return "bg-status-warning-dot/10";
     case "bg-status-danger-dot": return "bg-status-danger-dot/10";
@@ -60,7 +60,7 @@ export function KPICard({
     color === "bg-status-success-dot" ? "bg-status-success-dot" :
     color === "bg-status-warning-dot" ? "bg-status-warning-dot" :
     color === "bg-status-danger-dot" ? "bg-status-danger-dot" :
-    color === "bg-cobalt-500" || color === "bg-cobalt-600" ? "bg-status-info-dot" :
+    color === "bg-brand" || color === "bg-brand" ? "bg-status-info-dot" :
     "bg-status-neutral-dot";
 
   return (

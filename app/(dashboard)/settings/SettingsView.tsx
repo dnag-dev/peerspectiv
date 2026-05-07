@@ -122,7 +122,7 @@ function GeneralTab({ byKey }: { byKey: Map<string, unknown> }) {
                 if (n === null) { setErr("File expiration must be a positive integer"); return; }
                 save("file_expiration_days", Math.trunc(n));
               }}
-              className="bg-cobalt-600 hover:bg-cobalt-700">
+              className="bg-brand hover:bg-brand-hover">
               {busy === "file_expiration_days" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
             </Button>
           </div>
@@ -140,7 +140,7 @@ function GeneralTab({ byKey }: { byKey: Map<string, unknown> }) {
                 if (n === null) { setErr("Pay rate must be a positive number"); return; }
                 save("global_pay_rate_per_review", n);
               }}
-              className="bg-cobalt-600 hover:bg-cobalt-700">
+              className="bg-brand hover:bg-brand-hover">
               {busy === "global_pay_rate_per_review" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
             </Button>
           </div>
@@ -220,7 +220,7 @@ function TaxonomyTab() {
         <div className="flex gap-2 max-w-md">
           <Input placeholder="New specialty name" value={newName}
             onChange={(e) => setNewName(e.target.value)} />
-          <Button size="sm" onClick={add} disabled={busy === "__new__"} className="bg-cobalt-600 hover:bg-cobalt-700">
+          <Button size="sm" onClick={add} disabled={busy === "__new__"} className="bg-brand hover:bg-brand-hover">
             {busy === "__new__" ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Plus className="h-3 w-3 mr-1" />Add</>}
           </Button>
         </div>
@@ -247,7 +247,7 @@ function TaxonomyTab() {
                     {editingId === r.id ? (
                       <>
                         <Button size="sm" disabled={busy === r.id}
-                          onClick={() => patch(r.id, { name: editName })} className="bg-cobalt-600 hover:bg-cobalt-700">
+                          onClick={() => patch(r.id, { name: editName })} className="bg-brand hover:bg-brand-hover">
                           {busy === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
@@ -366,7 +366,7 @@ function CredentialersTab() {
             <Input placeholder="Full name" value={newName} onChange={(e) => setNewName(e.target.value)} />
             <Input type="number" min={0.01} step={0.01} placeholder="Rate" value={newRate}
               onChange={(e) => setNewRate(e.target.value)} />
-            <Button size="sm" onClick={add} disabled={busy === "__new__"} className="bg-cobalt-600 hover:bg-cobalt-700">
+            <Button size="sm" onClick={add} disabled={busy === "__new__"} className="bg-brand hover:bg-brand-hover">
               {busy === "__new__" ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Plus className="h-3 w-3 mr-1" />Add</>}
             </Button>
           </div>
@@ -397,7 +397,7 @@ function CredentialersTab() {
                       <td className="px-3 py-2 text-right space-x-1">
                         {dirty && (
                           <Button size="sm" disabled={busy === r.id}
-                            onClick={() => saveRate(r.id)} className="bg-cobalt-600 hover:bg-cobalt-700">
+                            onClick={() => saveRate(r.id)} className="bg-brand hover:bg-brand-hover">
                             {busy === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
                           </Button>
                         )}

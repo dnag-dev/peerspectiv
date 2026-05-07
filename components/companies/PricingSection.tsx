@@ -173,7 +173,7 @@ export function PricingSection({ companyId }: { companyId: string }) {
                   if (!Number.isFinite(n) || n <= 0) { setErr("Rate must be positive"); return; }
                   patchTop({ per_review_rate: n });
                 }}
-                className="bg-cobalt-600 hover:bg-cobalt-700">
+                className="bg-brand hover:bg-brand-hover">
                 {busy === "top" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
               </Button>
             </div>
@@ -224,7 +224,7 @@ export function PricingSection({ companyId }: { companyId: string }) {
               <Input type="number" min={0.01} step={0.01} placeholder="Rate" value={newRate}
                 onChange={(e) => setNewRate(e.target.value)} />
               <Button size="sm" disabled={busy === "__add__"} onClick={addRate}
-                className="bg-cobalt-600 hover:bg-cobalt-700">
+                className="bg-brand hover:bg-brand-hover">
                 {busy === "__add__" ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Plus className="h-3 w-3 mr-1" />Add</>}
               </Button>
             </div>
@@ -267,7 +267,7 @@ function RateRowEditor({
               if (!Number.isFinite(n) || n <= 0) return;
               onSave(n);
             }}
-            className="bg-cobalt-600 hover:bg-cobalt-700">
+            className="bg-brand hover:bg-brand-hover">
             {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
           </Button>
         )}

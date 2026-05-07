@@ -226,7 +226,7 @@ export function CadenceSection({ companyId }: { companyId: string }) {
           )}
         </div>
 
-        <Button onClick={handleSave} disabled={saving} className="bg-cobalt-600 hover:bg-cobalt-700">
+        <Button onClick={handleSave} disabled={saving} className="bg-brand hover:bg-brand-hover">
           {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
           Save Cadence
         </Button>
@@ -259,7 +259,7 @@ export function CadenceSection({ companyId }: { companyId: string }) {
                       key={i}
                       className={`text-xs rounded px-3 py-2 border ${
                         isCurrent
-                          ? "border-cobalt-400 bg-status-info-bg text-status-info-fg font-medium"
+                          ? "border-brand bg-status-info-bg text-status-info-fg font-medium"
                           : "border-border-subtle bg-white text-ink-secondary"
                       }`}
                     >

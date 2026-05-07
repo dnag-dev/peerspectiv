@@ -132,7 +132,7 @@ export function DashboardView(props: Props) {
       {/* Compliance hero — cobalt gradient */}
       <Link
         href="/portal/reviews?status=completed"
-        className="relative overflow-hidden rounded-xl bg-cobalt-hero p-6 flex flex-col lg:flex-row items-center gap-8 transition-all hover:shadow-lg"
+        className="relative overflow-hidden rounded-xl bg-brand p-6 flex flex-col lg:flex-row items-center gap-8 transition-all hover:shadow-lg"
       >
         <ComplianceRing score={compliance} variant="dark" />
         <div className="relative z-10 flex-1">

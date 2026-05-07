@@ -35,8 +35,8 @@ const STAGES = [
   {
     key: 'active_client',
     title: 'Active Client',
-    accent: 'border-l-4 border-cobalt-500',
-    badgeClass: 'bg-cobalt-500 text-white',
+    accent: 'border-l-4 border-brand',
+    badgeClass: 'bg-brand text-white',
   },
 ] as const;
 
@@ -128,7 +128,7 @@ export function PipelineBoard({ initialPipeline }: PipelineBoardProps) {
               if (id) promoteCompany(id, stage.key);
             }}
             className={`flex min-h-[400px] flex-col rounded-lg p-3 ${stage.accent} ${
-              isOver ? 'bg-status-info-bg/10 ring-2 ring-cobalt-500' : 'bg-[#1E3A8A]'
+              isOver ? 'bg-status-info-bg/10 ring-2 ring-brand' : 'bg-[#1E3A8A]'
             }`}
           >
             <div className="mb-3 flex items-center justify-between px-1">

@@ -164,7 +164,7 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
           {company.status === 'active' && (
             <Link
               href={`/companies/${company.id}`}
-              className="inline-flex w-full items-center justify-center rounded-md border border-cobalt-500 px-2 py-1.5 text-xs font-medium text-status-info-dot hover:bg-status-info-bg"
+              className="inline-flex w-full items-center justify-center rounded-md border border-brand px-2 py-1.5 text-xs font-medium text-status-info-dot hover:bg-status-info-bg"
             >
               <ExternalLink className="mr-2 h-3 w-3" />
               View

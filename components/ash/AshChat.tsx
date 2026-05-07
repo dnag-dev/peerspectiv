@@ -135,7 +135,7 @@ export function AshChat({
           type="button"
           aria-label="Ask Ash"
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-pill bg-cobalt-700 px-5 py-3 text-white shadow-lg transition-all duration-150 hover:-translate-y-0.5 hover:bg-cobalt-800 hover:shadow-xl focus:outline-none focus-visible:ring-[3px] focus-visible:ring-cobalt-300/40"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-pill bg-brand px-5 py-3 text-white shadow-lg transition-all duration-150 hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-xl focus:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40"
         >
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full rounded-full bg-mint-500 opacity-75 animate-ping" />
@@ -155,7 +155,7 @@ export function AshChat({
           style={{ width: 384, height: 520 }}
         >
           {/* Header strip */}
-          <div className="flex items-center gap-3 bg-cobalt-700 px-4 py-3 text-white">
+          <div className="flex items-center gap-3 bg-brand px-4 py-3 text-white">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-white/20">
               <SparkIcon className="h-4 w-4" />
             </div>
@@ -164,7 +164,7 @@ export function AshChat({
                 <span className="text-sm font-medium">Ash</span>
                 <span className="h-2 w-2 rounded-full bg-mint-500 shadow-[0_0_6px_var(--mint-500)]" />
               </div>
-              <div className="text-eyebrow text-cobalt-100">
+              <div className="text-eyebrow text-white/80">
                 Your peer review co-pilot
               </div>
             </div>
@@ -189,14 +189,14 @@ export function AshChat({
 
             {loading && (
               <div className="flex items-end gap-2">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-cobalt-700 text-white">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-brand-hover text-white">
                   <SparkIcon className="h-3 w-3" />
                 </div>
-                <div className="rounded-lg rounded-bl-sm border border-cobalt-100 bg-status-info-bg px-3 py-2">
+                <div className="rounded-lg rounded-bl-sm border border-status-info-bg bg-status-info-bg px-3 py-2">
                   <div className="flex items-center gap-1">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-cobalt-500" style={{ animationDelay: '0ms' }} />
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-cobalt-500" style={{ animationDelay: '200ms' }} />
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-cobalt-500" style={{ animationDelay: '400ms' }} />
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-brand" style={{ animationDelay: '0ms' }} />
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-brand" style={{ animationDelay: '200ms' }} />
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-brand" style={{ animationDelay: '400ms' }} />
                   </div>
                 </div>
               </div>
@@ -230,13 +230,13 @@ export function AshChat({
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask Ash anything..."
               disabled={loading}
-              className="flex-1 rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary placeholder:text-ink-tertiary focus:border-cobalt-500 focus:outline-none focus:ring-[3px] focus:ring-cobalt-300/30 disabled:opacity-60"
+              className="flex-1 rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary placeholder:text-ink-tertiary focus:border-brand focus:outline-none focus:ring-[3px] focus:ring-brand/30 disabled:opacity-60"
             />
             <button
               type="submit"
               aria-label="Send"
               disabled={loading || !input.trim()}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-cobalt-700 text-white transition-colors hover:bg-cobalt-800 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-brand-hover text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Send className="h-4 w-4" />
             </button>
@@ -257,10 +257,10 @@ function MessageBubble({
   if (role === 'assistant') {
     return (
       <div className="flex items-end gap-2">
-        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-cobalt-700 text-white">
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-brand-hover text-white">
           <SparkIcon className="h-3 w-3" />
         </div>
-        <div className="max-w-[80%] whitespace-pre-wrap rounded-lg rounded-bl-sm border border-cobalt-100 bg-status-info-bg px-3 py-2 text-sm text-ink-primary">
+        <div className="max-w-[80%] whitespace-pre-wrap rounded-lg rounded-bl-sm border border-status-info-bg bg-status-info-bg px-3 py-2 text-sm text-ink-primary">
           {content}
         </div>
       </div>

@@ -441,7 +441,7 @@ export default async function CaseDetailPage({
                 <h4 className="mb-2 text-sm font-medium">
                   Final Narrative
                 </h4>
-                <div className="rounded-md border-l-4 border-status-success-fg/30 bg-mint-50 p-4 dark:bg-cobalt-700/20">
+                <div className="rounded-md border-l-4 border-status-success-fg/30 bg-mint-50 p-4 dark:bg-brand/15">
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">
                     {reviewCase.review_result.narrative_final}
                   </p>

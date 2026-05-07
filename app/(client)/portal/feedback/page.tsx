@@ -75,8 +75,8 @@ export default function FeedbackPage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="rounded-xl p-8 text-center" style={{ backgroundColor: 'var(--color-card)' }}>
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cobalt-500/20">
-            <Star className="h-8 w-8 fill-cobalt-500 text-status-info-dot" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand/15">
+            <Star className="h-8 w-8 fill-brand text-status-info-dot" />
           </div>
           <h2 className="text-xl font-medium text-ink-primary">Thank you!</h2>
           <p className="mt-2 text-sm text-ink-tertiary">
