@@ -608,6 +608,10 @@ export function NewBatchModal({
       setStep(2);
       return;
     }
+    if (skipCompanyStep && step <= 2) {
+      handleClose();
+      return;
+    }
     if (step > 1) setStep(step - 1);
     else handleClose();
   }
@@ -643,7 +647,19 @@ export function NewBatchModal({
             <div className="flex items-center justify-between border-b px-5 py-4">
               <div>
                 <h2 className="text-base font-medium text-ink-primary">New Batch</h2>
-                <p className="text-xs text-ink-secondary">Step {skipCompanyStep ? step - 1 : step} of {skipCompanyStep ? 4 : 5}</p>
+                <p className="text-xs text-ink-secondary">
+                  {(() => {
+                    const visibleSteps = [
+                      ...(!skipCompanyStep ? [1] : []),
+                      2,
+                      ...(!skipFormStep ? [3] : []),
+                      4,
+                      5,
+                    ];
+                    const displayStep = visibleSteps.indexOf(step) + 1;
+                    return `Step ${displayStep} of ${visibleSteps.length}`;
+                  })()}
+                </p>
               </div>
               <button
                 onClick={handleClose}
@@ -655,14 +671,23 @@ export function NewBatchModal({
 
             {/* Progress bar */}
             <div className="flex gap-1 border-b bg-ink-50 px-5 py-2">
-              {(skipCompanyStep ? [2, 3, 4, 5] : [1, 2, 3, 4, 5]).map((n) => (
-                <div
-                  key={n}
-                  className={`h-1 flex-1 rounded-full ${
-                    n <= step ? "bg-brand" : "bg-ink-200"
-                  }`}
-                />
-              ))}
+              {(() => {
+                const visibleSteps = [
+                  ...(!skipCompanyStep ? [1] : []),
+                  2,
+                  ...(!skipFormStep ? [3] : []),
+                  4,
+                  5,
+                ];
+                return visibleSteps.map((n) => (
+                  <div
+                    key={n}
+                    className={`h-1 flex-1 rounded-full ${
+                      n <= step ? "bg-brand" : "bg-ink-200"
+                    }`}
+                  />
+                ));
+              })()}
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-5">
