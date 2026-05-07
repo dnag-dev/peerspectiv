@@ -131,7 +131,7 @@ export async function analyzeChart(caseId: string): Promise<void> {
 
     let chartText: string;
     let pageCount = 0;
-    let extractionMethod: 'unpdf' | 'claude-native' | 'failed' | 'sample' = 'sample';
+    let extractionMethod: 'claude-native' | 'failed' | 'sample' = 'sample';
 
     if (caseData.chartFilePath) {
       // Download and extract PDF

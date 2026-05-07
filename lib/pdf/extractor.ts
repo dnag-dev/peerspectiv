@@ -4,7 +4,7 @@ import { callClaude } from '@/lib/ai/anthropic';
 const MAX_CHARS = 80000;
 const TEXT_LAYER_THRESHOLD = 200; // < 200 chars => probably scanned
 
-export type ExtractionMethod = 'unpdf' | 'claude-native' | 'failed';
+export type ExtractionMethod = 'claude-native' | 'failed';
 
 export interface ExtractedPDF {
   text: string;
@@ -24,48 +24,11 @@ function getAnthropic(): Anthropic {
 }
 
 /**
- * Extract text from PDF pages using unpdf (pure JS, works in Node.js serverless).
- */
-async function extractWithUnpdf(buffer: Buffer): Promise<{ text: string; pages: string[]; pageCount: number }> {
-  const { extractText } = await import('unpdf');
-  const result = await extractText(new Uint8Array(buffer));
-  const pages = Array.isArray(result.text) ? result.text : [String(result.text)];
-  const fullText = pages.join('\n');
-  return { text: fullText, pages, pageCount: pages.length };
-}
-
-/**
- * Two-attempt PDF extraction:
- *   1. unpdf — instant, free, pure JS. Wins for native text PDFs.
- *   2. claude-native — fallback for scanned/image PDFs. Sends raw PDF
- *      bytes as base64 to claude-sonnet-4-5 via the document content block.
+ * PDF text extraction using Claude's native PDF document support.
+ * Sends raw PDF bytes as base64 to Claude via the document content block.
  */
 export async function extractTextFromPDF(buffer: Buffer): Promise<ExtractedPDF> {
-  let pageCount = 0;
-
-  // ── ATTEMPT 1: unpdf ────────────────────────────────────────────────
-  try {
-    const result = await extractWithUnpdf(buffer);
-    pageCount = result.pageCount;
-    const cleanText = result.text.trim();
-
-    if (cleanText.length > TEXT_LAYER_THRESHOLD) {
-      const truncated = cleanText.length > MAX_CHARS;
-      return {
-        text: truncated
-          ? cleanText.slice(0, MAX_CHARS) + '\n[... document truncated for analysis ...]'
-          : cleanText,
-        pageCount,
-        truncated,
-        method: 'unpdf',
-        isScanned: false,
-      };
-    }
-  } catch (err) {
-    console.warn('[pdf] unpdf failed, will try claude-native:', (err as Error).message);
-  }
-
-  // ── ATTEMPT 2: claude-native PDF extraction ────────────────────────
+  // ── Claude-native PDF extraction ────────────────────────────────────
   try {
     const client = getAnthropic();
     const base64 = buffer.toString('base64');
@@ -161,15 +124,13 @@ Use null for any field you cannot confidently extract. Do not guess.`;
 
 /** Extract patient/provider/encounter metadata from the first ~3 pages of chart text. */
 export async function extractChartMetadata(buffer: Buffer): Promise<ChartMetadataGuess> {
+  // Extract text via Claude native PDF support
   let firstPagesText = '';
   try {
-    const result = await extractWithUnpdf(buffer);
-    firstPagesText = result.pages
-      .slice(0, 3)
-      .join('\n')
-      .trim();
+    const extracted = await extractTextFromPDF(buffer);
+    firstPagesText = extracted.text.slice(0, 12000).trim();
   } catch (err) {
-    console.warn('[pdf] metadata extraction unpdf failed:', (err as Error).message);
+    console.warn('[pdf] metadata extraction failed:', (err as Error).message);
     return EMPTY_METADATA;
   }
 

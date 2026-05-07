@@ -105,7 +105,7 @@ export function ClientFormsView({ forms, companyId, companyName }: Props) {
           <FileText className="mb-4 h-12 w-12 text-gray-300" />
           <h3 className="text-lg font-medium text-ink-primary">No forms configured</h3>
           <p className="mt-1 text-sm text-ink-secondary">
-            Click "New Form" to create your first review form.
+            Click &ldquo;New Form&rdquo; to create your first review form.
           </p>
         </div>
       ) : (

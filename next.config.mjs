@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: ['docusign-esign', 'pdf-parse', 'unpdf'],
+    serverComponentsExternalPackages: ['docusign-esign', 'pdf-parse'],
   },
 };
 

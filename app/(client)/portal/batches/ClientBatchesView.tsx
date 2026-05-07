@@ -73,7 +73,7 @@ export function ClientBatchesView({
           <FolderOpen className="mb-4 h-12 w-12 text-gray-300" />
           <h3 className="text-lg font-medium text-ink-primary">No batches yet</h3>
           <p className="mt-1 text-sm text-ink-secondary">
-            Click "New Batch" to upload your first chart batch.
+            Click &ldquo;New Batch&rdquo; to upload your first chart batch.
           </p>
         </div>
       ) : (
