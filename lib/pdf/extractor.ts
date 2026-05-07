@@ -28,6 +28,13 @@ function getAnthropic(): Anthropic {
  * Sends raw PDF bytes as base64 to Claude via the document content block.
  */
 export async function extractTextFromPDF(buffer: Buffer): Promise<ExtractedPDF> {
+  // Heuristic page count from the raw PDF dictionary — Claude's vision
+  // extraction doesn't return one, but downstream consumers expect a
+  // numeric estimate for paging hints. Counts /Type /Page occurrences.
+  const headerStr = buffer.toString('latin1', 0, Math.min(buffer.length, 200_000));
+  const pageMatches = headerStr.match(/\/Type\s*\/Page\b(?!s)/g);
+  const pageCount = Math.max(1, pageMatches ? pageMatches.length : 1);
+
   // ── Claude-native PDF extraction ────────────────────────────────────
   try {
     const client = getAnthropic();
