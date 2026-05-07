@@ -255,8 +255,8 @@ export function ClientSubmitWizard({
           <Check className="h-6 w-6" />
         </div>
         <div>
-          <h3 className="text-lg font-medium text-white">Records submitted</h3>
-          <p className="mt-1 text-sm text-white/60">
+          <h3 className="text-lg font-medium text-ink-primary">Records submitted</h3>
+          <p className="mt-1 text-sm text-ink-tertiary">
             Peerspectiv has been notified. Your batch will be activated after an
             intake check — you&rsquo;ll see it update on the dashboard.
           </p>
@@ -271,7 +271,7 @@ export function ClientSubmitWizard({
             batchNameTouched.current = false;
             setRows([]);
           }}
-          className="rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white hover:bg-white/10"
+          className="rounded-lg border border-border-default bg-surface-card px-4 py-2 text-sm font-medium text-ink-primary hover:bg-white/10"
         >
           Submit another batch
         </button>
@@ -280,9 +280,9 @@ export function ClientSubmitWizard({
   }
 
   const btnDark =
-    "rounded-lg bg-[#0F6E56] px-4 py-2 text-sm font-medium text-white hover:bg-[#2658b7] disabled:opacity-50 disabled:cursor-not-allowed";
+    "rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed";
   const btnGhost =
-    "rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10";
+    "rounded-lg border border-border-default bg-surface-card px-4 py-2 text-sm text-ink-primary hover:bg-white/10";
 
   return (
     <div className="space-y-5">
@@ -292,7 +292,7 @@ export function ClientSubmitWizard({
           <div
             key={n}
             className={`h-1 flex-1 rounded-full ${
-              n <= step ? "bg-[#0F6E56]" : "bg-white/10"
+              n <= step ? "bg-brand" : "bg-white/10"
             }`}
           />
         ))}
@@ -301,7 +301,7 @@ export function ClientSubmitWizard({
 
       {step === 1 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-white">
+          <h3 className="text-sm font-medium text-ink-primary">
             What specialty are these charts?
           </h3>
           <p className="text-xs text-white/50">
@@ -319,8 +319,8 @@ export function ClientSubmitWizard({
                 }}
                 className={`rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
                   specialty === s
-                    ? "border-[#0F6E56] bg-[#0F6E56]/20 text-white"
-                    : "border-white/10 bg-white/5 text-white/80 hover:border-white/20 hover:bg-white/10"
+                    ? "border-brand bg-brand/20 text-white"
+                    : "border-border-subtle bg-surface-card text-ink-secondary hover:border-border-default hover:bg-white/10"
                 }`}
               >
                 {s}
@@ -344,7 +344,7 @@ export function ClientSubmitWizard({
 
       {step === 2 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-white">
+          <h3 className="text-sm font-medium text-ink-primary">
             Which review form applies?
           </h3>
           <p className="text-xs text-white/50">
@@ -358,12 +358,12 @@ export function ClientSubmitWizard({
                 onClick={() => setFormId(f.id)}
                 className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
                   formId === f.id
-                    ? "border-[#0F6E56] bg-[#0F6E56]/15"
-                    : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                    ? "border-brand bg-brand/15"
+                    : "border-border-subtle bg-surface-card hover:border-border-default hover:bg-white/10"
                 }`}
               >
                 <div>
-                  <div className="font-medium text-white">{f.form_name}</div>
+                  <div className="font-medium text-ink-primary">{f.form_name}</div>
                   <div className="text-xs text-white/50">Specialty: {f.specialty}</div>
                 </div>
                 {formId === f.id && <Check className="h-4 w-4 text-status-info-dot" />}
@@ -375,7 +375,7 @@ export function ClientSubmitWizard({
 
       {step === 3 && (
         <div className="space-y-4">
-          <h3 className="text-sm font-medium text-white">Upload charts</h3>
+          <h3 className="text-sm font-medium text-ink-primary">Upload charts</h3>
 
           <div>
             <label className="mb-1 block text-xs font-medium text-white/70">
@@ -388,7 +388,7 @@ export function ClientSubmitWizard({
                 setBatchName(e.target.value);
               }}
               placeholder={`e.g. Q2 2026 — ${specialty}`}
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#0F6E56] focus:outline-none"
+              className="w-full rounded-lg border border-border-subtle bg-surface-card px-4 py-2.5 text-sm text-ink-primary placeholder:text-ink-tertiary focus:border-brand focus:outline-none"
             />
           </div>
 
@@ -403,10 +403,10 @@ export function ClientSubmitWizard({
               e.stopPropagation();
               handleFiles(e.dataTransfer.files);
             }}
-            className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-white/20 bg-white/5 px-6 py-10 text-center hover:border-[#0F6E56] hover:bg-[#0F6E56]/10"
+            className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border-default bg-surface-card px-6 py-10 text-center hover:border-brand hover:bg-brand/10"
           >
-            <Upload className="h-6 w-6 text-white/40" />
-            <span className="text-sm font-medium text-white">
+            <Upload className="h-6 w-6 text-ink-tertiary" />
+            <span className="text-sm font-medium text-ink-primary">
               Drop PDFs here or click to browse
             </span>
             <span className="text-xs text-white/50">
@@ -427,10 +427,10 @@ export function ClientSubmitWizard({
               {rows.map((row, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm"
+                  className="flex items-center gap-3 rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium text-white">
+                    <div className="truncate font-medium text-ink-primary">
                       {row.file.name}
                     </div>
                     <div className="text-xs text-white/50">
@@ -440,7 +440,7 @@ export function ClientSubmitWizard({
                   <select
                     value={row.providerId}
                     onChange={(e) => updateRow(i, { providerId: e.target.value })}
-                    className="rounded-md border border-white/10 bg-[#172554] px-2 py-1.5 text-xs text-white"
+                    className="rounded-md border border-border-subtle bg-surface-muted px-2 py-1.5 text-xs text-ink-primary"
                   >
                     <option value="">Pick provider…</option>
                     {specialtyProviders.map((p) => (
@@ -451,7 +451,7 @@ export function ClientSubmitWizard({
                   </select>
                   <button
                     onClick={() => removeRow(i)}
-                    className="rounded p-1 text-white/40 hover:bg-white/10 hover:text-status-danger-dot"
+                    className="rounded p-1 text-ink-tertiary hover:bg-white/10 hover:text-status-danger-dot"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -464,20 +464,20 @@ export function ClientSubmitWizard({
 
       {step === 4 && (
         <div className="space-y-4">
-          <h3 className="text-sm font-medium text-white">Review and submit</h3>
+          <h3 className="text-sm font-medium text-ink-primary">Review and submit</h3>
 
-          <dl className="space-y-1.5 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm">
+          <dl className="space-y-1.5 rounded-lg border border-border-subtle bg-surface-card px-4 py-3 text-sm">
             <div className="flex justify-between">
               <dt className="text-white/50">Client</dt>
-              <dd className="font-medium text-white">{company.name}</dd>
+              <dd className="font-medium text-ink-primary">{company.name}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-white/50">Specialty</dt>
-              <dd className="font-medium text-white">{specialty}</dd>
+              <dd className="font-medium text-ink-primary">{specialty}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-white/50">Form</dt>
-              <dd className="font-medium text-white">
+              <dd className="font-medium text-ink-primary">
                 {forms.find((f) => f.id === effectiveFormId)?.form_name}
                 {skipFormStep && (
                   <span className="ml-2 rounded bg-brand/15 px-1.5 py-0.5 text-[10px] font-medium text-mint-200">
@@ -488,11 +488,11 @@ export function ClientSubmitWizard({
             </div>
             <div className="flex justify-between">
               <dt className="text-white/50">Batch label</dt>
-              <dd className="font-medium text-white">{batchName}</dd>
+              <dd className="font-medium text-ink-primary">{batchName}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-white/50">Charts</dt>
-              <dd className="font-medium text-white">{rows.length}</dd>
+              <dd className="font-medium text-ink-primary">{rows.length}</dd>
             </div>
           </dl>
 
@@ -502,17 +502,17 @@ export function ClientSubmitWizard({
               return (
                 <div
                   key={i}
-                  className="flex items-center justify-between rounded-md border border-white/10 bg-white/5 px-3 py-2 text-xs"
+                  className="flex items-center justify-between rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-xs"
                 >
                   <div className="min-w-0 flex-1 truncate">
-                    <span className="font-medium text-white">
+                    <span className="font-medium text-ink-primary">
                       {p ? `${p.first_name} ${p.last_name}` : "Unassigned"}
                     </span>
                     <span className="ml-2 text-white/50">{row.file.name}</span>
                   </div>
                   <div className="ml-3 flex items-center gap-1.5">
                     {row.status === "pending" && (
-                      <span className="text-white/40">Queued</span>
+                      <span className="text-ink-tertiary">Queued</span>
                     )}
                     {row.status === "uploading" && (
                       <>
@@ -543,7 +543,7 @@ export function ClientSubmitWizard({
             </div>
           )}
 
-          <p className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/60">
+          <p className="rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-xs text-ink-tertiary">
             Submitting will queue this batch for Peerspectiv intake. Peerspectiv
             will activate it and assign peers.
           </p>

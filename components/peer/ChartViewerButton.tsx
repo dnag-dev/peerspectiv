@@ -10,7 +10,7 @@ export function ChartViewerButton({ url }: { url: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-border-default bg-surface-card px-4 py-3 text-sm font-medium text-ink-primary transition-colors hover:bg-white/10"
       >
         <svg
           className="h-4 w-4"
@@ -39,24 +39,24 @@ export function ChartViewerButton({ url }: { url: string }) {
           onClick={() => setOpen(false)}
         >
           <div
-            className="relative flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0F2040] shadow-2xl"
+            className="relative flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-card shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-              <h3 className="text-sm font-medium text-white">Medical Chart</h3>
+            <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">
+              <h3 className="text-sm font-medium text-ink-primary">Medical Chart</h3>
               <div className="flex items-center gap-2">
                 <a
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-md border border-white/20 bg-white/5 px-3 py-1.5 text-xs text-white hover:bg-white/10"
+                  className="rounded-md border border-border-default bg-surface-card px-3 py-1.5 text-xs text-ink-primary hover:bg-white/10"
                 >
                   Open in new tab
                 </a>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-md border border-white/20 bg-white/5 px-3 py-1.5 text-xs text-white hover:bg-white/10"
+                  className="rounded-md border border-border-default bg-surface-card px-3 py-1.5 text-xs text-ink-primary hover:bg-white/10"
                 >
                   Close
                 </button>

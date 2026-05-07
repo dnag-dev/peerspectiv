@@ -214,7 +214,7 @@ export function AddProspectModal({ stayOnPage = false }: AddProspectModalProps =
       }}
     >
       <DialogTrigger asChild>
-        <Button data-testid="add-prospect" className="bg-[#0F6E56] text-white hover:bg-[#2558bb]">
+        <Button data-testid="add-prospect" className="bg-brand text-white hover:bg-brand-hover">
           <Plus className="mr-2 h-4 w-4" />
           Add New Company
         </Button>
@@ -399,11 +399,11 @@ export function AddProspectModal({ stayOnPage = false }: AddProspectModalProps =
           </div>
 
           {error && !duplicates && (
-            <p className="text-sm text-[#EF4444]">{error}</p>
+            <p className="text-sm text-status-danger-dot">{error}</p>
           )}
 
           {duplicates && duplicates.length > 0 && (
-            <div className="rounded-md border border-[#F59E0B] bg-[#F59E0B]/10 p-3">
+            <div className="rounded-md border border-status-warning-dot bg-status-warning-bg p-3">
               <div className="flex items-start gap-2">
                 <AlertTriangle className="mt-0.5 h-4 w-4 text-[#F59E0B]" />
                 <div className="flex-1 space-y-2">
@@ -412,7 +412,7 @@ export function AddProspectModal({ stayOnPage = false }: AddProspectModalProps =
                   <ul className="space-y-1 text-xs text-ink-tertiary">
                     {duplicates.map((d) => (
                       <li key={d.id} className="flex items-center justify-between gap-2">
-                        <span className="font-medium text-white">{d.name}</span>
+                        <span className="font-medium text-ink-primary">{d.name}</span>
                         <span className="text-ink-tertiary">
                           {[d.city, d.state].filter(Boolean).join(', ')} · {d.status}
                         </span>
@@ -458,7 +458,7 @@ export function AddProspectModal({ stayOnPage = false }: AddProspectModalProps =
             </Button>
             <Button
               type="submit"
-              className="bg-[#0F6E56] text-white hover:bg-[#2558bb]"
+              className="bg-brand text-white hover:bg-brand-hover"
               disabled={loading}
             >
               {loading ? 'Creating…' : 'Create Company'}

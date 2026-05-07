@@ -64,7 +64,7 @@ export default function GatePage({
             autoFocus
             autoComplete="off"
             placeholder="Access key"
-            className="w-full rounded-lg border border-border-default px-4 py-3 text-sm text-ink-primary focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/20"
+            className="w-full rounded-lg border border-border-default px-4 py-3 text-sm text-ink-primary focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
 
           {error && (
@@ -75,7 +75,7 @@ export default function GatePage({
 
           <button
             type="submit"
-            className="mt-4 w-full rounded-lg bg-[#1D4ED8] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#1a43a0] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/40"
+            className="mt-4 w-full rounded-lg bg-brand px-4 py-3 text-sm font-medium text-white shadow hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand/40"
           >
             Continue
           </button>

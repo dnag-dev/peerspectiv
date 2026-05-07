@@ -70,7 +70,7 @@ export default async function ClientSubmitPage() {
         </p>
       </div>
 
-      <div className="rounded-xl border border-white/10 bg-[#0F2040] p-6 shadow-sm">
+      <div className="rounded-xl border border-border-subtle bg-surface-card p-6 shadow-sm">
         <ClientSubmitWizard
           company={company}
           providers={providers}

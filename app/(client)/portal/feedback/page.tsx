@@ -137,7 +137,7 @@ export default function FeedbackPage() {
                 onClick={() => setWouldRecommend('true')}
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition-colors ${
                   wouldRecommend === 'true'
-                    ? 'bg-[#0F6E56] text-ink-primary'
+                    ? 'bg-brand text-white'
                     : 'bg-white/10 text-ink-tertiary hover:bg-white/20'
                 }`}
               >
@@ -148,7 +148,7 @@ export default function FeedbackPage() {
                 onClick={() => setWouldRecommend('false')}
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition-colors ${
                   wouldRecommend === 'false'
-                    ? 'bg-[#0F6E56] text-ink-primary'
+                    ? 'bg-brand text-white'
                     : 'bg-white/10 text-ink-tertiary hover:bg-white/20'
                 }`}
               >
@@ -169,7 +169,7 @@ export default function FeedbackPage() {
               rows={4}
               value={openFeedback}
               onChange={(e) => setOpenFeedback(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-ink-primary placeholder-ink-500 focus:border-[#0F6E56] focus:outline-none focus:ring-1 focus:ring-[#0F6E56]"
+              className="mt-2 w-full rounded-lg border border-border-subtle bg-surface-card px-4 py-3 text-sm text-ink-primary placeholder:text-ink-tertiary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               placeholder="Share your thoughts..."
             />
           </div>
