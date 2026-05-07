@@ -85,11 +85,12 @@ interface CaseGroup {
 function groupCases(cases: ReviewCase[]): CaseGroup[] {
   const groups = new Map<string, CaseGroup>();
   for (const c of cases) {
-    // Only group when BOTH a provider and batch_period are present. Otherwise,
+    // Only group when BOTH a provider and a period label are present. Otherwise,
     // fall back to a per-case key so the card renders solo (current behavior).
-    const groupable = c.provider_id && c.batch_period;
+    const period = c.batch_period || c.cadence_period_label;
+    const groupable = c.provider_id && period;
     const key = groupable
-      ? `${c.provider_id}::${c.batch_period}`
+      ? `${c.provider_id}::${period}`
       : `solo::${c.id}`;
     const existing = groups.get(key);
     if (existing) {
@@ -98,7 +99,7 @@ function groupCases(cases: ReviewCase[]): CaseGroup[] {
       groups.set(key, {
         key,
         providerId: c.provider_id,
-        batchPeriod: c.batch_period,
+        batchPeriod: period ?? null,
         cases: [c],
       });
     }

@@ -91,6 +91,7 @@ export interface ReviewCase {
   priority: 'normal' | 'high' | 'urgent';
   notes: string | null;
   batch_period: string | null;
+  cadence_period_label?: string | null;
   // Post-Ashton review (009): admin-only patient identifiers + pediatric flag
   mrn_number?: string | null;
   patient_first_name?: string | null;
