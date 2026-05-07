@@ -5,37 +5,48 @@
 ```
                     ┌──────────────┐
                     │  UNASSIGNED  │ ← Case created during batch upload
-                    └──────┬───────┘
-                           │
-                    [AI suggests peer]
-                           │
-                    ┌──────v──────────┐
-                    │PENDING APPROVAL │ ← AI suggested a peer, admin must approve
-                    └──┬──────────┬───┘
-                       │          │
-                 [Approve]    [Reject]
-                       │          │
-                       v          └──→ UNASSIGNED (peer cleared)
-                 ┌───────────┐
-                 │  ASSIGNED  │ ← Peer confirmed, 7-day due date set
-                 └──┬─────┬──┘
-                    │     │
-           [Peer    │     │  [Due date passes]
-           submits] │     │  (daily cron)
-                    │     │
-                    v     v
-             ┌──────────┐  ┌──────────┐
-             │COMPLETED │  │ PAST DUE │
-             └──────────┘  └────┬─────┘
-                                │
-                         [Peer can still submit]
-                                │
-                                v
-                          ┌──────────┐
-                          │COMPLETED │
-                          └──────────┘
+                    └──┬───────┬──┘
+                       │       │
+            [AI suggests]   [Admin manually assigns]
+                       │       │
+                       v       │
+                ┌──────────────┐│
+                │PENDING       ││
+                │APPROVAL      ││
+                └──┬────────┬──┘│
+                   │        │   │
+             [Approve]  [Reject]│
+                   │        │   │
+                   │    UNASSIGNED
+                   │        │
+                   v        │
+                ┌──────────┐◄──┘
+                │ ASSIGNED │ ← Peer confirmed, 7-day due date set
+                └──┬───────┘
+                   │
+            [Peer opens review]
+                   │
+                   v
+             ┌─────────────┐
+             │ IN PROGRESS │ ← Peer started working on the review
+             └──┬──────┬───┘
+                │      │
+       [Peer    │      │  [Due date passes]
+       submits] │      │  (daily cron)
+                │      │
+                v      v
+         ┌──────────┐  ┌──────────┐
+         │COMPLETED │  │ PAST DUE │
+         └──────────┘  └────┬─────┘
+                            │
+                     [Peer can still submit]
+                            │
+                            v
+                      ┌──────────┐
+                      │COMPLETED │
+                      └──────────┘
 
-    From ASSIGNED or PAST_DUE:
+    From ASSIGNED, IN_PROGRESS, or PAST_DUE:
          │
     [Peer returns case]
          │
@@ -60,8 +71,8 @@
 |---|---|
 | **Unassigned** | Case created but no peer assigned. Awaiting AI suggestion or manual assignment. |
 | **Pending Approval** | AI suggested a peer match. Admin must approve, reject, or reassign before the peer can start. |
-| **Assigned** | Admin approved the assignment. Peer can now review the chart. 7-day due date countdown begins. |
-| **In Progress** | Peer is actively working on the review. (Semantic status — not explicitly set in DB, inferred from workflow.) |
+| **Assigned** | Admin approved the assignment (or manually assigned). Peer can now review the chart. 7-day due date countdown begins. |
+| **In Progress** | Peer opened the review form and started working. Set automatically when peer loads the split-screen page. |
 | **Completed** | Peer submitted the review. Score computed. Case is immutable — cannot be reassigned or unassigned. |
 | **Past Due** | Due date passed without completion. Peer can still submit. Admin can reassign or unassign. |
 | **Returned by Peer** | Peer returned the case with a reason (min 10 characters). Peer cleared. Needs admin reassignment. |
@@ -72,13 +83,19 @@
 |---|---|---|---|
 | _(new)_ | Unassigned | Batch upload creates case | System |
 | Unassigned | Pending Approval | AI suggests a peer | System (auto-suggest) |
+| Unassigned | Assigned | Admin manually assigns via peer picker | Admin |
 | Pending Approval | Assigned | Admin approves | Admin |
 | Pending Approval | Unassigned | Admin rejects AI suggestion | Admin |
-| Assigned | Completed | Peer submits review | Peer |
+| Assigned | In Progress | Peer opens the review (split-screen page loads) | System (auto) |
 | Assigned | Past Due | Due date passes (daily cron) | System |
 | Assigned | Returned by Peer | Peer returns case with reason | Peer |
 | Assigned | Unassigned | Admin unassigns | Admin |
 | Assigned | Assigned | Admin reassigns to different peer | Admin |
+| In Progress | Completed | Peer submits review | Peer |
+| In Progress | Past Due | Due date passes (daily cron) | System |
+| In Progress | Returned by Peer | Peer returns case with reason | Peer |
+| In Progress | Unassigned | Admin unassigns | Admin |
+| In Progress | Assigned | Admin reassigns to different peer | Admin |
 | Past Due | Completed | Peer submits review (still allowed) | Peer |
 | Past Due | Unassigned | Admin unassigns | Admin |
 | Past Due | Assigned | Admin reassigns | Admin |
@@ -88,22 +105,32 @@
 
 ## Operations Matrix by Status
 
-| Operation | Unassigned | Pending Approval | Assigned | Completed | Past Due | Returned by Peer |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **AI Suggest** | Y | - | - | - | - | Y |
-| **Approve** | - | Y | - | - | - | - |
-| **Reject** | - | Y | - | - | - | - |
-| **Reassign** | - | Y | Y | - | Y | Y |
-| **Unassign** | - | Y | Y | - | Y | - |
-| **Peer Submit Review** | - | - | Y | - | Y | - |
-| **Peer Return Case** | - | - | Y | - | Y | - |
-| **Peer Request Reassignment** | - | - | Y | - | Y | - |
-| **Flag Past Due (cron)** | - | - | Y | - | - | - |
-| **View Case Detail** | Y | Y | Y | Y | Y | Y |
+| Operation | Unassigned | Pending Approval | Assigned | In Progress | Completed | Past Due | Returned by Peer |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Assign (manual)** | Y | - | - | - | - | - | - |
+| **AI Suggest** | Y | - | - | - | - | - | Y |
+| **Approve** | - | Y | - | - | - | - | - |
+| **Reject** | - | Y | - | - | - | - | - |
+| **Reassign** | - | Y | Y | Y | - | Y | Y |
+| **Unassign** | - | Y | Y | Y | - | Y | - |
+| **Peer Open (→ in_progress)** | - | - | Y | - | - | - | - |
+| **Peer Submit Review** | - | - | Y | Y | - | Y | - |
+| **Peer Return Case** | - | - | Y | Y | - | Y | - |
+| **Peer Request Reassignment** | - | - | Y | Y | - | Y | - |
+| **Flag Past Due (cron)** | - | - | Y | Y | - | - | - |
+| **View Case Detail** | Y | Y | Y | Y | Y | Y | Y |
 
 **Key rule**: Completed cases are **immutable** — no reassign, unassign, or re-review allowed (SA-070).
 
 ## What Happens at Each Transition
+
+### Unassigned → Assigned (Admin Manual Assign)
+- Admin clicks "Assign" button on unassigned case
+- Peer picker modal opens, admin selects a peer
+- Sets `peerId`, `assignedAt = now()`, `dueDate = now() + 7 days`
+- Sets `assignmentSource = 'reassigned'`
+- Status → `assigned`
+- Syncs batch status (may transition batch to `in_progress`)
 
 ### Unassigned → Pending Approval (AI Suggest)
 - AI analyzes case specialty, provider, and available peers
@@ -123,7 +150,14 @@
 - Sets `assignmentSource = 'manual'`
 - Status → `unassigned`
 
-### Assigned → Completed (Peer Submit)
+### Assigned → In Progress (Peer Opens Review)
+- Peer opens the split-screen review page
+- `PeerCaseSplit` component fires `useEffect` on mount
+- Calls `POST /api/cases/{id}/start`
+- Status → `in_progress` (idempotent — no-op if already in_progress or completed)
+- Syncs batch status
+
+### In Progress → Completed (Peer Submit) / Assigned → Completed (Peer Submit)
 - Creates `reviewResult` row with scores, narrative, criteria
 - Status → `completed`
 - Decrements `peer.activeCasesCount`
@@ -142,7 +176,7 @@
 - Sets `returnedByPeerAt`, `returnedReason`
 - Status → `returned_by_peer`
 
-### Admin Reassign (from Assigned/Past Due/Pending Approval)
+### Admin Reassign (from Unassigned/Assigned/In Progress/Past Due/Pending Approval)
 - Validates target peer is `status = 'active'`
 - Validates case is NOT `completed`
 - Swaps `peerId` to new peer
@@ -193,13 +227,14 @@ Separate from admin reassignment — this is when a peer asks to be taken off a 
 
 **Note**: This does NOT change the case status. The case remains `assigned` while the request is pending.
 
-## UI Actions by Status (Reviews Page)
+## UI Actions by Status (Reviews Page & Batch Detail)
 
 | Status | Actions Shown |
 |---|---|
-| Unassigned | _(no actions — needs AI suggest first)_ |
+| Unassigned | Assign |
 | Pending Approval | Approve, Reassign, Unassign |
 | Assigned | Reassign, Unassign |
+| In Progress | Reassign, Unassign |
 | Completed | _(no actions — immutable)_ |
 | Past Due | Reassign, Unassign |
 | Returned by Peer | Reassign |
@@ -216,13 +251,13 @@ The `past_due` status is set by a **daily cron job** (`/api/cron/flag-past-due`)
 
 **Due date is set to 7 days from approval** — so a case becomes past_due if the peer doesn't submit within a week.
 
-## In Progress — Semantic Only
+## In Progress — Auto-Set When Peer Opens Review
 
-The `in_progress` status is defined in the TypeScript `CaseStatus` type but is **never explicitly set** anywhere in the code. The DB value stays `assigned` when a peer opens and starts working on a review.
+The `in_progress` status is set automatically when a peer opens the split-screen review page. The `PeerCaseSplit` component fires a `useEffect` on mount that calls `POST /api/cases/{id}/start`, which transitions `assigned` → `in_progress`.
 
-The peer portal counts both `assigned` and `in_progress` together as "In Progress" for display purposes. The cron job also checks both statuses for past_due detection.
+This is idempotent — calling it multiple times (e.g., peer refreshes the page) has no effect if the case is already `in_progress` or `completed`.
 
-**Recommendation**: Either remove `in_progress` from the type definition, or set it when a peer first opens/saves a draft of the review form.
+The peer portal counts both `assigned` and `in_progress` together as "In Progress" for display purposes. The cron job checks both statuses for past_due detection.
 
 ## Peer Portal — Case Visibility
 
@@ -235,7 +270,7 @@ Cases appear on a peer's dashboard based on their `peerId`:
 
 ## Notes
 
-1. **`in_progress` is semantic only** — defined in the CaseStatus type but never explicitly set in code. The DB value stays `assigned`. Peer portal groups both as "In Progress".
+1. **`in_progress` is auto-set** — transitions from `assigned` when the peer opens the review form. Peer portal groups `assigned` + `in_progress` together as "In Progress".
 2. **`returned_by_peer` exists in DB** but is not in the CaseStatus TypeScript type. Should be added for type safety.
 3. **Completed is terminal** — once a review is submitted, the case cannot be modified, reassigned, or unassigned.
 4. **Past due doesn't block submission** — the peer can still submit after the due date. It's a warning flag, not a hard block.
