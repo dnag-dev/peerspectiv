@@ -4,6 +4,7 @@ import { reviewCases, peers } from '@/lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { isAssignable, type PeerStatus } from '@/lib/peers/state-machine';
 import { auditLog } from '@/lib/utils/audit';
+import { syncBatchStatus } from '@/lib/batches/sync-status';
 
 export async function GET(
   request: NextRequest,
@@ -124,7 +125,7 @@ export async function PATCH(
     if (action === 'reassign') {
       // SA-070: Block reassign of completed reviews
       const [caseRow] = await db
-        .select({ status: reviewCases.status })
+        .select({ status: reviewCases.status, batchId: reviewCases.batchId })
         .from(reviewCases)
         .where(eq(reviewCases.id, id))
         .limit(1);
@@ -170,10 +171,14 @@ export async function PATCH(
         metadata: { peer_id: peerId },
         request,
       });
+      if (caseRow?.batchId) {
+        try { await syncBatchStatus(caseRow.batchId); } catch { /* best effort */ }
+      }
       return NextResponse.json({ ok: true });
     }
 
     if (action === 'unassign') {
+      const [unCase] = await db.select({ batchId: reviewCases.batchId }).from(reviewCases).where(eq(reviewCases.id, id)).limit(1);
       await db
         .update(reviewCases)
         .set({ peerId: null, status: 'unassigned', updatedAt: new Date() })
@@ -184,6 +189,9 @@ export async function PATCH(
         resourceId: id,
         request,
       });
+      if (unCase?.batchId) {
+        try { await syncBatchStatus(unCase.batchId); } catch { /* best effort */ }
+      }
       return NextResponse.json({ ok: true });
     }
 

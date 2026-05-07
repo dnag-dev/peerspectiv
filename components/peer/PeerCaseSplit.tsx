@@ -139,6 +139,12 @@ export function PeerCaseSplit({
     setChartFrameUrl(chartViewUrl);
   }, [chartViewUrl]);
 
+  // Mark case as in_progress when peer opens the review
+  useEffect(() => {
+    if (!caseId || existingResult) return; // already submitted — don't re-trigger
+    fetch(`/api/cases/${caseId}/start`, { method: 'POST' }).catch(() => {});
+  }, [caseId, existingResult]);
+
   function handleFieldHover(fieldKey: string, fieldLabel: string) {
     if (!chartViewUrl) return;
     const page = findChartPageForField(fieldKey, fieldLabel, chartTextExtracted);

@@ -16,6 +16,7 @@ import { generateCorrectiveActionPlan } from '@/lib/ai/report-generator';
 import { scoreReview, type FormField, type ResponseValue } from '@/lib/scoring/default-based';
 import { companyForms } from '@/lib/db/schema';
 import type { CriterionScore, Deficiency, PeerChange } from '@/types';
+import { syncBatchStatus } from '@/lib/batches/sync-status';
 
 interface SubmitBody {
   case_id: string;
@@ -377,6 +378,9 @@ export async function POST(request: NextRequest) {
         .update(batches)
         .set({ completedCases: count || 0 })
         .where(eq(batches.id, batchCase.batchId));
+
+      // Sync batch status (may transition to 'completed' if all cases done)
+      try { await syncBatchStatus(batchCase.batchId); } catch { /* best effort */ }
     }
 
     // Trigger quality scoring in the background

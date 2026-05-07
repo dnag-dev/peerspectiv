@@ -8,6 +8,7 @@ import { getPeerCapacity } from '@/lib/peers/capacity';
 import { sendCaseAssignedAlert } from '@/lib/email/notifications';
 import { auditLog } from '@/lib/utils/audit';
 import { calculateProjectedCompletion } from '@/lib/utils/completion';
+import { syncBatchStatus } from '@/lib/batches/sync-status';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
 
     // SA-067D: Reject AI suggestion — reset case to unassigned
     if (case_id && reject) {
+      const [rejCase] = await db.select({ batchId: reviewCases.batchId }).from(reviewCases).where(eq(reviewCases.id, case_id)).limit(1);
       await db
         .update(reviewCases)
         .set({
@@ -40,6 +42,9 @@ export async function POST(request: NextRequest) {
         metadata: { reason: 'AI suggestion rejected by admin' },
         request,
       });
+      if (rejCase?.batchId) {
+        try { await syncBatchStatus(rejCase.batchId); } catch { /* best effort */ }
+      }
       return NextResponse.json({ ok: true, rejected: true });
     }
 
@@ -179,6 +184,9 @@ export async function POST(request: NextRequest) {
         request,
       });
 
+      // Sync batch status
+      try { await syncBatchStatus(batch_id); } catch { /* best effort */ }
+
       return NextResponse.json({
         success: true,
         approved_count: approved.length,
@@ -245,6 +253,11 @@ export async function POST(request: NextRequest) {
         resourceId: case_id,
         request,
       });
+
+      // Sync batch status
+      if (caseData?.batchId) {
+        try { await syncBatchStatus(caseData.batchId); } catch { /* best effort */ }
+      }
 
       return NextResponse.json({ success: true, case_id });
     }
