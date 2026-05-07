@@ -281,7 +281,7 @@ export function AssignmentsTable({
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Days</th>
               <th className="px-3 py-2">Due</th>
-              <th className="px-3 py-2">Notes</th>
+              <th className="px-3 py-2">Batch</th>
               <th className="px-3 py-2 text-right">Actions</th>
             </tr>
           </thead>
@@ -310,15 +310,18 @@ export function AssignmentsTable({
                     >
                       {STATUS_LABEL[r.status] ?? r.status}
                     </span>
+                    {r.status === "returned_by_peer" && r.returnedReason && (
+                      <p className="mt-0.5 text-[10px] text-red-500 max-w-[150px] truncate" title={r.returnedReason}>
+                        {r.returnedReason}
+                      </p>
+                    )}
                   </td>
                   <td className="px-3 py-2 text-ink-primary">{r.daysInStatus ?? "—"}</td>
                   <td className="px-3 py-2 text-ink-primary">
                     {r.dueDate ? new Date(r.dueDate).toLocaleDateString() : "—"}
                   </td>
                   <td className="px-3 py-2 text-xs text-ink-secondary">
-                    {r.status === "returned_by_peer" && r.returnedReason
-                      ? r.returnedReason
-                      : ""}
+                    {r.batchName ?? "—"}
                   </td>
                   <td className="px-3 py-2 text-right">
                     <div className="inline-flex gap-1.5">
