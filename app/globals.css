@@ -226,3 +226,51 @@ html, body {
   cursor: pointer; transition: background 120ms ease;
 }
 .btn-ghost:hover { background: var(--ink-100); color: var(--ink-900); }
+
+/* =============================================================
+   Design Overhaul — Brand-led tokens (May 2026)
+   Layered ON TOP of PULSE. Pages migrating to the new system
+   pull tokens from these vars; legacy PULSE classes still work.
+   ============================================================= */
+:root {
+  --color-canvas:         #F8F9F8;
+  --color-card:           #FFFFFF;
+  --color-sidebar:        #0F172A;
+  --color-brand:          #0F6E56;
+  --color-brand-hover:    #085041;
+  --color-ink-primary:    #1A1A1A;
+  --color-ink-secondary:  #5F5E5A;
+  --color-ink-tertiary:   #888780;
+  --color-border-subtle:  rgba(0,0,0,0.10);
+  --color-border-default: rgba(0,0,0,0.15);
+}
+
+/* Eyebrow labels — small caps category text */
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-tertiary);
+  font-weight: 500;
+}
+
+/* Display number — KPI values, dashboard hero */
+.display-number {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--color-ink-primary);
+  line-height: 1;
+}
+
+/* Last-resort native form chrome reset — apply to anything we can't
+   migrate before Friday so it at least matches the new system. */
+.legacy-native-select,
+.legacy-native-date {
+  border: 0.5px solid var(--color-border-default);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--color-card);
+  font-size: 13px;
+  color: var(--color-ink-primary);
+}
