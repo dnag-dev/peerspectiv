@@ -2,9 +2,8 @@
 
 /**
  * Phase 5.2 — peer returns a case (PR-030, SA-067H).
- * Mirrors RequestReassignmentButton's UX (modal + reason textarea) but the
- * action is destructive: the case immediately flips to returned_by_peer and
- * the peer is unassigned. Reason min length: 10 chars (server enforces).
+ * The case immediately flips to returned_by_peer and the peer is unassigned.
+ * Reason min length: 10 chars (server enforces). Draft cleared on success.
  */
 import { useState } from "react";
 import { useRouter } from "next/navigation";

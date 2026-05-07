@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { reviewCases, peers } from '@/lib/db/schema';
 import { sql } from 'drizzle-orm';
 import { auditLog } from '@/lib/utils/audit';
+import { syncBatchStatus } from '@/lib/batches/sync-status';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,7 +56,7 @@ export async function POST(
     }
 
     const [caseRow] = await db
-      .select({ id: reviewCases.id, peerId: reviewCases.peerId, status: reviewCases.status })
+      .select({ id: reviewCases.id, peerId: reviewCases.peerId, status: reviewCases.status, batchId: reviewCases.batchId })
       .from(reviewCases)
       .where(eq(reviewCases.id, caseId))
       .limit(1);
@@ -98,6 +99,11 @@ export async function POST(
           updatedAt: now,
         })
         .where(eq(peers.id, previousPeerId));
+    }
+
+    // Sync batch status (may revert from in_progress → pending)
+    if (caseRow.batchId) {
+      await syncBatchStatus(caseRow.batchId);
     }
 
     await auditLog({
