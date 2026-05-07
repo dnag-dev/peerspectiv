@@ -129,6 +129,27 @@ export function AssignmentsTable({
     }
   }
 
+  async function handleApprove(row: AssignmentRow) {
+    setBusyId(row.id);
+    setError(null);
+    try {
+      const res = await fetch("/api/assign/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ case_id: row.id }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || "Approve failed");
+      }
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Approve failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function handleUnassign(row: AssignmentRow) {
     if (!confirm(`Unassign case #${row.caseRef}?`)) return;
     setBusyId(row.id);
@@ -287,12 +308,22 @@ export function AssignmentsTable({
                   </td>
                   <td className="px-3 py-2 text-right">
                     <div className="inline-flex gap-1.5">
-                      <Link
-                        href={`/cases/${r.id}`}
-                        className="rounded border border-border-subtle px-2 py-0.5 text-xs hover:border-status-info-dot hover:text-status-info-fg"
-                      >
-                        View
-                      </Link>
+                      {r.status === "pending_approval" ? (
+                        <button
+                          onClick={() => handleApprove(r)}
+                          disabled={busyId === r.id}
+                          className="rounded border border-status-success-dot bg-mint-50 px-2 py-0.5 text-xs font-medium text-status-success-fg hover:bg-mint-100 disabled:opacity-50"
+                        >
+                          Approve
+                        </button>
+                      ) : (
+                        <Link
+                          href={`/cases/${r.id}`}
+                          className="rounded border border-border-subtle px-2 py-0.5 text-xs hover:border-status-info-dot hover:text-status-info-fg"
+                        >
+                          View
+                        </Link>
+                      )}
                       <button
                         onClick={() => setPickerCase(r)}
                         disabled={busyId === r.id}
