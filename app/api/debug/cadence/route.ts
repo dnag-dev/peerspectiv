@@ -24,7 +24,12 @@ export async function GET(req: NextRequest) {
   const now = new Date();
   const periods = buildCadencePeriods(config, now, 1);
 
+  // Show a safe portion of the DB URL for debugging (host only, no password)
+  const dbUrl = process.env.DATABASE_URL || '';
+  const dbHost = dbUrl.match(/@([^/]+)\//)?.[1] || 'unknown';
+
   return NextResponse.json({
+    dbHost,
     dbRow: row,
     config,
     todayUTC: { year: now.getUTCFullYear(), month: now.getUTCMonth() },
