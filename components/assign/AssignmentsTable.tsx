@@ -284,7 +284,9 @@ export function AssignmentsTable({
             ) : (
               visible.map((r) => (
                 <tr key={r.id} className="border-t border-border-subtle hover:bg-ink-50/40">
-                  <td className="px-3 py-2 font-mono text-xs text-ink-primary">#{r.caseRef}</td>
+                  <td className="px-3 py-2 font-mono text-xs">
+                    <Link href={`/cases/${r.id}`} className="text-status-info-fg hover:underline">#{r.caseRef}</Link>
+                  </td>
                   <td className="px-3 py-2">{r.providerName}</td>
                   <td className="px-3 py-2 text-ink-primary">{r.specialty ?? "—"}</td>
                   <td className="px-3 py-2 text-ink-primary">{r.peerName ?? <span className="text-ink-tertiary">unassigned</span>}</td>
@@ -308,7 +310,7 @@ export function AssignmentsTable({
                   </td>
                   <td className="px-3 py-2 text-right">
                     <div className="inline-flex gap-1.5">
-                      {r.status === "pending_approval" ? (
+                      {r.status === "pending_approval" && (
                         <button
                           onClick={() => handleApprove(r)}
                           disabled={busyId === r.id}
@@ -316,13 +318,6 @@ export function AssignmentsTable({
                         >
                           Approve
                         </button>
-                      ) : (
-                        <Link
-                          href={`/cases/${r.id}`}
-                          className="rounded border border-border-subtle px-2 py-0.5 text-xs hover:border-status-info-dot hover:text-status-info-fg"
-                        >
-                          View
-                        </Link>
                       )}
                       <button
                         onClick={() => setPickerCase(r)}
