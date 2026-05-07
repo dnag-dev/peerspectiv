@@ -135,8 +135,8 @@ export function buildCadencePeriods(
       const start = isoDate(sy, sm, 1);
       const end = isoDate(ey, em, lastDayOfMonth(ey, em));
       // Label year = the calendar year when this fiscal year started.
-      // If the period start month is before the fiscal start month,
-      // this period belongs to the FY that began the previous calendar year.
+      // For FY starting April: Apr-Jun 2026 = Q1 of FY 2026 (labelYear=2026).
+      // Jan-Mar 2026 = Q4 of FY that started Apr 2025 (labelYear=2025).
       const labelYear = sm < fiscalStart ? sy - 1 : sy;
       periods.push({
         label: `Q${qNum} ${labelYear}`,
