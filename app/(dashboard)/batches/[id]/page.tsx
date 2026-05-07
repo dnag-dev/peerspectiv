@@ -276,6 +276,7 @@ export default async function BatchDetailPage({
                       <PDFUploader
                         caseId={reviewCase.id}
                         existingFileName={reviewCase.chart_file_name}
+                        existingFileUrl={reviewCase.chart_file_path}
                       />
                     </TableCell>
                     <TableCell className="text-right">

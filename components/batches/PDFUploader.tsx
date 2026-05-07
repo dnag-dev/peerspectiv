@@ -8,9 +8,10 @@ import { Upload, FileText, Loader2, CheckCircle2, AlertCircle } from "lucide-rea
 interface PDFUploaderProps {
   caseId: string;
   existingFileName?: string | null;
+  existingFileUrl?: string | null;
 }
 
-export function PDFUploader({ caseId, existingFileName }: PDFUploaderProps) {
+export function PDFUploader({ caseId, existingFileName, existingFileUrl }: PDFUploaderProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -62,9 +63,21 @@ export function PDFUploader({ caseId, existingFileName }: PDFUploaderProps) {
     return (
       <div className="flex items-center gap-2 text-sm">
         <FileText className="h-4 w-4 text-status-info-dot" />
-        <span className="max-w-[200px] truncate text-muted-foreground" title={existingFileName}>
-          {existingFileName}
-        </span>
+        {existingFileUrl ? (
+          <a
+            href={existingFileUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="max-w-[200px] truncate text-blue-600 hover:underline"
+            title={existingFileName}
+          >
+            {existingFileName}
+          </a>
+        ) : (
+          <span className="max-w-[200px] truncate text-muted-foreground" title={existingFileName}>
+            {existingFileName}
+          </span>
+        )}
       </div>
     );
   }
