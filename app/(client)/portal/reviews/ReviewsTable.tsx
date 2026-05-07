@@ -60,7 +60,9 @@ export function ReviewsTable({
   initialSpecialty?: string;
   initialQuarter?: string;
 }) {
-  const [status, setStatus] = useState<string>(initialStatus);
+  const [statusFilters, setStatusFilters] = useState<string[]>(
+    initialStatus === "all" ? ["unassigned", "pending_approval"] : [initialStatus]
+  );
   const [specialty, setSpecialty] = useState<string>(initialSpecialty);
   const [quarter, setQuarter] = useState<string>(initialQuarter);
   const [month, setMonth] = useState<string | null>(initialMonth);
@@ -80,7 +82,7 @@ export function ReviewsTable({
   );
 
   const filtered = rows.filter((r) => {
-    if (status !== "all" && r.status !== status) return false;
+    if (statusFilters.length > 0 && !statusFilters.includes(r.status)) return false;
     if (specialty !== "all" && !r.specialty.toLowerCase().includes(specialty.toLowerCase())) return false;
     if (quarter !== "all" && quarterOf(r.createdAt) !== quarter) return false;
     if (providerSearch.trim()) {
@@ -160,19 +162,25 @@ export function ReviewsTable({
             { key: "in_progress", label: "In progress" },
             { key: "completed", label: "Completed" },
             { key: "past_due", label: "Past due" },
-          ].map((s) => (
-            <button
-              key={s.key}
-              onClick={() => setStatus(status === s.key ? "all" : s.key)}
-              className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                status === s.key
-                  ? "border-blue-500 bg-blue-50 text-blue-700"
-                  : "border-border-subtle text-ink-primary hover:border-blue-500"
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
+          ].map((s) => {
+            const on = statusFilters.includes(s.key);
+            return (
+              <button
+                key={s.key}
+                onClick={() => setStatusFilters(on
+                  ? statusFilters.filter((f) => f !== s.key)
+                  : [...statusFilters, s.key]
+                )}
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                  on
+                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                    : "border-border-subtle text-ink-primary hover:border-blue-500"
+                }`}
+              >
+                {s.label}
+              </button>
+            );
+          })}
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <input
