@@ -1293,3 +1293,103 @@
 **Expected Result:** "Unassigned" and "Pending approval" chips are pre-selected (highlighted). Only cases in those two statuses are shown. Other status chips can be toggled on/off.
 
 ---
+
+
+## Forms — Status Badges
+
+### SAA-084 — Forms list uses Badge component for status (admin)
+
+**Module:** Forms | **Priority:** Medium
+
+**Pre-conditions:** Forms exist with both active and inactive statuses.
+
+**Steps:**
+1. Navigate to Forms page as admin.
+2. Inspect the Status column.
+
+**Expected Result:** Active forms show a green badge with dot prefix (success variant): "active". Inactive forms show a gray badge with dot prefix (pending variant): "inactive". Matches the company status badge style — not a plain text span.
+
+---
+
+### SAA-085 — Forms list uses Badge component for status (client portal)
+
+**Module:** Client Portal — Forms | **Priority:** Medium
+
+**Pre-conditions:** Client has forms configured.
+
+**Steps:**
+1. Login as Client.
+2. Navigate to Forms page.
+
+**Expected Result:** Same badge styling as admin: green dot-prefix badge for "active", gray dot-prefix badge for "inactive". Consistent across admin and client views.
+
+---
+
+
+## Credentials — Search & Specialties
+
+### SAA-086 — Credentials page shows specialties for all peers
+
+**Module:** Credentials | **Priority:** High
+
+**Pre-conditions:** Peers exist with specialties assigned via the peer_specialties table.
+
+**Steps:**
+1. Navigate to Credentials page.
+2. Inspect the Specialties column across all four buckets (Missing, Expired, Expiring, Valid).
+
+**Expected Result:** Every peer shows their assigned specialties (e.g., "Family Medicine", "OB/GYN", "Pediatrics, Internal Medicine"). No peer shows "—" if they have specialties in peer_specialties. Peers with multiple specialties show comma-separated list.
+
+---
+
+### SAA-087 — Credentials page has full-width search bar
+
+**Module:** Credentials | **Priority:** Medium
+
+**Pre-conditions:** Peers exist across multiple credential buckets.
+
+**Steps:**
+1. Navigate to Credentials page.
+2. Locate the search bar above the bucket cards.
+
+**Expected Result:** Search bar spans the full page width inside a Card (matching the Tags and Forms page pattern). Placeholder reads "Search name, email, specialty, license…".
+
+---
+
+### SAA-088 — Credentials search filters across all buckets
+
+**Module:** Credentials | **Priority:** High
+
+**Pre-conditions:** Peers exist in different buckets (Missing, Expired, Expiring, Valid).
+
+**Steps:**
+1. Type a peer's name in the search bar (e.g., "Hana").
+2. Observe all bucket cards.
+3. Clear search, type a specialty (e.g., "Pediatrics").
+4. Clear search, type a license number (e.g., "MD-EXP").
+5. Clear search, type a license state (e.g., "TX").
+
+**Expected Result:** Each search filters peers across all four buckets simultaneously. Bucket counts update to reflect the filtered results. Buckets with no matching peers show "None". Clearing the search restores all peers.
+
+---
+
+
+## Specialty Subqueries — Data Integrity
+
+### SAA-089 — Peer specialties display correctly across all pages
+
+**Module:** Peers / Credentials / Assignments | **Priority:** High
+
+**Pre-conditions:** Peers have specialties assigned in the peer_specialties table.
+
+**Steps:**
+1. Check Credentials page — verify specialties column shows data.
+2. Check Credentialer inbox (/credentialing/inbox) — verify specialties shown.
+3. Check Credentialer credentials page (/credentialing/credentials) — verify specialties shown.
+4. Check Payouts page — verify specialty column shows data.
+5. Check Reports > Peers — verify specialty shown.
+6. Check AI assignment suggestions — verify specialty matching works (assigns Dental cases to Dental peers).
+
+**Expected Result:** Specialties display correctly on all pages. No "—" or empty values when the peer has specialties assigned. AI assignment engine correctly matches case specialty to peer specialties.
+
+---

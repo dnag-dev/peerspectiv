@@ -62,6 +62,23 @@
 1. Login as Client.
 2. Click "Forms" in sidebar.
 
-**Expected Result:** Read-only table shows: Form Name, Specialty, Questions count, Status (Active/Inactive). No edit, delete, or clone actions visible. Client cannot modify forms.
+**Expected Result:** Read-only table shows: Form Name, Specialty, Questions count, Status (Active/Inactive with dot-prefix Badge matching admin style). No edit, delete, or clone actions visible. Client cannot modify forms.
+
+---
+
+
+## Credentials (Credentialer View)
+
+### CLA-005 — Credentialer credentials page shows specialties
+
+**Module:** Credentials | **Priority:** High
+
+**Pre-conditions:** Peers have specialties assigned.
+
+**Steps:**
+1. Login as Credentialer.
+2. Navigate to Credentials page.
+
+**Expected Result:** Specialties column shows assigned specialties for each peer (not "—"). Same data as admin Credentials page.
 
 ---
