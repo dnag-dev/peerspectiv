@@ -1087,3 +1087,209 @@
 **Expected Result:** All specialties appear in the taxonomy and are active. They show in all specialty dropdowns across the application (forms, providers, batches, etc.).
 
 ---
+
+
+## Review Case — In Progress Status
+
+### SAA-071 — Case transitions to in_progress when peer opens review
+
+**Module:** Reviews — Peer | **Priority:** High
+
+**Pre-conditions:** A case exists in `assigned` status with a peer assigned.
+
+**Steps:**
+1. Log in as the assigned peer.
+2. Navigate to the case and open the split-screen review page.
+
+**Expected Result:** The case status transitions from `assigned` to `in_progress` automatically when the page loads. This is idempotent — refreshing the page does not cause errors. Cases already in `in_progress` or `completed` are not affected.
+
+---
+
+### SAA-072 — In progress cases show Reassign and Unassign buttons
+
+**Module:** Reviews | **Priority:** Medium
+
+**Pre-conditions:** Cases exist in `in_progress` status.
+
+**Steps:**
+1. Navigate to Reviews page.
+2. Filter by status or view all.
+3. Find an in_progress case.
+
+**Expected Result:** Reassign and Unassign buttons are shown. No Approve button (already past that stage). Case Ref is clickable link.
+
+---
+
+
+## Review Case — Manual Assignment
+
+### SAA-073A — Unassigned cases show Assign button
+
+**Module:** Reviews | **Priority:** High
+
+**Pre-conditions:** Cases exist in `unassigned` status.
+
+**Steps:**
+1. Navigate to Reviews page.
+2. Filter by "Unassigned" status.
+
+**Expected Result:** Each unassigned case shows an "Assign" button (blue). No Reassign or Unassign buttons shown (nothing to reassign/unassign).
+
+---
+
+### SAA-074B — Assign button opens peer picker and assigns case
+
+**Module:** Reviews | **Priority:** High
+
+**Pre-conditions:** Unassigned case exists. Active peers with matching specialty exist.
+
+**Steps:**
+1. Click "Assign" on an unassigned case.
+2. Peer picker modal opens showing available peers.
+3. Select a peer.
+
+**Expected Result:** Case transitions from `unassigned` to `assigned`. Peer is set, `assignedAt` = now, `dueDate` = 7 days from now. Peer's `activeCasesCount` increments. Batch status syncs (may transition to `in_progress`).
+
+---
+
+### SAA-075A — Assign button works on batch detail page
+
+**Module:** Batches | **Priority:** Medium
+
+**Pre-conditions:** A batch has unassigned cases.
+
+**Steps:**
+1. Navigate to the batch detail page.
+2. Click "Assign" on an unassigned case row.
+3. Select a peer from the modal.
+
+**Expected Result:** Same behavior as Reviews page — case assigned, peer picker works, batch status syncs.
+
+---
+
+
+## Batch Status — Auto-Sync
+
+### SAA-076 — Batch transitions to in_progress when cases are assigned
+
+**Module:** Batches | **Priority:** High
+
+**Pre-conditions:** A batch exists with all cases in `unassigned` status (batch status = `pending`).
+
+**Steps:**
+1. Assign at least one case (via AI assignment or manual assign).
+2. Check the batch status.
+
+**Expected Result:** Batch status changes from `pending` to `in_progress`.
+
+---
+
+### SAA-077 — Batch transitions back to pending when all cases unassigned
+
+**Module:** Batches | **Priority:** High
+
+**Pre-conditions:** A batch exists with some cases assigned (batch status = `in_progress`).
+
+**Steps:**
+1. Unassign all cases in the batch.
+2. Check the batch status.
+
+**Expected Result:** Batch status changes from `in_progress` back to `pending`.
+
+---
+
+### SAA-078 — Batch transitions to completed when all cases completed
+
+**Module:** Batches | **Priority:** High
+
+**Pre-conditions:** A batch has multiple cases, all but one completed.
+
+**Steps:**
+1. Submit the last remaining review.
+2. Check the batch status.
+
+**Expected Result:** Batch status changes from `in_progress` to `completed`. All cases show `completed` status.
+
+---
+
+### SAA-079 — Batch status preserved for client-submitted batches
+
+**Module:** Batches | **Priority:** Medium
+
+**Pre-conditions:** A batch exists with status `pending_admin_review` (submitted by client).
+
+**Steps:**
+1. Assign cases within this batch.
+2. Check the batch status.
+
+**Expected Result:** Batch status remains `pending_admin_review` — the auto-sync does NOT override this status. Admin must explicitly review and change it.
+
+---
+
+
+## Sidebar Navigation
+
+### SAA-080 — Sidebar organized in 3 logical groups
+
+**Module:** Navigation | **Priority:** Medium
+
+**Pre-conditions:** Logged in as admin.
+
+**Steps:**
+1. Check the sidebar navigation structure.
+
+**Expected Result:** Three groups displayed:
+- **Workspace**: Dashboard, Prospects, Companies, Batches, Reviews, AI Assignments
+- **Team & Output**: Peers, Onboarding Queue, Credentials, Reports, Invoices, Payouts
+- **Configuration**: Forms, Tags, Settings, Command Center
+
+---
+
+
+## PDF AI Analysis Fix
+
+### SAA-081 — Chart AI analysis works on production (unpdf fix)
+
+**Module:** Batches — AI Analysis | **Priority:** High
+
+**Pre-conditions:** A batch with uploaded PDF charts.
+
+**Steps:**
+1. Upload a PDF chart to a batch.
+2. Wait for AI analysis to process (or click "Trigger AI Analysis" on the case detail).
+3. Check AI Analysis status.
+
+**Expected Result:** AI Analysis status shows "complete" (not "failed"). The chart text is extracted using unpdf (pure JS, no DOMMatrix dependency). Chart summary, criteria scores, and deficiencies are populated.
+
+---
+
+### SAA-082A — Re-trigger AI analysis on previously failed cases
+
+**Module:** Batches — AI Analysis | **Priority:** Medium
+
+**Pre-conditions:** A case has AI Analysis status = "failed".
+
+**Steps:**
+1. Navigate to the case detail page.
+2. Click "Trigger AI Analysis" button.
+
+**Expected Result:** AI analysis runs again. Status transitions from "failed" to "processing" then to "complete". Chart summary populates.
+
+---
+
+
+## Reviews Page — Default Filter
+
+### SAA-083 — Reviews page defaults to Unassigned and Pending Approval
+
+**Module:** Reviews | **Priority:** Medium
+
+**Pre-conditions:** Cases exist in various statuses.
+
+**Steps:**
+1. Click "Reviews" in the sidebar.
+2. Observe the filter chips and displayed cases.
+
+**Expected Result:** "Unassigned" and "Pending approval" chips are pre-selected (highlighted). Only cases in those two statuses are shown. Other status chips can be toggled on/off.
+
+---
