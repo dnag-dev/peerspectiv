@@ -63,6 +63,9 @@ export function ReviewsTable({
   const [quarter, setQuarter] = useState<string>(initialQuarter);
   const [month, setMonth] = useState<string | null>(initialMonth);
   const [criterion, setCriterion] = useState<string | null>(initialCriterion);
+  const [providerSearch, setProviderSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const specialties = useMemo(
     () => Array.from(new Set(rows.map((r) => r.specialty).filter(Boolean))),
@@ -76,10 +79,20 @@ export function ReviewsTable({
 
   const filtered = rows.filter((r) => {
     if (status !== "all" && r.status !== status) return false;
-    if (specialty !== "all" && r.specialty !== specialty) return false;
+    if (specialty !== "all" && !r.specialty.toLowerCase().includes(specialty.toLowerCase())) return false;
     if (quarter !== "all" && quarterOf(r.createdAt) !== quarter) return false;
+    if (providerSearch.trim()) {
+      if (!r.providerName.toLowerCase().includes(providerSearch.toLowerCase())) return false;
+    }
+    if (dateFrom) {
+      const caseDate = r.createdAt || r.assignedAt;
+      if (!caseDate || caseDate < dateFrom) return false;
+    }
+    if (dateTo) {
+      const caseDate = r.createdAt || r.assignedAt;
+      if (!caseDate || caseDate > dateTo + "T23:59:59") return false;
+    }
     if (month) {
-      // Month drill comes from Trends (compliance bar) — match the month of submission.
       if (monthKeyOf(r.submittedAt) !== month) return false;
     }
     if (criterion) {
@@ -159,21 +172,30 @@ export function ReviewsTable({
         ))}
       </div>
 
-      <div
-        className="flex flex-wrap gap-3 rounded-lg p-4"
-        style={{ backgroundColor: 'var(--color-card)' }}
-      >
-        <FilterSelect
-          label="Specialty"
-          value={specialty}
-          onChange={setSpecialty}
-          options={["all", ...specialties]}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <input
+          value={providerSearch}
+          onChange={(e) => setProviderSearch(e.target.value)}
+          placeholder="Provider"
+          className="rounded-md border border-border-subtle bg-white px-3 py-1.5 text-sm text-ink-primary placeholder:text-ink-tertiary"
         />
-        <FilterSelect
-          label="Quarter"
-          value={quarter}
-          onChange={setQuarter}
-          options={["all", ...quarters]}
+        <input
+          value={specialty === "all" ? "" : specialty}
+          onChange={(e) => setSpecialty(e.target.value || "all")}
+          placeholder="Specialty"
+          className="rounded-md border border-border-subtle bg-white px-3 py-1.5 text-sm text-ink-primary placeholder:text-ink-tertiary"
+        />
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          className="rounded-md border border-border-subtle bg-white px-3 py-1.5 text-sm text-ink-primary"
+        />
+        <input
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          className="rounded-md border border-border-subtle bg-white px-3 py-1.5 text-sm text-ink-primary"
         />
       </div>
 
@@ -239,34 +261,3 @@ export function ReviewsTable({
   );
 }
 
-function FilterSelect({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: string[];
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <label className="text-xs uppercase tracking-wider text-ink-tertiary">
-        {label}
-      </label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="rounded-md px-3 py-1.5 text-sm text-ink-primary"
-        style={{ backgroundColor: 'var(--color-card)', border: "1px solid #2A3F5F" }}
-      >
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
