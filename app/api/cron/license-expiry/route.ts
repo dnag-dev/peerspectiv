@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
  * Phase 4 — license expiry cron.
  *
  *  - Notifies the credentialing inbox at 14, 7, 3, 1 days before expiry.
- *  - On post-expiry pass (day_until ≤ 0 and state still 'active'):
+ *  - On post-expiry pass (day_until ≤ 0 and status still 'active'):
  *      * transitionPeer → license_expired
  *      * find every assigned/in_progress case, attempt reassignment to
  *        another active peer with matching specialty + capacity.
@@ -54,13 +54,13 @@ export async function GET(request: NextRequest) {
       id: peers.id,
       fullName: peers.fullName,
       email: peers.email,
-      state: peers.state,
+      status: peers.status,
       credentialValidUntil: peers.credentialValidUntil,
     })
     .from(peers)
     .where(
       and(
-        eq(peers.state, 'active'),
+        eq(peers.status, 'active'),
         isNotNull(peers.credentialValidUntil)
       )
     );
@@ -166,7 +166,7 @@ export async function GET(request: NextRequest) {
           .from(peers)
           .where(
             and(
-              eq(peers.state, 'active'),
+              eq(peers.status, 'active'),
               eq(peers.availabilityStatus, 'available'),
               sql`exists (select 1 from peer_specialties ps where ps.peer_id = ${peers.id} and ps.specialty = ${specialty})`
             )
@@ -214,7 +214,7 @@ export async function GET(request: NextRequest) {
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color:#0F2044;">${subject}</h2>
           <p><strong>${peer.fullName}</strong> (${peer.email ?? '—'}) — license expired on <strong>${expiryStr}</strong>.</p>
-          <p>Peer is now in license_expired state. Cases were reassigned where possible.</p>
+          <p>Peer is now in license_expired status. Cases were reassigned where possible.</p>
         </div>
       `;
       const result = await sendEmail({ to: CREDENTIALING_EMAIL, subject, html });

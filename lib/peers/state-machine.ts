@@ -2,7 +2,7 @@ import { db } from '@/lib/db';
 import { peers, peerStateAudit, auditLogs } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
-export type PeerState =
+export type PeerStatus =
   | 'invited'
   | 'pending_admin_review'
   | 'pending_credentialing'
@@ -11,7 +11,7 @@ export type PeerState =
   | 'suspended'
   | 'archived';
 
-export const ALLOWED_TRANSITIONS: Record<PeerState, PeerState[]> = {
+export const ALLOWED_TRANSITIONS: Record<PeerStatus, PeerStatus[]> = {
   invited: ['pending_admin_review', 'archived'],
   pending_admin_review: ['pending_credentialing', 'archived'],
   pending_credentialing: ['active', 'archived'],
@@ -21,70 +21,70 @@ export const ALLOWED_TRANSITIONS: Record<PeerState, PeerState[]> = {
   archived: [],
 };
 
-export const ASSIGNABLE_STATES: readonly PeerState[] = ['active'] as const;
+export const ASSIGNABLE_STATES: readonly PeerStatus[] = ['active'] as const;
 
-export function canTransition(from: PeerState, to: PeerState): boolean {
+export function canTransition(from: PeerStatus, to: PeerStatus): boolean {
   return ALLOWED_TRANSITIONS[from]?.includes(to) ?? false;
 }
 
-export function isAssignable(state: PeerState): boolean {
-  return (ASSIGNABLE_STATES as readonly string[]).includes(state);
+export function isAssignable(status: PeerStatus): boolean {
+  return (ASSIGNABLE_STATES as readonly string[]).includes(status);
 }
 
 export class PeerStateTransitionError extends Error {
-  constructor(public from: PeerState | null, public to: PeerState, msg?: string) {
-    super(msg ?? `Disallowed peer state transition: ${from} -> ${to}`);
+  constructor(public from: PeerStatus | null, public to: PeerStatus, msg?: string) {
+    super(msg ?? `Disallowed peer status transition: ${from} -> ${to}`);
     this.name = 'PeerStateTransitionError';
   }
 }
 
 /**
- * Apply a peer state transition. Validates against ALLOWED_TRANSITIONS.
+ * Apply a peer status transition. Validates against ALLOWED_TRANSITIONS.
  *
  * Note: the underlying `db` (neon-http) does not support real transactions,
  * so we issue the three writes (peers update, peer_state_audit insert,
  * audit_logs insert) sequentially and rely on the canTransition() guard
  * before the first write. If the audit inserts fail post-update, the peer
- * state is still authoritative; partial-write failures will surface in logs
- * and can be reconciled from peers.state_changed_at.
+ * status is still authoritative; partial-write failures will surface in logs
+ * and can be reconciled from peers.status_changed_at.
  */
 export async function transitionPeer(
   peerId: string,
-  toState: PeerState,
+  toStatus: PeerStatus,
   actor: string,
   reason: string
 ): Promise<void> {
   const [current] = await db
-    .select({ state: peers.state })
+    .select({ status: peers.status })
     .from(peers)
     .where(eq(peers.id, peerId))
     .limit(1);
 
   if (!current) {
-    throw new PeerStateTransitionError(null, toState, `Peer not found: ${peerId}`);
+    throw new PeerStateTransitionError(null, toStatus, `Peer not found: ${peerId}`);
   }
 
-  const fromState = current.state as PeerState;
-  if (!canTransition(fromState, toState)) {
-    throw new PeerStateTransitionError(fromState, toState);
+  const fromStatus = current.status as PeerStatus;
+  if (!canTransition(fromStatus, toStatus)) {
+    throw new PeerStateTransitionError(fromStatus, toStatus);
   }
 
   const now = new Date();
   await db
     .update(peers)
     .set({
-      state: toState,
-      stateChangedAt: now,
-      stateChangedBy: actor,
-      stateChangeReason: reason,
+      status: toStatus,
+      statusChangedAt: now,
+      statusChangedBy: actor,
+      statusChangeReason: reason,
       updatedAt: now,
     })
     .where(eq(peers.id, peerId));
 
   await db.insert(peerStateAudit).values({
     peerId,
-    fromState,
-    toState,
+    fromState: fromStatus,
+    toState: toStatus,
     changedBy: actor,
     changeReason: reason,
     changedAt: now,
@@ -94,6 +94,6 @@ export async function transitionPeer(
     action: 'peer_state_transition',
     resourceType: 'peer',
     resourceId: peerId,
-    metadata: { from_state: fromState, to_state: toState, actor, reason },
+    metadata: { from_status: fromStatus, to_status: toStatus, actor, reason },
   });
 }

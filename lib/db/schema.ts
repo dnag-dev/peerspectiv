@@ -98,7 +98,7 @@ export const peers = pgTable('peers', {
   npi: text('npi'),
   boardCertification: text('board_certification'),
   activeCasesCount: integer('active_cases_count').default(0),
-  status: text('status'),
+  status: text('status').notNull().default('pending_credentialing'),
   aiAgreementScore: numeric('ai_agreement_score', { precision: 4, scale: 2 }),
   totalReviewsCompleted: integer('total_reviews_completed').default(0),
   availabilityStatus: text('availability_status').default('available'),
@@ -107,11 +107,9 @@ export const peers = pgTable('peers', {
   unavailableReason: text('unavailable_reason'),
   rateType: text('rate_type').default('per_minute'),
   rateAmount: numeric('rate_amount', { precision: 10, scale: 2 }).default('1.00'),
-  // License + KYC + Aautipay
   licenseNumber: text('license_number'),
   licenseState: text('license_state'),
   licenseFileUrl: text('license_file_url'),
-  // Post-Ashton review (009): credential expiry + caseload cap + efficiency
   credentialValidUntil: date('credential_valid_until'),
   maxCaseLoad: integer('max_case_load').default(75),
   avgMinutesPerChart: numeric('avg_minutes_per_chart', { precision: 8, scale: 2 }),
@@ -121,11 +119,9 @@ export const peers = pgTable('peers', {
   aautipayBankAccountId: text('aautipay_bank_account_id'),
   aautipayBankStatus: text('aautipay_bank_status'),
   paymentReady: boolean('payment_ready').default(false),
-  // Phase 1.3: lifecycle state machine (replaces ad-hoc status field for transitions)
-  state: text('state').notNull().default('pending_credentialing'),
-  stateChangedAt: timestamp('state_changed_at', { withTimezone: true }),
-  stateChangedBy: text('state_changed_by'),
-  stateChangeReason: text('state_change_reason'),
+  statusChangedAt: timestamp('status_changed_at', { withTimezone: true }),
+  statusChangedBy: text('status_changed_by'),
+  statusChangeReason: text('status_change_reason'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
 });

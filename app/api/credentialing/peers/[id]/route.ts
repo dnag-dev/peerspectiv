@@ -85,7 +85,7 @@ export async function PATCH(
     const [existing] = await db
       .select({
         id: peers.id,
-        state: peers.state,
+        status: peers.status,
         credentialValidUntil: peers.credentialValidUntil,
       })
       .from(peers)
@@ -110,7 +110,7 @@ export async function PATCH(
     }
 
     let transitioned = false;
-    if (existing.state === 'license_expired' && body.credential_valid_until) {
+    if (existing.status === 'license_expired' && body.credential_valid_until) {
       try {
         await transitionPeer(params.id, 'active', actor.email, 'license renewed');
         transitioned = true;
@@ -167,7 +167,7 @@ export async function POST(
     const [existing] = await db
       .select({
         id: peers.id,
-        state: peers.state,
+        status: peers.status,
         licenseFileUrl: peers.licenseFileUrl,
         credentialValidUntil: peers.credentialValidUntil,
       })

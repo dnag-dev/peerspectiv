@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { reviewCases, batches, peers } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
-import { isAssignable, type PeerState } from '@/lib/peers/state-machine';
+import { isAssignable, type PeerStatus } from '@/lib/peers/state-machine';
 import { approveAssignment } from '@/lib/ai/assignment-engine';
 import { getPeerCapacity } from '@/lib/peers/capacity';
 import { sendCaseAssignedAlert } from '@/lib/email/notifications';
@@ -54,13 +54,13 @@ export async function POST(request: NextRequest) {
     if (case_id && reassign_to) {
       // Phase 4 (CR-006/SA-031F): block server-side if target peer is not Active.
       const [targetPeer] = await db
-        .select({ state: peers.state })
+        .select({ status: peers.status })
         .from(peers)
         .where(eq(peers.id, reassign_to))
         .limit(1);
-      if (!targetPeer || !isAssignable(targetPeer.state as PeerState)) {
+      if (!targetPeer || !isAssignable(targetPeer.status as PeerStatus)) {
         return NextResponse.json(
-          { error: 'Peer not in Active state. Cannot assign.', code: 'PEER_NOT_ACTIVE' },
+          { error: 'Peer not in Active status. Cannot assign.', code: 'PEER_NOT_ACTIVE' },
           { status: 422 }
         );
       }
