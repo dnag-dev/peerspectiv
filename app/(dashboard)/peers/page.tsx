@@ -17,6 +17,11 @@ export default async function PeersPage() {
     .select({
       peer: peers,
       specialties: sql<string[]>`coalesce(array(select specialty from peer_specialties where peer_id = peers.id order by specialty), '{}'::text[])`,
+      specialtyDetails: sql<{ specialty: string; verified_status: string }[]>`coalesce(
+        (select json_agg(json_build_object('specialty', ps.specialty, 'verified_status', ps.verified_status) order by ps.specialty)
+         from peer_specialties ps where ps.peer_id = peers.id),
+        '[]'::json
+      )`,
     })
     .from(peers)
     .orderBy(asc(peers.fullName));
@@ -25,6 +30,7 @@ export default async function PeersPage() {
     ...toSnake<Record<string, unknown>>(r.peer),
     specialties: r.specialties ?? [],
     specialty: (r.specialties && r.specialties[0]) ?? null,
+    specialty_details: r.specialtyDetails ?? [],
   }));
 
   return (

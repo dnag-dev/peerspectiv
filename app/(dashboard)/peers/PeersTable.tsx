@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { Plus, Search, ArrowUp, ArrowDown, ArrowUpDown, CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,12 +21,18 @@ import { EditRateModal } from '@/components/peers/EditRateModal';
 
 type RateType = 'per_minute' | 'per_report' | 'per_hour';
 
+interface SpecialtyDetail {
+  specialty: string;
+  verified_status: string;
+}
+
 interface Peer {
   id: string;
   full_name: string | null;
   email: string | null;
   specialty: string | null;
   specialties: string[] | null;
+  specialty_details: SpecialtyDetail[] | null;
   board_certification: string | null;
   status: string | null;
   active_cases_count: number | null;
@@ -106,6 +112,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
   const [availFilter, setAvailFilter] = useState<string>('all');
   const [stateFilter, setStateFilter] = useState<string>('all');
   const [peerStatusFilter, setPeerStatusFilter] = useState<string>('active');
+  const [verificationFilter, setVerificationFilter] = useState<string>('all');
   const [sortKey, setSortKey] = useState<SortKey>('full_name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
@@ -163,6 +170,13 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
       if (stateFilter !== 'all' && r.license_state !== stateFilter) return false;
       const peerState = r.status || 'pending_credentialing';
       if (peerStatusFilter !== 'all' && peerState !== peerStatusFilter) return false;
+      if (verificationFilter !== 'all') {
+        const details = r.specialty_details ?? [];
+        const hasUnverified = details.some((d) => d.verified_status !== 'verified');
+        const allVerified = details.length > 0 && details.every((d) => d.verified_status === 'verified');
+        if (verificationFilter === 'has_unverified' && !hasUnverified) return false;
+        if (verificationFilter === 'all_verified' && !allVerified) return false;
+      }
       if (!q) return true;
       const specHaystack = specialtiesAsList(r).join(' ').toLowerCase();
       return (
@@ -171,7 +185,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
         specHaystack.includes(q)
       );
     });
-  }, [peers, specialtyFilter, availFilter, stateFilter, peerStatusFilter, searchQ]);
+  }, [peers, specialtyFilter, availFilter, stateFilter, peerStatusFilter, verificationFilter, searchQ]);
 
   const visible = useMemo(() => {
     const arr = [...filtered];
@@ -322,7 +336,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
 
       <Card>
         <CardContent className="p-4">
-          <div className="grid gap-3 md:grid-cols-[1fr_160px_160px_140px_130px]">
+          <div className="grid gap-3 md:grid-cols-[1fr_150px_150px_150px_140px_130px]">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-tertiary" />
               <Input
@@ -356,6 +370,16 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
                     {s}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+            <Select value={verificationFilter} onValueChange={setVerificationFilter}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any Verification</SelectItem>
+                <SelectItem value="all_verified">All Verified</SelectItem>
+                <SelectItem value="has_unverified">Has Unverified</SelectItem>
               </SelectContent>
             </Select>
             <Select value={availFilter} onValueChange={setAvailFilter}>
@@ -445,18 +469,32 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
                   <td className="px-4 py-3 text-ink-secondary text-xs">{r.email ?? '—'}</td>
                   <td className="px-4 py-3" data-testid="peers-row-specialties">
                     <div className="flex flex-wrap gap-1">
-                      {specs.length === 0 && (
+                      {(r.specialty_details ?? []).length === 0 && specs.length === 0 && (
                         <span className="text-xs text-ink-tertiary">—</span>
                       )}
-                      {specs.map((s) => (
-                        <Badge
-                          key={s}
-                          variant="secondary"
-                          className="bg-status-info-bg text-status-info-fg text-[10px]"
-                        >
-                          {s}
-                        </Badge>
-                      ))}
+                      {((r.specialty_details ?? []).length > 0 ? r.specialty_details! : specs.map(s => ({ specialty: s, verified_status: 'pending' }))).map((d) => {
+                        const isVerified = d.verified_status === 'verified';
+                        const isRejected = d.verified_status === 'not_verified';
+                        return (
+                          <Badge
+                            key={d.specialty}
+                            variant="secondary"
+                            className={`text-[10px] gap-0.5 ${
+                              isVerified
+                                ? 'bg-mint-100 text-mint-700'
+                                : isRejected
+                                  ? 'bg-critical-100 text-critical-700'
+                                  : 'bg-amber-100 text-amber-700'
+                            }`}
+                            title={`${d.specialty} — ${d.verified_status}`}
+                          >
+                            {isVerified && <CheckCircle2 className="h-2.5 w-2.5" />}
+                            {!isVerified && !isRejected && <Clock className="h-2.5 w-2.5" />}
+                            {isRejected && <XCircle className="h-2.5 w-2.5" />}
+                            {d.specialty}
+                          </Badge>
+                        );
+                      })}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-ink-secondary text-xs">
