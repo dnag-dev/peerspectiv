@@ -71,18 +71,18 @@ export default async function PeerCaseGroupPage({ params }: GroupParams) {
   );
 
   return (
-    <div className="flex flex-col bg-paper-canvas">
+    <div className="flex flex-col bg-surface-canvas">
       <div className="flex-shrink-0 px-4 pt-4 lg:px-6 lg:pt-6">
-        <div className="rounded-lg border border-cobalt-200 bg-cobalt-50/40 p-4">
-          <div className="text-eyebrow text-cobalt-700">
+        <div className="rounded-lg border border-status-info-fg/30 bg-status-info-bg/40 p-4">
+          <div className="text-eyebrow text-status-info-fg">
             MULTI-CHART REVIEW
           </div>
-          <h1 className="mt-1 text-lg font-semibold text-ink-900">
+          <h1 className="mt-1 text-lg font-medium tracking-tight text-ink-primary">
             {providerName}{" "}
-            <span className="text-ink-500">· {batchPeriod}</span>{" "}
-            <span className="text-ink-400">({cases.length} charts)</span>
+            <span className="text-ink-secondary">· {batchPeriod}</span>{" "}
+            <span className="text-ink-tertiary">({cases.length} charts)</span>
           </h1>
-          <p className="mt-1 text-xs text-ink-600">
+          <p className="mt-1 text-xs text-ink-secondary">
             Each tab is an independent chart review. Submit each tab separately.
           </p>
         </div>

@@ -102,7 +102,7 @@ export function ReviewsTable({
       {(month || criterion) && (
         <div
           className="flex flex-wrap items-center gap-2 rounded-lg p-3"
-          style={{ backgroundColor: "#1E3A8A", border: "1px solid #00C896" }}
+          style={{ backgroundColor: 'var(--color-card)', border: "1px solid #00C896" }}
         >
           <span className="text-xs uppercase tracking-wider text-mint-200">
             Drilled down from Trends
@@ -128,7 +128,7 @@ export function ReviewsTable({
               setMonth(null);
               setCriterion(null);
             }}
-            className="ml-auto text-xs text-ink-400 hover:text-white"
+            className="ml-auto text-xs text-ink-tertiary hover:text-ink-primary"
           >
             Clear all
           </button>
@@ -137,7 +137,7 @@ export function ReviewsTable({
 
       <div
         className="flex flex-wrap gap-3 rounded-lg p-4"
-        style={{ backgroundColor: "#1E3A8A" }}
+        style={{ backgroundColor: 'var(--color-card)' }}
       >
         <FilterSelect
           label="Status"
@@ -159,12 +159,12 @@ export function ReviewsTable({
         />
       </div>
 
-      <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
+      <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--color-card)' }}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr
-                className="text-left text-xs uppercase text-ink-500 border-b"
+                className="text-left text-xs uppercase text-ink-secondary border-b"
                 style={{ borderColor: "#2A3F5F" }}
               >
                 <th className="py-2 pr-3">Case</th>
@@ -178,7 +178,7 @@ export function ReviewsTable({
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-4 text-center text-ink-400">
+                  <td colSpan={6} className="py-4 text-center text-ink-tertiary">
                     No matching reviews.
                   </td>
                 </tr>
@@ -189,14 +189,14 @@ export function ReviewsTable({
                   className="border-b"
                   style={{ borderColor: "#2A3F5F" }}
                 >
-                  <td className="py-3 pr-3 text-white truncate max-w-xs">
+                  <td className="py-3 pr-3 text-ink-primary truncate max-w-xs">
                     {r.chartFileName}
                   </td>
-                  <td className="py-3 pr-3 text-ink-300">{r.providerName}</td>
-                  <td className="py-3 pr-3 text-ink-400">{r.specialty}</td>
+                  <td className="py-3 pr-3 text-ink-tertiary">{r.providerName}</td>
+                  <td className="py-3 pr-3 text-ink-tertiary">{r.specialty}</td>
                   <td className="py-3 pr-3">
                     <span
-                      className="rounded px-2 py-0.5 text-xs font-semibold"
+                      className="rounded px-2 py-0.5 text-xs font-medium"
                       style={{
                         backgroundColor: `${statusColor(r.status)}22`,
                         color: statusColor(r.status),
@@ -205,10 +205,10 @@ export function ReviewsTable({
                       {r.status}
                     </span>
                   </td>
-                  <td className="py-3 pr-3 text-ink-400">
+                  <td className="py-3 pr-3 text-ink-tertiary">
                     {r.dueDate ? new Date(r.dueDate).toLocaleDateString() : "—"}
                   </td>
-                  <td className="py-3 pr-3 text-ink-400">
+                  <td className="py-3 pr-3 text-ink-tertiary">
                     {quarterOf(r.createdAt)}
                   </td>
                 </tr>
@@ -234,14 +234,14 @@ function FilterSelect({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs uppercase tracking-wider text-ink-400">
+      <label className="text-xs uppercase tracking-wider text-ink-tertiary">
         {label}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-md px-3 py-1.5 text-sm text-white"
-        style={{ backgroundColor: "#172554", border: "1px solid #2A3F5F" }}
+        className="rounded-md px-3 py-1.5 text-sm text-ink-primary"
+        style={{ backgroundColor: 'var(--color-card)', border: "1px solid #2A3F5F" }}
       >
         {options.map((o) => (
           <option key={o} value={o}>

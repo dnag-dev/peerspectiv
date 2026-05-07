@@ -117,7 +117,7 @@ export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="rounded-md bg-critical-100 border border-critical-600 px-3 py-2 text-sm text-critical-700">
+        <div className="rounded-md bg-critical-100 border border-status-danger-dot px-3 py-2 text-sm text-status-danger-fg">
           {error}
         </div>
       )}
@@ -140,7 +140,7 @@ export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
         title="Expired"
         description="Credential expired before today. Blocked from assignment."
         rows={grouped.expired}
-        badge={<Badge className="bg-critical-100 text-critical-700 border-0">Expired</Badge>}
+        badge={<Badge className="bg-critical-100 text-status-danger-fg border-0">Expired</Badge>}
         editingId={editingId}
         editValue={editValue}
         savingId={savingId}
@@ -154,7 +154,7 @@ export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
         title="Expiring soon (next 60 days)"
         description="Renew before expiry to avoid assignment interruptions."
         rows={grouped.expiring}
-        badge={<Badge className="bg-amber-100 text-amber-700 border-0">Expiring</Badge>}
+        badge={<Badge className="bg-amber-100 text-status-warning-fg border-0">Expiring</Badge>}
         editingId={editingId}
         editValue={editValue}
         savingId={savingId}
@@ -168,7 +168,7 @@ export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
         title="Valid"
         description="Credentials current. Eligible for assignment."
         rows={grouped.valid}
-        badge={<Badge className="bg-mint-100 text-cobalt-700 border-0">Valid</Badge>}
+        badge={<Badge className="bg-mint-100 text-status-info-fg border-0">Valid</Badge>}
         editingId={editingId}
         editValue={editValue}
         savingId={savingId}
@@ -201,19 +201,19 @@ function BucketCard(props: {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           {title}
-          <span className="text-sm font-normal text-ink-500">({rows.length})</span>
+          <span className="text-sm font-normal text-ink-secondary">({rows.length})</span>
           <span className="ml-auto">{badge}</span>
         </CardTitle>
-        <p className="text-xs text-ink-500">{description}</p>
+        <p className="text-xs text-ink-secondary">{description}</p>
       </CardHeader>
       <CardContent className="p-0">
         {rows.length === 0 ? (
-          <div className="px-6 py-8 text-center text-sm text-ink-400">None</div>
+          <div className="px-6 py-8 text-center text-sm text-ink-tertiary">None</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-y border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
+                <tr className="border-y border-border-subtle bg-ink-50 text-xs uppercase tracking-wider text-ink-secondary">
                   <th className="px-4 py-2 text-left">Peer</th>
                   <th className="px-4 py-2 text-left">Specialties</th>
                   <th className="px-4 py-2 text-left">License</th>
@@ -226,13 +226,13 @@ function BucketCard(props: {
                   const isEditing = editingId === r.id;
                   const saving = savingId === r.id;
                   return (
-                    <tr key={r.id} className="border-b border-ink-100 hover:bg-ink-50">
+                    <tr key={r.id} className="border-b border-border-subtle hover:bg-ink-50">
                       <td className="px-4 py-2">
-                        <div className="font-medium text-ink-900">{r.full_name ?? '—'}</div>
-                        <div className="text-xs text-ink-500">{r.email ?? '—'}</div>
+                        <div className="font-medium text-ink-primary">{r.full_name ?? '—'}</div>
+                        <div className="text-xs text-ink-secondary">{r.email ?? '—'}</div>
                       </td>
-                      <td className="px-4 py-2 text-ink-600">{specialtiesText(r)}</td>
-                      <td className="px-4 py-2 text-ink-600">
+                      <td className="px-4 py-2 text-ink-secondary">{specialtiesText(r)}</td>
+                      <td className="px-4 py-2 text-ink-secondary">
                         {r.license_number
                           ? `${r.license_number}${r.license_state ? ` (${r.license_state})` : ''}`
                           : '—'}
@@ -243,14 +243,14 @@ function BucketCard(props: {
                             type="date"
                             value={editValue}
                             onChange={(e) => props.onChangeValue(e.target.value)}
-                            className="w-full rounded-md border border-ink-300 px-2 py-1 text-sm"
+                            className="w-full rounded-md border border-border-default px-2 py-1 text-sm"
                           />
                         ) : r.credential_valid_until ? (
-                          <span className="text-ink-700">
+                          <span className="text-ink-primary">
                             {String(r.credential_valid_until).slice(0, 10)}
                           </span>
                         ) : (
-                          <span className="text-ink-400">—</span>
+                          <span className="text-ink-tertiary">—</span>
                         )}
                       </td>
                       <td className="px-4 py-2 text-right">

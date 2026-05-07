@@ -39,12 +39,12 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
+      <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--color-card)' }}>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-white">
+          <h3 className="text-sm font-medium text-ink-primary">
             Monthly Compliance (last 6 months)
           </h3>
-          <span className="text-[10px] uppercase tracking-wider text-ink-500">
+          <span className="text-[10px] uppercase tracking-wider text-ink-secondary">
             Click a bar to drill into that month
           </span>
         </div>
@@ -63,7 +63,7 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
               <Tooltip
                 cursor={{ fill: "#ffffff10" }}
                 contentStyle={{
-                  backgroundColor: "#172554",
+                  backgroundColor: 'var(--color-card)',
                   border: "1px solid #2A3F5F",
                   color: "white",
                 }}
@@ -78,16 +78,16 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
         </div>
       </div>
 
-      <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
-        <h3 className="text-sm font-semibold text-white mb-3">
+      <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--color-card)' }}>
+        <h3 className="text-sm font-medium text-ink-primary mb-3">
           Most Missed Criteria (sorted by % no, descending)
         </h3>
         {topMissed.length === 0 ? (
-          <p className="text-sm text-ink-400">No deficiency data.</p>
+          <p className="text-sm text-ink-tertiary">No deficiency data.</p>
         ) : (
-          <table className="w-full text-xs text-white">
+          <table className="w-full text-xs text-ink-primary">
             <thead>
-              <tr className="text-ink-400 border-b border-ink-700/60">
+              <tr className="text-ink-tertiary border-b border-ink-700/60">
                 <th className="text-left py-2 font-medium">Criterion</th>
                 <th className="text-right py-2 font-medium">% No</th>
                 <th className="text-right py-2 font-medium">No Count</th>
@@ -106,14 +106,14 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
                       }
                     >
                       <td className="py-2 pr-2">
-                        <span className="text-ink-300">
+                        <span className="text-ink-tertiary">
                           {isOpen ? "▼" : "▶"} {t.criterion}
                         </span>
                       </td>
                       <td className="py-2 text-right text-amber-400">
                         {t.noPct}%
                       </td>
-                      <td className="py-2 text-right text-ink-300">
+                      <td className="py-2 text-right text-ink-tertiary">
                         {t.count}
                       </td>
                     </tr>
@@ -121,7 +121,7 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
                       <tr key={`${t.criterion}-trend`}>
                         <td colSpan={3} className="py-3 pl-4 pr-2">
                           {t.quarters.length === 0 ? (
-                            <p className="text-ink-400 text-xs">
+                            <p className="text-ink-tertiary text-xs">
                               No quarterly data.
                             </p>
                           ) : (
@@ -145,7 +145,7 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
                                   />
                                   <Tooltip
                                     contentStyle={{
-                                      backgroundColor: "#172554",
+                                      backgroundColor: 'var(--color-card)',
                                       border: "1px solid #2A3F5F",
                                       color: "white",
                                       fontSize: 11,

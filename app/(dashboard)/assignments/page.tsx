@@ -116,9 +116,9 @@ export default async function AssignmentsPage({
   return (
     <div className="space-y-5">
       <div>
-        <div className="text-eyebrow text-ink-500 mb-1">ADMIN · ASSIGNMENTS</div>
-        <h1 className="text-h1 text-ink-900">Assignments</h1>
-        <p className="mt-1 text-small text-ink-500">
+        <div className="text-eyebrow text-ink-secondary mb-1">ADMIN · ASSIGNMENTS</div>
+        <h1 className="text-h1 text-ink-primary">Assignments</h1>
+        <p className="mt-1 text-small text-ink-secondary">
           Every review case across every status — unassigned, pending
           approval, assigned, in progress, completed, returned by peer.
         </p>

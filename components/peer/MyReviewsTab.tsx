@@ -83,17 +83,17 @@ export function MyReviewsTab({ peerId }: Props) {
       </CardHeader>
       <CardContent>
         {loading && (
-          <p className="text-sm text-ink-500">
+          <p className="text-sm text-ink-secondary">
             <Loader2 className="inline h-4 w-4 animate-spin mr-1" /> Loading…
           </p>
         )}
         {!loading && reviews.length === 0 && (
-          <p className="text-sm text-ink-500">You have no submitted reviews yet.</p>
+          <p className="text-sm text-ink-secondary">You have no submitted reviews yet.</p>
         )}
         {error && <p className="text-sm text-destructive">Error: {error}</p>}
         {reviews.length > 0 && (
           <table className="w-full text-sm">
-            <thead className="text-eyebrow text-ink-500">
+            <thead className="text-eyebrow text-ink-secondary">
               <tr>
                 <th className="text-left py-2">Provider</th>
                 <th className="text-left py-2">Company</th>
@@ -104,10 +104,10 @@ export function MyReviewsTab({ peerId }: Props) {
             </thead>
             <tbody>
               {reviews.map((r) => (
-                <tr key={r.result_id} className="border-t border-ink-100">
+                <tr key={r.result_id} className="border-t border-border-subtle">
                   <td className="py-2">{r.provider_name}</td>
-                  <td className="py-2 text-ink-600">{r.company_name}</td>
-                  <td className="py-2 text-ink-600">
+                  <td className="py-2 text-ink-secondary">{r.company_name}</td>
+                  <td className="py-2 text-ink-secondary">
                     {new Date(r.submitted_at).toLocaleDateString('en-US')}
                   </td>
                   <td className="py-2 text-right">

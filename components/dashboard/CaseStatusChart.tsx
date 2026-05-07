@@ -42,7 +42,7 @@ export function CaseStatusChart({
       {/* Bar Chart - Cases by Company */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">
+          <CardTitle className="text-base font-medium">
             Cases by Company
             <span className="ml-2 text-xs font-normal text-muted-foreground">
               Last 30 days
@@ -104,7 +104,7 @@ export function CaseStatusChart({
       {/* Pie/Donut Chart - Cases by Status */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">
+          <CardTitle className="text-base font-medium">
             Cases by Status
             <span className="ml-2 text-xs font-normal text-muted-foreground">
               {totalCases} total
@@ -151,7 +151,7 @@ export function CaseStatusChart({
                   iconType="circle"
                   iconSize={8}
                   formatter={(value: string) => (
-                    <span className="text-xs text-ink-600">{value}</span>
+                    <span className="text-xs text-ink-secondary">{value}</span>
                   )}
                 />
               </PieChart>

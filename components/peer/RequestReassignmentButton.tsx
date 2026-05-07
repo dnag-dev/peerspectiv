@@ -48,7 +48,7 @@ export function RequestReassignmentButton({ caseId, alreadyRequested = false }: 
 
   if (submitted) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+      <span className="inline-flex items-center gap-1.5 rounded-md border border-status-warning-fg/30 bg-amber-50 px-2.5 py-1 text-xs font-medium text-status-warning-fg">
         <CheckCircle2 className="h-3 w-3" />
         Reassignment requested
       </span>
@@ -60,7 +60,7 @@ export function RequestReassignmentButton({ caseId, alreadyRequested = false }: 
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-md border border-ink-200 bg-paper-surface px-2.5 py-1 text-xs font-medium text-ink-700 transition-colors hover:border-cobalt-600 hover:text-cobalt-700"
+        className="inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 py-1 text-xs font-medium text-ink-primary transition-colors hover:border-status-info-dot hover:text-status-info-fg"
       >
         <ArrowUpDown className="h-3 w-3" />
         Request reassignment
@@ -75,7 +75,7 @@ export function RequestReassignmentButton({ caseId, alreadyRequested = false }: 
             </p>
           </DialogHeader>
           <div className="space-y-2">
-            <label className="text-eyebrow text-ink-500" htmlFor="reassign-reason">
+            <label className="text-eyebrow text-ink-secondary" htmlFor="reassign-reason">
               Why does this need reassignment?
             </label>
             <textarea
@@ -84,10 +84,10 @@ export function RequestReassignmentButton({ caseId, alreadyRequested = false }: 
               onChange={(e) => setReason(e.target.value)}
               rows={4}
               required
-              className="w-full rounded-md border border-ink-200 bg-paper-surface px-3 py-2 text-sm focus:border-cobalt-600 focus:outline-none"
+              className="w-full rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-sm focus:border-status-info-dot focus:outline-none"
               placeholder="e.g. Conflict of interest, outside my specialty, …"
             />
-            {error && <p className="text-xs text-critical-700">{error}</p>}
+            {error && <p className="text-xs text-status-danger-fg">{error}</p>}
           </div>
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={() => setOpen(false)} disabled={submitting}>

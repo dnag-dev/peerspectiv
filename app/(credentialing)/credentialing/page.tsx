@@ -166,14 +166,14 @@ export default async function CredentialingDashboard() {
         </CardHeader>
         <CardContent className="flex items-center justify-between">
           <div>
-            <div className="text-sm text-ink-500">{mtdCount} peer{mtdCount === 1 ? '' : 's'} credentialed this month</div>
-            <div className="mt-1 text-2xl font-semibold text-ink-900">
+            <div className="text-sm text-ink-secondary">{mtdCount} peer{mtdCount === 1 ? '' : 's'} credentialed this month</div>
+            <div className="mt-1 text-2xl font-medium text-ink-primary">
               ${mtdAmount.toFixed(2)}
             </div>
           </div>
           <Link
             href="/credentialing/earnings"
-            className="rounded-md border border-ink-300 px-4 py-2 text-sm font-medium text-ink-700 hover:bg-ink-50"
+            className="rounded-md border border-border-default px-4 py-2 text-sm font-medium text-ink-primary hover:bg-ink-50"
           >
             View earnings →
           </Link>

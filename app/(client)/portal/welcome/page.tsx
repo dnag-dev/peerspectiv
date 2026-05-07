@@ -330,7 +330,7 @@ function Field(props: {
         onChange={(e) => props.onChange(e.target.value)}
         style={{
           width: '100%',
-          background: '#172554',
+          background: 'var(--color-card)',
           border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: 8,
           color: '#F8FAFC',
@@ -434,13 +434,13 @@ const shellStyle: React.CSSProperties = {
   padding: '48px 24px',
   display: 'flex',
   justifyContent: 'center',
-  background: '#172554',
+  background: 'var(--color-card)',
 };
 
 const cardStyle: React.CSSProperties = {
   width: '100%',
   maxWidth: 640,
-  background: '#1E3A8A',
+  background: 'var(--color-card)',
   border: '1px solid rgba(255,255,255,0.06)',
   borderRadius: 16,
   padding: 40,

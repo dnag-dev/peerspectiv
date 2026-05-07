@@ -52,7 +52,7 @@ export default async function ReportsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-ink-900">Reports</h1>
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Reports</h1>
         <p className="text-sm text-muted-foreground">
           The five canonical report types plus reviewer scorecard, bulk download,
           and legacy reports.

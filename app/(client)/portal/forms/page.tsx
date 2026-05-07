@@ -23,8 +23,8 @@ export default async function ClientFormsPage() {
   if (!companyId) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-white">Forms</h1>
-        <Card><CardContent className="py-12 text-center text-ink-500">No company found.</CardContent></Card>
+        <h1 className="text-2xl font-medium text-ink-primary">Forms</h1>
+        <Card><CardContent className="py-12 text-center text-ink-secondary">No company found.</CardContent></Card>
       </div>
     );
   }
@@ -45,8 +45,8 @@ export default async function ClientFormsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Forms</h1>
-        <p className="text-sm text-ink-400">
+        <h1 className="text-2xl font-medium text-ink-primary">Forms</h1>
+        <p className="text-sm text-ink-tertiary">
           Review form templates for your practice — {forms.length} forms.
         </p>
       </div>
@@ -54,9 +54,9 @@ export default async function ClientFormsPage() {
       {forms.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <FileText className="mb-4 h-12 w-12 text-ink-300" />
+            <FileText className="mb-4 h-12 w-12 text-ink-tertiary" />
             <h3 className="text-lg font-medium text-ink-200">No forms configured</h3>
-            <p className="mt-1 text-sm text-ink-400">
+            <p className="mt-1 text-sm text-ink-tertiary">
               Your administrator will set up review forms for your practice.
             </p>
           </CardContent>
@@ -65,7 +65,7 @@ export default async function ClientFormsPage() {
         <Card>
           <CardContent className="p-0">
             <table className="w-full text-sm">
-              <thead className="bg-ink-800/50 text-ink-400 text-xs uppercase">
+              <thead className="bg-ink-800/50 text-ink-tertiary text-xs uppercase">
                 <tr>
                   <th className="px-4 py-3 text-left">Form Name</th>
                   <th className="px-4 py-3 text-left">Specialty</th>
@@ -79,18 +79,18 @@ export default async function ClientFormsPage() {
                   return (
                     <tr key={form.id} className="border-t border-ink-700/50">
                       <td className="px-4 py-3 text-ink-100 font-medium flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-ink-400" />
+                        <FileText className="h-4 w-4 text-ink-tertiary" />
                         {form.formName}
                       </td>
-                      <td className="px-4 py-3 text-ink-300">{form.specialty}</td>
-                      <td className="px-4 py-3 text-center text-ink-300">{fieldCount}</td>
+                      <td className="px-4 py-3 text-ink-tertiary">{form.specialty}</td>
+                      <td className="px-4 py-3 text-center text-ink-tertiary">{fieldCount}</td>
                       <td className="px-4 py-3">
                         <Badge
                           variant="outline"
                           className={
                             form.isActive
                               ? "border-mint-500/50 text-mint-400 bg-mint-500/10"
-                              : "border-ink-600 text-ink-400"
+                              : "border-ink-600 text-ink-tertiary"
                           }
                         >
                           {form.isActive ? "Active" : "Inactive"}

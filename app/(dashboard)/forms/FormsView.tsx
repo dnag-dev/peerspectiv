@@ -53,9 +53,9 @@ const SCORING_LABEL: Record<string, string> = {
   pass_fail: "Pass / Fail",
 };
 const SCORING_CHIP: Record<string, string> = {
-  yes_no_na: "bg-cobalt-50 text-cobalt-700 border-cobalt-200",
-  abc_na: "bg-amber-50 text-amber-700 border-amber-200",
-  pass_fail: "bg-mint-50 text-mint-700 border-mint-200",
+  yes_no_na: "bg-status-info-bg text-status-info-fg border-status-info-fg/30",
+  abc_na: "bg-amber-50 text-status-warning-fg border-status-warning-fg/30",
+  pass_fail: "bg-mint-50 text-status-success-fg border-status-success-fg/30",
 };
 
 interface Props {
@@ -193,13 +193,13 @@ export function FormsView({ forms, companies }: Props) {
     return (
       <th
         onClick={() => toggleSort(k)}
-        className={`px-4 py-3 cursor-pointer select-none hover:text-ink-900 ${
+        className={`px-4 py-3 cursor-pointer select-none hover:text-ink-primary ${
           align === "right" ? "text-right" : "text-left"
         }`}
       >
         <span className="inline-flex items-center gap-1">
           {label}
-          <Icon className={`h-3 w-3 ${active ? "text-cobalt-600" : "text-ink-300"}`} />
+          <Icon className={`h-3 w-3 ${active ? "text-status-info-dot" : "text-ink-tertiary"}`} />
         </span>
       </th>
     );
@@ -298,7 +298,7 @@ export function FormsView({ forms, companies }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink-900">Forms</h1>
+          <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Forms</h1>
           <p className="text-sm text-muted-foreground">
             Manage peer-review form templates per company and specialty.
           </p>
@@ -322,7 +322,7 @@ export function FormsView({ forms, companies }: Props) {
         <CardContent className="p-4">
           <div className="grid gap-3 md:grid-cols-[1fr_180px_180px_140px]">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-tertiary" />
               <Input
                 value={searchQ}
                 onChange={(e) => setSearchQ(e.target.value)}
@@ -367,7 +367,7 @@ export function FormsView({ forms, companies }: Props) {
               </SelectContent>
             </Select>
           </div>
-          <p className="mt-3 text-xs text-ink-500">
+          <p className="mt-3 text-xs text-ink-secondary">
             Showing <strong>{visible.length}</strong> of {forms.length} forms
           </p>
         </CardContent>
@@ -376,7 +376,7 @@ export function FormsView({ forms, companies }: Props) {
       <Card>
         <CardContent className="p-0">
           <table className="w-full text-sm">
-            <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
+            <thead className="bg-ink-50 text-ink-secondary text-xs uppercase">
               <tr>
                 <SortHead label="Company" k="companyName" />
                 <SortHead label="Specialty" k="specialty" />
@@ -393,7 +393,7 @@ export function FormsView({ forms, companies }: Props) {
             <tbody>
               {visible.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-ink-500">
+                  <td colSpan={10} className="px-4 py-12 text-center text-ink-secondary">
                     {forms.length === 0 ? (
                       <>No forms yet. Click <strong>New Form</strong> to build one.</>
                     ) : (
@@ -405,13 +405,13 @@ export function FormsView({ forms, companies }: Props) {
               {visible.map((f) => {
                 const fieldCount = fieldCountOf(f);
                 return (
-                  <tr key={f.id} className="border-t border-ink-100 hover:bg-ink-50/50">
-                    <td className="px-4 py-3 text-ink-900">{f.companyName ?? "—"}</td>
-                    <td className="px-4 py-3 text-ink-700">{f.specialty}</td>
-                    <td className="px-4 py-3 text-ink-900 font-medium">{f.formName}</td>
-                    <td className="px-4 py-3 text-right text-ink-700">{fieldCount}</td>
-                    <td className="px-4 py-3 text-right text-ink-600">{f.responseCount ?? 0}</td>
-                    <td className="px-4 py-3 text-right text-ink-600">
+                  <tr key={f.id} className="border-t border-border-subtle hover:bg-ink-50/50">
+                    <td className="px-4 py-3 text-ink-primary">{f.companyName ?? "—"}</td>
+                    <td className="px-4 py-3 text-ink-primary">{f.specialty}</td>
+                    <td className="px-4 py-3 text-ink-primary font-medium">{f.formName}</td>
+                    <td className="px-4 py-3 text-right text-ink-primary">{fieldCount}</td>
+                    <td className="px-4 py-3 text-right text-ink-secondary">{f.responseCount ?? 0}</td>
+                    <td className="px-4 py-3 text-right text-ink-secondary">
                       {f.avgDurationMin != null ? `${f.avgDurationMin}m` : "—"}
                     </td>
                     <td className="px-4 py-3">
@@ -433,22 +433,22 @@ export function FormsView({ forms, companies }: Props) {
                           href={f.templatePdfUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-cobalt-700 hover:underline"
+                          className="inline-flex items-center gap-1 text-xs text-status-info-fg hover:underline"
                         >
                           <FileText className="h-3 w-3" />
                           {f.templatePdfName ?? "View"}
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       ) : (
-                        <span className="text-xs text-ink-400">—</span>
+                        <span className="text-xs text-ink-tertiary">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex rounded px-2 py-0.5 text-xs font-medium ${
                           f.isActive
-                            ? "bg-mint-50 text-mint-700"
-                            : "bg-ink-100 text-ink-500"
+                            ? "bg-mint-50 text-status-success-fg"
+                            : "bg-ink-100 text-ink-secondary"
                         }`}
                       >
                         {f.isActive ? "active" : "inactive"}
@@ -507,7 +507,7 @@ export function FormsView({ forms, companies }: Props) {
                         variant="outline"
                         onClick={() => handleDelete(f)}
                         disabled={deletingId === f.id}
-                        className="h-7 text-xs text-critical-700 hover:bg-critical-50"
+                        className="h-7 text-xs text-status-danger-fg hover:bg-critical-50"
                         title="Delete form (only allowed if no completed reviews use it)"
                       >
                         {deletingId === f.id ? (

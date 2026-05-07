@@ -60,12 +60,12 @@ export function SpecialtyMultiSelect({ value, onChange, id, disabled }: Props) {
     <div className="space-y-2">
       <div className="flex flex-wrap gap-1.5 min-h-[28px]" data-testid="specialty-chips">
         {value.length === 0 && (
-          <span className="text-xs text-ink-400">No specialties selected</span>
+          <span className="text-xs text-ink-tertiary">No specialties selected</span>
         )}
         {value.map((s) => (
           <span
             key={s}
-            className="inline-flex items-center gap-1 rounded-full bg-cobalt-50 px-2 py-0.5 text-xs text-cobalt-700"
+            className="inline-flex items-center gap-1 rounded-full bg-status-info-bg px-2 py-0.5 text-xs text-status-info-fg"
           >
             {s}
             {!disabled && (
@@ -73,7 +73,7 @@ export function SpecialtyMultiSelect({ value, onChange, id, disabled }: Props) {
                 type="button"
                 onClick={() => remove(s)}
                 aria-label={`Remove ${s}`}
-                className="hover:text-cobalt-900"
+                className="hover:text-ink-primary"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -91,7 +91,7 @@ export function SpecialtyMultiSelect({ value, onChange, id, disabled }: Props) {
             if (e.target.value) add(e.target.value);
             e.target.value = "";
           }}
-          className="w-full rounded-md border border-ink-300 px-2 py-1.5 text-sm bg-white"
+          className="w-full rounded-md border border-border-default px-2 py-1.5 text-sm bg-white"
         >
           <option value="">
             {loading
@@ -108,7 +108,7 @@ export function SpecialtyMultiSelect({ value, onChange, id, disabled }: Props) {
         </select>
       )}
 
-      {error && <p className="text-xs text-critical-700">{error}</p>}
+      {error && <p className="text-xs text-status-danger-fg">{error}</p>}
     </div>
   );
 }

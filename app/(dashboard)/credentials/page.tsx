@@ -26,8 +26,8 @@ export default async function CredentialsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink-900">Credentials</h1>
-        <p className="text-sm text-ink-500">
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Credentials</h1>
+        <p className="text-sm text-ink-secondary">
           Track license expirations. Peers with missing or expired credentials
           are automatically excluded from assignment.
         </p>

@@ -25,7 +25,7 @@ export default async function RootLayout({
     const { ClerkProvider } = await import('@clerk/nextjs');
     return (
       <html lang="en" className={fontVars}>
-        <body className="font-sans antialiased bg-paper-canvas text-ink-900">
+        <body className="font-sans antialiased bg-surface-canvas text-ink-primary">
           <ClerkProvider>
             {children}
             <Toaster />
@@ -37,7 +37,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={fontVars}>
-      <body className="font-sans antialiased bg-paper-canvas text-ink-900">
+      <body className="font-sans antialiased bg-surface-canvas text-ink-primary">
         {children}
         <Toaster />
       </body>

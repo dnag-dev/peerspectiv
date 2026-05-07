@@ -4,8 +4,8 @@ export default function UploadStub() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Submit Records</h1>
-        <p className="text-sm text-ink-400">Upload medical records for peer review</p>
+        <h1 className="text-2xl font-medium text-ink-primary">Submit Records</h1>
+        <p className="text-sm text-ink-tertiary">Upload medical records for peer review</p>
       </div>
       <EmptyState
         title="Submit records — drag and drop coming soon"

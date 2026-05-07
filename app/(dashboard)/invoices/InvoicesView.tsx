@@ -51,11 +51,11 @@ interface Props {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  draft: "bg-ink-100 text-ink-700",
-  sent: "bg-cobalt-50 text-cobalt-700",
-  paid: "bg-mint-50 text-mint-700",
-  overdue: "bg-critical-50 text-critical-700",
-  void: "bg-ink-100 text-ink-500 line-through",
+  draft: "bg-ink-100 text-ink-primary",
+  sent: "bg-status-info-bg text-status-info-fg",
+  paid: "bg-mint-50 text-status-success-fg",
+  overdue: "bg-critical-50 text-status-danger-fg",
+  void: "bg-ink-100 text-ink-secondary line-through",
 };
 
 const fmtMoney = (n: number, ccy = "USD") =>
@@ -176,13 +176,13 @@ export function InvoicesView({ invoices, companies }: Props) {
     return (
       <th
         onClick={() => toggleSort(k)}
-        className={`px-4 py-3 cursor-pointer select-none hover:text-ink-900 ${
+        className={`px-4 py-3 cursor-pointer select-none hover:text-ink-primary ${
           align === "right" ? "text-right" : "text-left"
         }`}
       >
         <span className="inline-flex items-center gap-1">
           {label}
-          <Icon className={`h-3 w-3 ${active ? "text-cobalt-600" : "text-ink-300"}`} />
+          <Icon className={`h-3 w-3 ${active ? "text-status-info-dot" : "text-ink-tertiary"}`} />
         </span>
       </th>
     );
@@ -328,7 +328,7 @@ export function InvoicesView({ invoices, companies }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink-900">Invoices</h1>
+          <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Invoices</h1>
           <p className="text-sm text-muted-foreground">
             Generate, track, and send invoices for client peer-review services.
           </p>
@@ -346,7 +346,7 @@ export function InvoicesView({ invoices, companies }: Props) {
       {showCadence && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-ink-900">Generate Invoice by Cadence Period</CardTitle>
+            <CardTitle className="text-ink-primary">Generate Invoice by Cadence Period</CardTitle>
             <Button variant="ghost" size="icon" onClick={() => setShowCadence(false)}>
               <X className="h-4 w-4" />
             </Button>
@@ -374,19 +374,19 @@ export function InvoicesView({ invoices, companies }: Props) {
               </div>
               <div>
                 <Label>
-                  Adjustment reason{cadenceCaseCount.trim() !== "" && <span className="text-critical-600">*</span>}
+                  Adjustment reason{cadenceCaseCount.trim() !== "" && <span className="text-status-danger-dot">*</span>}
                 </Label>
                 <Input placeholder="Required when case count is set"
                   value={cadenceReason} onChange={(e) => setCadenceReason(e.target.value)}
                   disabled={cadenceCaseCount.trim() === ""} />
               </div>
             </div>
-            <label className="flex items-center gap-2 text-sm text-ink-700">
+            <label className="flex items-center gap-2 text-sm text-ink-primary">
               <input type="checkbox" checked={cadenceItemized}
                 onChange={(e) => setCadenceItemized(e.target.checked)} />
               Itemise per provider (no PHI — name + count + specialty + subtotal)
             </label>
-            {err && <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">{err}</p>}
+            {err && <p className="text-sm text-status-danger-fg bg-critical-50 px-3 py-2 rounded">{err}</p>}
             <Button onClick={handleGenerateCadence} disabled={busy === "cadence"}
               className="bg-cobalt-600 hover:bg-cobalt-700">
               {busy === "cadence" ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
@@ -399,7 +399,7 @@ export function InvoicesView({ invoices, companies }: Props) {
       {showCreate && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-ink-900">Create Invoice</CardTitle>
+            <CardTitle className="text-ink-primary">Create Invoice</CardTitle>
             <Button variant="ghost" size="icon" onClick={() => setShowCreate(false)}>
               <X className="h-4 w-4" />
             </Button>
@@ -446,7 +446,7 @@ export function InvoicesView({ invoices, companies }: Props) {
                 <Label>
                   Adjustment reason{" "}
                   {quantityOverride.trim() !== "" && (
-                    <span className="text-critical-600">*</span>
+                    <span className="text-status-danger-dot">*</span>
                   )}
                 </Label>
                 <Input
@@ -458,7 +458,7 @@ export function InvoicesView({ invoices, companies }: Props) {
                 />
               </div>
             </div>
-            <label className="flex items-center gap-2 text-sm text-ink-700">
+            <label className="flex items-center gap-2 text-sm text-ink-primary">
               <input
                 type="checkbox"
                 checked={createPaymentLink}
@@ -467,7 +467,7 @@ export function InvoicesView({ invoices, companies }: Props) {
               Create Aautipay hosted payment link now
             </label>
             {err && (
-              <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">{err}</p>
+              <p className="text-sm text-status-danger-fg bg-critical-50 px-3 py-2 rounded">{err}</p>
             )}
             <Button
               onClick={handleCreate}
@@ -486,7 +486,7 @@ export function InvoicesView({ invoices, companies }: Props) {
         <CardContent className="p-4">
           <div className="grid gap-3 md:grid-cols-[1fr_200px_160px]">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-tertiary" />
               <Input
                 value={searchQ}
                 onChange={(e) => setSearchQ(e.target.value)}
@@ -520,7 +520,7 @@ export function InvoicesView({ invoices, companies }: Props) {
               </SelectContent>
             </Select>
           </div>
-          <p className="mt-3 text-xs text-ink-500">
+          <p className="mt-3 text-xs text-ink-secondary">
             Showing <strong>{visibleInvoices.length}</strong> of {invoices.length} invoices
           </p>
         </CardContent>
@@ -529,7 +529,7 @@ export function InvoicesView({ invoices, companies }: Props) {
       <Card>
         <CardContent className="p-0">
           <table className="w-full text-sm">
-            <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
+            <thead className="bg-ink-50 text-ink-secondary text-xs uppercase">
               <tr>
                 <SortHead label="Number" k="invoiceNumber" />
                 <SortHead label="Company" k="companyName" />
@@ -543,7 +543,7 @@ export function InvoicesView({ invoices, companies }: Props) {
             <tbody>
               {visibleInvoices.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-ink-500">
+                  <td colSpan={7} className="px-4 py-12 text-center text-ink-secondary">
                     {invoices.length === 0 ? (
                       <>No invoices yet. Click <strong>New Invoice</strong> to generate one.</>
                     ) : (
@@ -555,20 +555,20 @@ export function InvoicesView({ invoices, companies }: Props) {
               {visibleInvoices.map((inv) => {
                 const total = Number(inv.totalAmount);
                 return (
-                  <tr key={inv.id} className="border-t border-ink-100 hover:bg-ink-50/50">
-                    <td className="px-4 py-3 font-mono text-xs text-ink-900">{inv.invoiceNumber}</td>
+                  <tr key={inv.id} className="border-t border-border-subtle hover:bg-ink-50/50">
+                    <td className="px-4 py-3 font-mono text-xs text-ink-primary">{inv.invoiceNumber}</td>
                     <td className="px-4 py-3 text-ink-800">{inv.companyName ?? "—"}</td>
-                    <td className="px-4 py-3 text-ink-600">
+                    <td className="px-4 py-3 text-ink-secondary">
                       {inv.rangeStart} → {inv.rangeEnd}
                     </td>
                     <td className="px-4 py-3 text-right text-ink-800">{inv.reviewCount}</td>
-                    <td className="px-4 py-3 text-right font-medium text-ink-900">
+                    <td className="px-4 py-3 text-right font-medium text-ink-primary">
                       {fmtMoney(total)}
                     </td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex rounded px-2 py-0.5 text-xs font-medium ${
-                          STATUS_STYLES[inv.status] ?? "bg-ink-100 text-ink-700"
+                          STATUS_STYLES[inv.status] ?? "bg-ink-100 text-ink-primary"
                         }`}
                       >
                         {inv.status}
@@ -580,14 +580,14 @@ export function InvoicesView({ invoices, companies }: Props) {
                           href={inv.pdfUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-cobalt-700 hover:underline"
+                          className="inline-flex items-center gap-1 text-xs text-status-info-fg hover:underline"
                         >
                           <Download className="h-3 w-3" /> PDF
                         </a>
                       ) : (
                         <span className="inline-flex items-center gap-1.5">
                           <span
-                            className="text-[10px] text-amber-700"
+                            className="text-[10px] text-status-warning-fg"
                             title="PDF not generated — likely BLOB_READ_WRITE_TOKEN not configured in this environment."
                           >
                             PDF pending
@@ -612,7 +612,7 @@ export function InvoicesView({ invoices, companies }: Props) {
                           href={inv.paymentLinkUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-cobalt-700 hover:underline ml-2"
+                          className="inline-flex items-center gap-1 text-xs text-status-info-fg hover:underline ml-2"
                         >
                           <ExternalLink className="h-3 w-3" /> Pay
                         </a>

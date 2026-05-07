@@ -166,10 +166,10 @@ export function LocationsSection({ companyId }: Props) {
         )}
       </CardHeader>
       <CardContent>
-        {error && <p className="mb-3 text-sm text-critical-600">{error}</p>}
+        {error && <p className="mb-3 text-sm text-status-danger-dot">{error}</p>}
 
         {adding && (
-          <div className="mb-4 rounded-lg border border-ink-200 bg-ink-50/50 p-4">
+          <div className="mb-4 rounded-lg border border-border-subtle bg-ink-50/50 p-4">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="space-y-1">
                 <Label htmlFor="new_name">Name *</Label>
@@ -329,7 +329,7 @@ export function LocationsSection({ companyId }: Props) {
                             onClick={() => handleDelete(c.id)}
                             title="Delete"
                           >
-                            <Trash2 className="h-4 w-4 text-critical-600" />
+                            <Trash2 className="h-4 w-4 text-status-danger-dot" />
                           </Button>
                         </div>
                       )}

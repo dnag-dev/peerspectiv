@@ -87,34 +87,34 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="relative rounded-md p-2 text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-700"
+        className="relative rounded-md p-2 text-ink-secondary transition-colors hover:bg-ink-100 hover:text-ink-primary"
         aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ''}`}
       >
         <Bell className="h-5 w-5" />
         {unread > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-critical-600 px-1 text-[10px] font-semibold text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-status-danger-dot px-1 text-[10px] font-medium text-white">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-md border border-ink-200 bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-ink-100 px-4 py-2">
-            <h3 className="text-sm font-semibold text-ink-900">
+        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-md border border-border-subtle bg-white shadow-lg">
+          <div className="flex items-center justify-between border-b border-border-subtle px-4 py-2">
+            <h3 className="text-sm font-medium text-ink-primary">
               Notifications
             </h3>
             {unread > 0 && (
-              <span className="text-xs text-ink-500">{unread} unread</span>
+              <span className="text-xs text-ink-secondary">{unread} unread</span>
             )}
           </div>
           <div className="max-h-96 overflow-y-auto">
             {loading && items.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-ink-500">
+              <p className="px-4 py-6 text-center text-sm text-ink-secondary">
                 Loading...
               </p>
             ) : items.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-ink-500">
+              <p className="px-4 py-6 text-center text-sm text-ink-secondary">
                 No notifications
               </p>
             ) : (
@@ -124,11 +124,11 @@ export function NotificationBell() {
                     key={n.id}
                     onClick={() => !n.readAt && markRead(n.id)}
                     className={`cursor-pointer border-b border-ink-50 px-4 py-3 transition-colors hover:bg-ink-50 ${
-                      !n.readAt ? 'bg-cobalt-100/40' : ''
+                      !n.readAt ? 'bg-status-info-bg/40' : ''
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium text-ink-900">
+                      <p className="text-sm font-medium text-ink-primary">
                         {n.title}
                       </p>
                       {!n.readAt && (
@@ -136,9 +136,9 @@ export function NotificationBell() {
                       )}
                     </div>
                     {n.body && (
-                      <p className="mt-0.5 text-xs text-ink-600">{n.body}</p>
+                      <p className="mt-0.5 text-xs text-ink-secondary">{n.body}</p>
                     )}
-                    <p className="mt-1 text-[11px] text-ink-400">
+                    <p className="mt-1 text-[11px] text-ink-tertiary">
                       {timeAgo(n.createdAt)}
                     </p>
                   </li>

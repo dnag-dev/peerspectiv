@@ -21,11 +21,11 @@ interface Props {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  draft: "bg-ink-100 text-ink-700",
-  sent: "bg-cobalt-50 text-cobalt-700",
-  paid: "bg-mint-50 text-mint-700",
-  overdue: "bg-critical-50 text-critical-700",
-  void: "bg-ink-100 text-ink-500 line-through",
+  draft: "bg-ink-100 text-ink-primary",
+  sent: "bg-status-info-bg text-status-info-fg",
+  paid: "bg-mint-50 text-status-success-fg",
+  overdue: "bg-critical-50 text-status-danger-fg",
+  void: "bg-ink-100 text-ink-secondary line-through",
 };
 
 const fmtMoney = (n: number, ccy = "USD") =>
@@ -42,32 +42,32 @@ export function ClientInvoicesView({ companyName, invoices }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-ink-900">Invoices</h1>
-        <p className="text-sm text-ink-600">
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Invoices</h1>
+        <p className="text-sm text-ink-secondary">
           {companyName} · billing history and payment links.
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg bg-paper-surface border border-ink-200 shadow-sm p-4">
-          <div className="text-xs uppercase tracking-wide text-ink-500">Outstanding</div>
-          <div className="mt-1 text-2xl font-bold text-cobalt-700">{fmtMoney(outstandingTotal)}</div>
+        <div className="rounded-lg bg-surface-card border border-border-subtle shadow-sm p-4">
+          <div className="text-xs uppercase tracking-wide text-ink-secondary">Outstanding</div>
+          <div className="mt-1 text-2xl font-medium text-status-info-fg">{fmtMoney(outstandingTotal)}</div>
         </div>
-        <div className="rounded-lg bg-paper-surface border border-ink-200 shadow-sm p-4">
-          <div className="text-xs uppercase tracking-wide text-ink-500">Paid (lifetime)</div>
-          <div className="mt-1 text-2xl font-bold text-mint-700">{fmtMoney(paidTotal)}</div>
+        <div className="rounded-lg bg-surface-card border border-border-subtle shadow-sm p-4">
+          <div className="text-xs uppercase tracking-wide text-ink-secondary">Paid (lifetime)</div>
+          <div className="mt-1 text-2xl font-medium text-status-success-fg">{fmtMoney(paidTotal)}</div>
         </div>
       </div>
 
-      <div className="rounded-lg bg-paper-surface border border-ink-200 shadow-sm overflow-hidden">
+      <div className="rounded-lg bg-surface-card border border-border-subtle shadow-sm overflow-hidden">
         {invoices.length === 0 ? (
-          <div className="p-12 text-center text-ink-500">
-            <Receipt className="h-8 w-8 mx-auto mb-2 text-ink-300" />
+          <div className="p-12 text-center text-ink-secondary">
+            <Receipt className="h-8 w-8 mx-auto mb-2 text-ink-tertiary" />
             No invoices yet.
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
+            <thead className="bg-ink-50 text-ink-secondary text-xs uppercase">
               <tr>
                 <th className="px-4 py-3 text-left">Number</th>
                 <th className="px-4 py-3 text-left">Period</th>
@@ -80,23 +80,23 @@ export function ClientInvoicesView({ companyName, invoices }: Props) {
             </thead>
             <tbody>
               {invoices.map((inv) => (
-                <tr key={inv.id} className="border-t border-ink-100">
-                  <td className="px-4 py-3 font-mono text-xs text-ink-900">{inv.invoiceNumber}</td>
-                  <td className="px-4 py-3 text-ink-700">
+                <tr key={inv.id} className="border-t border-border-subtle">
+                  <td className="px-4 py-3 font-mono text-xs text-ink-primary">{inv.invoiceNumber}</td>
+                  <td className="px-4 py-3 text-ink-primary">
                     {/* Cadence-period invoices store the same label in start+end. */}
                     {inv.rangeStart === inv.rangeEnd
                       ? inv.rangeStart
                       : `${inv.rangeStart} → ${inv.rangeEnd}`}
                   </td>
                   <td className="px-4 py-3 text-right text-ink-800">{inv.reviewCount}</td>
-                  <td className="px-4 py-3 text-right font-medium text-ink-900">
+                  <td className="px-4 py-3 text-right font-medium text-ink-primary">
                     {fmtMoney(Number(inv.totalAmount))}
                   </td>
-                  <td className="px-4 py-3 text-ink-600">{inv.dueDate ?? "—"}</td>
+                  <td className="px-4 py-3 text-ink-secondary">{inv.dueDate ?? "—"}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex rounded px-2 py-0.5 text-xs font-medium ${
-                        STATUS_STYLES[inv.status] ?? "bg-ink-100 text-ink-700"
+                        STATUS_STYLES[inv.status] ?? "bg-ink-100 text-ink-primary"
                       }`}
                     >
                       {inv.status}
@@ -108,7 +108,7 @@ export function ClientInvoicesView({ companyName, invoices }: Props) {
                         href={inv.pdfUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-xs text-cobalt-700 hover:underline"
+                        className="inline-flex items-center gap-1 text-xs text-status-info-fg hover:underline"
                       >
                         <Download className="h-3 w-3" /> PDF
                       </a>
@@ -118,7 +118,7 @@ export function ClientInvoicesView({ companyName, invoices }: Props) {
                         href={inv.paymentLinkUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 rounded-md bg-cobalt-600 px-3 py-1 text-xs font-medium text-white hover:bg-cobalt-700"
+                        className="inline-flex items-center gap-1 rounded-md bg-cobalt-600 px-3 py-1 text-xs font-medium text-ink-primary hover:bg-cobalt-700"
                       >
                         <ExternalLink className="h-3 w-3" /> Pay Now
                       </a>

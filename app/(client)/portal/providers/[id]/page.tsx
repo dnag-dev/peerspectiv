@@ -26,9 +26,9 @@ export default async function ProviderDetailPage({
 
   if (providerRows.length === 0) {
     return (
-      <div className="text-white">
-        <h1 className="text-2xl font-bold">Provider not found</h1>
-        <Link href="/portal" className="text-cobalt-600 underline">
+      <div className="text-ink-primary">
+        <h1 className="text-2xl font-medium">Provider not found</h1>
+        <Link href="/portal" className="text-status-info-dot underline">
           Back to dashboard
         </Link>
       </div>
@@ -98,48 +98,48 @@ export default async function ProviderDetailPage({
   const badgeColor = avg >= 85 ? "#22C55E" : avg >= 70 ? "#F59E0B" : "#EF4444";
 
   return (
-    <div className="space-y-6 text-white">
-      <Link href="/portal" className="text-sm text-cobalt-600 hover:underline">
+    <div className="space-y-6 text-ink-primary">
+      <Link href="/portal" className="text-sm text-status-info-dot hover:underline">
         ← Back
       </Link>
 
       <div
         className="rounded-lg p-6 flex items-center gap-6"
-        style={{ backgroundColor: "#1E3A8A" }}
+        style={{ backgroundColor: 'var(--color-card)' }}
       >
         <div
-          className="flex h-20 w-20 items-center justify-center rounded-full text-xl font-bold"
+          className="flex h-20 w-20 items-center justify-center rounded-full text-xl font-medium"
           style={{ backgroundColor: "#2563EB" }}
         >
           {initials}
         </div>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">{name}</h1>
-          <p className="text-sm text-ink-400">{p.specialty ?? "—"}</p>
-          {p.npi && <p className="text-xs text-ink-500">NPI: {p.npi}</p>}
+          <h1 className="text-2xl font-medium">{name}</h1>
+          <p className="text-sm text-ink-tertiary">{p.specialty ?? "—"}</p>
+          {p.npi && <p className="text-xs text-ink-secondary">NPI: {p.npi}</p>}
         </div>
         <div className="text-right">
           <div
-            className="inline-block rounded-full px-4 py-2 text-lg font-bold"
+            className="inline-block rounded-full px-4 py-2 text-lg font-medium"
             style={{ backgroundColor: `${badgeColor}22`, color: badgeColor }}
           >
             {avg}%
           </div>
-          <p className="text-xs text-ink-400 mt-1">Avg Score</p>
+          <p className="text-xs text-ink-tertiary mt-1">Avg Score</p>
         </div>
       </div>
 
       <ProviderCharts last6={last6} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
-          <h3 className="text-sm font-semibold mb-3">Recent Reviews (last 5)</h3>
+        <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--color-card)' }}>
+          <h3 className="text-sm font-medium mb-3">Recent Reviews (last 5)</h3>
           {last5.length === 0 ? (
-            <p className="text-sm text-ink-400">No reviews.</p>
+            <p className="text-sm text-ink-tertiary">No reviews.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase text-ink-500">
+                <tr className="text-left text-xs uppercase text-ink-secondary">
                   <th className="pb-2">Date</th>
                   <th className="pb-2">Score</th>
                 </tr>
@@ -147,7 +147,7 @@ export default async function ProviderDetailPage({
               <tbody>
                 {last5.map((r) => (
                   <tr key={r.id} className="border-t" style={{ borderColor: "#2A3F5F" }}>
-                    <td className="py-2 text-ink-300">
+                    <td className="py-2 text-ink-tertiary">
                       {r.submittedAt
                         ? new Date(r.submittedAt as any).toLocaleDateString()
                         : "—"}
@@ -160,20 +160,20 @@ export default async function ProviderDetailPage({
           )}
         </div>
 
-        <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
-          <h3 className="text-sm font-semibold mb-3">Common Deficiencies</h3>
+        <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--color-card)' }}>
+          <h3 className="text-sm font-medium mb-3">Common Deficiencies</h3>
           {topDeficiencies.length === 0 ? (
-            <p className="text-sm text-ink-400">No deficiencies recorded.</p>
+            <p className="text-sm text-ink-tertiary">No deficiencies recorded.</p>
           ) : (
             <ul className="space-y-2">
               {topDeficiencies.map(([key, count]) => (
                 <li
                   key={key}
                   className="flex justify-between rounded-md p-2 text-sm"
-                  style={{ backgroundColor: "#172554" }}
+                  style={{ backgroundColor: 'var(--color-card)' }}
                 >
                   <span className="text-ink-200 truncate pr-2">{key}</span>
-                  <span className="text-xs text-amber-600">x{count}</span>
+                  <span className="text-xs text-status-warning-dot">x{count}</span>
                 </li>
               ))}
             </ul>
@@ -181,23 +181,23 @@ export default async function ProviderDetailPage({
         </div>
       </div>
 
-      <div className="rounded-lg p-6" style={{ backgroundColor: "#1E3A8A" }}>
-        <h3 className="text-sm font-semibold mb-3">Open Corrective Actions</h3>
+      <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--color-card)' }}>
+        <h3 className="text-sm font-medium mb-3">Open Corrective Actions</h3>
         {openActions.length === 0 ? (
-          <p className="text-sm text-ink-400">None.</p>
+          <p className="text-sm text-ink-tertiary">None.</p>
         ) : (
           <ul className="space-y-2">
             {openActions.map((a) => (
               <li
                 key={a.id}
                 className="rounded-md p-3"
-                style={{ backgroundColor: "#172554" }}
+                style={{ backgroundColor: 'var(--color-card)' }}
               >
                 <div className="font-medium">{a.title}</div>
                 {a.description && (
-                  <div className="text-xs text-ink-400 mt-1">{a.description}</div>
+                  <div className="text-xs text-ink-tertiary mt-1">{a.description}</div>
                 )}
-                <div className="text-xs text-ink-500 mt-1">
+                <div className="text-xs text-ink-secondary mt-1">
                   Progress: {a.progressPct ?? 0}%
                 </div>
               </li>

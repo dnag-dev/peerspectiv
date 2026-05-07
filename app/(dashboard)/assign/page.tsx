@@ -225,17 +225,17 @@ export default async function AssignPage({
     <div className="space-y-5">
       {/* Page header */}
       <div>
-        <div className="text-eyebrow text-ink-500 mb-1">
+        <div className="text-eyebrow text-ink-secondary mb-1">
           ADMIN · ASSIGNMENT WORKFLOW
         </div>
-        <h1 className="text-h1 text-ink-900">AI assignment queue</h1>
-        <p className="mt-1 text-small text-ink-500">
+        <h1 className="text-h1 text-ink-primary">AI assignment queue</h1>
+        <p className="mt-1 text-small text-ink-secondary">
           Review and approve Ash&apos;s peer assignments before they go live.
         </p>
       </div>
 
       {/* Stat strip */}
-      <div className="flex items-center justify-between gap-4 rounded-lg border border-ink-200 bg-paper-surface px-5 py-3.5 shadow-sm">
+      <div className="flex items-center justify-between gap-4 rounded-lg border border-border-subtle bg-surface-card px-5 py-3.5 shadow-sm">
         <div className="flex items-center gap-5">
           <StatBlock label="Pending" value={pendingCases.length.toString()} />
           <span className="w-px h-8 bg-ink-200" />
@@ -246,15 +246,15 @@ export default async function AssignPage({
           <StatBlock
             label="Avg match"
             value={avgMatch != null ? `${avgMatch}%` : "—"}
-            valueClassName="text-cobalt-700"
+            valueClassName="text-status-info-fg"
           />
         </div>
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full rounded-full bg-mint-500 opacity-60 animate-ping" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-mint-600" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-status-success-dot" />
           </span>
-          <span className="text-code text-ink-600">
+          <span className="text-code text-ink-secondary">
             Ash is monitoring {monitoringCount} {monitoringCount === 1 ? "batch" : "batches"}
           </span>
         </div>
@@ -271,15 +271,15 @@ export default async function AssignPage({
         pendingCases.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-              <Inbox className="mb-4 h-12 w-12 text-ink-400" />
-              <h3 className="text-h3 text-ink-900">No pending assignments</h3>
-              <p className="mt-1 max-w-sm text-small text-ink-500">
+              <Inbox className="mb-4 h-12 w-12 text-ink-tertiary" />
+              <h3 className="text-h3 text-ink-primary">No pending assignments</h3>
+              <p className="mt-1 max-w-sm text-small text-ink-secondary">
                 All AI-suggested assignments have been reviewed. Check the batches
                 page to trigger new assignments.
               </p>
               <Link
                 href="/batches"
-                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-cobalt-700 hover:underline"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-status-info-fg hover:underline"
               >
                 <Layers className="h-4 w-4" />
                 Go to Batches
@@ -315,8 +315,8 @@ function StatBlock({
 }) {
   return (
     <div>
-      <div className="text-eyebrow text-ink-500">{label}</div>
-      <div className={`text-h2 font-medium text-ink-900 ${valueClassName ?? ""}`}>
+      <div className="text-eyebrow text-ink-secondary">{label}</div>
+      <div className={`text-h2 font-medium text-ink-primary ${valueClassName ?? ""}`}>
         {value}
       </div>
     </div>

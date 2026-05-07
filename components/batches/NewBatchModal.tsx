@@ -482,17 +482,17 @@ export function NewBatchModal({
           onClick={handleClose}
         >
           <div
-            className="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-ink-200 bg-white shadow-2xl"
+            className="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border-subtle bg-white shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b px-5 py-4">
               <div>
-                <h2 className="text-base font-semibold text-ink-900">New Batch</h2>
-                <p className="text-xs text-ink-500">Step {step} of 5</p>
+                <h2 className="text-base font-medium text-ink-primary">New Batch</h2>
+                <p className="text-xs text-ink-secondary">Step {step} of 5</p>
               </div>
               <button
                 onClick={handleClose}
-                className="rounded-md p-2 text-ink-400 hover:bg-ink-100 hover:text-ink-700"
+                className="rounded-md p-2 text-ink-tertiary hover:bg-ink-100 hover:text-ink-primary"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -514,7 +514,7 @@ export function NewBatchModal({
               {/* STEP 1 — company */}
               {step === 1 && (
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-ink-900">
+                  <h3 className="text-sm font-medium text-ink-primary">
                     Which client is this batch for?
                   </h3>
                   <select
@@ -524,7 +524,7 @@ export function NewBatchModal({
                       setSpecialty("");
                       setCompanyFormId("");
                     }}
-                    className="w-full rounded-lg border border-ink-300 px-4 py-3 text-sm focus:border-cobalt-600 focus:outline-none"
+                    className="w-full rounded-lg border border-border-default px-4 py-3 text-sm focus:border-status-info-dot focus:outline-none"
                   >
                     <option value="">Select company…</option>
                     {companies.map((c) => (
@@ -539,13 +539,13 @@ export function NewBatchModal({
               {/* STEP 2 — specialty */}
               {step === 2 && (
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-ink-900">Specialty</h3>
-                  <p className="text-xs text-ink-500">
+                  <h3 className="text-sm font-medium text-ink-primary">Specialty</h3>
+                  <p className="text-xs text-ink-secondary">
                     All charts in this batch must be the same specialty. Only specialties with
                     an approved form for this client are shown.
                   </p>
                   {specialty && skipFormStep && (
-                    <p className="rounded-lg border border-mint-200 bg-mint-50 px-3 py-2 text-xs text-cobalt-700">
+                    <p className="rounded-lg border border-status-success-fg/30 bg-mint-50 px-3 py-2 text-xs text-status-info-fg">
                       <Check className="mr-1 inline h-3 w-3" />
                       <strong>
                         {specialtyForms[0].form_name}
@@ -564,8 +564,8 @@ export function NewBatchModal({
                         }}
                         className={`rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
                           specialty === s
-                            ? "border-cobalt-600 bg-cobalt-100 text-cobalt-600"
-                            : "border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50"
+                            ? "border-status-info-dot bg-status-info-bg text-status-info-dot"
+                            : "border-border-subtle bg-white hover:border-border-default hover:bg-ink-50"
                         }`}
                       >
                         {s}
@@ -581,19 +581,19 @@ export function NewBatchModal({
                         }}
                         className={`rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
                           specialty === "Mixed"
-                            ? "border-cobalt-600 bg-cobalt-100 text-cobalt-600"
-                            : "border-dashed border-ink-300 bg-white hover:border-cobalt-600 hover:bg-cobalt-50"
+                            ? "border-status-info-dot bg-status-info-bg text-status-info-dot"
+                            : "border-dashed border-border-default bg-white hover:border-status-info-dot hover:bg-status-info-bg"
                         }`}
                       >
                         Mixed
-                        <div className="text-xs font-normal text-ink-500">
+                        <div className="text-xs font-normal text-ink-secondary">
                           Multiple specialties — server splits into separate batches
                         </div>
                       </button>
                     )}
                   </div>
                   {availableSpecialties.length === 0 && (
-                    <p className="rounded-lg border border-amber-600 bg-amber-100 px-4 py-3 text-xs text-amber-700">
+                    <p className="rounded-lg border border-status-warning-dot bg-amber-100 px-4 py-3 text-xs text-status-warning-fg">
                       No approved forms found for this client. Seed `company_forms` first.
                     </p>
                   )}
@@ -603,10 +603,10 @@ export function NewBatchModal({
               {/* STEP 3 — form */}
               {step === 3 && (
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-ink-900">
+                  <h3 className="text-sm font-medium text-ink-primary">
                     Approved review form
                   </h3>
-                  <p className="text-xs text-ink-500">
+                  <p className="text-xs text-ink-secondary">
                     This is the form the peer will use. It must be pre-approved by the
                     client.
                   </p>
@@ -618,23 +618,23 @@ export function NewBatchModal({
                         onClick={() => setCompanyFormId(f.id)}
                         className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
                           companyFormId === f.id
-                            ? "border-cobalt-600 bg-cobalt-100"
-                            : "border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50"
+                            ? "border-status-info-dot bg-status-info-bg"
+                            : "border-border-subtle bg-white hover:border-border-default hover:bg-ink-50"
                         }`}
                       >
                         <div>
-                          <div className="font-medium text-ink-900">{f.form_name}</div>
-                          <div className="text-xs text-ink-500">
+                          <div className="font-medium text-ink-primary">{f.form_name}</div>
+                          <div className="text-xs text-ink-secondary">
                             Specialty: {f.specialty}
                           </div>
                         </div>
-                        {companyFormId === f.id && <Check className="h-4 w-4 text-cobalt-600" />}
+                        {companyFormId === f.id && <Check className="h-4 w-4 text-status-info-dot" />}
                       </button>
                     ))}
                     <button
                       type="button"
                       onClick={() => setFormBuilderOpen(true)}
-                      className="flex w-full items-center gap-2 rounded-lg border border-dashed border-ink-300 px-4 py-3 text-left text-sm text-ink-600 hover:border-cobalt-600 hover:bg-cobalt-100 hover:text-cobalt-600"
+                      className="flex w-full items-center gap-2 rounded-lg border border-dashed border-border-default px-4 py-3 text-left text-sm text-ink-secondary hover:border-status-info-dot hover:bg-status-info-bg hover:text-status-info-dot"
                     >
                       <Plus className="h-4 w-4" />
                       Add new form for this client
@@ -646,10 +646,10 @@ export function NewBatchModal({
               {/* STEP 4 — upload */}
               {step === 4 && (
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-ink-900">Batch details + charts</h3>
+                  <h3 className="text-sm font-medium text-ink-primary">Batch details + charts</h3>
 
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-ink-700">
+                    <label className="mb-1 block text-xs font-medium text-ink-primary">
                       Batch name
                     </label>
                     <input
@@ -659,10 +659,10 @@ export function NewBatchModal({
                         setBatchName(e.target.value);
                       }}
                       placeholder="e.g. Q2 2026 — OB/GYN charts"
-                      className="w-full rounded-lg border border-ink-300 px-4 py-2.5 text-sm focus:border-cobalt-600 focus:outline-none"
+                      className="w-full rounded-lg border border-border-default px-4 py-2.5 text-sm focus:border-status-info-dot focus:outline-none"
                     />
                     {batchName && !batchNameTouched.current && (
-                      <p className="mt-1 text-xs text-ink-500">
+                      <p className="mt-1 text-xs text-ink-secondary">
                         Auto-filled from current cadence period. Edit to override.
                       </p>
                     )}
@@ -679,13 +679,13 @@ export function NewBatchModal({
                       e.stopPropagation();
                       handleFiles(e.dataTransfer.files);
                     }}
-                    className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-ink-300 bg-ink-50 px-6 py-10 text-center hover:border-cobalt-600 hover:bg-cobalt-100"
+                    className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border-default bg-ink-50 px-6 py-10 text-center hover:border-status-info-dot hover:bg-status-info-bg"
                   >
-                    <Upload className="h-6 w-6 text-ink-400" />
-                    <span className="text-sm font-medium text-ink-700">
+                    <Upload className="h-6 w-6 text-ink-tertiary" />
+                    <span className="text-sm font-medium text-ink-primary">
                       Drop PDFs here or click to browse
                     </span>
-                    <span className="text-xs text-ink-500">
+                    <span className="text-xs text-ink-secondary">
                       Each PDF = one case. Filename is used to suggest a provider.
                     </span>
                     <input
@@ -709,13 +709,13 @@ export function NewBatchModal({
                         return (
                           <div
                             key={i}
-                            className="flex flex-wrap items-center gap-2 rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm"
+                            className="flex flex-wrap items-center gap-2 rounded-lg border border-border-subtle bg-white px-3 py-2 text-sm"
                           >
                             <div className="min-w-0 flex-1">
-                              <div className="truncate font-medium text-ink-900">
+                              <div className="truncate font-medium text-ink-primary">
                                 {row.file.name}
                               </div>
-                              <div className="text-xs text-ink-500">
+                              <div className="text-xs text-ink-secondary">
                                 {(row.file.size / 1024).toFixed(0)} KB
                               </div>
                             </div>
@@ -725,7 +725,7 @@ export function NewBatchModal({
                               onChange={(e) =>
                                 updateRow(i, { providerId: e.target.value })
                               }
-                              className="rounded-md border border-ink-300 px-2 py-1.5 text-xs"
+                              className="rounded-md border border-border-default px-2 py-1.5 text-xs"
                             >
                               <option value="">Pick provider…</option>
                               {companyProviders.map((p) => (
@@ -742,7 +742,7 @@ export function NewBatchModal({
                               onChange={(e) =>
                                 updateRow(i, { encounterDate: e.target.value })
                               }
-                              className="rounded-md border border-ink-300 px-2 py-1.5 text-xs"
+                              className="rounded-md border border-border-default px-2 py-1.5 text-xs"
                               title="Encounter date"
                             />
 
@@ -761,7 +761,7 @@ export function NewBatchModal({
                                         : undefined,
                                   });
                                 }}
-                                className="rounded-md border border-ink-300 px-2 py-1.5 text-xs"
+                                className="rounded-md border border-border-default px-2 py-1.5 text-xs"
                               >
                                 <option value="">Specialty…</option>
                                 {availableSpecialties.map((s) => (
@@ -778,7 +778,7 @@ export function NewBatchModal({
                                 onChange={(e) =>
                                   updateRow(i, { companyFormId: e.target.value })
                                 }
-                                className="rounded-md border border-ink-300 px-2 py-1.5 text-xs"
+                                className="rounded-md border border-border-default px-2 py-1.5 text-xs"
                                 title="Review form"
                               >
                                 <option value="">Pick form…</option>
@@ -792,7 +792,7 @@ export function NewBatchModal({
 
                             <button
                               onClick={() => removeRow(i)}
-                              className="rounded p-1 text-ink-400 hover:bg-ink-100 hover:text-critical-600"
+                              className="rounded p-1 text-ink-tertiary hover:bg-ink-100 hover:text-status-danger-dot"
                             >
                               <X className="h-3.5 w-3.5" />
                             </button>
@@ -807,37 +807,37 @@ export function NewBatchModal({
               {/* STEP 5 — confirm / upload progress */}
               {step === 5 && (
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-ink-900">Review and submit</h3>
+                  <h3 className="text-sm font-medium text-ink-primary">Review and submit</h3>
 
-                  <dl className="space-y-1.5 rounded-lg border border-ink-200 bg-ink-50 px-4 py-3 text-sm">
+                  <dl className="space-y-1.5 rounded-lg border border-border-subtle bg-ink-50 px-4 py-3 text-sm">
                     <div className="flex justify-between">
-                      <dt className="text-ink-500">Client</dt>
-                      <dd className="font-medium text-ink-900">
+                      <dt className="text-ink-secondary">Client</dt>
+                      <dd className="font-medium text-ink-primary">
                         {companies.find((c) => c.id === companyId)?.name}
                       </dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-ink-500">Specialty</dt>
-                      <dd className="font-medium text-ink-900">{specialty}</dd>
+                      <dt className="text-ink-secondary">Specialty</dt>
+                      <dd className="font-medium text-ink-primary">{specialty}</dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-ink-500">Form</dt>
-                      <dd className="font-medium text-ink-900">
+                      <dt className="text-ink-secondary">Form</dt>
+                      <dd className="font-medium text-ink-primary">
                         {allForms.find((f) => f.id === effectiveFormId)?.form_name}
                         {skipFormStep && (
-                          <span className="ml-2 rounded bg-mint-100 px-1.5 py-0.5 text-[10px] font-medium text-cobalt-700">
+                          <span className="ml-2 rounded bg-mint-100 px-1.5 py-0.5 text-[10px] font-medium text-status-info-fg">
                             AUTO
                           </span>
                         )}
                       </dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-ink-500">Batch name</dt>
-                      <dd className="font-medium text-ink-900">{batchName}</dd>
+                      <dt className="text-ink-secondary">Batch name</dt>
+                      <dd className="font-medium text-ink-primary">{batchName}</dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-ink-500">Cases</dt>
-                      <dd className="font-medium text-ink-900">{rows.length}</dd>
+                      <dt className="text-ink-secondary">Cases</dt>
+                      <dd className="font-medium text-ink-primary">{rows.length}</dd>
                     </div>
                   </dl>
 
@@ -847,32 +847,32 @@ export function NewBatchModal({
                       return (
                         <div
                           key={i}
-                          className="flex items-center justify-between rounded-md border border-ink-200 bg-white px-3 py-2 text-xs"
+                          className="flex items-center justify-between rounded-md border border-border-subtle bg-white px-3 py-2 text-xs"
                         >
                           <div className="min-w-0 flex-1 truncate">
-                            <span className="font-medium text-ink-900">
+                            <span className="font-medium text-ink-primary">
                               {p ? `${p.first_name} ${p.last_name}` : "Unassigned"}
                             </span>
-                            <span className="ml-2 text-ink-500">{row.file.name}</span>
+                            <span className="ml-2 text-ink-secondary">{row.file.name}</span>
                           </div>
                           <div className="ml-3 flex items-center gap-1.5">
                             {row.status === "pending" && (
-                              <span className="text-ink-400">Queued</span>
+                              <span className="text-ink-tertiary">Queued</span>
                             )}
                             {row.status === "uploading" && (
                               <>
-                                <Loader2 className="h-3 w-3 animate-spin text-cobalt-600" />
-                                <span className="text-cobalt-600">Uploading…</span>
+                                <Loader2 className="h-3 w-3 animate-spin text-status-info-dot" />
+                                <span className="text-status-info-dot">Uploading…</span>
                               </>
                             )}
                             {row.status === "done" && (
                               <>
-                                <Check className="h-3 w-3 text-cobalt-600" />
-                                <span className="text-cobalt-600">Uploaded</span>
+                                <Check className="h-3 w-3 text-status-info-dot" />
+                                <span className="text-status-info-dot">Uploaded</span>
                               </>
                             )}
                             {row.status === "error" && (
-                              <span className="text-critical-600" title={row.errorMsg}>
+                              <span className="text-status-danger-dot" title={row.errorMsg}>
                                 Failed
                               </span>
                             )}
@@ -883,7 +883,7 @@ export function NewBatchModal({
                   </div>
 
                   {submitError && (
-                    <div className="rounded-lg border border-critical-600 bg-critical-100 px-3 py-2 text-xs text-critical-700">
+                    <div className="rounded-lg border border-status-danger-dot bg-critical-100 px-3 py-2 text-xs text-status-danger-fg">
                       {submitError}
                     </div>
                   )}

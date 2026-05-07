@@ -40,19 +40,19 @@ export function OnboardingQueueRow({ token, email, invitedAt, submission }: Prop
 
   return (
     <>
-      <tr className="border-b border-ink-100">
+      <tr className="border-b border-border-subtle">
         <td className="px-4 py-2">
-          <div className="font-medium text-ink-900">{submission.full_name ?? email}</div>
-          <div className="text-xs text-ink-500">{email}</div>
+          <div className="font-medium text-ink-primary">{submission.full_name ?? email}</div>
+          <div className="text-xs text-ink-secondary">{email}</div>
         </td>
-        <td className="px-4 py-2 text-ink-600">
+        <td className="px-4 py-2 text-ink-secondary">
           {invitedAt ? new Date(invitedAt).toLocaleDateString() : '—'}
         </td>
         <td className="px-4 py-2 text-right space-x-2">
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="rounded-md border border-ink-300 px-3 py-1 text-xs font-medium text-ink-700 hover:bg-ink-50"
+            className="rounded-md border border-border-default px-3 py-1 text-xs font-medium text-ink-primary hover:bg-ink-50"
           >
             {open ? 'Hide' : 'View'}
           </button>
@@ -60,7 +60,7 @@ export function OnboardingQueueRow({ token, email, invitedAt, submission }: Prop
             type="button"
             onClick={() => act('approve')}
             disabled={busy}
-            className="rounded-md bg-mint-600 px-3 py-1 text-xs font-medium text-white hover:bg-mint-700 disabled:opacity-50"
+            className="rounded-md bg-status-success-dot px-3 py-1 text-xs font-medium text-white hover:bg-mint-700 disabled:opacity-50"
           >
             Approve
           </button>
@@ -77,7 +77,7 @@ export function OnboardingQueueRow({ token, email, invitedAt, submission }: Prop
       {open && (
         <tr>
           <td colSpan={3} className="bg-ink-50/50 px-4 py-3 text-xs">
-            <pre className="overflow-x-auto whitespace-pre-wrap break-words text-ink-700">
+            <pre className="overflow-x-auto whitespace-pre-wrap break-words text-ink-primary">
               {JSON.stringify(submission, null, 2)}
             </pre>
             {err && <div className="mt-2 text-rose-600">{err}</div>}

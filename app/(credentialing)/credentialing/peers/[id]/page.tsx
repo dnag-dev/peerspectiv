@@ -78,11 +78,11 @@ export default async function CredentialingPeerDetailPage({
   return (
     <div className="space-y-6">
       <div className="flex items-baseline gap-3">
-        <Link href="/credentialing" className="text-sm text-cobalt-600 hover:underline">
+        <Link href="/credentialing" className="text-sm text-status-info-dot hover:underline">
           ← Dashboard
         </Link>
-        <h1 className="text-2xl font-bold text-ink-900">{peer.fullName ?? 'Peer'}</h1>
-        <Badge className="bg-ink-100 text-ink-700 border-0">{peer.state}</Badge>
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">{peer.fullName ?? 'Peer'}</h1>
+        <Badge className="bg-ink-100 text-ink-primary border-0">{peer.state}</Badge>
       </div>
 
       <Card>
@@ -90,10 +90,10 @@ export default async function CredentialingPeerDetailPage({
           <CardTitle>Identity</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-3 text-sm">
-          <div><span className="text-ink-500">Email</span><div>{peer.email ?? '—'}</div></div>
-          <div><span className="text-ink-500">NPI</span><div>{peer.npi ?? '—'}</div></div>
+          <div><span className="text-ink-secondary">Email</span><div>{peer.email ?? '—'}</div></div>
+          <div><span className="text-ink-secondary">NPI</span><div>{peer.npi ?? '—'}</div></div>
           <div className="col-span-2">
-            <span className="text-ink-500">Last state change</span>
+            <span className="text-ink-secondary">Last state change</span>
             <div>
               {peer.stateChangedAt
                 ? `${new Date(peer.stateChangedAt).toLocaleString()} by ${peer.stateChangedBy ?? '—'}${peer.stateChangeReason ? ` — ${peer.stateChangeReason}` : ''}`
@@ -126,13 +126,13 @@ export default async function CredentialingPeerDetailPage({
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           {credLog.length === 0 && stateAudit.length === 0 ? (
-            <div className="text-ink-500">No history yet.</div>
+            <div className="text-ink-secondary">No history yet.</div>
           ) : (
             <>
               {credLog.map((r, i) => (
-                <div key={`c${i}`} className="rounded border border-ink-100 p-2">
-                  <div className="font-medium text-ink-900">[credentialing] {r.action}</div>
-                  <div className="text-xs text-ink-500">
+                <div key={`c${i}`} className="rounded border border-border-subtle p-2">
+                  <div className="font-medium text-ink-primary">[credentialing] {r.action}</div>
+                  <div className="text-xs text-ink-secondary">
                     {r.performedAt ? new Date(r.performedAt).toLocaleString() : '—'}
                     {r.validUntilOld || r.validUntilNew
                       ? ` · expiry ${String(r.validUntilOld ?? '—').slice(0, 10)} → ${String(r.validUntilNew ?? '—').slice(0, 10)}`
@@ -142,11 +142,11 @@ export default async function CredentialingPeerDetailPage({
                 </div>
               ))}
               {stateAudit.map((r, i) => (
-                <div key={`s${i}`} className="rounded border border-ink-100 p-2">
-                  <div className="font-medium text-ink-900">
+                <div key={`s${i}`} className="rounded border border-border-subtle p-2">
+                  <div className="font-medium text-ink-primary">
                     [state] {r.fromState ?? '∅'} → {r.toState}
                   </div>
-                  <div className="text-xs text-ink-500">
+                  <div className="text-xs text-ink-secondary">
                     {r.changedAt ? new Date(r.changedAt).toLocaleString() : '—'} · {r.changedBy ?? '—'}
                     {r.changeReason ? ` · ${r.changeReason}` : ''}
                   </div>

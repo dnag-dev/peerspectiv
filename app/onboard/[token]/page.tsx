@@ -31,8 +31,8 @@ export default async function PathAOnboardPage({ params }: { params: { token: st
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-2xl font-bold text-ink-900">Peerspectiv peer application</h1>
-      <p className="mt-1 text-sm text-ink-500">
+      <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Peerspectiv peer application</h1>
+      <p className="mt-1 text-sm text-ink-secondary">
         Email on file: <strong>{row.peerEmail}</strong>
       </p>
 
@@ -42,7 +42,7 @@ export default async function PathAOnboardPage({ params }: { params: { token: st
         </div>
       )}
       {status === 'accepted' && (
-        <div className="mt-6 rounded border border-mint-200 bg-mint-50 p-4 text-mint-800">
+        <div className="mt-6 rounded border border-status-success-fg/30 bg-mint-50 p-4 text-mint-800">
           This invite was already accepted.
         </div>
       )}
@@ -52,7 +52,7 @@ export default async function PathAOnboardPage({ params }: { params: { token: st
         </div>
       )}
       {status === 'submitted' && (
-        <div className="mt-6 rounded border border-cobalt-200 bg-cobalt-50 p-4 text-cobalt-800">
+        <div className="mt-6 rounded border border-status-info-fg/30 bg-status-info-bg p-4 text-status-info-fg">
           Application submitted — thank you. The team will be in touch.
         </div>
       )}

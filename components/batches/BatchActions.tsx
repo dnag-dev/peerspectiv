@@ -64,7 +64,7 @@ export function BatchActions({ batchId, hasUnassigned }: BatchActionsProps) {
       </Button>
 
       <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
-        <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl sm:max-w-[500px]">
+        <DialogContent className="bg-white border border-border-subtle shadow-2xl rounded-xl sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>AI-Powered Assignment</DialogTitle>
             <DialogDescription>
@@ -74,14 +74,14 @@ export function BatchActions({ batchId, hasUnassigned }: BatchActionsProps) {
           </DialogHeader>
 
           {result ? (
-            <div className="rounded-lg border border-mint-200 bg-mint-50 p-4">
-              <p className="text-sm font-medium text-cobalt-700">Assignment Complete</p>
-              <p className="mt-1 text-sm text-cobalt-700">{result.summary}</p>
+            <div className="rounded-lg border border-status-success-fg/30 bg-mint-50 p-4">
+              <p className="text-sm font-medium text-status-info-fg">Assignment Complete</p>
+              <p className="mt-1 text-sm text-status-info-fg">{result.summary}</p>
             </div>
           ) : error ? (
-            <div className="rounded-lg border border-critical-600 bg-critical-100 p-4">
-              <p className="text-sm font-medium text-critical-700">Error</p>
-              <p className="mt-1 text-sm text-critical-700">{error}</p>
+            <div className="rounded-lg border border-status-danger-dot bg-critical-100 p-4">
+              <p className="text-sm font-medium text-status-danger-fg">Error</p>
+              <p className="mt-1 text-sm text-status-danger-fg">{error}</p>
             </div>
           ) : null}
 

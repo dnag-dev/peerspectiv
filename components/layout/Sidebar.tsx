@@ -70,12 +70,12 @@ interface SidebarShellProps {
 }
 
 const ROLE_CHIP: Record<SidebarRole, { label: string; cls: string }> = {
-  admin:      { label: "ADMIN",    cls: "bg-cobalt-100 text-cobalt-800" },
-  peer:   { label: "PEER", cls: "bg-mint-100 text-mint-700" },
-  cmo:        { label: "CMO",      cls: "bg-cobalt-100 text-cobalt-800" },
-  quality:    { label: "QUALITY",  cls: "bg-cobalt-100 text-cobalt-800" },
-  operations: { label: "OPS",      cls: "bg-cobalt-100 text-cobalt-800" },
-  credentialer: { label: "CRED", cls: "bg-cobalt-100 text-cobalt-800" },
+  admin:      { label: "ADMIN",    cls: "bg-status-info-bg text-status-info-fg" },
+  peer:   { label: "PEER", cls: "bg-mint-100 text-status-success-fg" },
+  cmo:        { label: "CMO",      cls: "bg-status-info-bg text-status-info-fg" },
+  quality:    { label: "QUALITY",  cls: "bg-status-info-bg text-status-info-fg" },
+  operations: { label: "OPS",      cls: "bg-status-info-bg text-status-info-fg" },
+  credentialer: { label: "CRED", cls: "bg-status-info-bg text-status-info-fg" },
 };
 
 export function SidebarShell({
@@ -137,7 +137,7 @@ export function SidebarShell({
         title={collapsed ? item.label : undefined}
         className={`group relative flex items-center ${collapsed ? "justify-center" : "gap-3"} rounded-md px-3 py-2 text-sm font-medium transition-all ${
           isActive
-            ? "bg-paper-surface text-cobalt-900 shadow-sm"
+            ? "bg-surface-card text-ink-primary shadow-sm"
             : "text-cobalt-100 hover:bg-cobalt-700/40 hover:text-white"
         } ${item.dim ? "opacity-50" : ""}`}
       >
@@ -149,7 +149,7 @@ export function SidebarShell({
           <span
             className={`ml-auto inline-flex min-w-[20px] items-center justify-center rounded-pill px-1.5 py-0.5 font-mono text-[10px] font-medium ${
               isActive
-                ? "bg-cobalt-100 text-cobalt-800"
+                ? "bg-status-info-bg text-status-info-fg"
                 : "bg-amber-500/20 text-amber-300"
             }`}
           >
@@ -165,7 +165,7 @@ export function SidebarShell({
       {/* Logo lockup */}
       <div className={`flex h-20 items-center ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
         {!collapsed && (
-          <div className="rounded-md bg-paper-surface px-3 py-2 shadow-sm">
+          <div className="rounded-md bg-surface-card px-3 py-2 shadow-sm">
             <Image
               src="/peerspectiv-logo.png"
               alt="Peerspectiv"
@@ -177,7 +177,7 @@ export function SidebarShell({
           </div>
         )}
         {collapsed && (
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-paper-surface text-cobalt-900 font-bold text-sm">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-surface-card text-ink-primary font-medium text-sm">
             P
           </div>
         )}
@@ -220,7 +220,7 @@ export function SidebarShell({
         data-testid="sidebar-collapse-toggle"
         onClick={toggleCollapsed}
         title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        className="mx-3 mb-2 flex items-center justify-center rounded-md border border-cobalt-700/50 bg-cobalt-800/40 px-2 py-1.5 text-cobalt-100 hover:bg-cobalt-700/40 hover:text-white transition-colors"
+        className="mx-3 mb-2 flex items-center justify-center rounded-md border border-status-info-fg/50 bg-cobalt-800/40 px-2 py-1.5 text-cobalt-100 hover:bg-cobalt-700/40 hover:text-white transition-colors"
       >
         {collapsed ? (
           <ChevronsRight className="h-4 w-4" />

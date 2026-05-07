@@ -139,7 +139,7 @@ function StatusCards({ cards }: { cards: { label: string; value: string | number
           className="rounded-lg border bg-muted/30 p-3 text-center"
         >
           <p className="text-xs font-medium text-muted-foreground">{card.label}</p>
-          <p className="mt-1 text-lg font-semibold">{card.value}</p>
+          <p className="mt-1 text-lg font-medium">{card.value}</p>
         </div>
       ))}
     </div>
@@ -259,15 +259,15 @@ export function CommandCenter() {
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             {msg.role === "assistant" && (
-              <div className="mr-2 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-blue/10">
-                <Bot className="h-4 w-4 text-cobalt-600" />
+              <div className="mr-2 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10">
+                <Bot className="h-4 w-4 text-status-info-dot" />
               </div>
             )}
 
             <div
               className={
                 msg.role === "user"
-                  ? "max-w-[75%] rounded-2xl rounded-br-sm bg-brand-blue px-4 py-2.5 text-sm text-white"
+                  ? "max-w-[75%] rounded-2xl rounded-br-sm bg-brand px-4 py-2.5 text-sm text-white"
                   : "max-w-[85%]"
               }
             >
@@ -290,7 +290,7 @@ export function CommandCenter() {
 
             {msg.role === "user" && (
               <div className="ml-2 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink-200">
-                <User className="h-4 w-4 text-ink-600" />
+                <User className="h-4 w-4 text-ink-secondary" />
               </div>
             )}
           </div>
@@ -298,8 +298,8 @@ export function CommandCenter() {
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="mr-2 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-blue/10">
-              <Bot className="h-4 w-4 text-cobalt-600" />
+            <div className="mr-2 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10">
+              <Bot className="h-4 w-4 text-status-info-dot" />
             </div>
             <Card className="border-0 shadow-none bg-ink-50">
               <CardContent className="p-3">
@@ -320,7 +320,7 @@ export function CommandCenter() {
               type="button"
               disabled={isLoading}
               onClick={() => sendMessage(cmd)}
-              className="rounded-full border border-brand-blue/30 bg-brand-blue/5 px-3 py-1 text-xs font-medium text-cobalt-600 transition-colors hover:bg-brand-blue/10 disabled:opacity-50"
+              className="rounded-full border border-brand-blue/30 bg-brand/5 px-3 py-1 text-xs font-medium text-status-info-dot transition-colors hover:bg-brand/10 disabled:opacity-50"
             >
               {cmd}
             </button>

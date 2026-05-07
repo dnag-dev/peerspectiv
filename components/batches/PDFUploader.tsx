@@ -61,7 +61,7 @@ export function PDFUploader({ caseId, existingFileName }: PDFUploaderProps) {
   if (existingFileName) {
     return (
       <div className="flex items-center gap-2 text-sm">
-        <FileText className="h-4 w-4 text-cobalt-600" />
+        <FileText className="h-4 w-4 text-status-info-dot" />
         <span className="max-w-[200px] truncate text-muted-foreground" title={existingFileName}>
           {existingFileName}
         </span>
@@ -79,13 +79,13 @@ export function PDFUploader({ caseId, existingFileName }: PDFUploaderProps) {
         onChange={onFileChange}
       />
       {uploading ? (
-        <Loader2 className="h-4 w-4 animate-spin text-cobalt-600" />
+        <Loader2 className="h-4 w-4 animate-spin text-status-info-dot" />
       ) : uploadStatus === "success" ? (
-        <CheckCircle2 className="h-4 w-4 text-cobalt-600" />
+        <CheckCircle2 className="h-4 w-4 text-status-info-dot" />
       ) : uploadStatus === "error" ? (
         <div className="flex items-center gap-1">
-          <AlertCircle className="h-4 w-4 text-critical-600" />
-          <span className="text-xs text-critical-600">{errorMsg}</span>
+          <AlertCircle className="h-4 w-4 text-status-danger-dot" />
+          <span className="text-xs text-status-danger-dot">{errorMsg}</span>
         </div>
       ) : (
         <Button

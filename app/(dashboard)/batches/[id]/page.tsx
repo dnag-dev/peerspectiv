@@ -37,14 +37,14 @@ interface BatchDetail extends Batch {
 
 function BatchStatusBadge({ status }: { status: string }) {
   const variants: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-700",
-    in_progress: "bg-cobalt-100 text-cobalt-600",
-    completed: "bg-mint-100 text-cobalt-700",
+    pending: "bg-amber-100 text-status-warning-fg",
+    in_progress: "bg-status-info-bg text-status-info-dot",
+    completed: "bg-mint-100 text-status-info-fg",
   };
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
         variants[status] || variants.pending
       )}
     >
@@ -135,7 +135,7 @@ export default async function BatchDetailPage({
             </Link>
           </div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">{batch.batch_name}</h1>
+            <h1 className="text-2xl font-medium tracking-tight">{batch.batch_name}</h1>
             <BatchStatusBadge status={batch.status} />
           </div>
         </div>

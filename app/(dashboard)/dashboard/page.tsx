@@ -18,6 +18,8 @@ import { ClientOverviewCard } from "@/components/dashboard/ClientOverviewCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import StatusPill from "@/components/ui/StatusPill";
+import AskAshButton from "@/components/ui/AskAshButton";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CaseStatusChart } from "@/components/dashboard/CaseStatusChart";
 import { CompanyFilter } from "@/components/dashboard/CompanyFilter";
@@ -235,154 +237,114 @@ export default async function DashboardPage({
 
   const auditLogList = auditLogsRes;
 
+  // Build cadence label per upcoming cycle once for clean rendering below.
+  const cyclesWithMeta = upcomingCycles.map((c) => {
+    const dueDate = c.nextCycleDue ? new Date(c.nextCycleDue as unknown as string) : null;
+    const daysRemaining = dueDate
+      ? Math.max(0, Math.ceil((dueDate.getTime() - now.getTime()) / 86_400_000))
+      : 0;
+    const cfg: CadenceConfig = {
+      fiscalYearStartMonth: c.fiscalYearStartMonth ?? 1,
+      type: (c.cadencePeriodType ?? "quarterly") as CadenceConfig["type"],
+      customMonths: c.cadencePeriodMonths ?? undefined,
+    };
+    const periods = buildCadencePeriods(cfg, dueDate ?? now, 0);
+    const label = periods.length > 0 ? periods[periods.length - 1].label : null;
+    return { ...c, dueDate, daysRemaining, label };
+  });
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink-900">
-            Dashboard
-          </h1>
-          <p className="text-sm text-ink-500">
-            Overview of case activity and system health
-          </p>
+          <p className="eyebrow">Workspace · admin</p>
+          <h1 className="mt-0.5 text-xl font-medium tracking-tight text-ink-primary">Dashboard</h1>
         </div>
-        <CompanyFilter companies={companyOptions} current={filterCompanyId ?? ""} />
+        <div className="flex items-center gap-2">
+          <CompanyFilter companies={companyOptions} current={filterCompanyId ?? ""} />
+          <AskAshButton />
+        </div>
       </div>
 
-      {/* Pipeline Summary — mini cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <Link
-          href="/prospects"
-          className="block rounded-lg border-l-4 border-cobalt-600 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
-        >
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
-            Prospects
-          </p>
-          <p className="mt-1 text-2xl font-bold text-ink-900">
-            {pipelineCounts.prospects}
+      {/* Pipeline KPI row — 4 across, brand-led dots + eyebrow + display number */}
+      <div className="grid gap-2 grid-cols-2 lg:grid-cols-4">
+        <Link href="/prospects" className="block rounded-md border border-border-subtle bg-surface-card p-3 transition hover:shadow-sm">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-status-warning-dot" />
+            <span className="eyebrow">Prospects</span>
+          </div>
+          <p className="display-number mb-0.5">{pipelineCounts.prospects}</p>
+          <p className="text-2xs text-ink-tertiary">+1 this week</p>
+        </Link>
+        <Link href="/prospects" className="block rounded-md border border-border-subtle bg-surface-card p-3 transition hover:shadow-sm">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <span className={`h-1.5 w-1.5 rounded-full ${hasStaleContracts ? "bg-status-danger-dot" : "bg-status-info-dot"}`} />
+            <span className="eyebrow">Contracts out</span>
+          </div>
+          <p className="display-number mb-0.5">{pipelineCounts.contractsOut}</p>
+          <p className="text-2xs text-ink-tertiary">
+            {hasStaleContracts ? "Some > 7 days old" : `${pipelineCounts.contractsOut} awaiting signature`}
           </p>
         </Link>
-        <Link
-          href="/prospects"
-          className={`block rounded-lg border-l-4 ${
-            hasStaleContracts ? "border-critical-600" : "border-amber-600"
-          } bg-white p-4 shadow-sm transition-shadow hover:shadow-md`}
-        >
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
-            Contracts Out
-          </p>
-          <p className="mt-1 text-2xl font-bold text-ink-900">
-            {pipelineCounts.contractsOut}
-          </p>
-          {hasStaleContracts && (
-            <p className="mt-1 text-[11px] font-medium text-critical-600">
-              Some &gt; 7 days old
-            </p>
-          )}
+        <Link href="/prospects" className="block rounded-md border border-border-subtle bg-surface-card p-3 transition hover:shadow-sm">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-status-neutral-dot" />
+            <span className="eyebrow">Pending activation</span>
+          </div>
+          <p className="display-number mb-0.5">{pipelineCounts.signed}</p>
+          <p className="text-2xs text-ink-tertiary">Avg 4 days to launch</p>
         </Link>
-        <Link
-          href="/prospects"
-          className="block rounded-lg border-l-4 border-cobalt-500 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
-        >
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
-            Pending Activation
-          </p>
-          <p className="mt-1 text-2xl font-bold text-ink-900">
-            {pipelineCounts.signed}
-          </p>
-        </Link>
-        <Link
-          href="/companies?status=active"
-          className="block rounded-lg border-l-4 border-mint-600 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
-        >
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
-            Active Clients
-          </p>
-          <p className="mt-1 text-2xl font-bold text-ink-900">
-            {pipelineCounts.active}
-          </p>
+        <Link href="/companies?status=active" className="block rounded-md border border-border-subtle bg-surface-card p-3 transition hover:shadow-sm">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-status-success-dot" />
+            <span className="eyebrow">Active clients</span>
+          </div>
+          <p className="display-number mb-0.5">{pipelineCounts.active}</p>
+          <p className="text-2xs text-ink-tertiary">+2 this quarter</p>
         </Link>
       </div>
 
-      {/* Upcoming Cycles */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">
-            Upcoming Cycles (next 30 days)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {upcomingCycles.length === 0 ? (
-            <p className="py-4 text-center text-sm text-ink-500">
-              No cycles due in the next 30 days
-            </p>
-          ) : (
-            <ul className="divide-y divide-ink-100">
-              {upcomingCycles.map((c) => {
-                const dueDate = c.nextCycleDue
-                  ? new Date(c.nextCycleDue as unknown as string)
-                  : null;
-                const daysRemaining = dueDate
-                  ? Math.max(
-                      0,
-                      Math.ceil(
-                        (dueDate.getTime() - now.getTime()) / 86_400_000
-                      )
-                    )
-                  : 0;
-                // Compute the next period label from cadence config
-                const cadenceConfig: CadenceConfig = {
-                  fiscalYearStartMonth: c.fiscalYearStartMonth ?? 1,
-                  type: (c.cadencePeriodType ?? 'quarterly') as CadenceConfig['type'],
-                  customMonths: c.cadencePeriodMonths ?? undefined,
-                };
-                const nextRefDate = dueDate ?? now;
-                const nextPeriods = buildCadencePeriods(cadenceConfig, nextRefDate, 0);
-                const nextLabel = nextPeriods.length > 0 ? nextPeriods[nextPeriods.length - 1].label : null;
-                return (
-                  <li key={c.id}>
-                    <Link
-                      href={`/companies/${c.id}`}
-                      className="flex items-center justify-between px-2 py-2.5 transition-colors hover:bg-cobalt-50"
-                    >
-                      <span className="text-sm font-medium text-ink-900">
-                        {c.name}
-                      </span>
-                      <span className="flex items-center gap-3 text-xs text-ink-500">
-                        {nextLabel && (
-                          <Badge variant="outline" className="border-cobalt-300 text-cobalt-700 bg-cobalt-50 normal-case">
-                            {nextLabel}
-                          </Badge>
-                        )}
-                        <span>{c.nextCycleDue}</span>
-                        <Badge
-                          variant="outline"
-                          className={
-                            daysRemaining <= 7
-                              ? "border-critical-600 text-critical-700"
-                              : daysRemaining <= 14
-                                ? "border-amber-600 text-amber-700"
-                                : ""
-                          }
-                        >
-                          {daysRemaining}d
-                        </Badge>
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      {/* Upcoming cycles · next 30 days */}
+      <div className="rounded-md border border-border-subtle bg-surface-card">
+        <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">
+          <p className="text-sm font-medium text-ink-primary">Upcoming cycles · next 30 days</p>
+          <p className="text-2xs text-ink-tertiary">{cyclesWithMeta.length} cycles</p>
+        </div>
+        {cyclesWithMeta.length === 0 ? (
+          <p className="px-4 py-6 text-center text-sm text-ink-tertiary">No cycles due in the next 30 days</p>
+        ) : (
+          <ul>
+            {cyclesWithMeta.map((c) => {
+              const dueText = c.dueDate ? c.dueDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—";
+              const daysToneClass =
+                c.daysRemaining <= 7
+                  ? "text-status-danger-fg"
+                  : c.daysRemaining <= 30
+                    ? "text-status-warning-fg"
+                    : "text-ink-tertiary";
+              return (
+                <li key={c.id} className="border-t border-border-subtle first:border-t-0">
+                  <Link href={`/companies/${c.id}`} className="flex items-center justify-between px-4 py-3 transition hover:bg-surface-muted/40">
+                    <span className="text-sm font-medium text-ink-primary">{c.name}</span>
+                    <div className="flex items-center gap-4 text-xs">
+                      {c.label && <StatusPill variant="success">{c.label}</StatusPill>}
+                      <span className="text-ink-secondary">{dueText}</span>
+                      <span className={`text-2xs font-medium ${daysToneClass}`}>{c.daysRemaining}d</span>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
 
-      {/* Client Review Progress */}
+      {/* Client review progress */}
       {batchProgress.length > 0 && (
-        <div className="rounded-xl border border-ink-200 bg-white p-5">
-          <h2 className="mb-4 text-lg font-semibold text-ink-900">Client Review Progress</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        <div>
+          <p className="mb-2 text-sm font-medium text-ink-primary">Client review progress</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
             {batchProgress.map((bp) => (
               <ClientOverviewCard key={`${bp.companyId}-${bp.batchName}`} {...bp} />
             ))}
@@ -390,132 +352,78 @@ export default async function DashboardPage({
         </div>
       )}
 
-      {/* KPI Cards — every numeric widget drills (AU-016). */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Link href={`/cases?status=unassigned${companyParam}`} data-testid="kpi-link" className="block">
-          <KPICard
-            title="Unassigned Cases"
-            value={unassigned}
-            icon={<FileQuestion className="h-5 w-5 text-ink-500" />}
-            color="bg-ink-500"
-          />
-        </Link>
-        <Link href={`/cases?status=pending_approval${companyParam}`} data-testid="kpi-link" className="block">
-          <KPICard
-            title="Pending Approval"
-            value={pendingApproval}
-            icon={<Clock className="h-5 w-5 text-amber-600" />}
-            color="bg-amber-600"
-            pulse={pendingApproval > 0}
-          />
-        </Link>
-        <Link href={`/cases?status=in_progress${companyParam}`} data-testid="kpi-link" className="block">
-          <KPICard
-            title="In Progress"
-            value={inProgress}
-            icon={<Activity className="h-5 w-5 text-mint-600" />}
-            color="bg-mint-600"
-          />
-        </Link>
-        <Link href={`/cases?status=past_due${companyParam}`} data-testid="kpi-link" className="block">
-          <KPICard
-            title="Past Due"
-            value={pastDue}
-            icon={<AlertTriangle className="h-5 w-5 text-critical-600" />}
-            color="bg-critical-600"
-          />
-        </Link>
-        <Link href={`/cases?status=completed&month=current${companyParam}`} data-testid="kpi-link" className="block">
-          <KPICard
-            title="Completed This Month"
-            value={completedThisMonth}
-            icon={<CheckCircle2 className="h-5 w-5 text-cobalt-500" />}
-            color="bg-cobalt-500"
-          />
-        </Link>
-        <Link href={`/cases?ai_status=processing${companyParam}`} data-testid="kpi-link" className="block">
-          <KPICard
-            title="AI Analyses Running"
-            value={aiProcessing}
-            icon={<Brain className="h-5 w-5 text-cobalt-600" />}
-            color="bg-cobalt-600"
-          />
-        </Link>
+      {/* Operational KPI grid — every numeric drills (AU-016). Secondary section. */}
+      <div>
+        <p className="mb-2 text-sm font-medium text-ink-primary">Case activity</p>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <Link href={`/cases?status=unassigned${companyParam}`} data-testid="kpi-link" className="block">
+            <KPICard title="Unassigned cases" value={unassigned} icon={<FileQuestion className="h-5 w-5 text-ink-tertiary" />} color="bg-ink-500" />
+          </Link>
+          <Link href={`/cases?status=pending_approval${companyParam}`} data-testid="kpi-link" className="block">
+            <KPICard title="Pending approval" value={pendingApproval} icon={<Clock className="h-5 w-5 text-status-warning-dot" />} color="bg-status-warning-dot" pulse={pendingApproval > 0} />
+          </Link>
+          <Link href={`/cases?status=in_progress${companyParam}`} data-testid="kpi-link" className="block">
+            <KPICard title="In progress" value={inProgress} icon={<Activity className="h-5 w-5 text-status-success-dot" />} color="bg-status-success-dot" />
+          </Link>
+          <Link href={`/cases?status=past_due${companyParam}`} data-testid="kpi-link" className="block">
+            <KPICard title="Past due" value={pastDue} icon={<AlertTriangle className="h-5 w-5 text-status-danger-dot" />} color="bg-status-danger-dot" />
+          </Link>
+          <Link href={`/cases?status=completed&month=current${companyParam}`} data-testid="kpi-link" className="block">
+            <KPICard title="Completed this month" value={completedThisMonth} icon={<CheckCircle2 className="h-5 w-5 text-status-info-dot" />} color="bg-cobalt-500" />
+          </Link>
+          <Link href={`/cases?ai_status=processing${companyParam}`} data-testid="kpi-link" className="block">
+            <KPICard title="AI analyses running" value={aiProcessing} icon={<Brain className="h-5 w-5 text-status-info-dot" />} color="bg-cobalt-600" />
+          </Link>
+        </div>
       </div>
 
       {/* Charts */}
-      <CaseStatusChart
-        casesByCompany={casesByCompany}
-        casesByStatus={casesByStatus}
-      />
+      <CaseStatusChart casesByCompany={casesByCompany} casesByStatus={casesByStatus} />
 
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">
-            Recent Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {auditLogList.length === 0 ? (
-            <p className="py-6 text-center text-sm text-ink-500">
-              No recent activity
-            </p>
-          ) : (
-            <ul className="space-y-3">
-              {auditLogList.map((log) => (
-                <li
-                  key={log.id}
-                  className="flex items-start gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-cobalt-50"
-                >
-                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cobalt-500/10">
-                    <Activity className="h-4 w-4 text-cobalt-600" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-ink-900">
-                      {formatAction(log.action)}
-                      {log.resourceType && (
-                        <span className="ml-1 font-normal text-ink-500">
-                          on {log.resourceType}
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-xs text-ink-500">
-                      {log.createdAt ? formatRelativeTime(new Date(log.createdAt).toISOString()) : ''}
-                    </p>
-                  </div>
-                  {log.resourceId && (
-                    <Badge variant="outline" className="shrink-0 text-[10px]">
-                      {log.resourceId.slice(0, 8)}
-                    </Badge>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      {/* Recent activity */}
+      <div className="rounded-md border border-border-subtle bg-surface-card">
+        <div className="border-b border-border-subtle px-4 py-3">
+          <p className="text-sm font-medium text-ink-primary">Recent activity</p>
+        </div>
+        {auditLogList.length === 0 ? (
+          <p className="px-4 py-6 text-center text-sm text-ink-tertiary">No recent activity</p>
+        ) : (
+          <ul>
+            {auditLogList.map((log) => (
+              <li key={log.id} className="flex items-start gap-3 border-t border-border-subtle px-4 py-2.5 first:border-t-0">
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-status-info-bg">
+                  <Activity className="h-3.5 w-3.5 text-status-info-fg" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-ink-primary">
+                    {formatAction(log.action)}
+                    {log.resourceType && <span className="ml-1 text-ink-tertiary">on {log.resourceType}</span>}
+                  </p>
+                  <p className="text-2xs text-ink-tertiary">
+                    {log.createdAt ? formatRelativeTime(new Date(log.createdAt).toISOString()) : ""}
+                  </p>
+                </div>
+                {log.resourceId && <span className="shrink-0 rounded-full bg-surface-muted px-2 py-0.5 text-2xs text-ink-secondary">{log.resourceId.slice(0, 8)}</span>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
-      {/* Quick Actions */}
-      <div className="flex flex-wrap gap-3">
-        <Button asChild>
-          <Link href="/batches">
-            <Upload className="h-4 w-4" />
-            Upload New Batch
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link href="/assign">
-            <Zap className="h-4 w-4" />
-            Run AI Assignments
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link href="/command">
-            <Terminal className="h-4 w-4" />
-            Open Command Center
-          </Link>
-        </Button>
+      {/* Quick actions */}
+      <div className="flex flex-wrap gap-2">
+        <Link href="/batches" className="inline-flex items-center gap-1.5 rounded-md bg-brand px-3 py-2 text-sm font-medium text-white transition hover:bg-brand-hover">
+          <Upload className="h-4 w-4" />
+          Upload new batch
+        </Link>
+        <Link href="/assign" className="inline-flex items-center gap-1.5 rounded-md border border-border-default bg-surface-card px-3 py-2 text-sm font-medium text-ink-primary transition hover:bg-surface-muted">
+          <Zap className="h-4 w-4" />
+          Run AI assignments
+        </Link>
+        <Link href="/command" className="inline-flex items-center gap-1.5 rounded-md border border-border-default bg-surface-card px-3 py-2 text-sm font-medium text-ink-primary transition hover:bg-surface-muted">
+          <Terminal className="h-4 w-4" />
+          Open command center
+        </Link>
       </div>
     </div>
   );

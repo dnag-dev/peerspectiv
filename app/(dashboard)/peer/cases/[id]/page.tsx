@@ -364,12 +364,12 @@ export async function renderPeerCaseDetail(caseId: string) {
     : null;
   const dueColorClass =
     daysUntilDue == null
-      ? "border-ink-200 bg-paper-surface text-ink-600"
+      ? "border-border-subtle bg-surface-card text-ink-secondary"
       : daysUntilDue < 0
-        ? "border-critical-100 bg-critical-50 text-critical-700"
+        ? "border-status-danger-fg/20 bg-critical-50 text-status-danger-fg"
         : daysUntilDue <= 2
-          ? "border-amber-100 bg-amber-50 text-amber-700"
-          : "border-ink-200 bg-paper-surface text-ink-700";
+          ? "border-amber-100 bg-amber-50 text-status-warning-fg"
+          : "border-border-subtle bg-surface-card text-ink-primary";
   const dueLabel =
     daysUntilDue == null
       ? "No due date"
@@ -381,41 +381,41 @@ export async function renderPeerCaseDetail(caseId: string) {
   const caseRefShort = caseId.slice(0, 8);
 
   return (
-    <div className="flex h-[calc(100vh-64px)] flex-col bg-paper-canvas text-ink-900">
+    <div className="flex h-[calc(100vh-64px)] flex-col bg-surface-canvas text-ink-primary">
       {/* ─── Full-width Case Context Header ─── */}
       <div className="flex-shrink-0 px-4 pt-4 lg:px-6 lg:pt-6">
-        <div className="rounded-lg border border-ink-200 bg-paper-surface p-4 lg:p-5 shadow-sm">
+        <div className="rounded-lg border border-border-subtle bg-surface-card p-4 lg:p-5 shadow-sm">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <div>
-              <div className="text-eyebrow text-ink-500">
+              <div className="text-eyebrow text-ink-secondary">
                 Provider
               </div>
-              <div className="text-lg font-semibold text-ink-900">{providerName}</div>
+              <div className="text-lg font-medium tracking-tight text-ink-primary">{providerName}</div>
             </div>
             {providerRow?.specialty && (
               <div>
-                <div className="text-eyebrow text-ink-500">
+                <div className="text-eyebrow text-ink-secondary">
                   Specialty
                 </div>
-                <span className="mt-0.5 inline-flex items-center rounded-full border border-mint-200 bg-mint-50 px-2.5 py-0.5 text-xs font-medium text-mint-700">
+                <span className="mt-0.5 inline-flex items-center rounded-full border border-status-success-fg/30 bg-mint-50 px-2.5 py-0.5 text-xs font-medium text-status-success-fg">
                   {providerRow.specialty}
                 </span>
               </div>
             )}
             {companyRow?.name && (
               <div>
-                <div className="text-eyebrow text-ink-500">
+                <div className="text-eyebrow text-ink-secondary">
                   Company
                 </div>
-                <div className="text-sm font-medium text-ink-900">{companyRow.name}</div>
+                <div className="text-sm font-medium text-ink-primary">{companyRow.name}</div>
               </div>
             )}
             {batchRow?.batchName && (
               <div>
-                <div className="text-eyebrow text-ink-500">
+                <div className="text-eyebrow text-ink-secondary">
                   Batch
                 </div>
-                <div className="text-sm text-ink-900">
+                <div className="text-sm text-ink-primary">
                   {batchRow.batchName}
                   {reviewCase.batchPeriod ? ` · ${reviewCase.batchPeriod}` : ""}
                 </div>
@@ -423,19 +423,19 @@ export async function renderPeerCaseDetail(caseId: string) {
             )}
             {reviewCase.encounterDate && (
               <div>
-                <div className="text-eyebrow text-ink-500">
+                <div className="text-eyebrow text-ink-secondary">
                   Encounter
                 </div>
-                <div className="text-sm text-ink-900">
+                <div className="text-sm text-ink-primary">
                   {new Date(reviewCase.encounterDate).toLocaleDateString()}
                 </div>
               </div>
             )}
             <div>
-              <div className="text-eyebrow text-ink-500">
+              <div className="text-eyebrow text-ink-secondary">
                 Case Ref
               </div>
-              <div className="font-mono text-xs text-ink-600">
+              <div className="font-mono text-xs text-ink-secondary">
                 #{caseRefShort}
               </div>
             </div>
@@ -449,7 +449,7 @@ export async function renderPeerCaseDetail(caseId: string) {
                 }
               />
               <span
-                className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${dueColorClass}`}
+                className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${dueColorClass}`}
               >
                 {dueLabel}
               </span>

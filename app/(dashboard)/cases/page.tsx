@@ -113,8 +113,8 @@ export default async function CasesIndexPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink-900">Reviews</h1>
-        <p className="text-sm text-ink-500">
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Reviews</h1>
+        <p className="text-sm text-ink-secondary">
           {total} case{total === 1 ? "" : "s"}
           {filterDescriptors.length > 0 && (
             <> · filters: {filterDescriptors.join(", ")}</>
@@ -129,10 +129,10 @@ export default async function CasesIndexPage({
           backHref="/dashboard"
         />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-ink-200 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-border-subtle bg-white">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
+              <tr className="border-b border-border-subtle bg-ink-50 text-xs uppercase tracking-wider text-ink-secondary">
                 <th className="px-4 py-3 text-left">Case ref</th>
                 <th className="px-4 py-3 text-left">Provider</th>
                 <th className="px-4 py-3 text-left">Specialty</th>
@@ -148,30 +148,30 @@ export default async function CasesIndexPage({
                 const provider =
                   `${r.providerFirst ?? ""} ${r.providerLast ?? ""}`.trim() || "—";
                 return (
-                  <tr key={r.id} className="border-b border-ink-100 hover:bg-cobalt-50">
-                    <td className="px-4 py-3 font-mono text-xs text-ink-900">
+                  <tr key={r.id} className="border-b border-border-subtle hover:bg-status-info-bg">
+                    <td className="px-4 py-3 font-mono text-xs text-ink-primary">
                       <Link
                         href={`/cases/${r.id}`}
-                        className="hover:text-cobalt-700 hover:underline"
+                        className="hover:text-status-info-fg hover:underline"
                       >
                         {r.id.slice(0, 8)}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-ink-900">{provider}</td>
-                    <td className="px-4 py-3 text-ink-600">
+                    <td className="px-4 py-3 text-ink-primary">{provider}</td>
+                    <td className="px-4 py-3 text-ink-secondary">
                       {r.providerSpecialty ?? "—"}
                     </td>
-                    <td className="px-4 py-3 text-ink-600">{r.peerName ?? "—"}</td>
-                    <td className="px-4 py-3 text-ink-600">{r.companyName ?? "—"}</td>
+                    <td className="px-4 py-3 text-ink-secondary">{r.peerName ?? "—"}</td>
+                    <td className="px-4 py-3 text-ink-secondary">{r.companyName ?? "—"}</td>
                     <td className="px-4 py-3">
                       <Badge variant={statusBadgeVariant(r.status)}>
                         {STATUS_LABEL[r.status ?? ""] ?? r.status ?? "—"}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-ink-600">
+                    <td className="px-4 py-3 text-ink-secondary">
                       {daysIn(r.status, r.updatedAt)}
                     </td>
-                    <td className="px-4 py-3 text-ink-600">{fmtDate(r.dueDate)}</td>
+                    <td className="px-4 py-3 text-ink-secondary">{fmtDate(r.dueDate)}</td>
                   </tr>
                 );
               })}

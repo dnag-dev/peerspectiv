@@ -128,11 +128,11 @@ export function PipelineBoard({ initialPipeline }: PipelineBoardProps) {
               if (id) promoteCompany(id, stage.key);
             }}
             className={`flex min-h-[400px] flex-col rounded-lg p-3 ${stage.accent} ${
-              isOver ? 'bg-cobalt-50/10 ring-2 ring-cobalt-500' : 'bg-[#1E3A8A]'
+              isOver ? 'bg-status-info-bg/10 ring-2 ring-cobalt-500' : 'bg-[#1E3A8A]'
             }`}
           >
             <div className="mb-3 flex items-center justify-between px-1">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-white">
+              <h2 className="text-sm font-medium uppercase tracking-wide text-white">
                 {stage.title}
               </h2>
               <Badge className={`${stage.badgeClass} ml-2`}>
@@ -142,7 +142,7 @@ export function PipelineBoard({ initialPipeline }: PipelineBoardProps) {
             <div className="flex-1 space-y-2">
               {items.length === 0 ? (
                 <Card className="border-dashed border-ink-700 bg-transparent">
-                  <CardContent className="py-6 text-center text-xs text-ink-500">
+                  <CardContent className="py-6 text-center text-xs text-ink-secondary">
                     No {stage.title.toLowerCase()}
                   </CardContent>
                 </Card>

@@ -88,7 +88,7 @@ export function ReassignmentsList({ rows }: Props) {
   return (
     <>
       {error && (
-        <div className="rounded-md border border-critical-200 bg-critical-50 px-3 py-2 text-sm text-critical-700">
+        <div className="rounded-md border border-critical-200 bg-critical-50 px-3 py-2 text-sm text-status-danger-fg">
           {error}
         </div>
       )}
@@ -101,34 +101,34 @@ export function ReassignmentsList({ rows }: Props) {
           return (
             <article
               key={r.id}
-              className="rounded-lg border border-ink-200 bg-paper-surface p-4 shadow-sm"
+              className="rounded-lg border border-border-subtle bg-surface-card p-4 shadow-sm"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                    <span className="font-mono text-[11px] text-ink-500">
+                    <span className="font-mono text-[11px] text-ink-secondary">
                       #{r.caseId.slice(0, 8)}
                     </span>
-                    <span className="font-medium text-ink-900">
+                    <span className="font-medium text-ink-primary">
                       {r.providerName ?? "Unknown provider"}
                     </span>
                     {r.specialty && (
-                      <span className="rounded-full border border-mint-200 bg-mint-50 px-2 py-0.5 text-[11px] font-medium text-mint-700">
+                      <span className="rounded-full border border-status-success-fg/30 bg-mint-50 px-2 py-0.5 text-[11px] font-medium text-status-success-fg">
                         {r.specialty}
                       </span>
                     )}
                     {r.companyName && (
-                      <span className="text-ink-500">· {r.companyName}</span>
+                      <span className="text-ink-secondary">· {r.companyName}</span>
                     )}
                   </div>
-                  <div className="text-xs text-ink-600">
+                  <div className="text-xs text-ink-secondary">
                     Peer:{" "}
                     <span className="font-medium text-ink-800">
                       {r.peerName ?? "Unknown"}
                     </span>
-                    <span className="ml-3 text-ink-400">Requested {created}</span>
+                    <span className="ml-3 text-ink-tertiary">Requested {created}</span>
                   </div>
-                  <div className="mt-2 rounded-md border-l-2 border-cobalt-300 bg-cobalt-soft px-3 py-2 text-sm text-ink-800">
+                  <div className="mt-2 rounded-md border-l-2 border-status-info-fg/40 bg-cobalt-soft px-3 py-2 text-sm text-ink-800">
                     {r.reason}
                   </div>
                 </div>
@@ -137,7 +137,7 @@ export function ReassignmentsList({ rows }: Props) {
                     type="button"
                     onClick={() => setPickerOpen(r.id)}
                     disabled={isBusy}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-cobalt-700 bg-paper-surface px-3 py-1.5 text-xs font-medium text-cobalt-700 transition-colors hover:bg-cobalt-50 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-status-info-fg bg-surface-card px-3 py-1.5 text-xs font-medium text-status-info-fg transition-colors hover:bg-status-info-bg disabled:opacity-50"
                   >
                     {busy.has(r.id) ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -153,7 +153,7 @@ export function ReassignmentsList({ rows }: Props) {
                       setDismissNote("");
                     }}
                     disabled={isBusy}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-ink-200 bg-paper-surface px-3 py-1.5 text-xs font-medium text-ink-700 transition-colors hover:border-ink-300 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-card px-3 py-1.5 text-xs font-medium text-ink-primary transition-colors hover:border-border-default disabled:opacity-50"
                   >
                     <X className="h-3 w-3" />
                     Dismiss
@@ -198,7 +198,7 @@ export function ReassignmentsList({ rows }: Props) {
             value={dismissNote}
             onChange={(e) => setDismissNote(e.target.value)}
             rows={3}
-            className="w-full rounded-md border border-ink-200 bg-paper-surface px-3 py-2 text-sm focus:border-cobalt-600 focus:outline-none"
+            className="w-full rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-sm focus:border-status-info-dot focus:outline-none"
             placeholder="e.g. Followed up with peer; they'll keep the case."
           />
           <div className="mt-4 flex justify-end gap-2">

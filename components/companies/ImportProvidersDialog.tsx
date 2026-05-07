@@ -150,23 +150,23 @@ export function ImportProvidersDialog({ companyId }: Props) {
               accept=".csv,.tsv,.pdf"
               onChange={handleFileChange}
               disabled={uploading}
-              className="block w-full text-sm text-ink-700 file:mr-4 file:rounded-md file:border-0 file:bg-cobalt-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-cobalt-700"
+              className="block w-full text-sm text-ink-primary file:mr-4 file:rounded-md file:border-0 file:bg-cobalt-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-cobalt-700"
             />
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={downloadTemplate}
-                className="inline-flex items-center gap-1 text-xs text-cobalt-700 hover:underline"
+                className="inline-flex items-center gap-1 text-xs text-status-info-fg hover:underline"
               >
                 <Download className="h-3 w-3" />
                 Download CSV template
               </button>
-              <span className="text-xs text-ink-400">
+              <span className="text-xs text-ink-tertiary">
                 CSV/TSV columns: first_name, last_name, specialty, npi, email
               </span>
             </div>
-            <div className="rounded-md bg-ink-50 border border-ink-200 px-3 py-2">
-              <p className="text-xs text-ink-600">
+            <div className="rounded-md bg-ink-50 border border-border-subtle px-3 py-2">
+              <p className="text-xs text-ink-secondary">
                 <strong>PDF rosters:</strong> AI will extract provider details automatically. For best results, ensure the PDF contains provider names, specialties, NPI numbers, and email addresses in a readable format (tables or lists work best).
               </p>
             </div>
@@ -181,10 +181,10 @@ export function ImportProvidersDialog({ companyId }: Props) {
         )}
 
         {candidates && candidates.length > 0 && (
-          <div className="max-h-[400px] overflow-y-auto rounded-md border border-ink-200">
+          <div className="max-h-[400px] overflow-y-auto rounded-md border border-border-subtle">
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-ink-50">
-                <tr className="border-b border-ink-200">
+                <tr className="border-b border-border-subtle">
                   <th className="w-10 px-2 py-2 text-left">
                     <input
                       type="checkbox"
@@ -202,7 +202,7 @@ export function ImportProvidersDialog({ companyId }: Props) {
               </thead>
               <tbody>
                 {candidates.map((c, i) => (
-                  <tr key={i} className="border-b border-ink-100 last:border-0">
+                  <tr key={i} className="border-b border-border-subtle last:border-0">
                     <td className="px-2 py-2">
                       <input
                         type="checkbox"
@@ -223,7 +223,7 @@ export function ImportProvidersDialog({ companyId }: Props) {
           </div>
         )}
 
-        {error && <p className="text-sm text-critical-600">{error}</p>}
+        {error && <p className="text-sm text-status-danger-dot">{error}</p>}
 
         <DialogFooter>
           {candidates && (

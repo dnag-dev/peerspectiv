@@ -88,16 +88,16 @@ export function CriteriaScorer({
     <div
       className={cn(
         "rounded-lg border bg-white p-4 transition-colors",
-        isScored && mode === "agreed" && "border-mint-200 bg-mint-50/30",
-        isScored && mode === "override" && "border-amber-600 bg-amber-100/30",
-        !isScored && "border-ink-200"
+        isScored && mode === "agreed" && "border-status-success-fg/30 bg-mint-50/30",
+        isScored && mode === "override" && "border-status-warning-dot bg-amber-100/30",
+        !isScored && "border-border-subtle"
       )}
     >
       {/* Criterion Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h4 className="text-sm font-semibold text-ink-900">{criterion}</h4>
+            <h4 className="text-sm font-medium text-ink-primary">{criterion}</h4>
             <Badge variant="ai" className="text-[11px]">
               AI: {aiScore}/4
             </Badge>
@@ -112,7 +112,7 @@ export function CriteriaScorer({
               </Badge>
             )}
           </div>
-          <p className="mt-1 text-xs leading-relaxed text-ink-600">
+          <p className="mt-1 text-xs leading-relaxed text-ink-secondary">
             {aiRationale}
           </p>
         </div>
@@ -124,7 +124,7 @@ export function CriteriaScorer({
               size="sm"
               variant="outline"
               onClick={handleAgree}
-              className="border-mint-200 text-cobalt-700 hover:bg-mint-50 hover:text-cobalt-700"
+              className="border-status-success-fg/30 text-status-info-fg hover:bg-mint-50 hover:text-status-info-fg"
             >
               <svg
                 className="mr-1 h-3.5 w-3.5"
@@ -145,7 +145,7 @@ export function CriteriaScorer({
               size="sm"
               variant="outline"
               onClick={handleOverrideToggle}
-              className="border-amber-600 text-amber-700 hover:bg-amber-100 hover:text-amber-700"
+              className="border-status-warning-dot text-status-warning-fg hover:bg-amber-100 hover:text-status-warning-fg"
             >
               <svg
                 className="mr-1 h-3.5 w-3.5"
@@ -170,7 +170,7 @@ export function CriteriaScorer({
             size="sm"
             variant="ghost"
             onClick={handleCancel}
-            className="shrink-0 text-xs text-ink-500"
+            className="shrink-0 text-xs text-ink-secondary"
           >
             Change
           </Button>
@@ -179,9 +179,9 @@ export function CriteriaScorer({
 
       {/* Override Form */}
       {mode === "override" && !isScored && (
-        <div className="mt-3 flex flex-col gap-2 rounded-md border border-amber-600 bg-amber-100/50 p-3 sm:flex-row sm:items-end">
+        <div className="mt-3 flex flex-col gap-2 rounded-md border border-status-warning-dot bg-amber-100/50 p-3 sm:flex-row sm:items-end">
           <div className="w-full sm:w-24">
-            <label className="mb-1 block text-xs font-medium text-ink-700">
+            <label className="mb-1 block text-xs font-medium text-ink-primary">
               Your Score
             </label>
             <Input
@@ -196,7 +196,7 @@ export function CriteriaScorer({
             />
           </div>
           <div className="flex-1">
-            <label className="mb-1 block text-xs font-medium text-ink-700">
+            <label className="mb-1 block text-xs font-medium text-ink-primary">
               Reason for Override
             </label>
             <Input

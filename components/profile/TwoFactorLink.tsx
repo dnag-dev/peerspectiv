@@ -17,7 +17,7 @@ export function TwoFactorLink() {
     return (
       <span
         title="Available with Clerk auth — not configured in this environment."
-        className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-md border border-ink-200 bg-ink-50 px-3 py-1.5 text-xs text-ink-400"
+        className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-md border border-border-subtle bg-ink-50 px-3 py-1.5 text-xs text-ink-tertiary"
       >
         <ShieldCheck className="h-3.5 w-3.5" /> Manage 2FA →
       </span>
@@ -27,7 +27,7 @@ export function TwoFactorLink() {
   return (
     <a
       href="/user"
-      className="inline-flex items-center gap-1.5 rounded-md border border-cobalt-200 bg-white px-3 py-1.5 text-xs text-cobalt-700 transition-colors hover:bg-cobalt-50"
+      className="inline-flex items-center gap-1.5 rounded-md border border-status-info-fg/30 bg-white px-3 py-1.5 text-xs text-status-info-fg transition-colors hover:bg-status-info-bg"
     >
       <ShieldCheck className="h-3.5 w-3.5" /> Manage 2FA →
     </a>

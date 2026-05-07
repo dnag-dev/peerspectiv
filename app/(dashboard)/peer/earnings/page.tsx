@@ -52,15 +52,15 @@ function formatMinutes(m: number | null): string {
 
 const STATUS_STYLE: Record<string, string> = {
   assigned: "bg-ink-100 text-ink-800",
-  in_progress: "bg-amber-100 text-amber-700",
-  completed: "bg-mint-100 text-cobalt-700",
-  past_due: "bg-critical-100 text-critical-700",
+  in_progress: "bg-amber-100 text-status-warning-fg",
+  completed: "bg-mint-100 text-status-info-fg",
+  past_due: "bg-critical-100 text-status-danger-fg",
 };
 
 const PAYOUT_STYLE: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-700",
-  approved: "bg-cobalt-100 text-cobalt-600",
-  paid: "bg-mint-100 text-cobalt-700",
+  pending: "bg-amber-100 text-status-warning-fg",
+  approved: "bg-status-info-bg text-status-info-dot",
+  paid: "bg-mint-100 text-status-info-fg",
 };
 
 export default async function PeerEarningsPage() {
@@ -170,7 +170,7 @@ export default async function PeerEarningsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink-900">Earnings</h1>
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Earnings</h1>
         <p className="text-sm text-muted-foreground">
           Time spent, computed earnings, and payout status across your cases.
         </p>
@@ -185,7 +185,7 @@ export default async function PeerEarningsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-ink-900">{formatMinutes(totalMinutes)}</p>
+            <p className="text-2xl font-medium tracking-tight text-ink-primary">{formatMinutes(totalMinutes)}</p>
             <p className="text-xs text-muted-foreground">
               {inProgressCount} in progress · {completedCount} completed
             </p>
@@ -199,7 +199,7 @@ export default async function PeerEarningsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-amber-700">{formatMoney(earnedInProgress)}</p>
+            <p className="text-2xl font-medium text-status-warning-fg">{formatMoney(earnedInProgress)}</p>
             <p className="text-xs text-muted-foreground">Accruing as time is logged</p>
           </CardContent>
         </Card>
@@ -211,7 +211,7 @@ export default async function PeerEarningsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-ink-900">{formatMoney(earnedCompleted)}</p>
+            <p className="text-2xl font-medium tracking-tight text-ink-primary">{formatMoney(earnedCompleted)}</p>
             <p className="text-xs text-muted-foreground">
               {formatMoney(pending)} pending · {formatMoney(paid)} paid
             </p>
@@ -221,11 +221,11 @@ export default async function PeerEarningsPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-              <DollarSign className="h-4 w-4 text-cobalt-600" /> Paid to date
+              <DollarSign className="h-4 w-4 text-status-info-dot" /> Paid to date
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-cobalt-700">{formatMoney(paid)}</p>
+            <p className="text-2xl font-medium text-status-info-fg">{formatMoney(paid)}</p>
             <p className="text-xs text-muted-foreground">Settled payouts</p>
           </CardContent>
         </Card>
@@ -238,7 +238,7 @@ export default async function PeerEarningsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-ink-900">
+            <p className="text-2xl font-medium tracking-tight text-ink-primary">
               {avgMinutesPerChart != null
                 ? `${avgMinutesPerChart.toFixed(1)}m`
                 : "—"}
@@ -259,7 +259,7 @@ export default async function PeerEarningsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-ink-200 bg-ink-50 text-left text-xs uppercase tracking-wider text-ink-500">
+                <tr className="border-b border-border-subtle bg-ink-50 text-left text-xs uppercase tracking-wider text-ink-secondary">
                   <th className="px-4 py-3">Case</th>
                   <th className="px-4 py-3">Company</th>
                   <th className="px-4 py-3">Status</th>
@@ -272,7 +272,7 @@ export default async function PeerEarningsPage() {
               <tbody>
                 {enriched.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-ink-400">
+                    <td colSpan={7} className="px-4 py-8 text-center text-ink-tertiary">
                       No cases yet. Earnings will show here as cases are assigned.
                     </td>
                   </tr>
@@ -289,24 +289,24 @@ export default async function PeerEarningsPage() {
                         ? `${r.units.toFixed(2)} ${unit} (${formatMinutes(r.minutes)})`
                         : `${r.minutes} ${unit}`;
                   return (
-                    <tr key={r.case_id} className="border-b border-ink-100 hover:bg-ink-50">
+                    <tr key={r.case_id} className="border-b border-border-subtle hover:bg-ink-50">
                       <td className="px-4 py-3">
-                        <div className="font-medium text-ink-900">{r.patient}</div>
+                        <div className="font-medium text-ink-primary">{r.patient}</div>
                         <div className="text-xs text-muted-foreground">
                           {r.specialty ?? "—"}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-ink-700">{r.company ?? "—"}</td>
+                      <td className="px-4 py-3 text-ink-primary">{r.company ?? "—"}</td>
                       <td className="px-4 py-3">
                         <Badge className={`${statusClass} border-0`}>
                           {r.status.replace("_", " ")}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-right text-ink-700">{unitsDisplay}</td>
-                      <td className="px-4 py-3 text-right text-ink-700">
+                      <td className="px-4 py-3 text-right text-ink-primary">{unitsDisplay}</td>
+                      <td className="px-4 py-3 text-right text-ink-primary">
                         {formatMoney(r.rate)}/{unit}
                       </td>
-                      <td className="px-4 py-3 text-right font-medium text-ink-900">
+                      <td className="px-4 py-3 text-right font-medium text-ink-primary">
                         {formatMoney(r.amount)}
                       </td>
                       <td className="px-4 py-3">

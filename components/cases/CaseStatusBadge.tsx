@@ -7,27 +7,27 @@ const caseStatusConfig: Record<
 > = {
   unassigned: {
     label: "Unassigned",
-    className: "bg-ink-100 text-ink-700",
+    className: "bg-ink-100 text-ink-primary",
   },
   pending_approval: {
     label: "Pending Approval",
-    className: "bg-amber-100 text-amber-700 animate-pulse",
+    className: "bg-amber-100 text-status-warning-fg animate-pulse",
   },
   assigned: {
     label: "Assigned",
-    className: "bg-cobalt-100 text-cobalt-600",
+    className: "bg-status-info-bg text-status-info-dot",
   },
   in_progress: {
     label: "In Progress",
-    className: "bg-mint-100 text-cobalt-700",
+    className: "bg-mint-100 text-status-info-fg",
   },
   completed: {
     label: "Completed",
-    className: "bg-mint-100 text-cobalt-700",
+    className: "bg-mint-100 text-status-info-fg",
   },
   past_due: {
     label: "Past Due",
-    className: "bg-critical-100 text-critical-700 ring-2 ring-critical-600",
+    className: "bg-critical-100 text-status-danger-fg ring-2 ring-critical-600",
   },
 };
 
@@ -37,19 +37,19 @@ const aiStatusConfig: Record<
 > = {
   pending: {
     label: "Pending",
-    className: "bg-ink-100 text-ink-600",
+    className: "bg-ink-100 text-ink-secondary",
   },
   processing: {
     label: "Processing",
-    className: "bg-mint-100 text-cobalt-700 animate-pulse",
+    className: "bg-mint-100 text-status-info-fg animate-pulse",
   },
   complete: {
     label: "Complete",
-    className: "bg-mint-100 text-cobalt-700",
+    className: "bg-mint-100 text-status-info-fg",
   },
   failed: {
     label: "Failed",
-    className: "bg-critical-100 text-critical-700",
+    className: "bg-critical-100 text-status-danger-fg",
   },
 };
 

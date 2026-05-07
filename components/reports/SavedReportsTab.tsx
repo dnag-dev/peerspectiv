@@ -121,8 +121,8 @@ export function SavedReportsTab({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2 text-ink-900">
-          <BookmarkCheck className="h-5 w-5 text-cobalt-600" />
+        <CardTitle className="flex items-center gap-2 text-ink-primary">
+          <BookmarkCheck className="h-5 w-5 text-status-info-dot" />
           Saved Reports
         </CardTitle>
         <Button
@@ -142,10 +142,10 @@ export function SavedReportsTab({
       </CardHeader>
       <CardContent className="p-0">
         {err && (
-          <p className="px-4 py-3 text-sm text-critical-700 bg-critical-50">{err}</p>
+          <p className="px-4 py-3 text-sm text-status-danger-fg bg-critical-50">{err}</p>
         )}
         <table className="w-full text-sm">
-          <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
+          <thead className="bg-ink-50 text-ink-secondary text-xs uppercase">
             <tr>
               <th className="px-4 py-3 text-left">Name</th>
               <th className="px-4 py-3 text-left">Template</th>
@@ -158,8 +158,8 @@ export function SavedReportsTab({
           <tbody>
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-ink-500">
-                  <FileText className="h-6 w-6 mx-auto mb-2 text-ink-400" />
+                <td colSpan={6} className="px-4 py-12 text-center text-ink-secondary">
+                  <FileText className="h-6 w-6 mx-auto mb-2 text-ink-tertiary" />
                   No saved reports yet. Generate one from the QAPI or PDF
                   Generator tab.
                 </td>
@@ -168,23 +168,23 @@ export function SavedReportsTab({
             {rows.map((r) => (
               <tr
                 key={r.id}
-                className="border-t border-ink-100 hover:bg-ink-50/50"
+                className="border-t border-border-subtle hover:bg-ink-50/50"
               >
-                <td className="px-4 py-3 font-medium text-ink-900">
+                <td className="px-4 py-3 font-medium text-ink-primary">
                   {r.reportName}
                 </td>
-                <td className="px-4 py-3 text-ink-700">
+                <td className="px-4 py-3 text-ink-primary">
                   {TEMPLATE_LABEL[r.templateKey] ?? r.templateKey}
                 </td>
-                <td className="px-4 py-3 text-ink-700">
+                <td className="px-4 py-3 text-ink-primary">
                   {companyName(r.companyId)}
                 </td>
-                <td className="px-4 py-3 text-ink-600 text-xs">
+                <td className="px-4 py-3 text-ink-secondary text-xs">
                   {r.rangeStart && r.rangeEnd
                     ? `${r.rangeStart} → ${r.rangeEnd}`
                     : "—"}
                 </td>
-                <td className="px-4 py-3 text-ink-500 text-xs">
+                <td className="px-4 py-3 text-ink-secondary text-xs">
                   {r.createdAt
                     ? new Date(r.createdAt).toLocaleDateString()
                     : "—"}

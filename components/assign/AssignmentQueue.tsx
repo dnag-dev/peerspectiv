@@ -118,11 +118,11 @@ export function AssignmentQueue({
         <button
           onClick={handleApproveAll}
           disabled={approvingAll || isPending || initialCases.length === 0}
-          className="inline-flex items-center gap-2 rounded-md border border-cobalt-700 bg-paper-surface px-3.5 py-2 text-sm font-medium text-cobalt-700 transition-colors hover:bg-cobalt-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 rounded-md border border-status-info-fg bg-surface-card px-3.5 py-2 text-sm font-medium text-status-info-fg transition-colors hover:bg-status-info-bg disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {approvingAll && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
           Approve all
-          <span className="inline-flex items-center rounded-sm bg-cobalt-100 px-1.5 py-0.5 font-mono text-code text-cobalt-700">
+          <span className="inline-flex items-center rounded-sm bg-status-info-bg px-1.5 py-0.5 font-mono text-code text-status-info-fg">
             {initialCases.length}
           </span>
         </button>
@@ -188,7 +188,7 @@ export function AssignmentQueue({
           return (
             <article
               key={c.id}
-              className="relative flex flex-col bg-paper-surface border border-ink-200 rounded-xl p-[18px] transition-all hover:border-cobalt-300 hover:shadow-md"
+              className="relative flex flex-col bg-surface-card border border-border-subtle rounded-xl p-[18px] transition-all hover:border-status-info-fg/40 hover:shadow-md"
             >
               {/* Status indicator */}
               <div className="absolute top-3.5 right-3.5">
@@ -197,7 +197,7 @@ export function AssignmentQueue({
 
               {/* Phase 5.5 — capacity-skip chip */}
               {skipped[c.id] && (
-                <div className="mb-2 inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-700">
+                <div className="mb-2 inline-flex items-center gap-1 rounded-md border border-status-warning-fg/30 bg-amber-50 px-2 py-1 text-[11px] font-medium text-status-warning-fg">
                   <AlertTriangle className="h-3 w-3" />
                   {skipped[c.id]}
                 </div>
@@ -206,17 +206,17 @@ export function AssignmentQueue({
               {/* Company + provider header */}
               <header className="mb-3.5 pr-28 min-h-[56px]">
                 <div className="inline-flex items-center gap-1.5 mb-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-ink-500" />
-                  <span className="text-sm font-medium text-ink-900">
+                  <Building2 className="w-3.5 h-3.5 text-ink-secondary" />
+                  <span className="text-sm font-medium text-ink-primary">
                     {c.company.name}
                   </span>
-                  <span className="font-mono text-[10px] text-ink-400">
+                  <span className="font-mono text-[10px] text-ink-tertiary">
                     · {batchShort}
                   </span>
                 </div>
-                <div className="text-sm text-ink-600">
+                <div className="text-sm text-ink-secondary">
                   {c.provider.first_name} {c.provider.last_name}{" "}
-                  <span className="text-ink-400">·</span>{" "}
+                  <span className="text-ink-tertiary">·</span>{" "}
                   <span>{neededSpecialty}</span>
                 </div>
               </header>
@@ -224,27 +224,27 @@ export function AssignmentQueue({
               {/* Match score panel */}
               <div className="bg-cobalt-soft rounded-lg px-4 py-3.5 mb-3.5 flex justify-between items-center flex-shrink-0">
                 <div>
-                  <div className="text-eyebrow text-cobalt-700 mb-1">
+                  <div className="text-eyebrow text-status-info-fg mb-1">
                     Match score
                   </div>
                   <div className="flex items-baseline gap-0.5">
-                    <span className="text-stat-match text-cobalt-700">
+                    <span className="text-stat-match text-status-info-fg">
                       {confidence}
                     </span>
-                    <span className="text-h2 text-cobalt-500">%</span>
+                    <span className="text-h2 text-status-info-dot">%</span>
                   </div>
                 </div>
                 <MatchRing value={confidence} />
               </div>
 
               {/* Peer row */}
-              <div className="flex items-center gap-2.5 py-3 border-y border-ink-100 mb-3 flex-shrink-0">
+              <div className="flex items-center gap-2.5 py-3 border-y border-border-subtle mb-3 flex-shrink-0">
                 <PeerAvatar initials={peerInitials} availability={availability} />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-ink-900 truncate">
+                  <div className="text-sm font-medium text-ink-primary truncate">
                     {c.peer.full_name}
                   </div>
-                  <div className="font-mono text-[10px] text-ink-500 truncate">
+                  <div className="font-mono text-[10px] text-ink-secondary truncate">
                     {c.peer.specialty ?? neededSpecialty} · {totalReviews} reviews · {activeCases} active
                   </div>
                 </div>
@@ -254,15 +254,15 @@ export function AssignmentQueue({
               <div className="flex-1 flex flex-col gap-2.5 mb-3.5">
                 {alert && (
                   <div className="flex gap-2 px-2.5 py-2 bg-amber-50 border border-amber-100 rounded-md">
-                    <AlertTriangle className="w-3 h-3 text-amber-700 flex-shrink-0 mt-0.5" />
+                    <AlertTriangle className="w-3 h-3 text-status-warning-fg flex-shrink-0 mt-0.5" />
                     <span className="text-[11.5px] text-amber-800 leading-snug">
                       {alert}
                     </span>
                   </div>
                 )}
                 <div className="flex gap-2">
-                  <SparkleIcon className="w-2.5 h-2.5 text-cobalt-700 flex-shrink-0 mt-1" />
-                  <span className="text-xs text-ink-700 leading-relaxed">
+                  <SparkleIcon className="w-2.5 h-2.5 text-status-info-fg flex-shrink-0 mt-1" />
+                  <span className="text-xs text-ink-primary leading-relaxed">
                     {displayRationale}
                   </span>
                 </div>
@@ -332,21 +332,21 @@ export function AssignmentQueue({
 function ConfidenceDot({ variant }: { variant: "standard" | "high" | "review" }) {
   const config = {
     standard: {
-      bg: "bg-cobalt-100",
+      bg: "bg-status-info-bg",
       dot: "bg-cobalt-700",
-      text: "text-cobalt-700",
+      text: "text-status-info-fg",
       label: "Standard",
     },
     high: {
       bg: "bg-mint-100",
-      dot: "bg-mint-600",
-      text: "text-mint-700",
+      dot: "bg-status-success-dot",
+      text: "text-status-success-fg",
       label: "High confidence",
     },
     review: {
       bg: "bg-amber-100",
-      dot: "bg-amber-600",
-      text: "text-amber-700",
+      dot: "bg-status-warning-dot",
+      text: "text-status-warning-fg",
       label: "Review needed",
     },
   }[variant];
@@ -394,13 +394,13 @@ function PeerAvatar({
 }) {
   const dot =
     availability === "available"
-      ? "bg-mint-600"
+      ? "bg-status-success-dot"
       : availability === "busy"
         ? "bg-amber-500"
         : "bg-ink-400";
   return (
     <div className="relative w-9 h-9 flex-shrink-0">
-      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cobalt-100 to-cobalt-200 flex items-center justify-center text-cobalt-700 text-xs font-medium">
+      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cobalt-100 to-cobalt-200 flex items-center justify-center text-status-info-fg text-xs font-medium">
         {initials || "?"}
       </div>
       {availability && (

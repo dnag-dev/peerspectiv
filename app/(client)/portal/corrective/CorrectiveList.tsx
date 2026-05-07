@@ -26,7 +26,7 @@ function UpToDateBanner() {
   if (dismissed) return null;
 
   return (
-    <div className="flex items-start justify-between gap-3 rounded-lg border border-cobalt-500/40 bg-cobalt-500/10 px-4 py-3 text-sm text-cobalt-100">
+    <div className="flex items-start justify-between gap-3 rounded-lg border border-cobalt-500/40 bg-status-info-bg px-4 py-3 text-sm text-cobalt-100">
       <p className="flex-1 text-ink-100">
         Want industry-standard guidelines? Talk to us about UpToDate
         integration.
@@ -35,7 +35,7 @@ function UpToDateBanner() {
         type="button"
         onClick={dismiss}
         aria-label="Dismiss"
-        className="ml-2 shrink-0 rounded p-1 text-ink-300 hover:bg-white/10 hover:text-white"
+        className="ml-2 shrink-0 rounded p-1 text-ink-tertiary hover:bg-white/10 hover:text-ink-primary"
       >
         ×
       </button>
@@ -92,8 +92,8 @@ export function CorrectiveList({ actions }: { actions: Action[] }) {
     return (
       <div className="space-y-3">
         <UpToDateBanner />
-        <div className="rounded-lg p-5" style={{ backgroundColor: "#1E3A8A" }}>
-          <p className="text-sm text-ink-400">No corrective actions.</p>
+        <div className="rounded-lg p-5" style={{ backgroundColor: 'var(--color-card)' }}>
+          <p className="text-sm text-ink-tertiary">No corrective actions.</p>
         </div>
       </div>
     );
@@ -106,13 +106,13 @@ export function CorrectiveList({ actions }: { actions: Action[] }) {
         <div
           key={a.id}
           className="rounded-lg p-5"
-          style={{ backgroundColor: "#1E3A8A" }}
+          style={{ backgroundColor: 'var(--color-card)' }}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <span
-                  className="rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                  className="rounded px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider"
                   style={{
                     backgroundColor: `${statusColor(a.status)}22`,
                     color: statusColor(a.status),
@@ -121,30 +121,30 @@ export function CorrectiveList({ actions }: { actions: Action[] }) {
                   {a.status}
                 </span>
                 {a.assignedTo && (
-                  <span className="text-xs text-ink-400">→ {a.assignedTo}</span>
+                  <span className="text-xs text-ink-tertiary">→ {a.assignedTo}</span>
                 )}
               </div>
-              <h3 className="text-base font-semibold text-white">{a.title}</h3>
+              <h3 className="text-base font-medium text-ink-primary">{a.title}</h3>
               {a.description && (
-                <p className="mt-1 text-sm text-ink-400">{a.description}</p>
+                <p className="mt-1 text-sm text-ink-tertiary">{a.description}</p>
               )}
             </div>
             {a.dueDate && (
-              <div className="text-right text-xs text-ink-400">
+              <div className="text-right text-xs text-ink-tertiary">
                 Due {new Date(a.dueDate).toLocaleDateString()}
               </div>
             )}
           </div>
 
           <div className="mt-4">
-            <div className="flex justify-between text-xs text-ink-400 mb-1">
+            <div className="flex justify-between text-xs text-ink-tertiary mb-1">
               <span>Progress {saving === a.id && "(saving…)"}</span>
               <span>{a.progress}%</span>
             </div>
             <div
               data-testid="progress-bar"
               className="h-2 rounded-full overflow-hidden"
-              style={{ backgroundColor: "#172554" }}
+              style={{ backgroundColor: 'var(--color-card)' }}
             >
               <div
                 className="h-full transition-all"

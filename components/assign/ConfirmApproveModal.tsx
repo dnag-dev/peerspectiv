@@ -85,7 +85,7 @@ export function ConfirmApproveModal({
                 <Loader2 className="h-3 w-3 animate-spin" /> Loading forms...
               </div>
             ) : forms.length === 0 ? (
-              <p className="mt-1 text-sm text-amber-700">
+              <p className="mt-1 text-sm text-status-warning-fg">
                 No company-approved forms for {specialty ?? "this specialty"}.
                 Peer will use the default form.
               </p>

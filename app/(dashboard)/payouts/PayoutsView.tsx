@@ -50,9 +50,9 @@ const UNIT_LABEL: Record<RateType, string> = {
 };
 
 const STATUS_COLORS: Record<Status, { bg: string; text: string }> = {
-  pending: { bg: 'bg-amber-100', text: 'text-amber-700' },
-  approved: { bg: 'bg-cobalt-100', text: 'text-cobalt-600' },
-  paid: { bg: 'bg-mint-100', text: 'text-cobalt-700' },
+  pending: { bg: 'bg-amber-100', text: 'text-status-warning-fg' },
+  approved: { bg: 'bg-status-info-bg', text: 'text-status-info-dot' },
+  paid: { bg: 'bg-mint-100', text: 'text-status-info-fg' },
 };
 
 function currentMonth(): string {
@@ -311,13 +311,13 @@ export function PayoutsView() {
     return (
       <th
         onClick={() => toggleSort(k)}
-        className={`px-4 py-3 cursor-pointer select-none hover:text-ink-900 ${
+        className={`px-4 py-3 cursor-pointer select-none hover:text-ink-primary ${
           align === 'right' ? 'text-right' : 'text-left'
         }`}
       >
         <span className="inline-flex items-center gap-1">
           {label}
-          <Icon className={`h-3 w-3 ${active ? 'text-cobalt-600' : 'text-ink-300'}`} />
+          <Icon className={`h-3 w-3 ${active ? 'text-status-info-dot' : 'text-ink-tertiary'}`} />
         </span>
       </th>
     );
@@ -328,7 +328,7 @@ export function PayoutsView() {
       {/* Period + summary */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <label className="block text-xs uppercase tracking-wider text-ink-500 mb-1">
+          <label className="block text-xs uppercase tracking-wider text-ink-secondary mb-1">
             Billing Period
           </label>
           <select
@@ -337,7 +337,7 @@ export function PayoutsView() {
               setMonth(e.target.value);
               setMonthExplicit(true);
             }}
-            className="rounded-md border border-ink-300 px-3 py-2 text-sm bg-white"
+            className="rounded-md border border-border-default px-3 py-2 text-sm bg-white"
           >
             {monthOptions().map((m) => (
               <option key={m} value={m}>
@@ -349,17 +349,17 @@ export function PayoutsView() {
 
         <div className="grid grid-cols-3 gap-3">
           <SummaryPill
-            icon={<Clock className="h-4 w-4 text-amber-600" />}
+            icon={<Clock className="h-4 w-4 text-status-warning-dot" />}
             label="Pending"
             value={totals.pending}
           />
           <SummaryPill
-            icon={<CheckCircle2 className="h-4 w-4 text-cobalt-600" />}
+            icon={<CheckCircle2 className="h-4 w-4 text-status-info-dot" />}
             label="Approved"
             value={totals.approved}
           />
           <SummaryPill
-            icon={<DollarSign className="h-4 w-4 text-cobalt-600" />}
+            icon={<DollarSign className="h-4 w-4 text-status-info-dot" />}
             label="Paid"
             value={totals.paid}
           />
@@ -371,7 +371,7 @@ export function PayoutsView() {
         <CardContent className="p-4">
           <div className="grid gap-3 md:grid-cols-[1fr_180px_160px]">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-tertiary" />
               <Input
                 value={searchQ}
                 onChange={(e) => setSearchQ(e.target.value)}
@@ -404,7 +404,7 @@ export function PayoutsView() {
               </SelectContent>
             </Select>
           </div>
-          <p className="mt-3 text-xs text-ink-500">
+          <p className="mt-3 text-xs text-ink-secondary">
             Showing <strong>{visibleRows.length}</strong> of {baseRows.length} payouts
           </p>
         </CardContent>
@@ -434,22 +434,22 @@ export function PayoutsView() {
           onClick={() => !approveAllBusy && setShowApproveAllModal(false)}
         >
           <div
-            className="w-full max-w-md rounded-xl border border-ink-200 bg-white p-6 shadow-2xl"
+            className="w-full max-w-md rounded-xl border border-border-subtle bg-white p-6 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-base font-semibold text-ink-900">Approve all pending</h2>
+            <h2 className="text-base font-medium text-ink-primary">Approve all pending</h2>
             {(() => {
               const pendingVisible = visibleRows.filter((r) => r.status === 'pending');
               const count = pendingVisible.length;
               const total = pendingVisible.reduce((s, r) => s + r.amount, 0);
               return (
-                <p className="mt-2 text-sm text-ink-600">
+                <p className="mt-2 text-sm text-ink-secondary">
                   Approve {count} payout{count === 1 ? '' : 's'} totaling{' '}
                   <strong>${total.toFixed(2)}</strong>?
                 </p>
               );
             })()}
-            <p className="mt-2 text-xs text-ink-500">
+            <p className="mt-2 text-xs text-ink-secondary">
               Window: {smartPeriod?.period_start ?? '—'} → {smartPeriod?.period_end ?? '—'}
             </p>
             <div className="mt-5 flex justify-end gap-2">
@@ -469,10 +469,10 @@ export function PayoutsView() {
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-ink-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-border-subtle bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
+            <tr className="border-b border-border-subtle bg-ink-50 text-xs uppercase tracking-wider text-ink-secondary">
               <SortHead label="Peer" k="peer_name" />
               <SortHead label="Specialty" k="specialty" />
               <SortHead label="Units" k="units" />
@@ -486,13 +486,13 @@ export function PayoutsView() {
             {loading && (
               <tr>
                 <td colSpan={7} className="px-4 py-12 text-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-cobalt-600 inline" />
+                  <Loader2 className="h-6 w-6 animate-spin text-status-info-dot inline" />
                 </td>
               </tr>
             )}
             {!loading && visibleRows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-ink-400">
+                <td colSpan={7} className="px-4 py-8 text-center text-ink-tertiary">
                   No payouts for this period.
                 </td>
               </tr>
@@ -505,18 +505,18 @@ export function PayoutsView() {
                 return (
                   <tr
                     key={r.id ?? r.peer_id}
-                    className="border-b border-ink-100 hover:bg-ink-50"
+                    className="border-b border-border-subtle hover:bg-ink-50"
                   >
-                    <td className="px-4 py-3 font-medium text-ink-900">{r.peer_name}</td>
-                    <td className="px-4 py-3 text-ink-600">{r.specialty}</td>
-                    <td className="px-4 py-3 text-ink-700">
+                    <td className="px-4 py-3 font-medium text-ink-primary">{r.peer_name}</td>
+                    <td className="px-4 py-3 text-ink-secondary">{r.specialty}</td>
+                    <td className="px-4 py-3 text-ink-primary">
                       {r.units.toLocaleString()} {UNIT_LABEL[r.unit_type]}
                     </td>
-                    <td className="px-4 py-3 text-ink-700">
+                    <td className="px-4 py-3 text-ink-primary">
                       ${r.rate_amount.toFixed(2)}
-                      <span className="text-ink-400">/{r.unit_type.replace('per_', '')}</span>
+                      <span className="text-ink-tertiary">/{r.unit_type.replace('per_', '')}</span>
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold text-ink-900">
+                    <td className="px-4 py-3 text-right font-medium text-ink-primary">
                       ${r.amount.toFixed(2)}
                     </td>
                     <td className="px-4 py-3">
@@ -546,7 +546,7 @@ export function PayoutsView() {
                           </Button>
                         )}
                         {r.status === 'paid' && r.paid_at && (
-                          <span className="text-xs text-ink-500">
+                          <span className="text-xs text-ink-secondary">
                             Paid {new Date(r.paid_at).toLocaleDateString()}
                           </span>
                         )}
@@ -572,12 +572,12 @@ function SummaryPill({
   value: number;
 }) {
   return (
-    <div className="rounded-md border border-ink-200 bg-white px-4 py-2 min-w-[130px]">
-      <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-ink-500">
+    <div className="rounded-md border border-border-subtle bg-white px-4 py-2 min-w-[130px]">
+      <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-ink-secondary">
         {icon}
         {label}
       </div>
-      <div className="mt-0.5 text-lg font-semibold text-ink-900">
+      <div className="mt-0.5 text-lg font-medium tracking-tight text-ink-primary">
         ${value.toFixed(2)}
       </div>
     </div>

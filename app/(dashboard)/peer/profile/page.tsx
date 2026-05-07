@@ -39,8 +39,8 @@ export default async function PeerProfilePage() {
   if (!peer) {
     return (
       <div className="p-8">
-        <h1 className="text-2xl font-bold text-ink-900">Profile</h1>
-        <p className="mt-2 text-sm text-ink-500">No peer record found.</p>
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Profile</h1>
+        <p className="mt-2 text-sm text-ink-secondary">No peer record found.</p>
       </div>
     );
   }
@@ -65,8 +65,8 @@ export default async function PeerProfilePage() {
   return (
     <div className="space-y-6 max-w-4xl">
       <div>
-        <h1 className="text-2xl font-bold text-ink-900">Profile</h1>
-        <p className="text-sm text-ink-500">
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Profile</h1>
+        <p className="text-sm text-ink-secondary">
           Your contact, specialties, license, reviews, and scorecard
         </p>
       </div>
@@ -91,11 +91,11 @@ export default async function PeerProfilePage() {
       {expiryWarning != null && (
         <div
           data-testid="license-expiry-warning"
-          className="rounded-lg border-2 border-critical-600 bg-critical-50 p-4 flex items-start gap-3"
+          className="rounded-lg border-2 border-status-danger-dot bg-critical-50 p-4 flex items-start gap-3"
         >
-          <AlertTriangle className="h-5 w-5 text-critical-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-critical-700">
-            <p className="font-semibold">License expiring soon</p>
+          <AlertTriangle className="h-5 w-5 text-status-danger-dot flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-status-danger-fg">
+            <p className="font-medium">License expiring soon</p>
             <p className="mt-1">
               {expiryWarning < 0
                 ? `Your license expired ${Math.abs(expiryWarning)} day${Math.abs(expiryWarning) === 1 ? "" : "s"} ago.`
@@ -112,17 +112,17 @@ export default async function PeerProfilePage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <div className="text-eyebrow text-ink-500">Name</div>
-            <div className="text-sm text-ink-900">{peer.fullName ?? "—"}</div>
+            <div className="text-eyebrow text-ink-secondary">Name</div>
+            <div className="text-sm text-ink-primary">{peer.fullName ?? "—"}</div>
           </div>
           <div>
-            <div className="text-eyebrow text-ink-500">Email</div>
-            <div className="flex items-center gap-2 text-sm text-ink-900">
-              <Mail className="h-3.5 w-3.5 text-ink-400" /> {peer.email ?? "—"}
+            <div className="text-eyebrow text-ink-secondary">Email</div>
+            <div className="flex items-center gap-2 text-sm text-ink-primary">
+              <Mail className="h-3.5 w-3.5 text-ink-tertiary" /> {peer.email ?? "—"}
             </div>
           </div>
           <div className="pt-2">
-            <div className="text-eyebrow text-ink-500 mb-1">Account Security</div>
+            <div className="text-eyebrow text-ink-secondary mb-1">Account Security</div>
             <TwoFactorLink />
           </div>
         </CardContent>
@@ -131,12 +131,12 @@ export default async function PeerProfilePage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Stethoscope className="h-4 w-4 text-cobalt-600" /> Specialties
+            <Stethoscope className="h-4 w-4 text-status-info-dot" /> Specialties
           </CardTitle>
         </CardHeader>
         <CardContent>
           {specs.length === 0 ? (
-            <p className="text-sm text-ink-500">
+            <p className="text-sm text-ink-secondary">
               No specialties on file. Contact your credentialer to add one.
             </p>
           ) : (
@@ -145,7 +145,7 @@ export default async function PeerProfilePage() {
                 <Badge
                   key={s.specialty}
                   variant="secondary"
-                  className="bg-cobalt-50 text-cobalt-700"
+                  className="bg-status-info-bg text-status-info-fg"
                 >
                   {s.specialty}
                   {s.verifiedStatus !== "verified" && (
@@ -157,7 +157,7 @@ export default async function PeerProfilePage() {
               ))}
             </div>
           )}
-          <p className="mt-3 text-xs text-ink-500">
+          <p className="mt-3 text-xs text-ink-secondary">
             Specialties are managed by Peerspectiv credentialing — contact your
             admin to request changes.
           </p>
@@ -170,39 +170,39 @@ export default async function PeerProfilePage() {
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <div className="text-eyebrow text-ink-500">License #</div>
-            <div className="text-ink-900">{peer.licenseNumber ?? "—"}</div>
+            <div className="text-eyebrow text-ink-secondary">License #</div>
+            <div className="text-ink-primary">{peer.licenseNumber ?? "—"}</div>
           </div>
           <div>
-            <div className="text-eyebrow text-ink-500">State</div>
-            <div className="text-ink-900">{peer.licenseState ?? "—"}</div>
+            <div className="text-eyebrow text-ink-secondary">State</div>
+            <div className="text-ink-primary">{peer.licenseState ?? "—"}</div>
           </div>
           <div>
-            <div className="text-eyebrow text-ink-500">Board Certification</div>
-            <div className="text-ink-900">{peer.boardCertification ?? "—"}</div>
+            <div className="text-eyebrow text-ink-secondary">Board Certification</div>
+            <div className="text-ink-primary">{peer.boardCertification ?? "—"}</div>
           </div>
           <div>
-            <div className="text-eyebrow text-ink-500">Valid Until</div>
-            <div className="text-ink-900">
+            <div className="text-eyebrow text-ink-secondary">Valid Until</div>
+            <div className="text-ink-primary">
               {formatDate(peer.credentialValidUntil)}
             </div>
           </div>
           <div className="col-span-2">
-            <div className="text-eyebrow text-ink-500">License Document</div>
+            <div className="text-eyebrow text-ink-secondary">License Document</div>
             {peer.licenseFileUrl ? (
               <Link
                 href={peer.licenseFileUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-sm text-cobalt-600 underline hover:text-cobalt-700"
+                className="mt-1 inline-flex items-center gap-1 text-sm text-status-info-dot underline hover:text-status-info-fg"
               >
                 <Download className="h-3.5 w-3.5" /> Download
               </Link>
             ) : (
-              <div className="text-sm text-ink-500">No file uploaded</div>
+              <div className="text-sm text-ink-secondary">No file uploaded</div>
             )}
           </div>
-          <p className="col-span-2 text-xs text-ink-500">
+          <p className="col-span-2 text-xs text-ink-secondary">
             License details are read-only here. Contact credentialing to update.
           </p>
         </CardContent>

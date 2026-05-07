@@ -60,7 +60,7 @@ export function OnboardForm({ token, email, specialties }: Props) {
 
   if (done) {
     return (
-      <div className="mt-6 rounded border border-mint-200 bg-mint-50 p-4 text-mint-800">
+      <div className="mt-6 rounded border border-status-success-fg/30 bg-mint-50 p-4 text-mint-800">
         Submitted — thank you. The team will review your application shortly.
       </div>
     );
@@ -69,64 +69,64 @@ export function OnboardForm({ token, email, specialties }: Props) {
   return (
     <form onSubmit={submit} className="mt-6 space-y-4 text-sm">
       <label className="block">
-        <div className="text-xs font-medium text-ink-700">Full name</div>
+        <div className="text-xs font-medium text-ink-primary">Full name</div>
         <input value={fullName} onChange={(e) => setFullName(e.target.value)} required
-               className="mt-1 w-full rounded border border-ink-200 px-3 py-2" />
+               className="mt-1 w-full rounded border border-border-subtle px-3 py-2" />
       </label>
 
       <label className="block">
-        <div className="text-xs font-medium text-ink-700">Email (locked)</div>
+        <div className="text-xs font-medium text-ink-primary">Email (locked)</div>
         <input value={email} disabled
-               className="mt-1 w-full rounded border border-ink-200 bg-ink-50 px-3 py-2 text-ink-500" />
+               className="mt-1 w-full rounded border border-border-subtle bg-ink-50 px-3 py-2 text-ink-secondary" />
       </label>
 
       <label className="block">
-        <div className="text-xs font-medium text-ink-700">NPI</div>
+        <div className="text-xs font-medium text-ink-primary">NPI</div>
         <input value={npi} onChange={(e) => setNpi(e.target.value)} required
-               className="mt-1 w-full rounded border border-ink-200 px-3 py-2" />
+               className="mt-1 w-full rounded border border-border-subtle px-3 py-2" />
       </label>
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <div className="text-xs font-medium text-ink-700">License number</div>
+          <div className="text-xs font-medium text-ink-primary">License number</div>
           <input value={licenseNumber} onChange={(e) => setLicenseNumber(e.target.value)} required
-                 className="mt-1 w-full rounded border border-ink-200 px-3 py-2" />
+                 className="mt-1 w-full rounded border border-border-subtle px-3 py-2" />
         </label>
         <label className="block">
-          <div className="text-xs font-medium text-ink-700">State</div>
+          <div className="text-xs font-medium text-ink-primary">State</div>
           <input value={licenseState} onChange={(e) => setLicenseState(e.target.value)} required
-                 className="mt-1 w-full rounded border border-ink-200 px-3 py-2" />
+                 className="mt-1 w-full rounded border border-border-subtle px-3 py-2" />
         </label>
         <label className="block">
-          <div className="text-xs font-medium text-ink-700">Issue date</div>
+          <div className="text-xs font-medium text-ink-primary">Issue date</div>
           <input type="date" value={licenseIssue} onChange={(e) => setLicenseIssue(e.target.value)}
-                 className="mt-1 w-full rounded border border-ink-200 px-3 py-2" />
+                 className="mt-1 w-full rounded border border-border-subtle px-3 py-2" />
         </label>
         <label className="block">
-          <div className="text-xs font-medium text-ink-700">Expiry date</div>
+          <div className="text-xs font-medium text-ink-primary">Expiry date</div>
           <input type="date" value={licenseExpiry} onChange={(e) => setLicenseExpiry(e.target.value)} required
-                 className="mt-1 w-full rounded border border-ink-200 px-3 py-2" />
+                 className="mt-1 w-full rounded border border-border-subtle px-3 py-2" />
         </label>
       </div>
 
       <label className="block">
-        <div className="text-xs font-medium text-ink-700">Board certification</div>
+        <div className="text-xs font-medium text-ink-primary">Board certification</div>
         <input value={boardCert} onChange={(e) => setBoardCert(e.target.value)}
-               className="mt-1 w-full rounded border border-ink-200 px-3 py-2" />
+               className="mt-1 w-full rounded border border-border-subtle px-3 py-2" />
       </label>
 
       <label className="block">
-        <div className="text-xs font-medium text-ink-700">License document URL</div>
+        <div className="text-xs font-medium text-ink-primary">License document URL</div>
         <input value={licenseDocUrl} onChange={(e) => setLicenseDocUrl(e.target.value)} placeholder="https://…"
-               className="mt-1 w-full rounded border border-ink-200 px-3 py-2" />
-        <div className="mt-1 text-xs text-ink-500">
+               className="mt-1 w-full rounded border border-border-subtle px-3 py-2" />
+        <div className="mt-1 text-xs text-ink-secondary">
           Upload your license PDF to a hosted URL (e.g. Dropbox / Drive) and paste the
           link here. Direct file upload coming soon.
         </div>
       </label>
 
       <fieldset className="block">
-        <legend className="text-xs font-medium text-ink-700">Specialties</legend>
+        <legend className="text-xs font-medium text-ink-primary">Specialties</legend>
         <div className="mt-2 grid grid-cols-2 gap-2">
           {specialties.map((s) => (
             <label key={s} className="flex items-center gap-2 text-sm">

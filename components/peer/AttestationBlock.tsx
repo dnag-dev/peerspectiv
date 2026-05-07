@@ -37,18 +37,18 @@ export function AttestationBlock({
   return (
     <div
       data-testid="attestation-block"
-      className="rounded-xl border-2 border-cobalt-200 bg-cobalt-50/40 p-5 shadow-sm"
+      className="rounded-xl border-2 border-status-info-fg/30 bg-status-info-bg/40 p-5 shadow-sm"
     >
       <div className="flex items-center gap-2 mb-4">
-        <ShieldCheck className="h-4 w-4 text-cobalt-700" />
-        <div className="text-eyebrow text-cobalt-700">SYSTEM ATTESTATION</div>
+        <ShieldCheck className="h-4 w-4 text-status-info-fg" />
+        <div className="text-eyebrow text-status-info-fg">SYSTEM ATTESTATION</div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {/* MRN — editable */}
         <div>
-          <label className="mb-1 block text-xs font-medium text-ink-700">
-            MRN <span className="text-critical-600">*</span>
+          <label className="mb-1 block text-xs font-medium text-ink-primary">
+            MRN <span className="text-status-danger-dot">*</span>
           </label>
           <input
             type="text"
@@ -56,21 +56,21 @@ export function AttestationBlock({
             value={mrn}
             onChange={(e) => onMrnChange(e.target.value.replace(/<[^>]*>/g, ""))}
             placeholder="Enter MRN"
-            className="w-full rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm text-ink-900 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
+            className="w-full rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
           />
           {showAiHint && (
-            <p className="mt-1 text-[11px] text-cobalt-700">
+            <p className="mt-1 text-[11px] text-status-info-fg">
               AI-extracted — edit to correct.
             </p>
           )}
           {showCorrectedHint && (
-            <p className="mt-1 text-[11px] text-amber-700">Corrected by peer.</p>
+            <p className="mt-1 text-[11px] text-status-warning-fg">Corrected by peer.</p>
           )}
         </div>
 
         {/* Peer name — locked */}
         <div>
-          <label className="mb-1 block text-xs font-medium text-ink-700">
+          <label className="mb-1 block text-xs font-medium text-ink-primary">
             Peer Name
           </label>
           <input
@@ -78,13 +78,13 @@ export function AttestationBlock({
             data-testid="attestation-peer-name"
             value={peerName}
             readOnly
-            className="w-full rounded-lg border border-ink-200 bg-ink-50 px-3 py-2 text-sm text-ink-700 cursor-not-allowed"
+            className="w-full rounded-lg border border-border-subtle bg-ink-50 px-3 py-2 text-sm text-ink-primary cursor-not-allowed"
           />
         </div>
 
         {/* License — locked */}
         <div>
-          <label className="mb-1 block text-xs font-medium text-ink-700">
+          <label className="mb-1 block text-xs font-medium text-ink-primary">
             License Number
           </label>
           <input
@@ -96,12 +96,12 @@ export function AttestationBlock({
                 : "—"
             }
             readOnly
-            className="w-full rounded-lg border border-ink-200 bg-ink-50 px-3 py-2 text-sm text-ink-700 cursor-not-allowed"
+            className="w-full rounded-lg border border-border-subtle bg-ink-50 px-3 py-2 text-sm text-ink-primary cursor-not-allowed"
           />
         </div>
       </div>
 
-      <p className="mt-3 text-xs text-ink-500">
+      <p className="mt-3 text-xs text-ink-secondary">
         These values are snapshotted onto this review for HRSA audit (PR-039).
       </p>
     </div>

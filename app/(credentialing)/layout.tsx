@@ -18,7 +18,7 @@ export default function CredentialingLayout({
     <div className="flex h-screen overflow-hidden">
       <BfcacheGuard />
       <CredentialerSidebar />
-      <main className="flex-1 overflow-y-auto bg-paper-canvas p-4 md:p-6">
+      <main className="flex-1 overflow-y-auto bg-surface-canvas p-4 md:p-6">
         {children}
       </main>
       <AshChat

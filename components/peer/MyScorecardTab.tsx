@@ -60,14 +60,14 @@ export function MyScorecardTab({ peerId }: Props) {
 
   if (loading) {
     return (
-      <p className="text-sm text-ink-500">
+      <p className="text-sm text-ink-secondary">
         <Loader2 className="inline h-4 w-4 animate-spin mr-1" /> Loading scorecard…
       </p>
     );
   }
   if (error) return <p className="text-sm text-destructive">Error: {error}</p>;
   if (periods.length === 0) {
-    return <p className="text-sm text-ink-500">No scorecard data yet.</p>;
+    return <p className="text-sm text-ink-secondary">No scorecard data yet.</p>;
   }
 
   const current = periods[periods.length - 1];
@@ -76,8 +76,8 @@ export function MyScorecardTab({ peerId }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-ink-900">{current.label}</h2>
-        <p className="text-xs text-ink-500">
+        <h2 className="text-lg font-medium tracking-tight text-ink-primary">{current.label}</h2>
+        <p className="text-xs text-ink-secondary">
           {current.start_date} – {current.end_date}
         </p>
       </div>
@@ -139,7 +139,7 @@ export function MyScorecardTab({ peerId }: Props) {
           </CardHeader>
           <CardContent>
             <table className="w-full text-sm">
-              <thead className="text-eyebrow text-ink-500">
+              <thead className="text-eyebrow text-ink-secondary">
                 <tr>
                   <th className="text-left py-1">Period</th>
                   <th className="text-right py-1">Volume</th>
@@ -151,7 +151,7 @@ export function MyScorecardTab({ peerId }: Props) {
               </thead>
               <tbody>
                 {trend.map((p) => (
-                  <tr key={p.label} className="border-t border-ink-100">
+                  <tr key={p.label} className="border-t border-border-subtle">
                     <td className="py-1">{p.label}</td>
                     <td className="text-right">{p.tiles.volume}</td>
                     <td className="text-right">
@@ -191,14 +191,14 @@ function Tile({
   return (
     <Card>
       <CardHeader className="pb-1">
-        <CardTitle className="text-xs uppercase tracking-wider text-ink-500">
+        <CardTitle className="text-xs uppercase tracking-wider text-ink-secondary">
           {title}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-ink-900">{value}</div>
-        {unit && <div className="text-xs text-ink-500">{unit}</div>}
-        {subline && <div className="text-xs text-ink-600 mt-2">{subline}</div>}
+        <div className="text-2xl font-medium tracking-tight text-ink-primary">{value}</div>
+        {unit && <div className="text-xs text-ink-secondary">{unit}</div>}
+        {subline && <div className="text-xs text-ink-secondary mt-2">{subline}</div>}
       </CardContent>
     </Card>
   );

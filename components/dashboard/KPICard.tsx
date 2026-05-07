@@ -23,13 +23,13 @@ interface KPICardProps {
  */
 function tintBg(color?: string): string {
   switch (color) {
-    case "bg-cobalt-500":   return "bg-cobalt-500/10";
-    case "bg-cobalt-600":   return "bg-cobalt-600/10";
-    case "bg-mint-600":     return "bg-mint-600/10";
-    case "bg-amber-600":    return "bg-amber-600/10";
-    case "bg-critical-600": return "bg-critical-600/10";
+    case "bg-cobalt-500":   return "bg-status-info-bg";
+    case "bg-cobalt-600":   return "bg-status-info-bg";
+    case "bg-status-success-dot":     return "bg-status-success-dot/10";
+    case "bg-status-warning-dot":    return "bg-status-warning-dot/10";
+    case "bg-status-danger-dot": return "bg-status-danger-dot/10";
     case "bg-ink-500":      return "bg-ink-500/10";
-    default:                return "bg-cobalt-500/10";
+    default:                return "bg-status-info-bg";
   }
 }
 
@@ -43,7 +43,7 @@ export function KPICard({
 }: KPICardProps) {
   if (value === undefined) {
     return (
-      <Card data-testid="kpi-card" className="bg-paper-surface border border-ink-200 rounded-lg shadow-sm">
+      <Card data-testid="kpi-card" className="bg-surface-card border border-border-subtle rounded-lg shadow-sm">
         <div className="flex items-start justify-between gap-4 p-5">
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-3 w-24" />
@@ -55,18 +55,27 @@ export function KPICard({
     );
   }
 
+  // Map legacy `color` prop to a semantic dot tone for the new design system.
+  const dotByColor =
+    color === "bg-status-success-dot" ? "bg-status-success-dot" :
+    color === "bg-status-warning-dot" ? "bg-status-warning-dot" :
+    color === "bg-status-danger-dot" ? "bg-status-danger-dot" :
+    color === "bg-cobalt-500" || color === "bg-cobalt-600" ? "bg-status-info-dot" :
+    "bg-status-neutral-dot";
+
   return (
     <Card
       data-testid="kpi-card"
-      className="bg-paper-surface border border-ink-200 rounded-lg shadow-sm transition-shadow hover:shadow-md"
+      className="rounded-md border border-border-subtle bg-surface-card shadow-none transition hover:shadow-sm"
     >
-      <div className="flex items-start justify-between gap-4 p-5">
+      <div className="flex items-start justify-between gap-3 p-3">
         <div className="min-w-0 flex-1">
-          <p className="text-eyebrow text-ink-500">{title}</p>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-stat-large text-ink-900">
-              {value.toLocaleString()}
-            </span>
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <span className={cn("h-1.5 w-1.5 rounded-full", dotByColor, pulse && "animate-pulse")} />
+            <span className="eyebrow">{title}</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="display-number">{value.toLocaleString()}</span>
             {trend && (
               <Badge variant={trend.startsWith("+") ? "completed" : "pending"}>
                 {trend}
@@ -74,13 +83,7 @@ export function KPICard({
             )}
           </div>
         </div>
-        <div
-          className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-md",
-            tintBg(color),
-            pulse && "animate-cobalt-pulse"
-          )}
-        >
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-surface-muted">
           {icon}
         </div>
       </div>

@@ -12,14 +12,14 @@ interface PeerCardProps {
 function ConfidenceBadge({ confidence }: { confidence: number }) {
   const variant =
     confidence >= 80
-      ? "bg-mint-100 text-cobalt-700"
+      ? "bg-mint-100 text-status-info-fg"
       : confidence >= 60
-        ? "bg-amber-100 text-amber-700"
-        : "bg-critical-100 text-critical-700";
+        ? "bg-amber-100 text-status-warning-fg"
+        : "bg-critical-100 text-status-danger-fg";
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${variant}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${variant}`}
     >
       {confidence}% match
     </span>
@@ -35,8 +35,8 @@ export function PeerCard({
   if (compact) {
     return (
       <div className="flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cobalt-100">
-          <User className="h-4 w-4 text-cobalt-600" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-status-info-bg">
+          <User className="h-4 w-4 text-status-info-dot" />
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{peer.full_name}</p>
@@ -53,11 +53,11 @@ export function PeerCard({
     <div className="space-y-2">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cobalt-100">
-            <User className="h-5 w-5 text-cobalt-600" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-status-info-bg">
+            <User className="h-5 w-5 text-status-info-dot" />
           </div>
           <div>
-            <p className="text-sm font-semibold">{peer.full_name}</p>
+            <p className="text-sm font-medium">{peer.full_name}</p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Stethoscope className="h-3 w-3" />
               {peer.specialty}

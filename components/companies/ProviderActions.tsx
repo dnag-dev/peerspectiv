@@ -51,7 +51,7 @@ export function ProviderActions({ providerId, providerName, status }: ProviderAc
       </Button>
 
       <Dialog open={archiveOpen} onOpenChange={setArchiveOpen}>
-        <DialogContent className="sm:max-w-[400px] bg-white border border-ink-200 shadow-2xl rounded-xl">
+        <DialogContent className="sm:max-w-[400px] bg-white border border-border-subtle shadow-2xl rounded-xl">
           <DialogHeader>
             <DialogTitle>Archive Provider</DialogTitle>
             <DialogDescription>

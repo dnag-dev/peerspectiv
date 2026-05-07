@@ -43,7 +43,7 @@ export function ChartViewerButton({ url }: { url: string }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-              <h3 className="text-sm font-semibold text-white">Medical Chart</h3>
+              <h3 className="text-sm font-medium text-white">Medical Chart</h3>
               <div className="flex items-center gap-2">
                 <a
                   href={url}

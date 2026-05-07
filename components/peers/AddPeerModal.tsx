@@ -99,34 +99,34 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div>
-            <label className="block text-sm font-medium text-ink-700 mb-1">
-              Full Name <span className="text-critical-600">*</span>
+            <label className="block text-sm font-medium text-ink-primary mb-1">
+              Full Name <span className="text-status-danger-dot">*</span>
             </label>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-border-default px-3 py-2 text-sm"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink-700 mb-1">
-              Email <span className="text-critical-600">*</span>
+            <label className="block text-sm font-medium text-ink-primary mb-1">
+              Email <span className="text-status-danger-dot">*</span>
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-border-default px-3 py-2 text-sm"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink-700 mb-2" htmlFor="add-peer-specialties">
-              Specialties <span className="text-critical-600">*</span>
+            <label className="block text-sm font-medium text-ink-primary mb-2" htmlFor="add-peer-specialties">
+              Specialties <span className="text-status-danger-dot">*</span>
             </label>
             <SpecialtyMultiSelect
               id="add-peer-specialties"
@@ -136,7 +136,7 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink-700 mb-1">
+            <label className="block text-sm font-medium text-ink-primary mb-1">
               Board Certification
             </label>
             <input
@@ -144,24 +144,24 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
               value={boardCert}
               onChange={(e) => setBoardCert(e.target.value)}
               placeholder="e.g. ABFM, ABIM"
-              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-border-default px-3 py-2 text-sm"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-ink-700 mb-1">
+              <label className="block text-sm font-medium text-ink-primary mb-1">
                 License Number
               </label>
               <input
                 type="text"
                 value={licenseNumber}
                 onChange={(e) => setLicenseNumber(e.target.value)}
-                className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+                className="w-full rounded-md border border-border-default px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-ink-700 mb-1">
+              <label className="block text-sm font-medium text-ink-primary mb-1">
                 License State
               </label>
               <input
@@ -170,28 +170,28 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
                 onChange={(e) => setLicenseState(e.target.value)}
                 placeholder="e.g. CA"
                 maxLength={2}
-                className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm uppercase"
+                className="w-full rounded-md border border-border-default px-3 py-2 text-sm uppercase"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-ink-700 mb-1">
+              <label className="block text-sm font-medium text-ink-primary mb-1">
                 Credential Valid Until
               </label>
               <input
                 type="date"
                 value={credentialValidUntil}
                 onChange={(e) => setCredentialValidUntil(e.target.value)}
-                className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+                className="w-full rounded-md border border-border-default px-3 py-2 text-sm"
               />
-              <p className="mt-1 text-xs text-ink-500">
+              <p className="mt-1 text-xs text-ink-secondary">
                 Leave blank to keep peer inactive until set.
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-ink-700 mb-1">
+              <label className="block text-sm font-medium text-ink-primary mb-1">
                 Max Case Load
               </label>
               <input
@@ -200,20 +200,20 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
                 step="1"
                 value={maxCaseLoad}
                 onChange={(e) => setMaxCaseLoad(e.target.value)}
-                className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+                className="w-full rounded-md border border-border-default px-3 py-2 text-sm"
               />
             </div>
           </div>
 
-          <div className="rounded-md border border-ink-200 bg-ink-50 p-3 space-y-3">
-            <div className="text-sm font-medium text-ink-700">Compensation</div>
+          <div className="rounded-md border border-border-subtle bg-ink-50 p-3 space-y-3">
+            <div className="text-sm font-medium text-ink-primary">Compensation</div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-ink-600 mb-1">Rate Type</label>
+                <label className="block text-xs text-ink-secondary mb-1">Rate Type</label>
                 <select
                   value={rateType}
                   onChange={(e) => setRateType(e.target.value as typeof rateType)}
-                  className="w-full rounded-md border border-ink-300 px-2 py-1.5 text-sm bg-white"
+                  className="w-full rounded-md border border-border-default px-2 py-1.5 text-sm bg-white"
                 >
                   {RATE_TYPES.map((r) => (
                     <option key={r.value} value={r.value}>
@@ -223,7 +223,7 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-ink-600 mb-1">
+                <label className="block text-xs text-ink-secondary mb-1">
                   Amount ({currentRate.suffix})
                 </label>
                 <input
@@ -233,18 +233,18 @@ export function AddPeerModal({ open, onClose, onSuccess }: Props) {
                   value={rateAmount}
                   onChange={(e) => setRateAmount(e.target.value)}
                   placeholder={currentRate.placeholder}
-                  className="w-full rounded-md border border-ink-300 px-2 py-1.5 text-sm bg-white"
+                  className="w-full rounded-md border border-border-default px-2 py-1.5 text-sm bg-white"
                   required
                 />
               </div>
             </div>
-            <p className="text-xs text-ink-500">
+            <p className="text-xs text-ink-secondary">
               Default is per-minute billing. Change anytime in the Actions column.
             </p>
           </div>
 
           {error && (
-            <div className="rounded-md bg-critical-100 border border-critical-600 px-3 py-2 text-sm text-critical-700">
+            <div className="rounded-md bg-critical-100 border border-status-danger-dot px-3 py-2 text-sm text-status-danger-fg">
               {error}
             </div>
           )}

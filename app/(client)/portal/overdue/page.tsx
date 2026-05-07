@@ -38,7 +38,7 @@ export default async function OverduePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {rows.length === 0 && (
-          <p className="text-ink-400">No overdue cases. Well done.</p>
+          <p className="text-ink-tertiary">No overdue cases. Well done.</p>
         )}
         {rows.map((r) => {
           const providerName =
@@ -51,19 +51,19 @@ export default async function OverduePage() {
             <div
               key={r.id}
               className="rounded-lg p-4 border-l-[3px]"
-              style={{ backgroundColor: "#1E3A8A", borderLeftColor: "#EF4444" }}
+              style={{ backgroundColor: 'var(--color-card)', borderLeftColor: "#EF4444" }}
             >
               <div
-                className="inline-block rounded px-2 py-0.5 text-xs font-bold"
+                className="inline-block rounded px-2 py-0.5 text-xs font-medium"
                 style={{ backgroundColor: "rgba(239,68,68,0.2)", color: "#EF4444" }}
               >
                 {daysLate}d late
               </div>
-              <div className="mt-2 text-sm font-semibold text-white truncate">
+              <div className="mt-2 text-sm font-medium text-ink-primary truncate">
                 {r.chartFileName ?? "Case"}
               </div>
-              <div className="text-xs text-ink-400 mt-1">{providerName}</div>
-              <div className="text-xs text-ink-400">{r.specialty ?? "—"}</div>
+              <div className="text-xs text-ink-tertiary mt-1">{providerName}</div>
+              <div className="text-xs text-ink-tertiary">{r.specialty ?? "—"}</div>
               {due && (
                 <div className="mt-3 text-xs" style={{ color: "#EF4444" }}>
                   Was due {due.toLocaleDateString()}

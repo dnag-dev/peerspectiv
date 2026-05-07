@@ -82,19 +82,19 @@ export function PeerOnboardCard({
   }
 
   const statusBadge = paymentReady ? (
-    <Badge className="border-0 bg-mint-100 text-cobalt-700">
+    <Badge className="border-0 bg-mint-100 text-status-info-fg">
       <ShieldCheck className="mr-1 h-3 w-3" /> Payment Ready
     </Badge>
   ) : beneficiaryStatus ? (
-    <Badge className="border-0 bg-amber-100 text-amber-700">
+    <Badge className="border-0 bg-amber-100 text-status-warning-fg">
       Pending Aautipay verification
     </Badge>
   ) : w9Status === "collected_pending_aautipay" ? (
-    <Badge className="border-0 bg-critical-100 text-critical-700">
+    <Badge className="border-0 bg-critical-100 text-status-danger-fg">
       <AlertTriangle className="mr-1 h-3 w-3" /> Aautipay submission failed
     </Badge>
   ) : (
-    <Badge className="border-0 bg-ink-100 text-ink-700">Not onboarded</Badge>
+    <Badge className="border-0 bg-ink-100 text-ink-primary">Not onboarded</Badge>
   );
 
   return (
@@ -131,7 +131,7 @@ export function PeerOnboardCard({
         </div>
 
         {result?.aautipay === "submitted" && (
-          <div className="rounded-md border border-mint-200 bg-mint-50 p-3 text-xs text-mint-800">
+          <div className="rounded-md border border-status-success-fg/30 bg-mint-50 p-3 text-xs text-mint-800">
             Submitted to Aautipay. Status: {result.beneficiaryStatus}
           </div>
         )}
@@ -156,10 +156,10 @@ export function PeerOnboardCard({
         ) : (
           <form
             onSubmit={submit}
-            className="space-y-4 rounded-md border border-ink-200 p-4"
+            className="space-y-4 rounded-md border border-border-subtle p-4"
           >
             <div>
-              <p className="mb-2 text-eyebrow text-ink-500">PERSONAL</p>
+              <p className="mb-2 text-eyebrow text-ink-secondary">PERSONAL</p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input label="First name" value={form.first_name} onChange={set("first_name")} required />
                 <Input label="Last name" value={form.last_name} onChange={set("last_name")} required />
@@ -171,7 +171,7 @@ export function PeerOnboardCard({
             </div>
 
             <div>
-              <p className="mb-2 text-eyebrow text-ink-500">ADDRESS</p>
+              <p className="mb-2 text-eyebrow text-ink-secondary">ADDRESS</p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input label="Street address" value={form.address} onChange={set("address")} required />
                 <Input label="City" value={form.city} onChange={set("city")} required />
@@ -181,7 +181,7 @@ export function PeerOnboardCard({
             </div>
 
             <div>
-              <p className="mb-2 text-eyebrow text-ink-500">BANK</p>
+              <p className="mb-2 text-eyebrow text-ink-secondary">BANK</p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Input label="Bank name" value={form.bank_name} onChange={set("bank_name")} required />
                 <Input label="Routing # (bank code)" value={form.bank_code} onChange={set("bank_code")} required />
@@ -190,7 +190,7 @@ export function PeerOnboardCard({
             </div>
 
             {error && (
-              <div className="rounded-md border border-critical-100 bg-critical-50 p-2 text-xs text-critical-700">
+              <div className="rounded-md border border-status-danger-fg/20 bg-critical-50 p-2 text-xs text-status-danger-fg">
                 {error}
               </div>
             )}
@@ -228,10 +228,10 @@ function Input({
 }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-ink-700">{label}</span>
+      <span className="mb-1 block text-xs font-medium text-ink-primary">{label}</span>
       <input
         {...rest}
-        className="w-full rounded-md border border-ink-200 bg-paper-surface px-2.5 py-1.5 text-sm outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
+        className="w-full rounded-md border border-border-subtle bg-surface-card px-2.5 py-1.5 text-sm outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
       />
     </label>
   );

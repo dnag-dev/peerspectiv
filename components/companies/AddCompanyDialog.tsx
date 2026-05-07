@@ -104,7 +104,7 @@ export function AddCompanyDialog() {
           Add Company
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl sm:max-w-[500px]">
+      <DialogContent className="bg-white border border-border-subtle shadow-2xl rounded-xl sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add New Company</DialogTitle>
           <DialogDescription>
@@ -149,7 +149,7 @@ export function AddCompanyDialog() {
             </div>
           </div>
           {/* Review Cadence */}
-          <div className="rounded-md border border-ink-200 p-3 space-y-3">
+          <div className="rounded-md border border-border-subtle p-3 space-y-3">
             <Label className="text-sm font-medium">Review Cadence</Label>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -182,7 +182,7 @@ export function AddCompanyDialog() {
             <Label htmlFor="notes">Notes</Label>
             <Textarea id="notes" name="notes" placeholder="Optional notes about this company..." rows={2} />
           </div>
-          {error && <p className="text-sm text-critical-600">{error}</p>}
+          {error && <p className="text-sm text-status-danger-dot">{error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               Cancel

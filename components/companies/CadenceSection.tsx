@@ -162,7 +162,7 @@ export function CadenceSection({ companyId }: { companyId: string }) {
             <CalendarClock className="h-5 w-5" /> Review Cadence
           </CardTitle>
         </CardHeader>
-        <CardContent><p className="text-sm text-ink-500">Loading…</p></CardContent>
+        <CardContent><p className="text-sm text-ink-secondary">Loading…</p></CardContent>
       </Card>
     );
   }
@@ -180,7 +180,7 @@ export function CadenceSection({ companyId }: { companyId: string }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {err && <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">{err}</p>}
+        {err && <p className="text-sm text-status-danger-fg bg-critical-50 px-3 py-2 rounded">{err}</p>}
         {saved && <p className="text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded">Cadence saved.</p>}
 
         {/* Config controls */}
@@ -233,12 +233,12 @@ export function CadenceSection({ companyId }: { companyId: string }) {
 
         {/* Current period preview */}
         {currentPeriod && (
-          <div className="bg-ink-50 border border-ink-200 rounded-lg px-4 py-3">
-            <p className="text-sm text-ink-700">
+          <div className="bg-ink-50 border border-border-subtle rounded-lg px-4 py-3">
+            <p className="text-sm text-ink-primary">
               Today is {dayName}, {dateDisplay} — current period:{" "}
-              <span className="font-semibold text-cobalt-700">{currentPeriod.label}</span>
+              <span className="font-medium text-status-info-fg">{currentPeriod.label}</span>
             </p>
-            <p className="text-xs text-ink-500 mt-1">
+            <p className="text-xs text-ink-secondary mt-1">
               {currentPeriod.start_date} to {currentPeriod.end_date}
             </p>
           </div>
@@ -250,7 +250,7 @@ export function CadenceSection({ companyId }: { companyId: string }) {
           if (periodsWithData.length === 0) return null;
           return (
             <div className="space-y-2">
-              <Label className="text-sm text-ink-600">Review periods with data ({periodsWithData.length})</Label>
+              <Label className="text-sm text-ink-secondary">Review periods with data ({periodsWithData.length})</Label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {periodsWithData.map((p, i) => {
                   const isCurrent = p.start_date <= todayStr && todayStr <= p.end_date;
@@ -259,12 +259,12 @@ export function CadenceSection({ companyId }: { companyId: string }) {
                       key={i}
                       className={`text-xs rounded px-3 py-2 border ${
                         isCurrent
-                          ? "border-cobalt-400 bg-cobalt-50 text-cobalt-800 font-medium"
-                          : "border-ink-200 bg-white text-ink-600"
+                          ? "border-cobalt-400 bg-status-info-bg text-status-info-fg font-medium"
+                          : "border-border-subtle bg-white text-ink-secondary"
                       }`}
                     >
                       <div className="font-medium">{p.label}</div>
-                      <div className="text-ink-400 mt-0.5">{p.start_date} → {p.end_date}</div>
+                      <div className="text-ink-tertiary mt-0.5">{p.start_date} → {p.end_date}</div>
                     </div>
                   );
                 })}

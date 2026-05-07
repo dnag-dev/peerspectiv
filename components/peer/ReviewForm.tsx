@@ -97,11 +97,11 @@ interface FieldState {
 function confidenceClasses(c: Confidence) {
   switch (c) {
     case "high":
-      return "bg-mint-50 border-mint-200 text-mint-700";
+      return "bg-mint-50 border-status-success-fg/30 text-status-success-fg";
     case "medium":
-      return "bg-amber-50 border-amber-100 text-amber-700";
+      return "bg-amber-50 border-amber-100 text-status-warning-fg";
     case "low":
-      return "bg-critical-50 border-critical-100 text-critical-700";
+      return "bg-critical-50 border-status-danger-fg/20 text-status-danger-fg";
   }
 }
 
@@ -113,9 +113,9 @@ function ratingLabel(score: number): string {
 
 // Light-surface rating label colors.
 function ratingLabelColor(score: number): string {
-  if (score >= 80) return "text-mint-700";
-  if (score >= 60) return "text-amber-700";
-  return "text-critical-700";
+  if (score >= 80) return "text-status-success-fg";
+  if (score >= 60) return "text-status-warning-fg";
+  return "text-status-danger-fg";
 }
 
 function valuesEqual(a: unknown, b: unknown): boolean {
@@ -479,10 +479,10 @@ export function ReviewForm({
 
   if (submitted) {
     return (
-      <div className="rounded-xl border border-mint-200 bg-mint-50 p-10 text-center">
+      <div className="rounded-xl border border-status-success-fg/30 bg-mint-50 p-10 text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-mint-100">
           <svg
-            className="h-7 w-7 text-mint-700"
+            className="h-7 w-7 text-status-success-fg"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={2.5}
@@ -495,8 +495,8 @@ export function ReviewForm({
             />
           </svg>
         </div>
-        <h2 className="text-h2 text-ink-900">Review Submitted</h2>
-        <p className="mt-2 text-small text-ink-500">
+        <h2 className="text-h2 text-ink-primary">Review Submitted</h2>
+        <p className="mt-2 text-small text-ink-secondary">
           Your review has been saved successfully.
         </p>
       </div>
@@ -505,7 +505,7 @@ export function ReviewForm({
 
   if (sortedFields.length === 0) {
     return (
-      <div className="rounded-xl border border-ink-200 bg-paper-surface p-10 text-center text-ink-500">
+      <div className="rounded-xl border border-border-subtle bg-surface-card p-10 text-center text-ink-secondary">
         No form fields configured for this specialty.
       </div>
     );
@@ -516,25 +516,25 @@ export function ReviewForm({
       {/* Header */}
       {/* TODO Section F8: gate prefill rendering behind allow_ai_prefill flag
           when company.tier !== 'white_glove'. See docs/product-roadmap.md. */}
-      <div className="rounded-xl border border-ink-200 bg-paper-surface p-5">
+      <div className="rounded-xl border border-border-subtle bg-surface-card p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-eyebrow text-ink-500">PEER · ASSESSMENT</div>
-            <h2 className="mt-1 text-h2 text-ink-900">Peer Review</h2>
-            <p className="mt-1 text-small text-ink-500">
+            <div className="text-eyebrow text-ink-secondary">PEER · ASSESSMENT</div>
+            <h2 className="mt-1 text-h2 text-ink-primary">Peer Review</h2>
+            <p className="mt-1 text-small text-ink-secondary">
               Review each field below. AI prefills are shown with confidence
               indicators — override where your clinical judgment differs.
             </p>
           </div>
           {/* Section F5: hover-to-jump toggle. */}
           {onFieldHover && (
-            <label className="flex flex-shrink-0 items-center gap-2 text-xs text-ink-600">
+            <label className="flex flex-shrink-0 items-center gap-2 text-xs text-ink-secondary">
               <input
                 type="checkbox"
                 data-testid="hover-jump-toggle"
                 checked={hoverJumpEnabled}
                 onChange={(e) => setHoverJumpEnabled(e.target.checked)}
-                className="h-4 w-4 rounded border-ink-300 text-cobalt-700 focus:ring-cobalt-200"
+                className="h-4 w-4 rounded border-border-default text-status-info-fg focus:ring-cobalt-200"
               />
               Highlight on hover
             </label>
@@ -555,33 +555,33 @@ export function ReviewForm({
       {/* ── License attestation (HRSA audit) ── */}
       <div
         data-testid="license-attestation"
-        className="rounded-xl border-2 border-cobalt-200 bg-cobalt-50/40 p-5 shadow-sm"
+        className="rounded-xl border-2 border-status-info-fg/30 bg-status-info-bg/40 p-5 shadow-sm"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-eyebrow text-cobalt-700">
+            <div className="text-eyebrow text-status-info-fg">
               PEER · LICENSE ATTESTATION
             </div>
-            <h3 className="mt-1 text-base font-semibold text-ink-900">
+            <h3 className="mt-1 text-base font-medium text-ink-primary">
               You are reviewing this case as:{" "}
-              <span className="text-cobalt-800">
+              <span className="text-status-info-fg">
                 {peerLicense?.fullName ?? "Peer"}
                 {peerLicense?.credential ? `, ${peerLicense.credential}` : ""}
               </span>
             </h3>
-            <p className="mt-1 text-xs leading-relaxed text-ink-600">
+            <p className="mt-1 text-xs leading-relaxed text-ink-secondary">
               Your responses below will be permanently attached to this license
               for HRSA audit. Verify your license details before submitting.
             </p>
           </div>
-          <span className="inline-flex items-center rounded-full border border-cobalt-200 bg-paper-surface px-2 py-0.5 text-[10px] font-mono font-medium uppercase tracking-wide text-cobalt-700">
+          <span className="inline-flex items-center rounded-full border border-status-info-fg/30 bg-surface-card px-2 py-0.5 text-[10px] font-mono font-medium uppercase tracking-wide text-status-info-fg">
             Required
           </span>
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-medium text-ink-700">
+            <label className="mb-1 block text-xs font-medium text-ink-primary">
               License #
             </label>
             <input
@@ -590,11 +590,11 @@ export function ReviewForm({
               value={licenseNumber}
               onChange={(e) => setLicenseNumber(e.target.value)}
               placeholder="e.g. MD123456"
-              className="w-full rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm text-ink-900 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
+              className="w-full rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-ink-700">
+            <label className="mb-1 block text-xs font-medium text-ink-primary">
               State
             </label>
             <input
@@ -606,18 +606,18 @@ export function ReviewForm({
                 setLicenseState(e.target.value.toUpperCase().slice(0, 2))
               }
               placeholder="e.g. CA"
-              className="w-full rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm uppercase text-ink-900 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
+              className="w-full rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm uppercase text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
             />
           </div>
         </div>
 
-        <label className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-700">
+        <label className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-primary">
           <input
             type="checkbox"
             data-testid="license-attest-checkbox"
             checked={attested}
             onChange={(e) => setAttested(e.target.checked)}
-            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-ink-300 text-cobalt-700 focus:ring-cobalt-200"
+            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-border-default text-status-info-fg focus:ring-cobalt-200"
           />
           <span>
             I attest that the above license is current, in good standing, and
@@ -650,20 +650,20 @@ export function ReviewForm({
                 ? () => onFieldHover(field.fieldKey, field.fieldLabel)
                 : undefined
             }
-            className={`rounded-xl border bg-paper-surface p-5 transition-colors ${
+            className={`rounded-xl border bg-surface-card p-5 transition-colors ${
               isMissing
-                ? "border-critical-100 ring-1 ring-critical-100"
+                ? "border-status-danger-fg/20 ring-1 ring-critical-100"
                 : overridden
                   ? "border-amber-100"
-                  : "border-ink-200"
+                  : "border-border-subtle"
             }`}
           >
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+                <label className="flex items-center gap-2 text-sm font-medium text-ink-primary">
                   {field.fieldLabel}
                   {field.isRequired && (
-                    <span className="rounded-full bg-cobalt-50 px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-wide text-cobalt-700">
+                    <span className="rounded-full bg-status-info-bg px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-wide text-status-info-fg">
                       required
                     </span>
                   )}
@@ -677,7 +677,7 @@ export function ReviewForm({
                   <div className="mt-1.5 flex flex-wrap items-center gap-2">
                     <span
                       data-testid="default-badge"
-                      className="inline-flex items-center gap-1.5 rounded-full border border-ink-200 bg-ink-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-600"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-ink-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-ink-secondary"
                     >
                       <span className="h-1.5 w-1.5 rounded-full bg-ink-400" />
                       default — please verify
@@ -689,23 +689,23 @@ export function ReviewForm({
                     <span
                       data-testid="confidence-badge"
                       data-confidence={prefill.confidence}
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${confidenceClasses(
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${confidenceClasses(
                         prefill.confidence
                       )}`}
                     >
                       <span
                         className={`h-1.5 w-1.5 rounded-full ${
                           prefill.confidence === "high"
-                            ? "bg-mint-600"
+                            ? "bg-status-success-dot"
                             : prefill.confidence === "medium"
-                              ? "bg-amber-600"
-                              : "bg-critical-600"
+                              ? "bg-status-warning-dot"
+                              : "bg-status-danger-dot"
                         }`}
                       />
                       AI {prefill.confidence}
                     </span>
                     {prefill.pageReference && (
-                      <span className="text-[10px] text-ink-400">
+                      <span className="text-[10px] text-ink-tertiary">
                         Ref: {prefill.pageReference}
                       </span>
                     )}
@@ -713,7 +713,7 @@ export function ReviewForm({
                 )}
               </div>
               {overridden && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-amber-100 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                <span className="inline-flex items-center gap-1 rounded-full border border-amber-100 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-status-warning-fg">
                   <svg
                     className="h-3 w-3"
                     fill="none"
@@ -735,7 +735,7 @@ export function ReviewForm({
             {prefill?.reasoning && (
               <p
                 data-testid="ai-reasoning"
-                className="mb-3 text-xs italic leading-relaxed text-ink-500"
+                className="mb-3 text-xs italic leading-relaxed text-ink-secondary"
               >
                 {prefill.reasoning}
               </p>
@@ -752,8 +752,8 @@ export function ReviewForm({
                   onClick={() => setFieldValue(field.fieldKey, true)}
                   className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all ${
                     fieldState.value === true
-                      ? "border-cobalt-700 bg-cobalt-700 text-white"
-                      : "border-ink-200 bg-paper-surface text-ink-700 hover:bg-ink-50"
+                      ? "border-status-info-fg bg-cobalt-700 text-white"
+                      : "border-border-subtle bg-surface-card text-ink-primary hover:bg-ink-50"
                   }`}
                 >
                   Yes
@@ -767,7 +767,7 @@ export function ReviewForm({
                   className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all ${
                     fieldState.value === false
                       ? "border-ink-700 bg-ink-700 text-white"
-                      : "border-ink-200 bg-paper-surface text-ink-700 hover:bg-ink-50"
+                      : "border-border-subtle bg-surface-card text-ink-primary hover:bg-ink-50"
                   }`}
                 >
                   No
@@ -781,8 +781,8 @@ export function ReviewForm({
                     onClick={() => setFieldValue(field.fieldKey, "na")}
                     className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all ${
                       fieldState.value === "na"
-                        ? "border-ink-400 bg-ink-100 text-ink-900"
-                        : "border-ink-200 bg-paper-surface text-ink-700 hover:bg-ink-50"
+                        ? "border-ink-400 bg-ink-100 text-ink-primary"
+                        : "border-border-subtle bg-surface-card text-ink-primary hover:bg-ink-50"
                     }`}
                   >
                     N/A
@@ -815,10 +815,10 @@ export function ReviewForm({
                         setFieldValue(field.fieldKey, n);
                       }
                     }}
-                    className="w-28 rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm text-ink-900 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
+                    className="w-28 rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
                     placeholder="0-100"
                   />
-                  <span className="text-xs text-ink-400">/ 100</span>
+                  <span className="text-xs text-ink-tertiary">/ 100</span>
                   {typeof fieldState.value === "number" && (
                     <span
                       className={`text-sm font-medium ${ratingLabelColor(fieldState.value)}`}
@@ -835,7 +835,7 @@ export function ReviewForm({
                 value={String(fieldState.value ?? "")}
                 onChange={(e) => setFieldValue(field.fieldKey, e.target.value)}
                 rows={4}
-                className="w-full resize-y rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
+                className="w-full resize-y rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary placeholder:text-ink-tertiary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
                 placeholder="Enter your assessment..."
               />
             )}
@@ -861,10 +861,10 @@ export function ReviewForm({
                   onChange={(e) => setFieldComment(field.fieldKey, e.target.value)}
                   rows={commentRequired ? 2 : 1}
                   placeholder={placeholder}
-                  className={`mt-3 w-full resize-y rounded-lg border bg-paper-surface px-3 py-2 text-xs text-ink-700 placeholder:text-ink-400 outline-none focus:border-cobalt-700 ${
+                  className={`mt-3 w-full resize-y rounded-lg border bg-surface-card px-3 py-2 text-xs text-ink-primary placeholder:text-ink-tertiary outline-none focus:border-status-info-fg ${
                     commentRequired
                       ? "border-amber-300 ring-1 ring-amber-100"
-                      : "border-ink-200"
+                      : "border-border-subtle"
                   }`}
                 />
               );
@@ -874,9 +874,9 @@ export function ReviewForm({
       })}
 
       {/* Peer overall comments */}
-      <div className="rounded-xl border border-ink-200 bg-paper-surface p-5">
+      <div className="rounded-xl border border-border-subtle bg-surface-card p-5">
         <div className="mb-2 flex items-center justify-between gap-2">
-          <label className="block text-sm font-semibold text-ink-900">
+          <label className="block text-sm font-medium text-ink-primary">
             Overall Peer Comments
           </label>
           {allowAiNarrative && (
@@ -907,7 +907,7 @@ export function ReviewForm({
                   setAiSuggestLoading(false);
                 }
               }}
-              className="inline-flex items-center gap-1 rounded-md border border-cobalt-200 bg-cobalt-50/40 px-2.5 py-1 text-xs font-medium text-cobalt-700 hover:bg-cobalt-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-md border border-status-info-fg/30 bg-status-info-bg/40 px-2.5 py-1 text-xs font-medium text-status-info-fg hover:bg-status-info-bg disabled:cursor-not-allowed disabled:opacity-50"
             >
               {aiSuggestLoading ? "Generating…" : "Generate AI suggestion"}
             </button>
@@ -917,22 +917,22 @@ export function ReviewForm({
           value={peerComments}
           onChange={(e) => setPeerComments(e.target.value)}
           rows={4}
-          className="w-full resize-y rounded-lg border border-ink-200 bg-paper-surface px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 outline-none focus:border-cobalt-700 focus:ring-1 focus:ring-cobalt-200"
+          className="w-full resize-y rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary placeholder:text-ink-tertiary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-cobalt-200"
           placeholder="Any additional commentary for this case..."
         />
         {aiSuggestError && (
-          <p className="mt-2 text-xs text-critical-700">{aiSuggestError}</p>
+          <p className="mt-2 text-xs text-status-danger-fg">{aiSuggestError}</p>
         )}
       </div>
 
       {error && (
-        <div className="rounded-lg border border-critical-100 bg-critical-50 p-3 text-sm text-critical-700">
+        <div className="rounded-lg border border-status-danger-fg/20 bg-critical-50 p-3 text-sm text-status-danger-fg">
           {error}
         </div>
       )}
 
       {/* Submit footer — relative + z-30 keeps it above the floating Ask Ash bubble */}
-      <div className="sticky bottom-4 relative z-30 rounded-xl border border-ink-200 bg-paper-surface/95 p-4 shadow-sm backdrop-blur">
+      <div className="sticky bottom-4 relative z-30 rounded-xl border border-border-subtle bg-surface-card/95 p-4 shadow-sm backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
@@ -942,11 +942,11 @@ export function ReviewForm({
                 setTimeout(() => setDraftSaved(false), 2000);
                 window.location.href = "/peer/portal";
               }}
-              className="rounded-md border border-ink-300 bg-white px-3 py-1.5 text-sm text-ink-700 hover:bg-ink-50"
+              className="rounded-md border border-border-default bg-white px-3 py-1.5 text-sm text-ink-primary hover:bg-ink-50"
             >
               {draftSaved ? "Saved!" : "Save & Exit"}
             </button>
-            <span className="text-code text-ink-500">
+            <span className="text-code text-ink-secondary">
               Case: {caseId.slice(0, 8)}…
             </span>
           </div>

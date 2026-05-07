@@ -104,8 +104,8 @@ export default async function CredentialerEarningsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink-900">My Earnings</h1>
-        <p className="text-sm text-ink-500">
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">My Earnings</h1>
+        <p className="text-sm text-ink-secondary">
           {credUser.fullName} · current per-peer rate $
           {Number(credUser.perPeerRate ?? 0).toFixed(2)}. Prior credentialings retain
           their snapshotted rate.
@@ -118,8 +118,8 @@ export default async function CredentialerEarningsPage() {
             <CardTitle>This month</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-semibold text-ink-900">${monthTotal.toFixed(2)}</div>
-            <div className="text-sm text-ink-500">{monthCount} peer{monthCount === 1 ? '' : 's'} credentialed</div>
+            <div className="text-3xl font-medium text-ink-primary">${monthTotal.toFixed(2)}</div>
+            <div className="text-sm text-ink-secondary">{monthCount} peer{monthCount === 1 ? '' : 's'} credentialed</div>
           </CardContent>
         </Card>
         <Card>
@@ -127,10 +127,10 @@ export default async function CredentialerEarningsPage() {
             <CardTitle>Per-peer rate</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-semibold text-ink-900">
+            <div className="text-3xl font-medium text-ink-primary">
               ${Number(credUser.perPeerRate ?? 0).toFixed(2)}
             </div>
-            <div className="text-sm text-ink-500">Locked in for prior credentialings at the rate active when work was completed</div>
+            <div className="text-sm text-ink-secondary">Locked in for prior credentialings at the rate active when work was completed</div>
           </CardContent>
         </Card>
       </div>
@@ -141,13 +141,13 @@ export default async function CredentialerEarningsPage() {
         </CardHeader>
         <CardContent className="p-0">
           {currentMonth.length === 0 ? (
-            <div className="px-6 py-8 text-center text-sm text-ink-400">
+            <div className="px-6 py-8 text-center text-sm text-ink-tertiary">
               No credentialings yet this month.
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-y border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
+                <tr className="border-y border-border-subtle bg-ink-50 text-xs uppercase tracking-wider text-ink-secondary">
                   <th className="px-4 py-2 text-left">Peer</th>
                   <th className="px-4 py-2 text-left">Date</th>
                   <th className="px-4 py-2 text-right">Rate</th>
@@ -155,12 +155,12 @@ export default async function CredentialerEarningsPage() {
               </thead>
               <tbody>
                 {currentMonth.map((r, i) => (
-                  <tr key={`${r.peerId}-${i}`} className="border-b border-ink-100">
-                    <td className="px-4 py-2 text-ink-900">{r.peerName ?? '—'}</td>
-                    <td className="px-4 py-2 text-ink-600">
+                  <tr key={`${r.peerId}-${i}`} className="border-b border-border-subtle">
+                    <td className="px-4 py-2 text-ink-primary">{r.peerName ?? '—'}</td>
+                    <td className="px-4 py-2 text-ink-secondary">
                       {r.performedAt ? new Date(r.performedAt).toLocaleDateString() : '—'}
                     </td>
-                    <td className="px-4 py-2 text-right text-ink-900">
+                    <td className="px-4 py-2 text-right text-ink-primary">
                       ${Number(r.rateAtAction ?? credUser.perPeerRate ?? 0).toFixed(2)}
                     </td>
                   </tr>
@@ -178,7 +178,7 @@ export default async function CredentialerEarningsPage() {
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-y border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
+              <tr className="border-y border-border-subtle bg-ink-50 text-xs uppercase tracking-wider text-ink-secondary">
                 <th className="px-4 py-2 text-left">Month</th>
                 <th className="px-4 py-2 text-right">Peers</th>
                 <th className="px-4 py-2 text-right">Earnings</th>
@@ -186,10 +186,10 @@ export default async function CredentialerEarningsPage() {
             </thead>
             <tbody>
               {trend.map((r) => (
-                <tr key={r.month} className="border-b border-ink-100">
-                  <td className="px-4 py-2 text-ink-900">{r.month}</td>
-                  <td className="px-4 py-2 text-right text-ink-600">{r.count}</td>
-                  <td className="px-4 py-2 text-right text-ink-900">${r.total.toFixed(2)}</td>
+                <tr key={r.month} className="border-b border-border-subtle">
+                  <td className="px-4 py-2 text-ink-primary">{r.month}</td>
+                  <td className="px-4 py-2 text-right text-ink-secondary">{r.count}</td>
+                  <td className="px-4 py-2 text-right text-ink-primary">${r.total.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>

@@ -59,7 +59,7 @@ export function PricingSection({ companyId }: { companyId: string }) {
     return (
       <Card>
         <CardHeader><CardTitle className="flex items-center gap-2 text-base"><DollarSign className="h-5 w-5" /> Pricing</CardTitle></CardHeader>
-        <CardContent><p className="text-sm text-ink-500">Loading…</p></CardContent>
+        <CardContent><p className="text-sm text-ink-secondary">Loading…</p></CardContent>
       </Card>
     );
   }
@@ -140,7 +140,7 @@ export function PricingSection({ companyId }: { companyId: string }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {err && <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">{err}</p>}
+        {err && <p className="text-sm text-status-danger-fg bg-critical-50 px-3 py-2 rounded">{err}</p>}
 
         {/* Mode toggle */}
         <div className="flex flex-wrap items-center gap-3">
@@ -152,7 +152,7 @@ export function PricingSection({ companyId }: { companyId: string }) {
               <SelectItem value="per_specialty">Per-specialty</SelectItem>
             </SelectContent>
           </Select>
-          <label className="flex items-center gap-2 text-sm text-ink-700 ml-4">
+          <label className="flex items-center gap-2 text-sm text-ink-primary ml-4">
             <input type="checkbox" checked={state.itemize_invoice}
               onChange={(e) => patchTop({ itemize_invoice: e.target.checked })} />
             Itemise invoices (per-provider lines)
@@ -163,7 +163,7 @@ export function PricingSection({ companyId }: { companyId: string }) {
         {mode === "flat" && (
           <div className="grid gap-2 max-w-md">
             <Label>Flat rate per review ($)</Label>
-            <p className="text-xs text-ink-500">Used for all invoices. Falls back to global pay rate if blank.</p>
+            <p className="text-xs text-ink-secondary">Used for all invoices. Falls back to global pay rate if blank.</p>
             <div className="flex gap-2">
               <Input type="number" min={0.01} step={0.01} value={flatRate}
                 onChange={(e) => setFlatRate(e.target.value)} className="w-32" />
@@ -183,13 +183,13 @@ export function PricingSection({ companyId }: { companyId: string }) {
         {/* Per-specialty table */}
         {mode === "per_specialty" && (
           <div className="space-y-4">
-            <p className="text-xs text-ink-500">
+            <p className="text-xs text-ink-secondary">
               One row per specialty. Mark a row as <strong>default</strong> to use its rate when a case has a specialty without an explicit row.
               Rate changes apply from <strong>today forward</strong>; existing invoices are unaffected.
             </p>
 
             <table className="w-full text-sm">
-              <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
+              <thead className="bg-ink-50 text-ink-secondary text-xs uppercase">
                 <tr>
                   <th className="px-3 py-2 text-left">Specialty</th>
                   <th className="px-3 py-2 text-right">Rate ($)</th>
@@ -207,7 +207,7 @@ export function PricingSection({ companyId }: { companyId: string }) {
                     busy={busy === r.id} />
                 ))}
                 {state.rates.length === 0 && (
-                  <tr><td colSpan={5} className="px-3 py-6 text-center text-ink-500">No per-specialty rates yet — add one below.</td></tr>
+                  <tr><td colSpan={5} className="px-3 py-6 text-center text-ink-secondary">No per-specialty rates yet — add one below.</td></tr>
                 )}
               </tbody>
             </table>
@@ -247,16 +247,16 @@ function RateRowEditor({
   const [val, setVal] = useState(String(Number(row.rateAmount)));
   const dirty = Number(val) !== Number(row.rateAmount);
   return (
-    <tr className="border-t border-ink-100">
+    <tr className="border-t border-border-subtle">
       <td className="px-3 py-2">{row.specialty}</td>
       <td className="px-3 py-2 text-right">
         <Input type="number" min={0.01} step={0.01} value={val}
           onChange={(e) => setVal(e.target.value)} className="h-7 w-24 ml-auto text-right" />
       </td>
-      <td className="px-3 py-2 text-ink-600">{row.effectiveFrom ?? "—"}</td>
+      <td className="px-3 py-2 text-ink-secondary">{row.effectiveFrom ?? "—"}</td>
       <td className="px-3 py-2 text-center">
         <button type="button" onClick={onSetDefault} disabled={busy} title="Set as default fallback">
-          <Star className={`h-4 w-4 inline ${row.isDefault ? "fill-amber-400 text-amber-500" : "text-ink-300"}`} />
+          <Star className={`h-4 w-4 inline ${row.isDefault ? "fill-amber-400 text-amber-500" : "text-ink-tertiary"}`} />
         </button>
       </td>
       <td className="px-3 py-2 text-right space-x-1">

@@ -26,8 +26,8 @@ function StarRating({
             <Star
               className={`h-7 w-7 ${
                 star <= value
-                  ? 'fill-amber-600 text-amber-600'
-                  : 'text-white/20'
+                  ? 'fill-amber-600 text-status-warning-dot'
+                  : 'text-ink-primary/20'
               }`}
             />
           </button>
@@ -74,12 +74,12 @@ export default function FeedbackPage() {
   if (submitted) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="rounded-xl p-8 text-center" style={{ backgroundColor: '#1E3A8A' }}>
+        <div className="rounded-xl p-8 text-center" style={{ backgroundColor: 'var(--color-card)' }}>
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cobalt-500/20">
-            <Star className="h-8 w-8 fill-cobalt-500 text-cobalt-500" />
+            <Star className="h-8 w-8 fill-cobalt-500 text-status-info-dot" />
           </div>
-          <h2 className="text-xl font-semibold text-white">Thank you!</h2>
-          <p className="mt-2 text-sm text-ink-400">
+          <h2 className="text-xl font-medium text-ink-primary">Thank you!</h2>
+          <p className="mt-2 text-sm text-ink-tertiary">
             Your feedback has been recorded.
           </p>
         </div>
@@ -90,8 +90,8 @@ export default function FeedbackPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Help us improve</h1>
-        <p className="mt-1 text-sm text-ink-400">
+        <h1 className="text-2xl font-medium text-ink-primary">Help us improve</h1>
+        <p className="mt-1 text-sm text-ink-tertiary">
           Your feedback helps Peerspectiv serve you better.
         </p>
       </div>
@@ -99,7 +99,7 @@ export default function FeedbackPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div
           className="space-y-6 rounded-xl p-6"
-          style={{ backgroundColor: '#1E3A8A' }}
+          style={{ backgroundColor: 'var(--color-card)' }}
         >
           <StarRating
             label="How satisfied are you with our turnaround time?"
@@ -125,7 +125,7 @@ export default function FeedbackPage() {
 
         <div
           className="space-y-4 rounded-xl p-6"
-          style={{ backgroundColor: '#1E3A8A' }}
+          style={{ backgroundColor: 'var(--color-card)' }}
         >
           <div>
             <p className="text-sm font-medium text-ink-200">
@@ -137,8 +137,8 @@ export default function FeedbackPage() {
                 onClick={() => setWouldRecommend('true')}
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition-colors ${
                   wouldRecommend === 'true'
-                    ? 'bg-[#2563EB] text-white'
-                    : 'bg-white/10 text-ink-300 hover:bg-white/20'
+                    ? 'bg-[#2563EB] text-ink-primary'
+                    : 'bg-white/10 text-ink-tertiary hover:bg-white/20'
                 }`}
               >
                 Yes
@@ -148,8 +148,8 @@ export default function FeedbackPage() {
                 onClick={() => setWouldRecommend('false')}
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition-colors ${
                   wouldRecommend === 'false'
-                    ? 'bg-[#2563EB] text-white'
-                    : 'bg-white/10 text-ink-300 hover:bg-white/20'
+                    ? 'bg-[#2563EB] text-ink-primary'
+                    : 'bg-white/10 text-ink-tertiary hover:bg-white/20'
                 }`}
               >
                 Not sure
@@ -169,7 +169,7 @@ export default function FeedbackPage() {
               rows={4}
               value={openFeedback}
               onChange={(e) => setOpenFeedback(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-ink-500 focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+              className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-ink-primary placeholder-ink-500 focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
               placeholder="Share your thoughts..."
             />
           </div>
@@ -178,7 +178,7 @@ export default function FeedbackPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-lg py-3 text-sm font-semibold text-white transition-colors disabled:opacity-50"
+          className="w-full rounded-lg py-3 text-sm font-medium text-ink-primary transition-colors disabled:opacity-50"
           style={{ backgroundColor: '#2563EB' }}
         >
           {submitting ? 'Submitting...' : 'Submit Feedback'}

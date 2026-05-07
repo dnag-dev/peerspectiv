@@ -22,8 +22,8 @@ export default async function QualityPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Quality Reports</h1>
-        <p className="text-sm text-ink-400">
+        <h1 className="text-2xl font-medium text-ink-primary">Quality Reports</h1>
+        <p className="text-sm text-ink-tertiary">
           Five canonical reports for {company.name}, plus AI insights.
         </p>
       </div>

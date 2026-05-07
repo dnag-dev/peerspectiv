@@ -151,7 +151,7 @@ export function AshChat({
         <div
           role="dialog"
           aria-label="Ash assistant"
-          className="fixed bottom-6 right-6 z-50 flex flex-col overflow-hidden rounded-lg border border-ink-200 bg-paper-surface shadow-modal"
+          className="fixed bottom-6 right-6 z-50 flex flex-col overflow-hidden rounded-lg border border-border-subtle bg-surface-card shadow-modal"
           style={{ width: 384, height: 520 }}
         >
           {/* Header strip */}
@@ -161,7 +161,7 @@ export function AshChat({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold">Ash</span>
+                <span className="text-sm font-medium">Ash</span>
                 <span className="h-2 w-2 rounded-full bg-mint-500 shadow-[0_0_6px_var(--mint-500)]" />
               </div>
               <div className="text-eyebrow text-cobalt-100">
@@ -181,7 +181,7 @@ export function AshChat({
           {/* Messages */}
           <div
             ref={scrollRef}
-            className="flex-1 space-y-3 overflow-y-auto bg-paper-canvas px-4 py-3"
+            className="flex-1 space-y-3 overflow-y-auto bg-surface-canvas px-4 py-3"
           >
             {messages.map((m, i) => (
               <MessageBubble key={i} role={m.role} content={m.content} />
@@ -192,7 +192,7 @@ export function AshChat({
                 <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-cobalt-700 text-white">
                   <SparkIcon className="h-3 w-3" />
                 </div>
-                <div className="rounded-lg rounded-bl-sm border border-cobalt-100 bg-cobalt-50 px-3 py-2">
+                <div className="rounded-lg rounded-bl-sm border border-cobalt-100 bg-status-info-bg px-3 py-2">
                   <div className="flex items-center gap-1">
                     <span className="h-2 w-2 animate-pulse rounded-full bg-cobalt-500" style={{ animationDelay: '0ms' }} />
                     <span className="h-2 w-2 animate-pulse rounded-full bg-cobalt-500" style={{ animationDelay: '200ms' }} />
@@ -209,7 +209,7 @@ export function AshChat({
                     key={prompt}
                     type="button"
                     onClick={() => sendMessage(prompt)}
-                    className="rounded-md border border-cobalt-200 bg-paper-surface px-3 py-1 text-xs text-cobalt-700 transition-colors hover:bg-cobalt-50"
+                    className="rounded-md border border-status-info-fg/30 bg-surface-card px-3 py-1 text-xs text-status-info-fg transition-colors hover:bg-status-info-bg"
                   >
                     {prompt}
                   </button>
@@ -221,7 +221,7 @@ export function AshChat({
           {/* Input */}
           <form
             onSubmit={handleSubmit}
-            className="flex items-center gap-2 border-t border-ink-200 bg-paper-surface px-3 py-3"
+            className="flex items-center gap-2 border-t border-border-subtle bg-surface-card px-3 py-3"
           >
             <input
               ref={inputRef}
@@ -230,7 +230,7 @@ export function AshChat({
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask Ash anything..."
               disabled={loading}
-              className="flex-1 rounded-md border border-ink-200 bg-paper-surface px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-cobalt-500 focus:outline-none focus:ring-[3px] focus:ring-cobalt-300/30 disabled:opacity-60"
+              className="flex-1 rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary placeholder:text-ink-tertiary focus:border-cobalt-500 focus:outline-none focus:ring-[3px] focus:ring-cobalt-300/30 disabled:opacity-60"
             />
             <button
               type="submit"
@@ -260,7 +260,7 @@ function MessageBubble({
         <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-cobalt-700 text-white">
           <SparkIcon className="h-3 w-3" />
         </div>
-        <div className="max-w-[80%] whitespace-pre-wrap rounded-lg rounded-bl-sm border border-cobalt-100 bg-cobalt-50 px-3 py-2 text-sm text-ink-900">
+        <div className="max-w-[80%] whitespace-pre-wrap rounded-lg rounded-bl-sm border border-cobalt-100 bg-status-info-bg px-3 py-2 text-sm text-ink-primary">
           {content}
         </div>
       </div>
@@ -268,7 +268,7 @@ function MessageBubble({
   }
   return (
     <div className="flex justify-end">
-      <div className="max-w-[80%] whitespace-pre-wrap rounded-lg rounded-br-sm bg-ink-100 px-3 py-2 text-sm text-ink-900">
+      <div className="max-w-[80%] whitespace-pre-wrap rounded-lg rounded-br-sm bg-ink-100 px-3 py-2 text-sm text-ink-primary">
         {content}
       </div>
     </div>

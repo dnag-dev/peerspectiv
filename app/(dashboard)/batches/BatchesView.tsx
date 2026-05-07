@@ -47,9 +47,9 @@ type SortDir = "asc" | "desc";
 
 function BatchStatusBadge({ status }: { status: string }) {
   const variants: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-700",
-    in_progress: "bg-cobalt-100 text-cobalt-600",
-    completed: "bg-mint-100 text-cobalt-700",
+    pending: "bg-amber-100 text-status-warning-fg",
+    in_progress: "bg-status-info-bg text-status-info-dot",
+    completed: "bg-mint-100 text-status-info-fg",
   };
   return (
     <span
@@ -168,13 +168,13 @@ export function BatchesView({ batches }: Props) {
     return (
       <th
         onClick={() => toggleSort(k)}
-        className={`px-4 py-3 cursor-pointer select-none hover:text-ink-900 ${
+        className={`px-4 py-3 cursor-pointer select-none hover:text-ink-primary ${
           align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left"
         }`}
       >
         <span className="inline-flex items-center gap-1">
           {label}
-          <Icon className={`h-3 w-3 ${active ? "text-cobalt-600" : "text-ink-300"}`} />
+          <Icon className={`h-3 w-3 ${active ? "text-status-info-dot" : "text-ink-tertiary"}`} />
         </span>
       </th>
     );
@@ -184,9 +184,9 @@ export function BatchesView({ batches }: Props) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-          <Layers className="mb-4 h-12 w-12 text-ink-300" />
-          <h3 className="text-lg font-medium text-ink-900">No batches yet</h3>
-          <p className="mt-1 text-sm text-ink-500">
+          <Layers className="mb-4 h-12 w-12 text-ink-tertiary" />
+          <h3 className="text-lg font-medium text-ink-primary">No batches yet</h3>
+          <p className="mt-1 text-sm text-ink-secondary">
             Batches appear here when cases are uploaded.
           </p>
         </CardContent>
@@ -200,7 +200,7 @@ export function BatchesView({ batches }: Props) {
         <CardContent className="p-4">
           <div className="grid gap-3 md:grid-cols-[1fr_200px_180px]">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-tertiary" />
               <Input
                 value={searchQ}
                 onChange={(e) => setSearchQ(e.target.value)}
@@ -235,7 +235,7 @@ export function BatchesView({ batches }: Props) {
               </SelectContent>
             </Select>
           </div>
-          <p className="mt-3 text-xs text-ink-500">
+          <p className="mt-3 text-xs text-ink-secondary">
             Showing <strong>{visible.length}</strong> of {batches.length} batches
           </p>
         </CardContent>
@@ -244,7 +244,7 @@ export function BatchesView({ batches }: Props) {
       <Card>
         <CardContent className="p-0">
           <table className="w-full text-sm">
-            <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
+            <thead className="bg-ink-50 text-ink-secondary text-xs uppercase">
               <tr>
                 <SortHead label="Batch Name" k="batch_name" />
                 <SortHead label="Company" k="company_name" />
@@ -257,25 +257,25 @@ export function BatchesView({ batches }: Props) {
             <tbody>
               {visible.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-ink-500">
+                  <td colSpan={6} className="px-4 py-12 text-center text-ink-secondary">
                     No batches match your filters.
                   </td>
                 </tr>
               )}
               {visible.map((batch) => (
-                <tr key={batch.id} className="border-t border-ink-100 hover:bg-ink-50/50">
+                <tr key={batch.id} className="border-t border-border-subtle hover:bg-ink-50/50">
                   <td className="px-4 py-3 font-medium">
                     <Link
                       href={`/batches/${batch.id}`}
-                      className="text-cobalt-600 hover:underline"
+                      className="text-status-info-dot hover:underline"
                     >
                       {batch.batch_name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-ink-600">{batch.company_name || "—"}</td>
-                  <td className="px-4 py-3 text-ink-600">{formatDate(batch.date_uploaded)}</td>
-                  <td className="px-4 py-3 text-center text-ink-700">{batch.total_cases}</td>
-                  <td className="px-4 py-3 text-center text-ink-700">{batch.completed_cases}</td>
+                  <td className="px-4 py-3 text-ink-secondary">{batch.company_name || "—"}</td>
+                  <td className="px-4 py-3 text-ink-secondary">{formatDate(batch.date_uploaded)}</td>
+                  <td className="px-4 py-3 text-center text-ink-primary">{batch.total_cases}</td>
+                  <td className="px-4 py-3 text-center text-ink-primary">{batch.completed_cases}</td>
                   <td className="px-4 py-3">
                     <BatchStatusBadge status={batch.status} />
                   </td>

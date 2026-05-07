@@ -87,21 +87,21 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-ink-200 bg-paper-surface px-4 py-3 shadow-sm">
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-4 py-3 shadow-sm">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-ink-400" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-ink-tertiary" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search provider, peer, batch…"
-            className="w-full rounded-md border border-ink-200 bg-paper-surface py-1.5 pl-8 pr-3 text-sm placeholder:text-ink-400 focus:border-cobalt-600 focus:outline-none"
+            className="w-full rounded-md border border-border-subtle bg-surface-card py-1.5 pl-8 pr-3 text-sm placeholder:text-ink-tertiary focus:border-status-info-dot focus:outline-none"
           />
         </div>
         <select
           value={companyId}
           onChange={(e) => setCompanyId(e.target.value)}
-          className="rounded-md border border-ink-200 bg-paper-surface py-1.5 px-2 text-sm focus:border-cobalt-600 focus:outline-none"
+          className="rounded-md border border-border-subtle bg-surface-card py-1.5 px-2 text-sm focus:border-status-info-dot focus:outline-none"
         >
           <option value="">All companies</option>
           {companies.map((c) => (
@@ -113,7 +113,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
         <select
           value={peerId}
           onChange={(e) => setPeerId(e.target.value)}
-          className="rounded-md border border-ink-200 bg-paper-surface py-1.5 px-2 text-sm focus:border-cobalt-600 focus:outline-none"
+          className="rounded-md border border-border-subtle bg-surface-card py-1.5 px-2 text-sm focus:border-status-info-dot focus:outline-none"
         >
           <option value="">All peers</option>
           {peers.map((r) => (
@@ -125,7 +125,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
         <select
           value={specialty}
           onChange={(e) => setSpecialty(e.target.value)}
-          className="rounded-md border border-ink-200 bg-paper-surface py-1.5 px-2 text-sm focus:border-cobalt-600 focus:outline-none"
+          className="rounded-md border border-border-subtle bg-surface-card py-1.5 px-2 text-sm focus:border-status-info-dot focus:outline-none"
         >
           <option value="">All specialties</option>
           {specialties.map((s) => (
@@ -137,7 +137,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-md border border-ink-200 bg-paper-surface py-1.5 px-2 text-sm focus:border-cobalt-600 focus:outline-none"
+          className="rounded-md border border-border-subtle bg-surface-card py-1.5 px-2 text-sm focus:border-status-info-dot focus:outline-none"
         >
           <option value="all">All statuses</option>
           <option value="assigned">Assigned</option>
@@ -147,17 +147,17 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-ink-200 bg-paper-surface py-16 text-center">
-          <Inbox className="mb-3 h-10 w-10 text-ink-400" />
-          <h3 className="text-h3 text-ink-900">No assigned cases match</h3>
-          <p className="mt-1 max-w-sm text-small text-ink-500">
+        <div className="flex flex-col items-center justify-center rounded-lg border border-border-subtle bg-surface-card py-16 text-center">
+          <Inbox className="mb-3 h-10 w-10 text-ink-tertiary" />
+          <h3 className="text-h3 text-ink-primary">No assigned cases match</h3>
+          <p className="mt-1 max-w-sm text-small text-ink-secondary">
             Adjust the filters above or check back when new assignments are approved.
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-ink-200 bg-paper-surface shadow-sm">
+        <div className="overflow-x-auto rounded-lg border border-border-subtle bg-surface-card shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-ink-50 text-eyebrow text-ink-500">
+            <thead className="bg-ink-50 text-eyebrow text-ink-secondary">
               <tr>
                 <Th>Provider</Th>
                 <Th>Peer</Th>
@@ -168,7 +168,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
                 <Th className="text-right">Actions</Th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-ink-100">
+            <tbody className="divide-y divide-border-subtle">
               {filtered.map((r) => {
                 const isReassigning = reassigning.has(r.id);
                 const provName =
@@ -179,11 +179,11 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
                   ? new Date(r.due_date).toLocaleDateString()
                   : "—";
                 return (
-                  <tr key={r.id} className="hover:bg-cobalt-50/30">
+                  <tr key={r.id} className="hover:bg-status-info-bg/30">
                     <Td>
-                      <div className="font-medium text-ink-900">{provName}</div>
+                      <div className="font-medium text-ink-primary">{provName}</div>
                       {r.company?.name && (
-                        <div className="text-[11px] text-ink-500">{r.company.name}</div>
+                        <div className="text-[11px] text-ink-secondary">{r.company.name}</div>
                       )}
                     </Td>
                     <Td>{r.peer?.full_name ?? "—"}</Td>
@@ -196,7 +196,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
                       {r.batch_id ? (
                         <Link
                           href={`/batches/${r.batch_id}`}
-                          className="text-cobalt-700 hover:underline"
+                          className="text-status-info-fg hover:underline"
                         >
                           {r.batch_name ?? r.batch_id.slice(0, 8)}
                         </Link>
@@ -209,7 +209,7 @@ export function AssignedTab({ rows, companies, peers, specialties }: Props) {
                         type="button"
                         onClick={() => setPickerOpen(r.id)}
                         disabled={isReassigning || isPending}
-                        className="inline-flex items-center gap-1 rounded-md border border-ink-200 px-2.5 py-1 text-xs font-medium text-ink-700 hover:border-cobalt-600 hover:text-cobalt-700 disabled:opacity-50"
+                        className="inline-flex items-center gap-1 rounded-md border border-border-subtle px-2.5 py-1 text-xs font-medium text-ink-primary hover:border-status-info-dot hover:text-status-info-fg disabled:opacity-50"
                       >
                         {isReassigning ? (
                           <Loader2 className="h-3 w-3 animate-spin" />
@@ -262,10 +262,10 @@ function Td({ children, className = "" }: { children: React.ReactNode; className
 
 function StatusPill({ status }: { status: string }) {
   const map: Record<string, { bg: string; text: string; label: string }> = {
-    assigned: { bg: "bg-cobalt-100", text: "text-cobalt-700", label: "Assigned" },
-    in_progress: { bg: "bg-mint-100", text: "text-mint-700", label: "In progress" },
+    assigned: { bg: "bg-status-info-bg", text: "text-status-info-fg", label: "Assigned" },
+    in_progress: { bg: "bg-mint-100", text: "text-status-success-fg", label: "In progress" },
   };
-  const c = map[status] ?? { bg: "bg-ink-100", text: "text-ink-700", label: status };
+  const c = map[status] ?? { bg: "bg-ink-100", text: "text-ink-primary", label: status };
   return (
     <span
       className={`inline-flex items-center rounded-sm px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-wider uppercase ${c.bg} ${c.text}`}

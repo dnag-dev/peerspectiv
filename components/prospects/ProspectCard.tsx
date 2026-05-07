@@ -95,27 +95,27 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
       <CardContent className="space-y-2 p-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
-            <Link href={`/companies/${company.id}`} className="text-base font-semibold leading-tight text-white hover:underline">
+            <Link href={`/companies/${company.id}`} className="text-base font-medium leading-tight text-white hover:underline">
               {company.name}
             </Link>
             {company.contactPerson && (
-              <p className="text-xs text-ink-300">{company.contactPerson}</p>
+              <p className="text-xs text-ink-tertiary">{company.contactPerson}</p>
             )}
           </div>
           {company.state && (
-            <span className="rounded bg-ink-800 px-2 py-0.5 text-[10px] font-medium text-ink-300">
+            <span className="rounded bg-ink-800 px-2 py-0.5 text-[10px] font-medium text-ink-tertiary">
               {company.state}
             </span>
           )}
         </div>
 
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ink-400">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ink-tertiary">
           {company.annualReviewCount != null && (
             <span>{company.annualReviewCount} reviews/yr</span>
           )}
           {createdDays !== null && <span>Added {createdDays}d ago</span>}
           {company.status === 'contract_sent' && sentDays !== null && (
-            <span className={overdueContract ? 'font-semibold text-[#F59E0B]' : ''}>
+            <span className={overdueContract ? 'font-medium text-[#F59E0B]' : ''}>
               Sent {sentDays}d ago
             </span>
           )}
@@ -164,7 +164,7 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
           {company.status === 'active' && (
             <Link
               href={`/companies/${company.id}`}
-              className="inline-flex w-full items-center justify-center rounded-md border border-cobalt-500 px-2 py-1.5 text-xs font-medium text-cobalt-500 hover:bg-cobalt-500/10"
+              className="inline-flex w-full items-center justify-center rounded-md border border-cobalt-500 px-2 py-1.5 text-xs font-medium text-status-info-dot hover:bg-status-info-bg"
             >
               <ExternalLink className="mr-2 h-3 w-3" />
               View

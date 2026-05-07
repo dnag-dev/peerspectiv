@@ -89,7 +89,7 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto sm:max-w-[540px]">
+      <DialogContent className="bg-white border border-border-subtle shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto sm:max-w-[540px]">
         <DialogHeader>
           <DialogTitle>Edit Company</DialogTitle>
           <DialogDescription>Update the company information below.</DialogDescription>
@@ -135,12 +135,12 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
             <Label htmlFor="edit-notes">Notes</Label>
             <Textarea id="edit-notes" name="notes" defaultValue={company.notes ?? ""} rows={3} />
           </div>
-          <label className="flex items-center gap-2 text-sm text-ink-700">
+          <label className="flex items-center gap-2 text-sm text-ink-primary">
             <input
               type="checkbox"
               checked={itemizeInvoice}
               onChange={(e) => setItemizeInvoice(e.target.checked)}
-              className="h-4 w-4 rounded border-ink-300 text-cobalt-600 focus:ring-cobalt-600"
+              className="h-4 w-4 rounded border-border-default text-status-info-dot focus:ring-cobalt-600"
             />
             Itemize invoices (show per-provider breakdown on PDF)
           </label>
@@ -152,13 +152,13 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
               onChange={(e) =>
                 setDeliveryPreference(e.target.value as 'email' | 'portal' | 'both')
               }
-              className="flex h-10 w-full rounded-md border border-ink-300 bg-white px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-cobalt-600"
+              className="flex h-10 w-full rounded-md border border-border-default bg-white px-3 py-2 text-sm text-ink-primary focus:outline-none focus:ring-2 focus:ring-cobalt-600"
             >
               <option value="portal">Portal only</option>
               <option value="email">Email only</option>
               <option value="both">Both portal &amp; email</option>
             </select>
-            <p className="text-xs text-ink-500">
+            <p className="text-xs text-ink-secondary">
               How to deliver invoices to this client.
             </p>
           </div>
@@ -170,17 +170,17 @@ export function EditCompanyDialog({ company, open, onOpenChange }: EditCompanyDi
               onChange={(e) =>
                 setDeliveryMethod(e.target.value as 'portal' | 'secure_email' | 'both')
               }
-              className="flex h-10 w-full rounded-md border border-ink-300 bg-white px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-cobalt-600"
+              className="flex h-10 w-full rounded-md border border-border-default bg-white px-3 py-2 text-sm text-ink-primary focus:outline-none focus:ring-2 focus:ring-cobalt-600"
             >
               <option value="portal">Portal only (no email)</option>
               <option value="secure_email">Secure email (Resend with ZIP attachment + audit log)</option>
               <option value="both">Both portal &amp; secure email</option>
             </select>
-            <p className="text-xs text-ink-500">
+            <p className="text-xs text-ink-secondary">
               Used by /api/reports/email when sending the per-cadence ZIP bundle.
             </p>
           </div>
-          {error && <p className="text-sm text-critical-600">{error}</p>}
+          {error && <p className="text-sm text-status-danger-dot">{error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancel

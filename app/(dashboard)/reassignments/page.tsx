@@ -57,21 +57,21 @@ export default async function ReassignmentsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <div className="text-eyebrow text-ink-500 mb-1">
+        <div className="text-eyebrow text-ink-secondary mb-1">
           ADMIN · REASSIGNMENT REQUESTS
         </div>
-        <h1 className="text-h1 text-ink-900">Reassignment requests</h1>
-        <p className="mt-1 text-small text-ink-500">
+        <h1 className="text-h1 text-ink-primary">Reassignment requests</h1>
+        <p className="mt-1 text-small text-ink-secondary">
           Peers who&apos;ve asked to be taken off a case. Pick a new peer or
           dismiss with a note.
         </p>
       </div>
 
       {requests.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-ink-200 bg-paper-surface py-16 text-center shadow-sm">
-          <Inbox className="mb-3 h-10 w-10 text-ink-400" />
-          <h3 className="text-h3 text-ink-900">No open reassignment requests</h3>
-          <p className="mt-1 max-w-sm text-small text-ink-500">
+        <div className="flex flex-col items-center justify-center rounded-lg border border-border-subtle bg-surface-card py-16 text-center shadow-sm">
+          <Inbox className="mb-3 h-10 w-10 text-ink-tertiary" />
+          <h3 className="text-h3 text-ink-primary">No open reassignment requests</h3>
+          <p className="mt-1 max-w-sm text-small text-ink-secondary">
             When a peer asks to be taken off a case, it&apos;ll show up here.
           </p>
         </div>

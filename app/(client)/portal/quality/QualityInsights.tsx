@@ -61,7 +61,7 @@ export function QualityInsights({
           <div
             key={i}
             className="rounded-lg p-5 animate-pulse"
-            style={{ backgroundColor: "#1E3A8A" }}
+            style={{ backgroundColor: 'var(--color-card)' }}
           >
             <div className="h-4 w-1/2 rounded mb-3" style={{ backgroundColor: "#2A3F5F" }} />
             <div className="h-3 w-full rounded mb-2" style={{ backgroundColor: "#2A3F5F" }} />
@@ -76,18 +76,18 @@ export function QualityInsights({
     return (
       <div
         className="rounded-lg p-5 border-l-[4px]"
-        style={{ backgroundColor: "#1E3A8A", borderLeftColor: "#EF4444" }}
+        style={{ backgroundColor: 'var(--color-card)', borderLeftColor: "#EF4444" }}
       >
-        <div className="text-sm font-semibold text-white">Failed to load insights</div>
-        <div className="text-xs text-ink-400 mt-1">{error}</div>
+        <div className="text-sm font-medium text-ink-primary">Failed to load insights</div>
+        <div className="text-xs text-ink-tertiary mt-1">{error}</div>
       </div>
     );
   }
 
   if (!insights || insights.length === 0) {
     return (
-      <div className="rounded-lg p-5" style={{ backgroundColor: "#1E3A8A" }}>
-        <p className="text-sm text-ink-400">
+      <div className="rounded-lg p-5" style={{ backgroundColor: 'var(--color-card)' }}>
+        <p className="text-sm text-ink-tertiary">
           No insights available for {companyName} yet. Complete reviews to generate insights.
         </p>
       </div>
@@ -102,13 +102,13 @@ export function QualityInsights({
           data-testid="ai-insight"
           className="rounded-lg p-5 border-l-[4px]"
           style={{
-            backgroundColor: "#1E3A8A",
+            backgroundColor: 'var(--color-card)',
             borderLeftColor: BORDER_COLORS[insight.type] ?? "#2563EB",
           }}
         >
           <div className="flex items-center gap-2 mb-2">
             <span
-              className="rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+              className="rounded px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider"
               style={{
                 backgroundColor: `${BORDER_COLORS[insight.type]}22`,
                 color: BORDER_COLORS[insight.type],
@@ -117,10 +117,10 @@ export function QualityInsights({
               {insight.type}
             </span>
           </div>
-          <h3 className="text-sm font-semibold text-white">{insight.title}</h3>
-          <p className="mt-2 text-sm text-ink-300">{insight.description}</p>
+          <h3 className="text-sm font-medium text-ink-primary">{insight.title}</h3>
+          <p className="mt-2 text-sm text-ink-tertiary">{insight.description}</p>
           {insight.recommendation && (
-            <p className="mt-3 text-xs text-ink-400 italic">
+            <p className="mt-3 text-xs text-ink-tertiary italic">
               Recommendation: {insight.recommendation}
             </p>
           )}

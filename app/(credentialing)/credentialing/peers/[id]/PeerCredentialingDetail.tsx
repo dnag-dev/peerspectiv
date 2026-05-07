@@ -152,18 +152,18 @@ export function PeerCredentialingDetail({ peer, specialties: initialSpecs }: Pro
         </CardHeader>
         <CardContent className="space-y-2">
           {specs.length === 0 ? (
-            <div className="text-sm text-ink-500">No specialties on file.</div>
+            <div className="text-sm text-ink-secondary">No specialties on file.</div>
           ) : (
             <table className="w-full text-sm">
               <tbody>
                 {specs.map((s) => (
-                  <tr key={s.specialty} className="border-b border-ink-100">
+                  <tr key={s.specialty} className="border-b border-border-subtle">
                     <td className="py-2">{s.specialty}</td>
                     <td className="py-2">
                       <select
                         value={s.verified_status}
                         onChange={(e) => patchSpecialty(s.specialty, e.target.value)}
-                        className="rounded border border-ink-200 bg-paper-canvas px-2 py-1 text-xs"
+                        className="rounded border border-border-subtle bg-surface-canvas px-2 py-1 text-xs"
                       >
                         {STATUS_OPTIONS.map((o) => (
                           <option key={o} value={o}>{o}</option>
@@ -189,12 +189,12 @@ export function PeerCredentialingDetail({ peer, specialties: initialSpecs }: Pro
               value={newSpec}
               onChange={(e) => setNewSpec(e.target.value)}
               placeholder="Add specialty…"
-              className="flex-1 rounded border border-ink-200 bg-paper-canvas px-2 py-1 text-sm"
+              className="flex-1 rounded border border-border-subtle bg-surface-canvas px-2 py-1 text-sm"
             />
             <button
               type="button"
               onClick={addSpecialty}
-              className="rounded-md border border-ink-300 px-3 py-1 text-xs font-medium text-ink-700 hover:bg-ink-50"
+              className="rounded-md border border-border-default px-3 py-1 text-xs font-medium text-ink-primary hover:bg-ink-50"
             >
               Add
             </button>
@@ -209,51 +209,51 @@ export function PeerCredentialingDetail({ peer, specialties: initialSpecs }: Pro
         <CardContent className="space-y-3 text-sm">
           <div className="grid grid-cols-2 gap-3">
             <label className="space-y-1">
-              <div className="text-xs text-ink-500">License number</div>
+              <div className="text-xs text-ink-secondary">License number</div>
               <input
                 value={licenseNumber}
                 onChange={(e) => setLicenseNumber(e.target.value)}
-                className="w-full rounded border border-ink-200 px-2 py-1"
+                className="w-full rounded border border-border-subtle px-2 py-1"
               />
             </label>
             <label className="space-y-1">
-              <div className="text-xs text-ink-500">State</div>
+              <div className="text-xs text-ink-secondary">State</div>
               <input
                 value={licenseState}
                 onChange={(e) => setLicenseState(e.target.value)}
-                className="w-full rounded border border-ink-200 px-2 py-1"
+                className="w-full rounded border border-border-subtle px-2 py-1"
               />
             </label>
             <label className="space-y-1 col-span-2">
-              <div className="text-xs text-ink-500">Document URL</div>
+              <div className="text-xs text-ink-secondary">Document URL</div>
               <input
                 value={docUrl}
                 onChange={(e) => setDocUrl(e.target.value)}
                 placeholder="https://…"
-                className="w-full rounded border border-ink-200 px-2 py-1"
+                className="w-full rounded border border-border-subtle px-2 py-1"
               />
               {peer.license_document_url && (
                 <a
                   href={peer.license_document_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs text-cobalt-600 hover:underline"
+                  className="text-xs text-status-info-dot hover:underline"
                 >
                   Download current document
                 </a>
               )}
             </label>
             <label className="space-y-1">
-              <div className="text-xs text-ink-500">Valid until</div>
+              <div className="text-xs text-ink-secondary">Valid until</div>
               <input
                 type="date"
                 value={expiry}
                 onChange={(e) => setExpiry(e.target.value)}
-                className="w-full rounded border border-ink-200 px-2 py-1"
+                className="w-full rounded border border-border-subtle px-2 py-1"
               />
             </label>
             <div className="flex items-end">
-              <Badge className="bg-ink-100 text-ink-700 border-0">
+              <Badge className="bg-ink-100 text-ink-primary border-0">
                 {hasDocument ? 'Document on file' : 'No document'}
               </Badge>
             </div>
@@ -275,14 +275,14 @@ export function PeerCredentialingDetail({ peer, specialties: initialSpecs }: Pro
                 onClick={markCredentialed}
                 disabled={!hasDocument || isPending}
                 title={!hasDocument ? 'License document required' : 'Mark this peer credentialed'}
-                className="rounded-md bg-mint-600 px-4 py-2 text-sm font-medium text-white hover:bg-mint-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md bg-status-success-dot px-4 py-2 text-sm font-medium text-white hover:bg-mint-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Mark Credentialed
               </button>
             )}
 
             {error && <span className="text-sm text-rose-600">{error}</span>}
-            {info && <span className="text-sm text-mint-700">{info}</span>}
+            {info && <span className="text-sm text-status-success-fg">{info}</span>}
           </div>
         </CardContent>
       </Card>

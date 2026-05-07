@@ -38,10 +38,10 @@ interface AIAnalysisPanelProps {
 function ScoreGauge({ score, label }: { score: number; label: string }) {
   const color =
     score >= 80
-      ? "text-cobalt-600"
+      ? "text-status-info-dot"
       : score >= 60
-        ? "text-amber-600"
-        : "text-critical-600";
+        ? "text-status-warning-dot"
+        : "text-status-danger-dot";
 
   const bgColor =
     score >= 80
@@ -85,7 +85,7 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className={`text-lg font-bold ${color}`}>{score}</span>
+          <span className={`text-lg font-medium ${color}`}>{score}</span>
         </div>
       </div>
       <span className="text-xs text-muted-foreground">{label}</span>
@@ -95,13 +95,13 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
 
 function SeverityBadge({ severity }: { severity: string }) {
   const config: Record<string, string> = {
-    Minor: "bg-amber-100 text-amber-700",
-    Moderate: "bg-amber-100 text-amber-700",
-    Major: "bg-critical-100 text-critical-700",
+    Minor: "bg-amber-100 text-status-warning-fg",
+    Moderate: "bg-amber-100 text-status-warning-fg",
+    Major: "bg-critical-100 text-status-danger-fg",
   };
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${config[severity] || config.Minor}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${config[severity] || config.Minor}`}
     >
       {severity}
     </span>
@@ -173,7 +173,7 @@ export function AIAnalysisPanel({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Brain className="h-5 w-5 text-cobalt-600" />
+            <Brain className="h-5 w-5 text-status-info-dot" />
             AI Analysis
             <Badge variant="ai">AI</Badge>
           </CardTitle>
@@ -264,11 +264,11 @@ export function AIAnalysisPanel({
                           <div className="flex items-center gap-2">
                             {cs.criterion}
                             {cs.ai_flag && (
-                              <AlertTriangle className="h-3 w-3 text-amber-600" />
+                              <AlertTriangle className="h-3 w-3 text-status-warning-dot" />
                             )}
                           </div>
                           {cs.flag_reason && (
-                            <p className="mt-0.5 text-[10px] text-amber-600">
+                            <p className="mt-0.5 text-[10px] text-status-warning-dot">
                               {cs.flag_reason}
                             </p>
                           )}
@@ -334,7 +334,7 @@ export function AIAnalysisPanel({
                       </p>
                     )}
                     {def.recommendation && (
-                      <p className="text-xs text-cobalt-600">
+                      <p className="text-xs text-status-info-dot">
                         Recommendation: {def.recommendation}
                       </p>
                     )}
@@ -352,7 +352,7 @@ export function AIAnalysisPanel({
             icon={FileText}
             defaultOpen={false}
           >
-            <div className="rounded-md border-l-4 border-mint-200 bg-mint-50 p-4 dark:bg-cobalt-700/20">
+            <div className="rounded-md border-l-4 border-status-success-fg/30 bg-mint-50 p-4 dark:bg-cobalt-700/20">
               <p className="whitespace-pre-wrap text-sm leading-relaxed">
                 {analysis.narrative_draft}
               </p>

@@ -221,7 +221,7 @@ export function QAPIReportTab({ companies }: Props) {
         <Card>
           <CardContent className="flex items-center justify-center py-16">
             <div className="text-center">
-              <Loader2 className="mx-auto h-8 w-8 animate-spin text-cobalt-600" />
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-status-info-dot" />
               <p className="mt-3 text-sm text-muted-foreground">
                 AI is generating your QAPI report. This may take a moment...
               </p>
@@ -232,9 +232,9 @@ export function QAPIReportTab({ companies }: Props) {
 
       {/* Error */}
       {error && (
-        <Card className="border-critical-600 bg-critical-100">
+        <Card className="border-status-danger-dot bg-critical-100">
           <CardContent className="py-4">
-            <p className="text-sm text-critical-700">{error}</p>
+            <p className="text-sm text-status-danger-fg">{error}</p>
           </CardContent>
         </Card>
       )}
@@ -243,7 +243,7 @@ export function QAPIReportTab({ companies }: Props) {
       {report && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">
+            <h3 className="text-lg font-medium">
               {report.company_name} &mdash; {report.period}
             </h3>
             <Button variant="outline" size="sm" onClick={downloadPdf}>

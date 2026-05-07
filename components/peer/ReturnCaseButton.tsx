@@ -56,7 +56,7 @@ export function ReturnCaseButton({ caseId }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-md border border-critical-200 bg-paper-surface px-2.5 py-1 text-xs font-medium text-critical-700 transition-colors hover:border-critical-600 hover:bg-critical-50"
+        className="inline-flex items-center gap-1.5 rounded-md border border-critical-200 bg-surface-card px-2.5 py-1 text-xs font-medium text-status-danger-fg transition-colors hover:border-status-danger-dot hover:bg-critical-50"
       >
         <Undo2 className="h-3 w-3" />
         Return case
@@ -71,7 +71,7 @@ export function ReturnCaseButton({ caseId }: Props) {
             </p>
           </DialogHeader>
           <div className="space-y-2">
-            <label className="text-eyebrow text-ink-500" htmlFor="return-reason">
+            <label className="text-eyebrow text-ink-secondary" htmlFor="return-reason">
               Why are you returning this case?
             </label>
             <textarea
@@ -81,10 +81,10 @@ export function ReturnCaseButton({ caseId }: Props) {
               rows={4}
               required
               minLength={10}
-              className="w-full rounded-md border border-ink-200 bg-paper-surface px-3 py-2 text-sm focus:border-cobalt-600 focus:outline-none"
+              className="w-full rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-sm focus:border-status-info-dot focus:outline-none"
               placeholder="e.g. Conflict of interest discovered after opening chart…"
             />
-            {error && <p className="text-xs text-critical-700">{error}</p>}
+            {error && <p className="text-xs text-status-danger-fg">{error}</p>}
           </div>
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={() => setOpen(false)} disabled={submitting}>

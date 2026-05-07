@@ -41,7 +41,7 @@ export default async function InProgressPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {rows.length === 0 && (
-          <p className="text-ink-400">No cases in progress.</p>
+          <p className="text-ink-tertiary">No cases in progress.</p>
         )}
         {rows.map((r) => {
           const providerName =
@@ -51,18 +51,18 @@ export default async function InProgressPage() {
             <div
               key={r.id}
               className="rounded-lg p-4 border-l-[3px]"
-              style={{ backgroundColor: "#1E3A8A", borderLeftColor: "#F59E0B" }}
+              style={{ backgroundColor: 'var(--color-card)', borderLeftColor: "#F59E0B" }}
             >
-              <div className="text-xs uppercase tracking-wider text-ink-500">
+              <div className="text-xs uppercase tracking-wider text-ink-secondary">
                 {r.status}
               </div>
-              <div className="mt-1 text-sm font-semibold text-white truncate">
+              <div className="mt-1 text-sm font-medium text-ink-primary truncate">
                 {r.chartFileName ?? "Case"}
               </div>
-              <div className="text-xs text-ink-400 mt-1">{providerName}</div>
-              <div className="text-xs text-ink-400">{r.specialty ?? "—"}</div>
+              <div className="text-xs text-ink-tertiary mt-1">{providerName}</div>
+              <div className="text-xs text-ink-tertiary">{r.specialty ?? "—"}</div>
               {due && (
-                <div className="mt-3 text-xs text-ink-300">
+                <div className="mt-3 text-xs text-ink-tertiary">
                   Due: {due.toLocaleDateString()}
                 </div>
               )}

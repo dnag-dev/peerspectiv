@@ -108,9 +108,9 @@ type LeftTab = "ash" | "chart";
 // Pulse-light risk-flag tints. amber-200 / critical-200 don't exist as
 // tokens in the current Tailwind config — falling back to -100 borders.
 const SEV_META = {
-  high:   { dot: "bg-critical-600", text: "text-critical-700", bg: "bg-critical-50", border: "border-critical-100", label: "HIGH" },
-  medium: { dot: "bg-amber-600",    text: "text-amber-700",    bg: "bg-amber-50",    border: "border-amber-100",    label: "MED"  },
-  low:    { dot: "bg-cobalt-600",   text: "text-cobalt-700",   bg: "bg-cobalt-50",   border: "border-cobalt-100",   label: "LOW"  },
+  high:   { dot: "bg-status-danger-dot", text: "text-status-danger-fg", bg: "bg-critical-50", border: "border-status-danger-fg/20", label: "HIGH" },
+  medium: { dot: "bg-status-warning-dot",    text: "text-status-warning-fg",    bg: "bg-amber-50",    border: "border-amber-100",    label: "MED"  },
+  low:    { dot: "bg-cobalt-600",   text: "text-status-info-fg",   bg: "bg-status-info-bg",   border: "border-cobalt-100",   label: "LOW"  },
 };
 
 export function PeerCaseSplit({
@@ -188,8 +188,8 @@ export function PeerCaseSplit({
       onClick={() => setTab(id)}
       className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
         tab === id
-          ? "border-cobalt-700 text-cobalt-700"
-          : "border-transparent text-ink-500 hover:text-ink-700"
+          ? "border-status-info-fg text-status-info-fg"
+          : "border-transparent text-ink-secondary hover:text-ink-primary"
       }`}
     >
       {icon}
@@ -198,7 +198,7 @@ export function PeerCaseSplit({
   );
 
   return (
-    <div className="min-h-0 flex-1 bg-paper-canvas">
+    <div className="min-h-0 flex-1 bg-surface-canvas">
       <PanelGroup
         key={layoutReady ? "hydrated" : "default"}
         orientation="horizontal"
@@ -207,13 +207,13 @@ export function PeerCaseSplit({
       >
         {/* ─── LEFT PANEL: tabbed (Ash Summary / Chart) ─── */}
         <Panel id="left-panel" defaultSize={defaultLeft} minSize={30} maxSize={70}>
-          <div className="flex h-full flex-col overflow-hidden rounded-xl border border-ink-200 bg-paper-surface">
+          <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-card">
             {/* Tab bar */}
-            <div className="flex flex-shrink-0 items-center justify-between border-b border-ink-200">
+            <div className="flex flex-shrink-0 items-center justify-between border-b border-border-subtle">
               <div className="flex">
                 <TabBtn
                   id="ash"
-                  icon={<Sparkles className={`h-4 w-4 ${tab === "ash" ? "text-cobalt-700" : ""}`} />}
+                  icon={<Sparkles className={`h-4 w-4 ${tab === "ash" ? "text-status-info-fg" : ""}`} />}
                   label="Ash Summary"
                 />
                 <TabBtn id="chart" icon={<FileText className="h-4 w-4" />} label="Medical Chart" />
@@ -223,7 +223,7 @@ export function PeerCaseSplit({
                   href={chartViewUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="mr-3 flex items-center gap-1 rounded-md border border-ink-200 px-2.5 py-1 text-xs text-ink-600 hover:bg-ink-50"
+                  className="mr-3 flex items-center gap-1 rounded-md border border-border-subtle px-2.5 py-1 text-xs text-ink-secondary hover:bg-ink-50"
                 >
                   <ExternalLink className="h-3 w-3" /> Open fullscreen
                 </a>
@@ -234,31 +234,31 @@ export function PeerCaseSplit({
             {tab === "ash" && (
               <div className="flex-1 space-y-6 overflow-y-auto p-5">
                 <section>
-                  <h3 className="mb-2 text-eyebrow text-ink-500">
+                  <h3 className="mb-2 text-eyebrow text-ink-secondary">
                     Chart Summary
                   </h3>
                   {chartSummary ? (
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-700">
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-primary">
                       {chartSummary}
                     </p>
                   ) : (
-                    <p className="text-sm leading-relaxed italic text-ink-500">
+                    <p className="text-sm leading-relaxed italic text-ink-secondary">
                       AI analysis pending…
                     </p>
                   )}
                 </section>
 
                 <section>
-                  <h3 className="mb-3 text-eyebrow text-ink-500">
+                  <h3 className="mb-3 text-eyebrow text-ink-secondary">
                     Risk Flags
                     {riskFlags.length > 0 && (
-                      <span className="ml-2 rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-mono font-medium text-ink-600">
+                      <span className="ml-2 rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-mono font-medium text-ink-secondary">
                         {riskFlags.length}
                       </span>
                     )}
                   </h3>
                   {riskFlags.length === 0 ? (
-                    <p className="text-xs text-ink-400">No risk flags identified.</p>
+                    <p className="text-xs text-ink-tertiary">No risk flags identified.</p>
                   ) : (
                     <ul className="space-y-2">
                       {riskFlags.map((flag, i) => {
@@ -274,16 +274,16 @@ export function PeerCaseSplit({
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
                                 <span
-                                  className={`text-[10px] font-semibold ${meta.text}`}
+                                  className={`text-[10px] font-medium ${meta.text}`}
                                 >
                                   {meta.label}
                                 </span>
-                                <span className="text-sm font-medium text-ink-900">
+                                <span className="text-sm font-medium text-ink-primary">
                                   {flag.label}
                                 </span>
                               </div>
                               {flag.description && (
-                                <p className="mt-1 text-xs leading-relaxed text-ink-600">
+                                <p className="mt-1 text-xs leading-relaxed text-ink-secondary">
                                   {flag.description}
                                 </p>
                               )}
@@ -301,12 +301,12 @@ export function PeerCaseSplit({
             {tab === "chart" && (
               <div className="flex flex-1 flex-col p-3">
                 {chartFileName && (
-                  <div className="flex-shrink-0 border-b border-ink-200 px-1 pb-2 text-xs text-ink-500">
+                  <div className="flex-shrink-0 border-b border-border-subtle px-1 pb-2 text-xs text-ink-secondary">
                     {chartFileName}
                   </div>
                 )}
                 {chartViewUrl ? (
-                  <div className="mt-2 flex-1 overflow-hidden rounded-lg border border-ink-200">
+                  <div className="mt-2 flex-1 overflow-hidden rounded-lg border border-border-subtle">
                     <iframe
                       key={chartFrameUrl ?? chartViewUrl}
                       src={chartFrameUrl ?? chartViewUrl}
@@ -315,7 +315,7 @@ export function PeerCaseSplit({
                     />
                   </div>
                 ) : (
-                  <div className="flex flex-1 items-center justify-center text-sm text-ink-400">
+                  <div className="flex flex-1 items-center justify-center text-sm text-ink-tertiary">
                     No chart file — upload from admin batch page
                   </div>
                 )}
@@ -327,7 +327,7 @@ export function PeerCaseSplit({
         {/* Drag handle */}
         <PanelResizeHandle className="group mx-2 flex w-1.5 cursor-col-resize items-center justify-center">
           <div className="flex h-full w-full items-center justify-center rounded-full bg-ink-50 transition-colors group-hover:bg-cobalt-200 group-data-[resize-handle-state=drag]:bg-cobalt-400">
-            <GripVertical className="h-4 w-4 text-ink-300 group-hover:text-ink-500" />
+            <GripVertical className="h-4 w-4 text-ink-tertiary group-hover:text-ink-secondary" />
           </div>
         </PanelResizeHandle>
 
@@ -336,37 +336,37 @@ export function PeerCaseSplit({
           <div className="h-full overflow-y-auto rounded-xl">
             {existingResult ? (
               <div className="space-y-4">
-                <div className="rounded-xl border border-mint-200 bg-mint-50 p-6 text-center">
+                <div className="rounded-xl border border-status-success-fg/30 bg-mint-50 p-6 text-center">
                   <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-mint-100">
-                    <svg className="h-6 w-6 text-mint-700" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                    <svg className="h-6 w-6 text-status-success-fg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                   </div>
-                  <h2 className="text-h2 text-ink-900">Review Submitted</h2>
-                  <p className="mt-1 text-small text-ink-500">
+                  <h2 className="text-h2 text-ink-primary">Review Submitted</h2>
+                  <p className="mt-1 text-small text-ink-secondary">
                     {existingResult.submittedAt
                       ? `Submitted ${new Date(existingResult.submittedAt).toLocaleString()}`
                       : "This case has already been reviewed."}
                   </p>
                 </div>
                 {(existingResult.overallScore != null || existingResult.narrativeFinal) && (
-                  <div className="rounded-xl border border-ink-200 bg-paper-surface p-5">
+                  <div className="rounded-xl border border-border-subtle bg-surface-card p-5">
                     {existingResult.overallScore != null && (
                       <div
                         className="mb-3"
                         title="Yes/No score = (yes − no) ÷ (yes + no), N/A excluded"
                       >
-                        <div className="text-eyebrow text-ink-500">Overall Score</div>
-                        <div className="mt-1 text-h1 text-ink-900">
+                        <div className="text-eyebrow text-ink-secondary">Overall Score</div>
+                        <div className="mt-1 text-h1 text-ink-primary">
                           {existingResult.overallScore}
-                          <span className="ml-1 text-small text-ink-400">/ 100</span>
+                          <span className="ml-1 text-small text-ink-tertiary">/ 100</span>
                         </div>
                       </div>
                     )}
                     {existingResult.narrativeFinal && (
                       <div>
-                        <div className="text-eyebrow text-ink-500">Peer Narrative</div>
-                        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-ink-700">
+                        <div className="text-eyebrow text-ink-secondary">Peer Narrative</div>
+                        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-ink-primary">
                           {existingResult.narrativeFinal}
                         </p>
                       </div>

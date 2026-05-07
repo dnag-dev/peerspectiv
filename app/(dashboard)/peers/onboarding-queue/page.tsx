@@ -22,8 +22,8 @@ export default async function OnboardingQueuePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink-900">Onboarding queue</h1>
-        <p className="text-sm text-ink-500">
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Onboarding queue</h1>
+        <p className="text-sm text-ink-secondary">
           Submitted peer applications awaiting admin review.
         </p>
       </div>
@@ -42,7 +42,7 @@ export default async function OnboardingQueuePage() {
           <CardContent className="p-0">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-y border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
+                <tr className="border-y border-border-subtle bg-ink-50 text-xs uppercase tracking-wider text-ink-secondary">
                   <th className="px-4 py-2 text-left">Email</th>
                   <th className="px-4 py-2 text-left">Submitted</th>
                   <th className="px-4 py-2 text-right">Actions</th>

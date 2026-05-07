@@ -91,7 +91,7 @@ export default function LoginPage() {
             />
           </div>
         </div>
-        <p className="text-ink-300 mb-8 text-lg">AI-Powered Medical Peer Review Platform</p>
+        <p className="text-ink-tertiary mb-8 text-lg">AI-Powered Medical Peer Review Platform</p>
 
         {showDemo ? (
           <div className="bg-white rounded-xl shadow-xl p-8">
@@ -106,22 +106,22 @@ export default function LoginPage() {
                   data-testid={`demo-login-${u.role}`}
                   onClick={() => loginAsDemo(u.role)}
                   disabled={loading !== null}
-                  className="w-full rounded-lg border-2 border-ink-200 bg-white p-4 text-left transition-all hover:border-ink-400 hover:shadow-md disabled:opacity-50 disabled:hover:border-ink-200 disabled:hover:shadow-none"
+                  className="w-full rounded-lg border-2 border-border-subtle bg-white p-4 text-left transition-all hover:border-ink-400 hover:shadow-md disabled:opacity-50 disabled:hover:border-border-subtle disabled:hover:shadow-none"
                   style={{ borderLeftWidth: 6, borderLeftColor: u.accent }}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-semibold text-ink-900 text-sm">{u.label}</div>
-                      <div className="text-xs text-ink-500 mt-0.5">{u.email}</div>
-                      <div className="text-xs text-ink-600 mt-1">{u.blurb}</div>
+                      <div className="font-medium text-ink-primary text-sm">{u.label}</div>
+                      <div className="text-xs text-ink-secondary mt-0.5">{u.email}</div>
+                      <div className="text-xs text-ink-secondary mt-1">{u.blurb}</div>
                     </div>
                     {loading === u.role ? (
-                      <svg className="animate-spin h-5 w-5 text-ink-400" viewBox="0 0 24 24" fill="none">
+                      <svg className="animate-spin h-5 w-5 text-ink-tertiary" viewBox="0 0 24 24" fill="none">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                       </svg>
                     ) : (
-                      <span className="text-ink-400 text-lg">→</span>
+                      <span className="text-ink-tertiary text-lg">→</span>
                     )}
                   </div>
                 </button>
@@ -130,7 +130,7 @@ export default function LoginPage() {
             {isClerkConfigured && (
               <button
                 onClick={() => setShowDemo(false)}
-                className="mt-5 text-xs text-ink-500 hover:text-ink-700 underline"
+                className="mt-5 text-xs text-ink-secondary hover:text-ink-primary underline"
               >
                 Use real Clerk sign-in instead
               </button>
@@ -156,7 +156,7 @@ export default function LoginPage() {
             )}
             <button
               onClick={() => setShowDemo(true)}
-              className="mt-5 text-xs text-ink-300 hover:text-white underline"
+              className="mt-5 text-xs text-ink-tertiary hover:text-white underline"
             >
               ← Back to demo personas
             </button>

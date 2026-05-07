@@ -129,7 +129,7 @@ export function AddProviderDialog({ companyId }: AddProviderDialogProps) {
               name="specialty"
               required
               defaultValue=""
-              className="flex h-10 w-full rounded-md border border-ink-200 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cobalt-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-full rounded-md border border-border-subtle bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-ink-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cobalt-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="" disabled>
                 {specialties.length === 0 ? "Loading specialties…" : "Select a specialty"}
@@ -149,7 +149,7 @@ export function AddProviderDialog({ companyId }: AddProviderDialogProps) {
               <Input id="npi" name="npi" placeholder="1234567890" />
             </div>
           </div>
-          {error && <p className="text-sm text-critical-600">{error}</p>}
+          {error && <p className="text-sm text-status-danger-dot">{error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               Cancel

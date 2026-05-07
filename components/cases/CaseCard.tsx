@@ -35,7 +35,7 @@ export function CaseCard({ reviewCase, showCompany = true }: CaseCardProps) {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1 space-y-2">
               <div className="flex items-center gap-2">
-                <h3 className="truncate text-sm font-semibold">
+                <h3 className="truncate text-sm font-medium">
                   {providerName}
                 </h3>
                 <CaseStatusBadge status={reviewCase.status} size="sm" />

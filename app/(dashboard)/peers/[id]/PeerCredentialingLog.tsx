@@ -51,7 +51,7 @@ export function PeerCredentialingLog({ peerId }: { peerId: string }) {
             <ShieldCheck className="h-5 w-5" /> Credentialing Log
           </CardTitle>
         </CardHeader>
-        <CardContent><p className="text-sm text-ink-500">Loading...</p></CardContent>
+        <CardContent><p className="text-sm text-ink-secondary">Loading...</p></CardContent>
       </Card>
     );
   }
@@ -69,27 +69,27 @@ export function PeerCredentialingLog({ peerId }: { peerId: string }) {
       <CardContent>
         <div className="space-y-3">
           {entries.map((entry) => (
-            <div key={entry.id} className="flex items-start gap-3 rounded-md border border-ink-100 px-3 py-2">
+            <div key={entry.id} className="flex items-start gap-3 rounded-md border border-border-subtle px-3 py-2">
               <div className="flex flex-col items-center gap-1 pt-0.5">
                 <div className="h-2 w-2 rounded-full bg-mint-400" />
                 <div className="w-px flex-1 bg-ink-200" />
               </div>
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs border-0 bg-mint-50 text-mint-700">
+                  <Badge variant="outline" className="text-xs border-0 bg-mint-50 text-status-success-fg">
                     {entry.action}
                   </Badge>
                 </div>
-                <div className="text-xs text-ink-500">
+                <div className="text-xs text-ink-secondary">
                   {formatDate(entry.performed_at)}
                 </div>
                 {(entry.valid_until_old || entry.valid_until_new) && (
-                  <div className="text-xs text-ink-600">
+                  <div className="text-xs text-ink-secondary">
                     Valid until: {entry.valid_until_old ?? "none"} → {entry.valid_until_new ?? "none"}
                   </div>
                 )}
                 {entry.notes && (
-                  <p className="text-xs text-ink-600">{entry.notes}</p>
+                  <p className="text-xs text-ink-secondary">{entry.notes}</p>
                 )}
               </div>
             </div>

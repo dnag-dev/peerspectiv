@@ -95,14 +95,14 @@ export function PeerPickerModal({
                   disabled={isUnavailable || isPicking || isCurrent}
                   className={`flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${
                     isCurrent
-                      ? "border-cobalt-600 bg-cobalt-100"
+                      ? "border-status-info-dot bg-status-info-bg"
                       : isUnavailable
-                        ? "cursor-not-allowed border-ink-200 bg-ink-50 opacity-50"
-                        : "border-ink-200 hover:border-cobalt-600 hover:bg-cobalt-100/50"
+                        ? "cursor-not-allowed border-border-subtle bg-ink-50 opacity-50"
+                        : "border-border-subtle hover:border-status-info-dot hover:bg-status-info-bg/50"
                   }`}
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cobalt-100">
-                    <User className="h-4 w-4 text-cobalt-600" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-status-info-bg">
+                    <User className="h-4 w-4 text-status-info-dot" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -110,12 +110,12 @@ export function PeerPickerModal({
                         {r.full_name}
                       </span>
                       {isCurrent && (
-                        <span className="rounded bg-cobalt-100 px-1.5 py-0.5 text-[10px] font-medium text-cobalt-600">
+                        <span className="rounded bg-status-info-bg px-1.5 py-0.5 text-[10px] font-medium text-status-info-dot">
                           CURRENT
                         </span>
                       )}
                       {isUnavailable && (
-                        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-status-warning-fg">
                           UNAVAILABLE
                         </span>
                       )}
@@ -132,7 +132,7 @@ export function PeerPickerModal({
                     </div>
                   </div>
                   {isPicking ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-cobalt-600" />
+                    <Loader2 className="h-4 w-4 animate-spin text-status-info-dot" />
                   ) : (
                     !isUnavailable &&
                     !isCurrent && (

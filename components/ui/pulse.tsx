@@ -33,9 +33,9 @@ export function AIConfidenceChip({
 }) {
   const tier = confidence >= 75 ? "high" : confidence >= 40 ? "low" : "very-low";
   const styles = {
-    "high":     "bg-cobalt-50 text-cobalt-700",
-    "low":      "bg-amber-100 text-amber-700",
-    "very-low": "bg-critical-100 text-critical-700",
+    "high":     "bg-status-info-bg text-status-info-fg",
+    "low":      "bg-amber-100 text-status-warning-fg",
+    "very-low": "bg-critical-100 text-status-danger-fg",
   }[tier];
   return (
     <span
@@ -69,13 +69,13 @@ export function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border border-ink-200 bg-paper-surface px-2.5 py-1.5 text-xs text-ink-600 transition-colors hover:border-cobalt-300 hover:bg-cobalt-50",
+        "inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 py-1.5 text-xs text-ink-secondary transition-colors hover:border-status-info-fg/40 hover:bg-status-info-bg",
         className
       )}
     >
-      <span className="text-ink-500">{label}:</span>
+      <span className="text-ink-secondary">{label}:</span>
       <span className="font-medium text-ink-800">{value}</span>
-      <svg viewBox="0 0 8 8" className="h-2 w-2 text-ink-400" aria-hidden>
+      <svg viewBox="0 0 8 8" className="h-2 w-2 text-ink-tertiary" aria-hidden>
         <path d="M1 2l3 3 3-3" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
       </svg>
     </button>
@@ -110,8 +110,8 @@ export function PersonaSwitcher({
           className={cn(
             "rounded-md px-3.5 py-1.5 text-xs transition-all",
             active === p.id
-              ? "bg-paper-surface font-medium text-cobalt-700 shadow-sm"
-              : "font-normal text-ink-500 hover:text-ink-700"
+              ? "bg-surface-card font-medium text-status-info-fg shadow-sm"
+              : "font-normal text-ink-secondary hover:text-ink-primary"
           )}
         >
           {p.label}
@@ -133,9 +133,9 @@ export function DeltaChip({
   className?: string;
 }) {
   const styles = {
-    up:   "bg-mint-100 text-mint-700",
-    down: "bg-critical-100 text-critical-700",
-    flat: "bg-ink-100 text-ink-600",
+    up:   "bg-mint-100 text-status-success-fg",
+    down: "bg-critical-100 text-status-danger-fg",
+    flat: "bg-ink-100 text-ink-secondary",
   }[direction];
   const arrow = direction === "up" ? "▴" : direction === "down" ? "▾" : "·";
   return (
@@ -217,7 +217,7 @@ export function HeroGradientCard({
                 (primaryCta.href ? (
                   <a
                     href={primaryCta.href}
-                    className="rounded-md bg-white px-4 py-2 text-sm font-medium text-cobalt-700 transition-colors hover:bg-cobalt-50"
+                    className="rounded-md bg-white px-4 py-2 text-sm font-medium text-status-info-fg transition-colors hover:bg-status-info-bg"
                   >
                     {primaryCta.label}
                   </a>
@@ -225,7 +225,7 @@ export function HeroGradientCard({
                   <button
                     type="button"
                     onClick={primaryCta.onClick}
-                    className="rounded-md bg-white px-4 py-2 text-sm font-medium text-cobalt-700 transition-colors hover:bg-cobalt-50"
+                    className="rounded-md bg-white px-4 py-2 text-sm font-medium text-status-info-fg transition-colors hover:bg-status-info-bg"
                   >
                     {primaryCta.label}
                   </button>
@@ -277,10 +277,10 @@ export function MatchScorePanel({
     >
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-eyebrow text-cobalt-700 mb-1">Match score</div>
+          <div className="text-eyebrow text-status-info-fg mb-1">Match score</div>
           <div className="flex items-baseline gap-0.5">
-            <span className="text-stat-match text-cobalt-700">{score}</span>
-            <span className="text-h2 text-cobalt-500">%</span>
+            <span className="text-stat-match text-status-info-fg">{score}</span>
+            <span className="text-h2 text-status-info-dot">%</span>
           </div>
         </div>
         <svg viewBox="0 0 60 60" className="h-15 w-15" style={{ width: 60, height: 60 }}>
@@ -374,15 +374,15 @@ export function KPISparklineCard({
   return (
     <div
       className={cn(
-        "rounded-lg border border-ink-200/60 bg-paper-surface p-3.5 shadow-sm",
+        "rounded-lg border border-border-subtle/60 bg-surface-card p-3.5 shadow-sm",
         className
       )}
     >
       <div className="mb-2.5 flex items-center justify-between gap-2">
-        <div className="text-eyebrow text-ink-500 truncate">{label}</div>
+        <div className="text-eyebrow text-ink-secondary truncate">{label}</div>
         {delta && <DeltaChip value={delta.value} direction={delta.direction} />}
       </div>
-      <div className="text-stat-large text-ink-900">{value}</div>
+      <div className="text-stat-large text-ink-primary">{value}</div>
       {trend && trend.length > 1 && (
         <Sparkline data={trend} color={semanticColor} className="mt-2.5 h-7" />
       )}

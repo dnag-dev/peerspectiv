@@ -18,15 +18,15 @@ const buttonVariants = cva(
         default:
           "bg-cobalt-700 text-white hover:bg-cobalt-800 active:bg-cobalt-800 shadow-sm",
         secondary:
-          "border border-ink-200 bg-paper-surface text-ink-700 hover:bg-ink-50 hover:border-ink-300",
+          "border border-border-subtle bg-surface-card text-ink-primary hover:bg-ink-50 hover:border-border-default",
         ghost:
-          "text-ink-600 hover:bg-ink-100 hover:text-ink-900",
+          "text-ink-secondary hover:bg-ink-100 hover:text-ink-primary",
         destructive:
-          "bg-critical-600 text-white hover:bg-critical-700 shadow-sm",
+          "bg-status-danger-dot text-white hover:bg-critical-700 shadow-sm",
         outline:
-          "border border-ink-200 bg-paper-surface text-ink-700 hover:bg-ink-50 hover:border-ink-300",
+          "border border-border-subtle bg-surface-card text-ink-primary hover:bg-ink-50 hover:border-border-default",
         link:
-          "text-cobalt-700 underline-offset-4 hover:underline",
+          "text-status-info-fg underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2",

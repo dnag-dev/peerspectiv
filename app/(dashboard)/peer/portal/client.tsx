@@ -150,7 +150,7 @@ export function PeerPortalClient({
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-medium tracking-tight text-ink-primary">My queue</h1>
-          <p className="mt-1 text-sm text-ink-500">
+          <p className="mt-1 text-sm text-ink-secondary">
             {activeStatus === "all"
               ? "No cases assigned"
               : `No cases match status: ${activeStatus.replace("_", " ")}`}
@@ -160,7 +160,7 @@ export function PeerPortalClient({
         <div className="flex flex-col items-center justify-center py-24">
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-ink-100">
           <svg
-            className="h-8 w-8 text-ink-400"
+            className="h-8 w-8 text-ink-tertiary"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
@@ -176,7 +176,7 @@ export function PeerPortalClient({
         <h2 className="text-lg font-medium tracking-tight text-ink-primary">
           No assigned cases
         </h2>
-        <p className="mt-1 text-sm text-ink-500">
+        <p className="mt-1 text-sm text-ink-secondary">
           You have no cases in your queue. Check back later for new assignments.
         </p>
         </div>
@@ -189,8 +189,8 @@ export function PeerPortalClient({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold text-ink-900">My Queue</h1>
-        <p className="mt-1 text-sm text-ink-500">
+        <h1 className="text-2xl font-medium text-ink-primary">My Queue</h1>
+        <p className="mt-1 text-sm text-ink-secondary">
           {cases.length} case{cases.length !== 1 ? "s" : ""}
           {activeStatus === "all" ? " assigned to you" : ` matching status: ${activeStatus.replace("_", " ")}`}
         </p>
@@ -247,7 +247,7 @@ export function PeerPortalClient({
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="truncate text-sm font-semibold text-ink-900">
+                    <h3 className="truncate text-sm font-medium text-ink-primary">
                       {c.provider?.first_name} {c.provider?.last_name}
                     </h3>
                     {displayedPriority !== "normal" && (
@@ -261,7 +261,7 @@ export function PeerPortalClient({
                       </StatusPill>
                     )}
                   </div>
-                  <p className="mt-0.5 truncate text-xs text-ink-500">
+                  <p className="mt-0.5 truncate text-xs text-ink-secondary">
                     {c.provider?.specialty ?? "General"} · {c.company?.name}
                     {group.batchPeriod ? ` · ${group.batchPeriod}` : ""}
                   </p>
@@ -273,10 +273,10 @@ export function PeerPortalClient({
                   className={cn(
                     "mt-3 text-xs font-medium",
                     isPastDue
-                      ? "text-critical-600"
+                      ? "text-status-danger-dot"
                       : isUrgent
-                        ? "text-amber-600"
-                        : "text-ink-500"
+                        ? "text-status-warning-dot"
+                        : "text-ink-secondary"
                   )}
                 >
                   {isPastDue
@@ -287,7 +287,7 @@ export function PeerPortalClient({
                         ? "Due tomorrow"
                         : `Due ${formatShortDate(c.due_date)} (${days}d)`}
                   {isMulti && (
-                    <span className="ml-1 text-ink-400">(earliest)</span>
+                    <span className="ml-1 text-ink-tertiary">(earliest)</span>
                   )}
                 </div>
               )}

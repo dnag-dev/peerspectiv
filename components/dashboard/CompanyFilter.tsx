@@ -32,7 +32,7 @@ export function CompanyFilter({ companies, current }: Props) {
     <div className="flex items-center gap-2">
       <label
         htmlFor="dashboard-company-filter"
-        className="text-xs uppercase tracking-wider text-ink-500 font-medium"
+        className="text-xs uppercase tracking-wider text-ink-secondary font-medium"
       >
         Company:
       </label>
@@ -41,7 +41,7 @@ export function CompanyFilter({ companies, current }: Props) {
         data-testid="company-filter"
         value={current}
         onChange={(e) => setCompany(e.target.value)}
-        className="rounded-md border border-ink-300 bg-white px-2 py-1 text-sm"
+        className="rounded-md border border-border-default bg-white px-2 py-1 text-sm"
       >
         <option value="">All companies</option>
         {companies.map((c) => (

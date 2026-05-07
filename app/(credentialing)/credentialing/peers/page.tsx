@@ -76,9 +76,9 @@ export default async function CredentialingPeersListPage({
   return (
     <div className="space-y-6">
       <div className="flex items-baseline gap-3">
-        <Link href="/credentialing" className="text-sm text-cobalt-600 hover:underline">← Dashboard</Link>
-        <h1 className="text-2xl font-bold text-ink-900">{meta.title}</h1>
-        <span className="text-sm text-ink-500">({rows.length})</span>
+        <Link href="/credentialing" className="text-sm text-status-info-dot hover:underline">← Dashboard</Link>
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">{meta.title}</h1>
+        <span className="text-sm text-ink-secondary">({rows.length})</span>
       </div>
 
       {rows.length === 0 ? (
@@ -92,7 +92,7 @@ export default async function CredentialingPeersListPage({
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-y border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
+                  <tr className="border-y border-border-subtle bg-ink-50 text-xs uppercase tracking-wider text-ink-secondary">
                     <th className="px-4 py-2 text-left">Peer</th>
                     <th className="px-4 py-2 text-left">State</th>
                     <th className="px-4 py-2 text-left">License</th>
@@ -103,29 +103,29 @@ export default async function CredentialingPeersListPage({
                 </thead>
                 <tbody>
                   {rows.map((r) => (
-                    <tr key={r.id} className="border-b border-ink-100 hover:bg-ink-50">
+                    <tr key={r.id} className="border-b border-border-subtle hover:bg-ink-50">
                       <td className="px-4 py-2">
-                        <div className="font-medium text-ink-900">{r.fullName ?? '—'}</div>
-                        <div className="text-xs text-ink-500">{r.email ?? '—'}</div>
+                        <div className="font-medium text-ink-primary">{r.fullName ?? '—'}</div>
+                        <div className="text-xs text-ink-secondary">{r.email ?? '—'}</div>
                       </td>
                       <td className="px-4 py-2">
-                        <Badge className="bg-ink-100 text-ink-700 border-0">{r.state}</Badge>
+                        <Badge className="bg-ink-100 text-ink-primary border-0">{r.state}</Badge>
                       </td>
-                      <td className="px-4 py-2 text-ink-600">
+                      <td className="px-4 py-2 text-ink-secondary">
                         {r.licenseNumber
                           ? `${r.licenseNumber}${r.licenseState ? ` (${r.licenseState})` : ''}`
                           : '—'}
                       </td>
-                      <td className="px-4 py-2 text-ink-600">
+                      <td className="px-4 py-2 text-ink-secondary">
                         {r.credentialValidUntil
                           ? String(r.credentialValidUntil).slice(0, 10)
                           : '—'}
                       </td>
-                      <td className="px-4 py-2 text-ink-600">{r.hasDocument ? 'On file' : '—'}</td>
+                      <td className="px-4 py-2 text-ink-secondary">{r.hasDocument ? 'On file' : '—'}</td>
                       <td className="px-4 py-2 text-right">
                         <Link
                           href={`/credentialing/peers/${r.id}`}
-                          className="rounded-md border border-ink-300 px-3 py-1 text-xs font-medium text-ink-700 hover:bg-ink-50"
+                          className="rounded-md border border-border-default px-3 py-1 text-xs font-medium text-ink-primary hover:bg-ink-50"
                         >
                           Open
                         </Link>

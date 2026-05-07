@@ -75,13 +75,13 @@ export function SetUnavailableModal({ open, onClose, peerId, peerName, onSuccess
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div>
-            <label className="block text-sm font-medium text-ink-700 mb-1">
+            <label className="block text-sm font-medium text-ink-primary mb-1">
               Reason
             </label>
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-border-default px-3 py-2 text-sm"
             >
               {REASONS.map((r) => (
                 <option key={r.value} value={r.value}>
@@ -92,39 +92,39 @@ export function SetUnavailableModal({ open, onClose, peerId, peerName, onSuccess
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink-700 mb-1">
+            <label className="block text-sm font-medium text-ink-primary mb-1">
               From
             </label>
             <input
               type="date"
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
-              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-border-default px-3 py-2 text-sm"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink-700 mb-1">
+            <label className="block text-sm font-medium text-ink-primary mb-1">
               Until (optional)
             </label>
             <input
               type="date"
               value={untilDate}
               onChange={(e) => setUntilDate(e.target.value)}
-              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-border-default px-3 py-2 text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink-700 mb-1">
+            <label className="block text-sm font-medium text-ink-primary mb-1">
               Notes
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full rounded-md border border-ink-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-border-default px-3 py-2 text-sm"
               placeholder="Additional details..."
             />
           </div>

@@ -29,16 +29,16 @@ export default async function CredentialerProfilePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-ink-900">My Profile</h1>
+      <h1 className="text-2xl font-medium tracking-tight text-ink-primary">My Profile</h1>
       <Card>
         <CardHeader>
           <CardTitle>{me?.fullName ?? email}</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-3 text-sm">
-          <div><span className="text-ink-500">Email</span><div>{me?.email ?? email}</div></div>
-          <div><span className="text-ink-500">Per-peer rate</span><div>${Number(me?.perPeerRate ?? 0).toFixed(2)}</div></div>
-          <div><span className="text-ink-500">Status</span><div>{me?.isActive ? 'Active' : 'Inactive'}</div></div>
-          <div><span className="text-ink-500">Member since</span><div>{me?.createdAt ? new Date(me.createdAt).toLocaleDateString() : '—'}</div></div>
+          <div><span className="text-ink-secondary">Email</span><div>{me?.email ?? email}</div></div>
+          <div><span className="text-ink-secondary">Per-peer rate</span><div>${Number(me?.perPeerRate ?? 0).toFixed(2)}</div></div>
+          <div><span className="text-ink-secondary">Status</span><div>{me?.isActive ? 'Active' : 'Inactive'}</div></div>
+          <div><span className="text-ink-secondary">Member since</span><div>{me?.createdAt ? new Date(me.createdAt).toLocaleDateString() : '—'}</div></div>
         </CardContent>
       </Card>
     </div>

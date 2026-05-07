@@ -61,10 +61,10 @@ export default async function ClientSubmitPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">
           Submit Records
         </h1>
-        <p className="text-sm text-white/60">
+        <p className="text-sm text-ink-primary/60">
           Upload charts for peer review. Peerspectiv will activate the batch
           after a quick intake check.
         </p>

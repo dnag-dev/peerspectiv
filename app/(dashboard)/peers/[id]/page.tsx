@@ -37,9 +37,9 @@ export const dynamic = "force-dynamic";
 const ESTIMATED_RATE_PER_CASE = 75;
 
 const AVAILABILITY_STYLES: Record<string, string> = {
-  available: "bg-mint-100 text-cobalt-700",
-  vacation: "bg-critical-100 text-critical-700",
-  on_leave: "bg-amber-100 text-amber-700",
+  available: "bg-mint-100 text-status-info-fg",
+  vacation: "bg-critical-100 text-status-danger-fg",
+  on_leave: "bg-amber-100 text-status-warning-fg",
   inactive: "bg-ink-100 text-ink-800",
 };
 
@@ -170,11 +170,11 @@ export default async function PeerDetailPage({
       <Card>
         <CardContent className="flex items-start justify-between gap-6 pt-6">
           <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-brand-navy text-lg font-semibold text-white">
+            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-brand-navy text-lg font-medium text-white">
               {initials(peer.full_name)}
             </div>
             <div className="space-y-1">
-              <h1 className="text-2xl font-bold tracking-tight">
+              <h1 className="text-2xl font-medium tracking-tight">
                 {peer.full_name || "Unnamed Peer"}
               </h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -219,28 +219,28 @@ export default async function PeerDetailPage({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <ClipboardCheck className="h-5 w-5 text-cobalt-600" />
+            <ClipboardCheck className="h-5 w-5 text-status-info-dot" />
             <div>
               <p className="text-xs text-muted-foreground">Active cases</p>
-              <p className="text-xl font-semibold">{activeCases.length}</p>
+              <p className="text-xl font-medium">{activeCases.length}</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <CheckCircle2 className="h-5 w-5 text-cobalt-600" />
+            <CheckCircle2 className="h-5 w-5 text-status-info-dot" />
             <div>
               <p className="text-xs text-muted-foreground">Completed reviews</p>
-              <p className="text-xl font-semibold">{completedCount}</p>
+              <p className="text-xl font-medium">{completedCount}</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <Clock className="h-5 w-5 text-amber-600" />
+            <Clock className="h-5 w-5 text-status-warning-dot" />
             <div>
               <p className="text-xs text-muted-foreground">Avg time / review</p>
-              <p className="text-xl font-semibold">
+              <p className="text-xl font-medium">
                 {avgMinutes ? `${avgHours}h` : "—"}
               </p>
             </div>
@@ -248,12 +248,12 @@ export default async function PeerDetailPage({
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <DollarSign className="h-5 w-5 text-cobalt-600" />
+            <DollarSign className="h-5 w-5 text-status-info-dot" />
             <div>
               <p className="text-xs text-muted-foreground">
                 Earnings <span className="italic">(est.)</span>
               </p>
-              <p className="text-xl font-semibold">
+              <p className="text-xl font-medium">
                 ${earningsEstimate.toLocaleString()}
               </p>
             </div>
@@ -306,7 +306,7 @@ export default async function PeerDetailPage({
                         {c.batch_id ? (
                           <Link
                             href={`/batches/${c.batch_id}`}
-                            className="text-cobalt-600 hover:underline"
+                            className="text-status-info-dot hover:underline"
                           >
                             {batch?.batch_name || "View batch"}
                           </Link>
@@ -377,7 +377,7 @@ export default async function PeerDetailPage({
                       <TableCell>{company?.name || "—"}</TableCell>
                       <TableCell>
                         {r.overall_score != null ? (
-                          <span className="font-semibold">
+                          <span className="font-medium">
                             {r.overall_score}
                             <span className="text-xs text-muted-foreground">/100</span>
                           </span>
@@ -392,7 +392,7 @@ export default async function PeerDetailPage({
                         {rc?.batch_id ? (
                           <Link
                             href={`/batches/${rc.batch_id}`}
-                            className="text-cobalt-600 hover:underline"
+                            className="text-status-info-dot hover:underline"
                           >
                             View
                           </Link>

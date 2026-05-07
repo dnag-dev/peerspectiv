@@ -28,8 +28,8 @@ export default async function NewPeerInboxPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink-900">New Peer Inbox</h1>
-        <p className="text-sm text-ink-500">
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">New Peer Inbox</h1>
+        <p className="text-sm text-ink-secondary">
           Peers awaiting credentialing review. Set a credential expiry date to
           activate them.
         </p>
@@ -39,20 +39,20 @@ export default async function NewPeerInboxPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             Pending review
-            <span className="text-sm font-normal text-ink-500">({list.length})</span>
-            <Badge className="ml-auto bg-amber-100 text-amber-700 border-0">Inactive</Badge>
+            <span className="text-sm font-normal text-ink-secondary">({list.length})</span>
+            <Badge className="ml-auto bg-amber-100 text-status-warning-fg border-0">Inactive</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {list.length === 0 ? (
-            <div className="px-6 py-8 text-center text-sm text-ink-400">
+            <div className="px-6 py-8 text-center text-sm text-ink-tertiary">
               No peers waiting.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-y border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
+                  <tr className="border-y border-border-subtle bg-ink-50 text-xs uppercase tracking-wider text-ink-secondary">
                     <th className="px-4 py-2 text-left">Peer</th>
                     <th className="px-4 py-2 text-left">Specialties</th>
                     <th className="px-4 py-2 text-left">License</th>
@@ -71,27 +71,27 @@ export default async function NewPeerInboxPage() {
                       ? new Date(r.created_at).toLocaleDateString()
                       : '—';
                     return (
-                      <tr key={r.id} className="border-b border-ink-100 hover:bg-ink-50">
+                      <tr key={r.id} className="border-b border-border-subtle hover:bg-ink-50">
                         <td className="px-4 py-2">
-                          <div className="font-medium text-ink-900">
+                          <div className="font-medium text-ink-primary">
                             {r.full_name ?? '—'}
                           </div>
-                          <div className="text-xs text-ink-500">{r.email ?? '—'}</div>
+                          <div className="text-xs text-ink-secondary">{r.email ?? '—'}</div>
                         </td>
-                        <td className="px-4 py-2 text-ink-600">{specs}</td>
-                        <td className="px-4 py-2 text-ink-600">
+                        <td className="px-4 py-2 text-ink-secondary">{specs}</td>
+                        <td className="px-4 py-2 text-ink-secondary">
                           {r.license_number
                             ? `${r.license_number}${r.license_state ? ` (${r.license_state})` : ''}`
                             : '—'}
                         </td>
-                        <td className="px-4 py-2 text-ink-600">
+                        <td className="px-4 py-2 text-ink-secondary">
                           {r.board_certification ?? '—'}
                         </td>
-                        <td className="px-4 py-2 text-ink-600">{created}</td>
+                        <td className="px-4 py-2 text-ink-secondary">{created}</td>
                         <td className="px-4 py-2 text-right">
                           <Link
                             href="/credentialing/credentials"
-                            className="rounded-md border border-ink-300 px-3 py-1 text-xs font-medium text-ink-700 hover:bg-ink-50"
+                            className="rounded-md border border-border-default px-3 py-1 text-xs font-medium text-ink-primary hover:bg-ink-50"
                           >
                             Review credentials
                           </Link>

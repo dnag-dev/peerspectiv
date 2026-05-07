@@ -26,12 +26,12 @@ const STATE_LABELS: Record<string, string> = {
 
 const STATE_COLORS: Record<string, string> = {
   invited: "bg-blue-50 text-blue-700",
-  pending_admin_review: "bg-amber-50 text-amber-700",
-  pending_credentialing: "bg-amber-50 text-amber-700",
-  active: "bg-mint-50 text-mint-700",
-  license_expired: "bg-critical-50 text-critical-700",
+  pending_admin_review: "bg-amber-50 text-status-warning-fg",
+  pending_credentialing: "bg-amber-50 text-status-warning-fg",
+  active: "bg-mint-50 text-status-success-fg",
+  license_expired: "bg-critical-50 text-status-danger-fg",
   suspended: "bg-red-50 text-red-700",
-  archived: "bg-ink-50 text-ink-600",
+  archived: "bg-ink-50 text-ink-secondary",
 };
 
 function formatDate(d: string | null) {
@@ -76,7 +76,7 @@ export function PeerStateHistory({ peerId }: { peerId: string }) {
             <History className="h-5 w-5" /> State History
           </CardTitle>
         </CardHeader>
-        <CardContent><p className="text-sm text-ink-500">Loading...</p></CardContent>
+        <CardContent><p className="text-sm text-ink-secondary">Loading...</p></CardContent>
       </Card>
     );
   }
@@ -97,7 +97,7 @@ export function PeerStateHistory({ peerId }: { peerId: string }) {
         ) : (
           <div className="space-y-3">
             {entries.map((entry) => (
-              <div key={entry.id} className="flex items-start gap-3 rounded-md border border-ink-100 px-3 py-2">
+              <div key={entry.id} className="flex items-start gap-3 rounded-md border border-border-subtle px-3 py-2">
                 <div className="flex flex-col items-center gap-1 pt-0.5">
                   <div className="h-2 w-2 rounded-full bg-cobalt-400" />
                   <div className="w-px flex-1 bg-ink-200" />
@@ -109,19 +109,19 @@ export function PeerStateHistory({ peerId }: { peerId: string }) {
                         <Badge variant="outline" className={`text-xs border-0 ${STATE_COLORS[entry.from_state] ?? ""}`}>
                           {STATE_LABELS[entry.from_state] ?? entry.from_state}
                         </Badge>
-                        <span className="text-xs text-ink-400">&rarr;</span>
+                        <span className="text-xs text-ink-tertiary">&rarr;</span>
                       </>
                     )}
                     <Badge variant="outline" className={`text-xs border-0 ${STATE_COLORS[entry.to_state] ?? ""}`}>
                       {STATE_LABELS[entry.to_state] ?? entry.to_state}
                     </Badge>
                   </div>
-                  <div className="text-xs text-ink-500">
+                  <div className="text-xs text-ink-secondary">
                     {formatDate(entry.changed_at)}
                     {entry.changed_by && <span> by {entry.changed_by}</span>}
                   </div>
                   {entry.change_reason && (
-                    <p className="text-xs text-ink-600">{entry.change_reason}</p>
+                    <p className="text-xs text-ink-secondary">{entry.change_reason}</p>
                   )}
                 </div>
               </div>

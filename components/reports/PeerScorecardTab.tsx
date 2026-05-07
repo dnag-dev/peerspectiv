@@ -181,7 +181,7 @@ export function PeerScorecardTab() {
       </div>
 
       {error && (
-        <div className="rounded-md border border-critical-600 bg-critical-100 p-3 text-sm text-critical-700">
+        <div className="rounded-md border border-status-danger-dot bg-critical-100 p-3 text-sm text-status-danger-fg">
           {error}
         </div>
       )}

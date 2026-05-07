@@ -42,21 +42,21 @@ interface Props {
 /* ---------- Compliance helpers (Pulse semantic classes) ---------- */
 
 function complianceTextClass(score: number): string {
-  if (score >= 85) return "text-mint-600";
-  if (score >= 70) return "text-amber-600";
-  return "text-critical-600";
+  if (score >= 85) return "text-status-success-dot";
+  if (score >= 70) return "text-status-warning-dot";
+  return "text-status-danger-dot";
 }
 
 function complianceBgClass(score: number): string {
-  if (score >= 85) return "bg-mint-600";
-  if (score >= 70) return "bg-amber-600";
-  return "bg-critical-600";
+  if (score >= 85) return "bg-status-success-dot";
+  if (score >= 70) return "bg-status-warning-dot";
+  return "bg-status-danger-dot";
 }
 
 function compliancePillClass(score: number): string {
-  if (score >= 85) return "bg-mint-100 text-mint-700";
-  if (score >= 70) return "bg-amber-100 text-amber-700";
-  return "bg-critical-100 text-critical-700";
+  if (score >= 85) return "bg-mint-100 text-status-success-fg";
+  if (score >= 70) return "bg-amber-100 text-status-warning-fg";
+  return "bg-critical-100 text-status-danger-fg";
 }
 
 function complianceHexFor(score: number): string {
@@ -112,8 +112,8 @@ export function DashboardView(props: Props) {
                 className={cn(
                   "rounded-md px-3.5 py-1.5 text-xs transition-all",
                   active
-                    ? "bg-paper-surface font-medium text-cobalt-700 shadow-sm"
-                    : "font-normal text-ink-500 hover:text-ink-700"
+                    ? "bg-surface-card font-medium text-status-info-fg shadow-sm"
+                    : "font-normal text-ink-secondary hover:text-ink-primary"
                 )}
               >
                 {label}
@@ -123,7 +123,7 @@ export function DashboardView(props: Props) {
         </div>
         <div
           data-testid="role-highlight"
-          className="mt-3 rounded-md border-l-2 border-cobalt-600 bg-cobalt-50 px-3 py-2 text-small text-cobalt-900"
+          className="mt-3 rounded-md border-l-2 border-status-info-dot bg-status-info-bg px-3 py-2 text-small text-ink-primary"
         >
           {ROLE_DESCRIPTIONS[role]}
         </div>
@@ -136,17 +136,17 @@ export function DashboardView(props: Props) {
       >
         <ComplianceRing score={compliance} variant="dark" />
         <div className="relative z-10 flex-1">
-          <div className="text-eyebrow text-white/85 mb-2">
+          <div className="text-eyebrow text-ink-primary/85 mb-2">
             {companyName} · Q1 2026 compliance
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-stat-hero text-white">{compliance}</span>
-            <span className="text-h1 text-white/85">%</span>
-            <span className="ml-2 inline-flex items-center px-2 py-1 rounded-md bg-white/20 backdrop-blur text-code text-white">
+            <span className="text-stat-hero text-ink-primary">{compliance}</span>
+            <span className="text-h1 text-ink-primary/85">%</span>
+            <span className="ml-2 inline-flex items-center px-2 py-1 rounded-md bg-white/20 backdrop-blur text-code text-ink-primary">
               {complianceLabel(compliance)}
             </span>
           </div>
-          <p className="mt-3 text-body text-white/90">
+          <p className="mt-3 text-body text-ink-primary/90">
             QoQ trend: +2.4% — click to view completed reviews.
           </p>
         </div>
@@ -154,11 +154,11 @@ export function DashboardView(props: Props) {
 
       {/* Projected completion */}
       {projectedCompletion && (
-        <div className="rounded-lg bg-paper-surface border border-ink-200 shadow-sm p-4 flex items-center gap-3">
-          <CalendarDays className="h-5 w-5 text-cobalt-600 flex-shrink-0" />
+        <div className="rounded-lg bg-surface-card border border-border-subtle shadow-sm p-4 flex items-center gap-3">
+          <CalendarDays className="h-5 w-5 text-status-info-dot flex-shrink-0" />
           <div>
-            <div className="text-eyebrow text-ink-500">Expected Completion</div>
-            <div className="text-h3 text-ink-900">
+            <div className="text-eyebrow text-ink-secondary">Expected Completion</div>
+            <div className="text-h3 text-ink-primary">
               {new Date(projectedCompletion).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
@@ -197,11 +197,11 @@ export function DashboardView(props: Props) {
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 rounded-lg bg-paper-surface border border-ink-200 shadow-sm p-6">
-          <h3 className="text-h3 text-ink-900 mb-4">Compliance by Specialty</h3>
+        <div className="lg:col-span-2 rounded-lg bg-surface-card border border-border-subtle shadow-sm p-6">
+          <h3 className="text-h3 text-ink-primary mb-4">Compliance by Specialty</h3>
           <div className="space-y-3">
             {specialty.length === 0 && (
-              <p className="text-small text-ink-500">No specialty data yet.</p>
+              <p className="text-small text-ink-secondary">No specialty data yet.</p>
             )}
             {specialty.map((s) => (
               <Link
@@ -209,7 +209,7 @@ export function DashboardView(props: Props) {
                 href={`/portal/reviews?specialty=${encodeURIComponent(s.specialty)}`}
                 className="block group"
               >
-                <div className="flex justify-between text-small text-ink-600 mb-1 group-hover:text-ink-900">
+                <div className="flex justify-between text-small text-ink-secondary mb-1 group-hover:text-ink-primary">
                   <span className="group-hover:underline">{s.specialty}</span>
                   <span>
                     {s.avg}% ({s.count})
@@ -226,8 +226,8 @@ export function DashboardView(props: Props) {
           </div>
         </div>
 
-        <div className="rounded-lg bg-paper-surface border border-ink-200 shadow-sm p-6">
-          <h3 className="text-h3 text-ink-900 mb-4">Risk Distribution</h3>
+        <div className="rounded-lg bg-surface-card border border-border-subtle shadow-sm p-6">
+          <h3 className="text-h3 text-ink-primary mb-4">Risk Distribution</h3>
           {/* AU-016: every slice drills via the legend below; donut as a whole drills to all-risk reviews. */}
           <Link
             href="/portal/reviews?risk=all"
@@ -241,21 +241,21 @@ export function DashboardView(props: Props) {
               href="/portal/reviews?risk=high"
               className="inline-flex items-center gap-1.5 hover:underline"
             >
-              <span className="h-2 w-2 rounded-full bg-critical-600" />
+              <span className="h-2 w-2 rounded-full bg-status-danger-dot" />
               High ({risk.high})
             </Link>
             <Link
               href="/portal/reviews?risk=medium"
               className="inline-flex items-center gap-1.5 hover:underline"
             >
-              <span className="h-2 w-2 rounded-full bg-amber-600" />
+              <span className="h-2 w-2 rounded-full bg-status-warning-dot" />
               Medium ({risk.medium})
             </Link>
             <Link
               href="/portal/reviews?risk=low"
               className="inline-flex items-center gap-1.5 hover:underline"
             >
-              <span className="h-2 w-2 rounded-full bg-mint-600" />
+              <span className="h-2 w-2 rounded-full bg-status-success-dot" />
               Low ({risk.low})
             </Link>
           </div>
@@ -265,12 +265,12 @@ export function DashboardView(props: Props) {
       {/* Needs Attention */}
       <div
         data-testid="needs-attention"
-        className="rounded-lg bg-paper-surface border border-ink-200 shadow-sm p-6"
+        className="rounded-lg bg-surface-card border border-border-subtle shadow-sm p-6"
       >
-        <h3 className="text-h3 text-ink-900 mb-4">Needs Attention</h3>
+        <h3 className="text-h3 text-ink-primary mb-4">Needs Attention</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <AttentionColumn
-            icon={<AlertTriangle className="h-4 w-4 text-critical-600" />}
+            icon={<AlertTriangle className="h-4 w-4 text-status-danger-dot" />}
             title="Past Due Cases"
             seeAllHref="/portal/overdue"
             items={needs.pastDue.map((c) => ({
@@ -281,7 +281,7 @@ export function DashboardView(props: Props) {
             }))}
           />
           <AttentionColumn
-            icon={<TrendingDown className="h-4 w-4 text-amber-600" />}
+            icon={<TrendingDown className="h-4 w-4 text-status-warning-dot" />}
             title="Providers Below 75%"
             seeAllHref="/portal/providers"
             items={needs.lowProviders.map((p) => ({
@@ -292,7 +292,7 @@ export function DashboardView(props: Props) {
             }))}
           />
           <AttentionColumn
-            icon={<Wrench className="h-4 w-4 text-cobalt-600" />}
+            icon={<Wrench className="h-4 w-4 text-status-info-dot" />}
             title="Open Corrective Actions"
             seeAllHref="/portal/corrective"
             items={needs.openActions.map((a) => ({
@@ -306,12 +306,12 @@ export function DashboardView(props: Props) {
       </div>
 
       {/* Provider table */}
-      <div className="rounded-lg bg-paper-surface border border-ink-200 shadow-sm p-6">
-        <h3 className="text-h3 text-ink-900 mb-4">Provider Performance</h3>
+      <div className="rounded-lg bg-surface-card border border-border-subtle shadow-sm p-6">
+        <h3 className="text-h3 text-ink-primary mb-4">Provider Performance</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-eyebrow text-ink-500 border-b border-ink-200">
+              <tr className="text-left text-eyebrow text-ink-secondary border-b border-border-subtle">
                 <th className="py-2 pr-3">Provider</th>
                 <th className="py-2 pr-3">Specialty</th>
                 <th className="py-2 pr-3">Reviews</th>
@@ -323,7 +323,7 @@ export function DashboardView(props: Props) {
             <tbody>
               {providers.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-4 text-center text-small text-ink-500">
+                  <td colSpan={6} className="py-4 text-center text-small text-ink-secondary">
                     No providers yet.
                   </td>
                 </tr>
@@ -331,12 +331,12 @@ export function DashboardView(props: Props) {
               {providers.map((p) => (
                 <tr
                   key={p.id}
-                  className="border-b border-ink-100 cursor-pointer hover:bg-cobalt-50"
+                  className="border-b border-border-subtle cursor-pointer hover:bg-status-info-bg"
                   onClick={() => (window.location.href = `/portal/providers/${p.id}`)}
                 >
-                  <td className="py-3 pr-3 text-ink-900">{p.name}</td>
-                  <td className="py-3 pr-3 text-ink-500">{p.specialty}</td>
-                  <td className="py-3 pr-3 text-ink-500">{p.count}</td>
+                  <td className="py-3 pr-3 text-ink-primary">{p.name}</td>
+                  <td className="py-3 pr-3 text-ink-secondary">{p.specialty}</td>
+                  <td className="py-3 pr-3 text-ink-secondary">{p.count}</td>
                   <td className="py-3 pr-3">
                     <Sparkline values={p.last4} />
                   </td>
@@ -350,7 +350,7 @@ export function DashboardView(props: Props) {
                       {p.avg}%
                     </span>
                   </td>
-                  <td className="py-3 pr-3 text-ink-400">
+                  <td className="py-3 pr-3 text-ink-tertiary">
                     <ChevronRight className="h-4 w-4" />
                   </td>
                 </tr>
@@ -379,18 +379,18 @@ function KpiCard({
   const body = (
     <>
       <div className="flex items-center justify-between">
-        <div className="text-eyebrow text-ink-500">{label}</div>
+        <div className="text-eyebrow text-ink-secondary">{label}</div>
         {highlight && (
-          <span className="inline-flex items-center rounded-md bg-amber-100 px-1.5 py-0.5 text-code text-amber-700">
+          <span className="inline-flex items-center rounded-md bg-amber-100 px-1.5 py-0.5 text-code text-status-warning-fg">
             Watch
           </span>
         )}
       </div>
-      <div className="mt-2 text-stat-large text-ink-900">{value}</div>
+      <div className="mt-2 text-stat-large text-ink-primary">{value}</div>
     </>
   );
   const common =
-    "block rounded-lg bg-paper-surface border border-ink-200 shadow-sm p-4 transition-shadow hover:shadow-md";
+    "block rounded-lg bg-surface-card border border-border-subtle shadow-sm p-4 transition-shadow hover:shadow-md";
   if (href) {
     return (
       <Link href={href} data-testid="kpi-card" className={common}>
@@ -418,7 +418,7 @@ function ComplianceRing({
   const trackStroke = variant === "dark" ? "rgba(255,255,255,0.18)" : "var(--ink-100)";
   const fillStroke = variant === "dark" ? "#FFFFFF" : complianceHexFor(score);
   const labelClass =
-    variant === "dark" ? "text-h1 text-white" : `text-h1 ${complianceTextClass(score)}`;
+    variant === "dark" ? "text-h1 text-ink-primary" : `text-h1 ${complianceTextClass(score)}`;
 
   return (
     <div data-testid="compliance-ring" className="relative h-40 w-40 flex-shrink-0">
@@ -446,7 +446,7 @@ function ComplianceRing({
 
 function Sparkline({ values }: { values: number[] }) {
   if (values.length === 0) {
-    return <span className="text-code text-ink-400">—</span>;
+    return <span className="text-code text-ink-tertiary">—</span>;
   }
   const max = Math.max(...values, 100);
   return (
@@ -474,7 +474,7 @@ function RiskDonut({ risk }: { risk: { high: number; medium: number; low: number
   const total = risk.high + risk.medium + risk.low;
   if (total === 0) {
     return (
-      <p className="text-small text-ink-500 h-48 flex items-center justify-center">
+      <p className="text-small text-ink-secondary h-48 flex items-center justify-center">
         No data yet
       </p>
     );
@@ -523,27 +523,27 @@ function AttentionColumn({
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           {icon}
-          <span className="text-eyebrow text-ink-500">{title}</span>
+          <span className="text-eyebrow text-ink-secondary">{title}</span>
         </div>
         {seeAllHref && items.length > 0 && (
-          <Link href={seeAllHref} className="text-code text-cobalt-600 hover:text-cobalt-700 hover:underline">
+          <Link href={seeAllHref} className="text-code text-status-info-dot hover:text-status-info-fg hover:underline">
             See all →
           </Link>
         )}
       </div>
       {items.length === 0 ? (
-        <p className="text-small text-ink-400">None</p>
+        <p className="text-small text-ink-tertiary">None</p>
       ) : (
         <ul className="space-y-2">
           {items.map((i) => {
             const inner = (
               <>
-                <div className="text-small text-ink-900 truncate">{i.text}</div>
-                {i.sub && <div className="text-code text-ink-500">{i.sub}</div>}
+                <div className="text-small text-ink-primary truncate">{i.text}</div>
+                {i.sub && <div className="text-code text-ink-secondary">{i.sub}</div>}
               </>
             );
             return (
-              <li key={i.id} className="rounded-md bg-paper-canvas border border-ink-100 p-2">
+              <li key={i.id} className="rounded-md bg-surface-canvas border border-border-subtle p-2">
                 {i.href ? (
                   <Link href={i.href} className="block hover:opacity-80">
                     {inner}

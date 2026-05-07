@@ -268,9 +268,9 @@ export default function ClientProfilePage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-white">Profile</h1>
+        <h1 className="text-2xl font-medium text-ink-primary">Profile</h1>
         <Card>
-          <CardContent className="py-12 text-center text-ink-500">Loading...</CardContent>
+          <CardContent className="py-12 text-center text-ink-secondary">Loading...</CardContent>
         </Card>
       </div>
     );
@@ -279,8 +279,8 @@ export default function ClientProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Profile</h1>
-        <p className="text-sm text-ink-400">
+        <h1 className="text-2xl font-medium text-ink-primary">Profile</h1>
+        <p className="text-sm text-ink-tertiary">
           Manage your practice information and account settings.
         </p>
       </div>
@@ -297,7 +297,7 @@ export default function ClientProfilePage() {
           <div className="flex items-center gap-4">
             <div
               onClick={() => avatarRef.current?.click()}
-              className="relative flex h-16 w-16 cursor-pointer items-center justify-center rounded-full bg-ink-100 text-ink-400 hover:bg-ink-200 overflow-hidden"
+              className="relative flex h-16 w-16 cursor-pointer items-center justify-center rounded-full bg-ink-100 text-ink-tertiary hover:bg-ink-200 overflow-hidden"
             >
               {avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -307,7 +307,7 @@ export default function ClientProfilePage() {
               )}
               {avatarUploading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                  <Loader2 className="h-5 w-5 animate-spin text-white" />
+                  <Loader2 className="h-5 w-5 animate-spin text-ink-primary" />
                 </div>
               )}
             </div>
@@ -320,7 +320,7 @@ export default function ClientProfilePage() {
               >
                 Upload Avatar
               </Button>
-              <p className="mt-1 text-xs text-ink-500">PNG or JPG, max 2MB</p>
+              <p className="mt-1 text-xs text-ink-secondary">PNG or JPG, max 2MB</p>
             </div>
             <input
               ref={avatarRef}
@@ -369,7 +369,7 @@ export default function ClientProfilePage() {
               />
             </div>
           </div>
-          {saveErr && <p className="text-sm text-critical-600">{saveErr}</p>}
+          {saveErr && <p className="text-sm text-status-danger-dot">{saveErr}</p>}
           {saveMsg && <p className="text-sm text-emerald-600">{saveMsg}</p>}
           <Button onClick={handleSaveGeneral} disabled={saving}>
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -416,7 +416,7 @@ export default function ClientProfilePage() {
               />
             </div>
           </div>
-          {pwErr && <p className="text-sm text-critical-600">{pwErr}</p>}
+          {pwErr && <p className="text-sm text-status-danger-dot">{pwErr}</p>}
           {pwMsg && <p className="text-sm text-emerald-600">{pwMsg}</p>}
           <Button onClick={handlePasswordReset} disabled={pwSaving || !newPw}>
             {pwSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -433,7 +433,7 @@ export default function ClientProfilePage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 max-w-lg">
-          <p className="text-sm text-ink-600">
+          <p className="text-sm text-ink-secondary">
             Have a question? Send us a message and our team will get back to you.
           </p>
           <Textarea
@@ -458,7 +458,7 @@ export default function ClientProfilePage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 max-w-lg">
-          <p className="text-sm text-ink-600">
+          <p className="text-sm text-ink-secondary">
             Add a provider to your practice. They will appear in the doctor dropdown when uploading files.
           </p>
           <div className="grid grid-cols-2 gap-4">
@@ -482,7 +482,7 @@ export default function ClientProfilePage() {
               </SelectContent>
             </Select>
           </div>
-          {docErr && <p className="text-sm text-critical-600">{docErr}</p>}
+          {docErr && <p className="text-sm text-status-danger-dot">{docErr}</p>}
           {docMsg && <p className="text-sm text-emerald-600">{docMsg}</p>}
           <Button onClick={handleAddDoctor} disabled={docSaving}>
             {docSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -499,7 +499,7 @@ export default function ClientProfilePage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 max-w-lg">
-          <p className="text-sm text-ink-600">
+          <p className="text-sm text-ink-secondary">
             Add a clinic location to your practice.
           </p>
           <div className="space-y-2">
@@ -516,7 +516,7 @@ export default function ClientProfilePage() {
               <Input id="loc-state" value={locState} onChange={(e) => setLocState(e.target.value)} placeholder="e.g. TX" />
             </div>
           </div>
-          {locErr && <p className="text-sm text-critical-600">{locErr}</p>}
+          {locErr && <p className="text-sm text-status-danger-dot">{locErr}</p>}
           {locMsg && <p className="text-sm text-emerald-600">{locMsg}</p>}
           <Button onClick={handleAddLocation} disabled={locSaving}>
             {locSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

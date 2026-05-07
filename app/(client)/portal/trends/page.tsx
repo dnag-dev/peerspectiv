@@ -177,8 +177,8 @@ export default async function TrendsPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Trends</h1>
-        <p className="text-sm text-ink-400">
+        <h1 className="text-2xl font-medium text-ink-primary">Trends</h1>
+        <p className="text-sm text-ink-tertiary">
           Compliance and deficiency trends over time
         </p>
       </div>
@@ -186,17 +186,17 @@ export default async function TrendsPage({ searchParams }: PageProps) {
       <form
         method="get"
         className="flex flex-wrap items-end gap-3 rounded-lg p-3"
-        style={{ backgroundColor: "#1E3A8A" }}
+        style={{ backgroundColor: 'var(--color-card)' }}
       >
         <div className="flex flex-col">
-          <label className="text-xs text-ink-400 mb-1">
+          <label className="text-xs text-ink-tertiary mb-1">
             Filter by specialty (Cmd/Ctrl-click for multi)
           </label>
           <select
             name="specialty"
             multiple
             defaultValue={selectedSpecialties}
-            className="rounded-md px-3 py-2 text-sm text-ink-900 min-w-[220px]"
+            className="rounded-md px-3 py-2 text-sm text-ink-primary min-w-[220px]"
             size={Math.min(6, Math.max(3, specialtyOptions.length))}
           >
             {specialtyOptions.map((s) => (
@@ -208,7 +208,7 @@ export default async function TrendsPage({ searchParams }: PageProps) {
         </div>
         <button
           type="submit"
-          className="rounded-md px-4 py-2 text-sm font-semibold text-white"
+          className="rounded-md px-4 py-2 text-sm font-medium text-ink-primary"
           style={{ backgroundColor: "#2563EB" }}
         >
           Apply
@@ -216,7 +216,7 @@ export default async function TrendsPage({ searchParams }: PageProps) {
         {selectedSpecialties.length > 0 && (
           <a
             href="/portal/trends"
-            className="rounded-md px-4 py-2 text-sm text-ink-400 hover:text-white"
+            className="rounded-md px-4 py-2 text-sm text-ink-tertiary hover:text-ink-primary"
           >
             Clear
           </a>

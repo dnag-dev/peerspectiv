@@ -22,12 +22,12 @@ const STATE_LABELS: Record<string, string> = {
 
 const STATE_COLORS: Record<string, string> = {
   invited: "bg-blue-100 text-blue-700",
-  pending_admin_review: "bg-amber-100 text-amber-700",
-  pending_credentialing: "bg-amber-100 text-amber-700",
-  active: "bg-mint-100 text-mint-700",
-  license_expired: "bg-critical-100 text-critical-700",
+  pending_admin_review: "bg-amber-100 text-status-warning-fg",
+  pending_credentialing: "bg-amber-100 text-status-warning-fg",
+  active: "bg-mint-100 text-status-success-fg",
+  license_expired: "bg-critical-100 text-status-danger-fg",
   suspended: "bg-red-100 text-red-700",
-  archived: "bg-ink-100 text-ink-600",
+  archived: "bg-ink-100 text-ink-secondary",
 };
 
 interface Props {
@@ -115,7 +115,7 @@ export function PeerStateActions({ peerId, currentState, peerName }: Props) {
   return (
     <>
       <div className="flex items-center gap-2 flex-wrap">
-        <Badge className={`border-0 ${STATE_COLORS[currentState] ?? "bg-ink-100 text-ink-600"}`}>
+        <Badge className={`border-0 ${STATE_COLORS[currentState] ?? "bg-ink-100 text-ink-secondary"}`}>
           {STATE_LABELS[currentState] ?? currentState}
         </Badge>
         {actions.map((a) => (
@@ -132,7 +132,7 @@ export function PeerStateActions({ peerId, currentState, peerName }: Props) {
       </div>
 
       <Dialog open={!!dialogAction} onOpenChange={(o) => { if (!o) setDialogAction(null); }}>
-        <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl sm:max-w-[450px]">
+        <DialogContent className="bg-white border border-border-subtle shadow-2xl rounded-xl sm:max-w-[450px]">
           <DialogHeader>
             <DialogTitle>
               {dialogAction?.label} {peerName}
@@ -150,7 +150,7 @@ export function PeerStateActions({ peerId, currentState, peerName }: Props) {
               placeholder="Reason for this change (required)..."
               rows={3}
             />
-            {error && <p className="text-sm text-critical-600">{error}</p>}
+            {error && <p className="text-sm text-status-danger-dot">{error}</p>}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogAction(null)} disabled={busy}>

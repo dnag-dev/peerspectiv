@@ -15,7 +15,7 @@ const Table = React.forwardRef<
   <div className="relative w-full overflow-auto">
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm text-ink-900", className)}
+      className={cn("w-full caption-bottom text-sm text-ink-primary", className)}
       {...props}
     />
   </div>
@@ -28,7 +28,7 @@ const TableHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <thead
     ref={ref}
-    className={cn("border-b border-ink-200 bg-ink-50", className)}
+    className={cn("border-b border-border-subtle bg-ink-50", className)}
     {...props}
   />
 ));
@@ -53,7 +53,7 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={cn(
-      "border-t border-ink-200 bg-ink-50 font-medium text-ink-900 [&>tr]:last:border-b-0",
+      "border-t border-border-subtle bg-ink-50 font-medium text-ink-primary [&>tr]:last:border-b-0",
       className
     )}
     {...props}
@@ -68,7 +68,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-ink-200 transition-colors hover:bg-cobalt-50 data-[state=selected]:bg-cobalt-50",
+      "border-b border-border-subtle transition-colors hover:bg-status-info-bg data-[state=selected]:bg-status-info-bg",
       className
     )}
     {...props}
@@ -83,7 +83,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-10 px-4 text-left align-middle text-eyebrow text-ink-500 [&:has([role=checkbox])]:pr-0",
+      "h-10 px-4 text-left align-middle text-eyebrow text-ink-secondary [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -112,7 +112,7 @@ const TableCaption = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <caption
     ref={ref}
-    className={cn("mt-4 text-small text-ink-500", className)}
+    className={cn("mt-4 text-small text-ink-secondary", className)}
     {...props}
   />
 ));

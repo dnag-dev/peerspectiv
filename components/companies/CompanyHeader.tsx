@@ -15,13 +15,13 @@ interface CompanyHeaderProps {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  lead: "bg-ink-100 text-ink-700",
+  lead: "bg-ink-100 text-ink-primary",
   prospect: "bg-blue-100 text-blue-700",
-  contract_sent: "bg-amber-100 text-amber-700",
-  contract_signed: "bg-cobalt-100 text-cobalt-700",
-  active: "bg-mint-100 text-mint-700",
-  active_client: "bg-mint-100 text-mint-700",
-  archived: "bg-ink-100 text-ink-500",
+  contract_sent: "bg-amber-100 text-status-warning-fg",
+  contract_signed: "bg-status-info-bg text-status-info-fg",
+  active: "bg-mint-100 text-status-success-fg",
+  active_client: "bg-mint-100 text-status-success-fg",
+  archived: "bg-ink-100 text-ink-secondary",
 };
 
 export function CompanyHeader({ company }: CompanyHeaderProps) {
@@ -82,7 +82,7 @@ export function CompanyHeader({ company }: CompanyHeaderProps) {
             </Link>
           </div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">{company.name}</h1>
+            <h1 className="text-2xl font-medium tracking-tight">{company.name}</h1>
             <Badge className={`border-0 normal-case ${badgeClass}`}>
               {statusLabel}
             </Badge>
@@ -102,7 +102,7 @@ export function CompanyHeader({ company }: CompanyHeaderProps) {
             </Button>
           )}
           {status === "contract_signed" && (
-            <Button onClick={handleActivate} disabled={busy} className="bg-mint-600 hover:bg-mint-700">
+            <Button onClick={handleActivate} disabled={busy} className="bg-status-success-dot hover:bg-mint-700">
               {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
               Activate Portal
             </Button>

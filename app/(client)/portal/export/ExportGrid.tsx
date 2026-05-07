@@ -141,12 +141,12 @@ export function ExportGrid({
         className="rounded-lg p-4 flex flex-col md:flex-row md:items-center gap-3"
         style={{ backgroundColor: "#0F2040" }}
       >
-        <Package className="h-6 w-6 text-white shrink-0" />
+        <Package className="h-6 w-6 text-ink-primary shrink-0" />
         <div className="flex-1">
-          <div className="text-sm font-semibold text-white">
+          <div className="text-sm font-medium text-ink-primary">
             Download everything for one quarter
           </div>
-          <div className="text-xs text-ink-300">
+          <div className="text-xs text-ink-tertiary">
             Provider highlights, specialty highlights, question analytics, and the quality certificate — one click.
           </div>
         </div>
@@ -154,7 +154,7 @@ export function ExportGrid({
           value={quarter}
           onChange={(e) => setQuarter(Number(e.target.value))}
           disabled={bulkBusy}
-          className="rounded-md bg-white/10 text-white text-sm px-2 py-1.5 border border-white/20"
+          className="rounded-md bg-white/10 text-ink-primary text-sm px-2 py-1.5 border border-white/20"
         >
           <option value={1}>Q1</option>
           <option value={2}>Q2</option>
@@ -166,12 +166,12 @@ export function ExportGrid({
           value={year}
           onChange={(e) => setYear(Number(e.target.value))}
           disabled={bulkBusy}
-          className="w-24 rounded-md bg-white/10 text-white text-sm px-2 py-1.5 border border-white/20"
+          className="w-24 rounded-md bg-white/10 text-ink-primary text-sm px-2 py-1.5 border border-white/20"
         />
         <button
           onClick={handleDownloadAll}
           disabled={bulkBusy}
-          className="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-ink-primary disabled:opacity-50"
           style={{ backgroundColor: "#2563EB" }}
         >
           {bulkBusy ? (
@@ -188,7 +188,7 @@ export function ExportGrid({
         </button>
       </div>
       {bulkStatus && (
-        <div className="text-xs text-ink-400">{bulkStatus}</div>
+        <div className="text-xs text-ink-tertiary">{bulkStatus}</div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -196,7 +196,7 @@ export function ExportGrid({
         <div
           key={r.key}
           className="rounded-lg p-5 flex flex-col"
-          style={{ backgroundColor: "#1E3A8A" }}
+          style={{ backgroundColor: 'var(--color-card)' }}
         >
           <div className="flex items-center gap-3 mb-3">
             {r.icon === "csv" ? (
@@ -204,13 +204,13 @@ export function ExportGrid({
             ) : (
               <FileText className="h-8 w-8" style={{ color: "#2563EB" }} />
             )}
-            <h3 className="text-sm font-semibold text-white flex-1">{r.title}</h3>
+            <h3 className="text-sm font-medium text-ink-primary flex-1">{r.title}</h3>
           </div>
-          <p className="text-xs text-ink-400 flex-1">{r.description}</p>
+          <p className="text-xs text-ink-tertiary flex-1">{r.description}</p>
           <button
             onClick={() => handleDownload(r.key, r.title)}
             disabled={busy === r.key}
-            className="mt-4 inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            className="mt-4 inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-ink-primary disabled:opacity-50"
             style={{ backgroundColor: "#2563EB" }}
           >
             {busy === r.key ? (

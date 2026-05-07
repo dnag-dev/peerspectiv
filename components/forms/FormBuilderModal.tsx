@@ -362,22 +362,22 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
             </div>
           )}
 
-          <label className="flex items-center gap-2 rounded-md border border-cobalt-100 bg-cobalt-50/40 px-3 py-2 text-xs text-ink-700">
+          <label className="flex items-center gap-2 rounded-md border border-cobalt-100 bg-status-info-bg/40 px-3 py-2 text-xs text-ink-primary">
             <input
               type="checkbox"
               checked={allowAiNarrative}
               onChange={(e) => setAllowAiNarrative(e.target.checked)}
             />
             <span>
-              <strong className="font-medium text-ink-900">Allow peer to use AI-drafted narrative</strong>
-              <span className="ml-1 text-ink-500">— shows a &ldquo;Generate AI suggestion&rdquo; button next to the comments box.</span>
+              <strong className="font-medium text-ink-primary">Allow peer to use AI-drafted narrative</strong>
+              <span className="ml-1 text-ink-secondary">— shows a &ldquo;Generate AI suggestion&rdquo; button next to the comments box.</span>
             </span>
           </label>
 
           {/* Draft with AI */}
-          <div className="flex items-center justify-between rounded-md border border-cobalt-100 bg-cobalt-50/40 px-3 py-2">
-            <div className="text-xs text-ink-700">
-              <strong className="text-ink-900">Draft form with AI</strong> — generates
+          <div className="flex items-center justify-between rounded-md border border-cobalt-100 bg-status-info-bg/40 px-3 py-2">
+            <div className="text-xs text-ink-primary">
+              <strong className="text-ink-primary">Draft form with AI</strong> — generates
               10–20 questions appropriate for the chosen specialty.
             </div>
             <Button
@@ -459,7 +459,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
                 >
                   {uploading ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin text-cobalt-600" />
+                      <Loader2 className="h-5 w-5 animate-spin text-status-info-dot" />
                       <span className="text-xs text-muted-foreground">Uploading…</span>
                     </>
                   ) : (
@@ -478,7 +478,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
                   </div>
                   <button
                     onClick={() => { setTemplatePdfUrl(null); setTemplatePdfName(null); }}
-                    className="rounded p-1 text-muted-foreground hover:bg-critical-100 hover:text-critical-600"
+                    className="rounded p-1 text-muted-foreground hover:bg-critical-100 hover:text-status-danger-dot"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -596,7 +596,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
                       </div>
                       <button
                         onClick={() => removeField(i)}
-                        className="rounded p-1 text-muted-foreground hover:bg-critical-100 hover:text-critical-600"
+                        className="rounded p-1 text-muted-foreground hover:bg-critical-100 hover:text-status-danger-dot"
                         title="Remove field"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -604,7 +604,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
                     </div>
                     {/* Per-question options — SA-044 */}
                     {isMultipleChoice && (
-                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-1 text-xs text-ink-700">
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-1 text-xs text-ink-primary">
                         <label className="flex items-center gap-1">
                           <span>Default answer</span>
                           <select
@@ -656,7 +656,7 @@ export function FormBuilderModal({ open, onOpenChange, companyId, companyName, c
           </div>
 
           {error && (
-            <div className="rounded-md border border-critical-600 bg-critical-100 px-3 py-2 text-xs text-critical-700">
+            <div className="rounded-md border border-status-danger-dot bg-critical-100 px-3 py-2 text-xs text-status-danger-fg">
               {error}
             </div>
           )}

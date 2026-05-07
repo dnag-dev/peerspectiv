@@ -219,7 +219,7 @@ export function AddProspectModal({ stayOnPage = false }: AddProspectModalProps =
           Add New Company
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-white border border-ink-200 shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto sm:max-w-[640px]">
+      <DialogContent className="bg-white border border-border-subtle shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto sm:max-w-[640px]">
         <DialogHeader>
           <DialogTitle>Add New Company</DialogTitle>
           <DialogDescription>
@@ -409,11 +409,11 @@ export function AddProspectModal({ stayOnPage = false }: AddProspectModalProps =
                 <div className="flex-1 space-y-2">
                   <p className="text-sm font-medium text-[#F59E0B]">Possible duplicate</p>
                   <p className="text-xs text-ink-200">{error}</p>
-                  <ul className="space-y-1 text-xs text-ink-300">
+                  <ul className="space-y-1 text-xs text-ink-tertiary">
                     {duplicates.map((d) => (
                       <li key={d.id} className="flex items-center justify-between gap-2">
                         <span className="font-medium text-white">{d.name}</span>
-                        <span className="text-ink-400">
+                        <span className="text-ink-tertiary">
                           {[d.city, d.state].filter(Boolean).join(', ')} · {d.status}
                         </span>
                       </li>

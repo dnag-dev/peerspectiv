@@ -55,9 +55,9 @@ function daysToExpiry(date: string | null): number | null {
 }
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  available: { bg: 'bg-mint-100', text: 'text-cobalt-700' },
-  vacation: { bg: 'bg-critical-100', text: 'text-critical-700' },
-  on_leave: { bg: 'bg-amber-100', text: 'text-amber-700' },
+  available: { bg: 'bg-mint-100', text: 'text-status-info-fg' },
+  vacation: { bg: 'bg-critical-100', text: 'text-status-danger-fg' },
+  on_leave: { bg: 'bg-amber-100', text: 'text-status-warning-fg' },
   inactive: { bg: 'bg-ink-100', text: 'text-ink-800' },
 };
 
@@ -211,13 +211,13 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
     return (
       <th
         onClick={() => toggleSort(k)}
-        className={`px-4 py-3 cursor-pointer select-none hover:text-ink-900 ${
+        className={`px-4 py-3 cursor-pointer select-none hover:text-ink-primary ${
           align === 'right' ? 'text-right' : 'text-left'
         }`}
       >
         <span className="inline-flex items-center gap-1">
           {label}
-          <Icon className={`h-3 w-3 ${active ? 'text-cobalt-600' : 'text-ink-300'}`} />
+          <Icon className={`h-3 w-3 ${active ? 'text-status-info-dot' : 'text-ink-tertiary'}`} />
         </span>
       </th>
     );
@@ -288,7 +288,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
   return (
     <>
       <div className="flex items-center justify-between">
-        <div className="text-sm text-ink-500">
+        <div className="text-sm text-ink-secondary">
           {peers.length} peer{peers.length === 1 ? '' : 's'}
         </div>
         <Button onClick={() => setAddOpen(true)}>
@@ -301,7 +301,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
         <CardContent className="p-4">
           <div className="grid gap-3 md:grid-cols-[1fr_180px_180px_140px]">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-tertiary" />
               <Input
                 value={searchQ}
                 onChange={(e) => setSearchQ(e.target.value)}
@@ -349,16 +349,16 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
               </SelectContent>
             </Select>
           </div>
-          <p className="mt-3 text-xs text-ink-500">
+          <p className="mt-3 text-xs text-ink-secondary">
             Showing <strong>{visible.length}</strong> of {peers.length} peers
           </p>
         </CardContent>
       </Card>
 
-      <div className="overflow-x-auto rounded-lg border border-ink-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-border-subtle bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-ink-200 bg-ink-50 text-xs uppercase tracking-wider text-ink-500">
+            <tr className="border-b border-border-subtle bg-ink-50 text-xs uppercase tracking-wider text-ink-secondary">
               <SortHead label="Name" k="full_name" />
               <th className="px-4 py-3 text-left">Email</th>
               <SortHead label="Specialties" k="specialty" />
@@ -373,7 +373,7 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
           <tbody>
             {visible.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-8 text-center text-ink-400">
+                <td colSpan={9} className="px-4 py-8 text-center text-ink-tertiary">
                   {peers.length === 0 ? 'No peers found.' : 'No peers match your filters.'}
                 </td>
               </tr>
@@ -385,8 +385,8 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
               const expDays = daysToExpiry(r.credential_valid_until);
               const expWarn = expDays != null && expDays < 60;
               return (
-                <tr key={r.id} className="border-b border-ink-100 hover:bg-ink-50">
-                  <td className="px-4 py-3 font-medium text-ink-900">
+                <tr key={r.id} className="border-b border-border-subtle hover:bg-ink-50">
+                  <td className="px-4 py-3 font-medium text-ink-primary">
                     <Link
                       href={`/peers/${r.id}`}
                       className="hover:text-brand-navy hover:underline"
@@ -394,29 +394,29 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
                       {r.full_name ?? '—'}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-ink-600 text-xs">{r.email ?? '—'}</td>
+                  <td className="px-4 py-3 text-ink-secondary text-xs">{r.email ?? '—'}</td>
                   <td className="px-4 py-3" data-testid="peers-row-specialties">
                     <div className="flex flex-wrap gap-1">
                       {specs.length === 0 && (
-                        <span className="text-xs text-ink-400">—</span>
+                        <span className="text-xs text-ink-tertiary">—</span>
                       )}
                       {specs.map((s) => (
                         <Badge
                           key={s}
                           variant="secondary"
-                          className="bg-cobalt-50 text-cobalt-700 text-[10px]"
+                          className="bg-status-info-bg text-status-info-fg text-[10px]"
                         >
                           {s}
                         </Badge>
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-ink-600 text-xs">
+                  <td className="px-4 py-3 text-ink-secondary text-xs">
                     <div className="font-mono">{r.license_number ?? '—'}</div>
                     {r.credential_valid_until && (
                       <div
                         className={
-                          expWarn ? 'text-critical-700 font-medium' : 'text-ink-400'
+                          expWarn ? 'text-status-danger-fg font-medium' : 'text-ink-tertiary'
                         }
                       >
                         {expDays! < 0
@@ -427,14 +427,14 @@ export function PeersTable({ peers: initial }: { peers: Peer[] }) {
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-ink-600">{r.license_state ?? '—'}</td>
-                  <td className="px-4 py-3 text-ink-600">{r.active_cases_count ?? 0}</td>
-                  <td className="px-4 py-3 text-ink-600">{r.total_reviews_completed ?? 0}</td>
+                  <td className="px-4 py-3 text-ink-secondary">{r.license_state ?? '—'}</td>
+                  <td className="px-4 py-3 text-ink-secondary">{r.active_cases_count ?? 0}</td>
+                  <td className="px-4 py-3 text-ink-secondary">{r.total_reviews_completed ?? 0}</td>
                   <td className="px-4 py-3">
                     <Badge className={`${colors.bg} ${colors.text} border-0`}>
                       {status.replace('_', ' ')}
                     </Badge>
-                    <div className="mt-1 text-[10px] text-ink-500">
+                    <div className="mt-1 text-[10px] text-ink-secondary">
                       {formatRate(r.rate_type, r.rate_amount)}
                     </div>
                   </td>

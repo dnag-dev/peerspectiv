@@ -60,9 +60,9 @@ export default async function ClientFilesPage() {
   if (!companyId) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-white">My Files</h1>
+        <h1 className="text-2xl font-medium text-ink-primary">My Files</h1>
         <Card>
-          <CardContent className="py-12 text-center text-ink-500">
+          <CardContent className="py-12 text-center text-ink-secondary">
             No company found.
           </CardContent>
         </Card>
@@ -99,8 +99,8 @@ export default async function ClientFilesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">My Files</h1>
-        <p className="text-sm text-ink-400">
+        <h1 className="text-2xl font-medium text-ink-primary">My Files</h1>
+        <p className="text-sm text-ink-tertiary">
           All batches uploaded for review — {batchList.length} batches total.
         </p>
       </div>
@@ -108,9 +108,9 @@ export default async function ClientFilesPage() {
       {batchList.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <FolderOpen className="mb-4 h-12 w-12 text-ink-300" />
+            <FolderOpen className="mb-4 h-12 w-12 text-ink-tertiary" />
             <h3 className="text-lg font-medium text-ink-200">No files uploaded yet</h3>
-            <p className="mt-1 text-sm text-ink-400">
+            <p className="mt-1 text-sm text-ink-tertiary">
               Upload charts via <Link href="/portal/submit" className="text-cobalt-400 hover:underline">Submit Records</Link> to get started.
             </p>
           </CardContent>
@@ -119,7 +119,7 @@ export default async function ClientFilesPage() {
         <Card>
           <CardContent className="p-0">
             <table className="w-full text-sm">
-              <thead className="bg-ink-800/50 text-ink-400 text-xs uppercase">
+              <thead className="bg-ink-800/50 text-ink-tertiary text-xs uppercase">
                 <tr>
                   <th className="px-4 py-3 text-left">Batch Name</th>
                   <th className="px-4 py-3 text-left">Specialty</th>
@@ -143,19 +143,19 @@ export default async function ClientFilesPage() {
                           {batch.batch_name || "Untitled batch"}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-ink-300">{batch.specialty ?? "—"}</td>
-                      <td className="px-4 py-3 text-ink-400">
+                      <td className="px-4 py-3 text-ink-tertiary">{batch.specialty ?? "—"}</td>
+                      <td className="px-4 py-3 text-ink-tertiary">
                         {formatDate(batch.date_uploaded ?? batch.created_at)}
                       </td>
-                      <td className="px-4 py-3 text-center text-ink-300">{batch.total_cases}</td>
-                      <td className="px-4 py-3 text-center text-ink-300">{batch.completed_cases}</td>
+                      <td className="px-4 py-3 text-center text-ink-tertiary">{batch.total_cases}</td>
+                      <td className="px-4 py-3 text-center text-ink-tertiary">{batch.completed_cases}</td>
                       <td className="px-4 py-3">
                         {expired ? (
                           <Badge variant="outline" className="border-red-500/50 text-red-400 bg-red-500/10">
                             Expired
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="border-ink-600 text-ink-300">
+                          <Badge variant="outline" className="border-ink-600 text-ink-tertiary">
                             {batch.status ?? "uploaded"}
                           </Badge>
                         )}

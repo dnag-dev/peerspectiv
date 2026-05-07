@@ -38,9 +38,9 @@ export function SettingsView({ initialSettings }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <SettingsIcon className="h-6 w-6 text-cobalt-600" />
+        <SettingsIcon className="h-6 w-6 text-status-info-dot" />
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink-900">Settings</h1>
+          <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Settings</h1>
           <p className="text-sm text-muted-foreground">
             Global configuration, specialty taxonomy, credentialer rates, and email templates.
           </p>
@@ -106,13 +106,13 @@ function GeneralTab({ byKey }: { byKey: Map<string, unknown> }) {
 
   return (
     <Card>
-      <CardHeader><CardTitle className="text-ink-900">General</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-ink-primary">General</CardTitle></CardHeader>
       <CardContent className="space-y-6">
-        {err && <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">{err}</p>}
+        {err && <p className="text-sm text-status-danger-fg bg-critical-50 px-3 py-2 rounded">{err}</p>}
 
         <div className="grid gap-2 max-w-md">
           <Label>File expiration (days)</Label>
-          <p className="text-xs text-ink-500">Uploaded chart files auto-deleted after this many days.</p>
+          <p className="text-xs text-ink-secondary">Uploaded chart files auto-deleted after this many days.</p>
           <div className="flex gap-2">
             <Input type="number" min={1} step={1} value={fileDays}
               onChange={(e) => setFileDays(e.target.value)} className="w-32" />
@@ -130,7 +130,7 @@ function GeneralTab({ byKey }: { byKey: Map<string, unknown> }) {
 
         <div className="grid gap-2 max-w-md">
           <Label>Global Pay Rate per Review ($)</Label>
-          <p className="text-xs text-ink-500">Default per-review pay rate for peers. Negative values are rejected.</p>
+          <p className="text-xs text-ink-secondary">Default per-review pay rate for peers. Negative values are rejected.</p>
           <div className="flex gap-2">
             <Input type="number" min={0.01} step={0.01} value={payRate}
               onChange={(e) => setPayRate(e.target.value)} className="w-32" />
@@ -152,7 +152,7 @@ function GeneralTab({ byKey }: { byKey: Map<string, unknown> }) {
             onChange={(e) => { setFirewallAfter(e.target.checked); save("files_behind_firewall_after_retention", e.target.checked); }} />
           <div>
             <Label htmlFor="firewall">Move files behind firewall after retention</Label>
-            <p className="text-xs text-ink-500 mt-0.5">When enabled, files past their expiration are archived behind firewall instead of being deleted.</p>
+            <p className="text-xs text-ink-secondary mt-0.5">When enabled, files past their expiration are archived behind firewall instead of being deleted.</p>
           </div>
         </div>
       </CardContent>
@@ -213,9 +213,9 @@ function TaxonomyTab() {
 
   return (
     <Card>
-      <CardHeader><CardTitle className="text-ink-900">Specialty Taxonomy</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-ink-primary">Specialty Taxonomy</CardTitle></CardHeader>
       <CardContent className="space-y-4">
-        {err && <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">{err}</p>}
+        {err && <p className="text-sm text-status-danger-fg bg-critical-50 px-3 py-2 rounded">{err}</p>}
 
         <div className="flex gap-2 max-w-md">
           <Input placeholder="New specialty name" value={newName}
@@ -225,21 +225,21 @@ function TaxonomyTab() {
           </Button>
         </div>
 
-        {loading ? <p className="text-sm text-ink-500">Loading…</p> : (
+        {loading ? <p className="text-sm text-ink-secondary">Loading…</p> : (
           <table className="w-full text-sm">
-            <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
+            <thead className="bg-ink-50 text-ink-secondary text-xs uppercase">
               <tr><th className="px-3 py-2 text-left">Name</th><th className="px-3 py-2 text-left">Status</th><th className="px-3 py-2 text-right">Actions</th></tr>
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.id} className="border-t border-ink-100">
+                <tr key={r.id} className="border-t border-border-subtle">
                   <td className="px-3 py-2">
                     {editingId === r.id ? (
                       <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-7" />
                     ) : r.name}
                   </td>
                   <td className="px-3 py-2">
-                    <span className={`inline-flex rounded px-2 py-0.5 text-xs ${r.isActive ? "bg-mint-50 text-mint-700" : "bg-ink-100 text-ink-500"}`}>
+                    <span className={`inline-flex rounded px-2 py-0.5 text-xs ${r.isActive ? "bg-mint-50 text-status-success-fg" : "bg-ink-100 text-ink-secondary"}`}>
                       {r.isActive ? "active" : "inactive"}
                     </span>
                   </td>
@@ -272,7 +272,7 @@ function TaxonomyTab() {
                 </tr>
               ))}
               {rows.length === 0 && (
-                <tr><td colSpan={3} className="px-3 py-8 text-center text-ink-500">No specialties yet.</td></tr>
+                <tr><td colSpan={3} className="px-3 py-8 text-center text-ink-secondary">No specialties yet.</td></tr>
               )}
             </tbody>
           </table>
@@ -357,9 +357,9 @@ function CredentialersTab() {
   return (
     <>
       <Card>
-        <CardHeader><CardTitle className="text-ink-900">Credentialers</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-ink-primary">Credentialers</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          {err && <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">{err}</p>}
+          {err && <p className="text-sm text-status-danger-fg bg-critical-50 px-3 py-2 rounded">{err}</p>}
 
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_140px_auto] gap-2">
             <Input placeholder="Email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
@@ -371,9 +371,9 @@ function CredentialersTab() {
             </Button>
           </div>
 
-          {loading ? <p className="text-sm text-ink-500">Loading…</p> : (
+          {loading ? <p className="text-sm text-ink-secondary">Loading…</p> : (
             <table className="w-full text-sm">
-              <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
+              <thead className="bg-ink-50 text-ink-secondary text-xs uppercase">
                 <tr>
                   <th className="px-3 py-2 text-left">Email</th>
                   <th className="px-3 py-2 text-left">Name</th>
@@ -386,7 +386,7 @@ function CredentialersTab() {
                   const editVal = edits[r.id] ?? r.perPeerRate;
                   const dirty = edits[r.id] !== undefined && Number(edits[r.id]) !== Number(r.perPeerRate);
                   return (
-                    <tr key={r.id} className="border-t border-ink-100">
+                    <tr key={r.id} className="border-t border-border-subtle">
                       <td className="px-3 py-2">{r.email}</td>
                       <td className="px-3 py-2">{r.fullName ?? "—"}</td>
                       <td className="px-3 py-2 text-right">
@@ -407,7 +407,7 @@ function CredentialersTab() {
                   );
                 })}
                 {rows.length === 0 && (
-                  <tr><td colSpan={4} className="px-3 py-8 text-center text-ink-500">No credentialers yet.</td></tr>
+                  <tr><td colSpan={4} className="px-3 py-8 text-center text-ink-secondary">No credentialers yet.</td></tr>
                 )}
               </tbody>
             </table>
@@ -418,13 +418,13 @@ function CredentialersTab() {
       {historyFor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setHistoryFor(null)}>
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold text-ink-900 mb-3">Rate change history</h3>
+            <h3 className="text-lg font-medium tracking-tight text-ink-primary mb-3">Rate change history</h3>
             {history.length === 0 ? (
-              <p className="text-sm text-ink-500">No rate-stamped actions recorded yet.</p>
+              <p className="text-sm text-ink-secondary">No rate-stamped actions recorded yet.</p>
             ) : (
               <ul className="space-y-2 max-h-80 overflow-y-auto">
                 {history.map((h, i) => (
-                  <li key={i} className="text-xs flex justify-between border-b border-ink-100 pb-1">
+                  <li key={i} className="text-xs flex justify-between border-b border-border-subtle pb-1">
                     <span>{h.action} · {new Date(h.performedAt).toLocaleString()}</span>
                     <span className="font-mono">${h.rateAtAction ?? "—"}</span>
                   </li>
@@ -454,14 +454,14 @@ function TemplatesTab() {
 
   return (
     <Card>
-      <CardHeader><CardTitle className="text-ink-900">Email Templates</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-ink-primary">Email Templates</CardTitle></CardHeader>
       <CardContent>
-        <p className="text-xs text-ink-500 mb-3">Read-only preview. Customisation is on the wishlist; today templates live in <code>lib/email/notifications.ts</code> as inline HTML.</p>
-        <ul className="divide-y divide-ink-100 border border-ink-100 rounded">
+        <p className="text-xs text-ink-secondary mb-3">Read-only preview. Customisation is on the wishlist; today templates live in <code>lib/email/notifications.ts</code> as inline HTML.</p>
+        <ul className="divide-y divide-border-subtle border border-border-subtle rounded">
           {templates.map((t) => (
             <li key={t.name} className="px-4 py-3">
-              <div className="font-medium text-ink-900 text-sm">{t.name}</div>
-              <div className="text-xs text-ink-500 mt-0.5">{t.description}</div>
+              <div className="font-medium text-ink-primary text-sm">{t.name}</div>
+              <div className="text-xs text-ink-secondary mt-0.5">{t.description}</div>
             </li>
           ))}
         </ul>

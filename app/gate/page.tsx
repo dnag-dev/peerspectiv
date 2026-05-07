@@ -51,10 +51,10 @@ export default function GatePage({
           action={submitGate}
           className="bg-white rounded-xl shadow-xl p-8 text-left"
         >
-          <h1 className="text-lg font-semibold text-[#0F2044] mb-1">
+          <h1 className="text-lg font-medium text-[#0F2044] mb-1">
             Access Required
           </h1>
-          <p className="text-sm text-ink-500 mb-5">
+          <p className="text-sm text-ink-secondary mb-5">
             Enter the access key to continue.
           </p>
 
@@ -64,24 +64,24 @@ export default function GatePage({
             autoFocus
             autoComplete="off"
             placeholder="Access key"
-            className="w-full rounded-lg border border-ink-300 px-4 py-3 text-sm text-ink-900 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/20"
+            className="w-full rounded-lg border border-border-default px-4 py-3 text-sm text-ink-primary focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/20"
           />
 
           {error && (
-            <p className="mt-3 text-sm text-critical-600">
+            <p className="mt-3 text-sm text-status-danger-dot">
               Incorrect key. Try again.
             </p>
           )}
 
           <button
             type="submit"
-            className="mt-4 w-full rounded-lg bg-[#1D4ED8] px-4 py-3 text-sm font-semibold text-white shadow hover:bg-[#1a43a0] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/40"
+            className="mt-4 w-full rounded-lg bg-[#1D4ED8] px-4 py-3 text-sm font-medium text-white shadow hover:bg-[#1a43a0] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/40"
           >
             Continue
           </button>
         </form>
 
-        <p className="mt-6 text-xs text-ink-400">
+        <p className="mt-6 text-xs text-ink-tertiary">
           Temporary access gate — remove before production launch.
         </p>
       </div>

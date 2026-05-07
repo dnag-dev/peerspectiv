@@ -30,8 +30,8 @@ export default async function PeersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink-900">Peers</h1>
-        <p className="text-sm text-ink-500">
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Peers</h1>
+        <p className="text-sm text-ink-secondary">
           Manage peers, compensation, and availability
         </p>
       </div>

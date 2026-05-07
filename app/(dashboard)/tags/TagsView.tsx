@@ -50,11 +50,11 @@ interface Props {
 const COLOR_OPTS = ["cobalt", "mint", "amber", "critical", "ink"] as const;
 
 const COLOR_CHIP: Record<string, string> = {
-  cobalt: "bg-cobalt-100 text-cobalt-700 border-cobalt-200",
-  mint: "bg-mint-100 text-mint-700 border-mint-200",
-  amber: "bg-amber-100 text-amber-700 border-amber-200",
-  critical: "bg-critical-100 text-critical-700 border-critical-200",
-  ink: "bg-ink-100 text-ink-700 border-ink-200",
+  cobalt: "bg-status-info-bg text-status-info-fg border-status-info-fg/30",
+  mint: "bg-mint-100 text-status-success-fg border-status-success-fg/30",
+  amber: "bg-amber-100 text-status-warning-fg border-status-warning-fg/30",
+  critical: "bg-critical-100 text-status-danger-fg border-critical-200",
+  ink: "bg-ink-100 text-ink-primary border-border-subtle",
 };
 
 type Tab = "cadence" | "global";
@@ -222,7 +222,7 @@ export function TagsView({ initialTags, companies }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-ink-900">Tags</h1>
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Tags</h1>
         <p className="text-sm text-muted-foreground">
           Reusable labels for cases. Cadence tags are auto-generated when charts
           upload; global tags are admin-managed and apply across companies.
@@ -230,7 +230,7 @@ export function TagsView({ initialTags, companies }: Props) {
       </div>
 
       {/* Tab strip */}
-      <div className="border-b border-ink-200">
+      <div className="border-b border-border-subtle">
         <div className="flex gap-2">
           {(
             [
@@ -244,8 +244,8 @@ export function TagsView({ initialTags, companies }: Props) {
               onClick={() => setTab(t)}
               className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
                 tab === t
-                  ? "border-cobalt-600 text-cobalt-700"
-                  : "border-transparent text-ink-600 hover:text-ink-900"
+                  ? "border-status-info-dot text-status-info-fg"
+                  : "border-transparent text-ink-secondary hover:text-ink-primary"
               }`}
             >
               {label}
@@ -258,7 +258,7 @@ export function TagsView({ initialTags, companies }: Props) {
       <Card>
         <CardContent className="p-4">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-tertiary" />
             <Input
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
@@ -273,7 +273,7 @@ export function TagsView({ initialTags, companies }: Props) {
         <>
           <Card>
             <CardHeader>
-              <CardTitle className="text-ink-900">Create Global Tag</CardTitle>
+              <CardTitle className="text-ink-primary">Create Global Tag</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-3">
@@ -310,7 +310,7 @@ export function TagsView({ initialTags, companies }: Props) {
                 </div>
               </div>
               {err && (
-                <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">
+                <p className="text-sm text-status-danger-fg bg-critical-50 px-3 py-2 rounded">
                   {err}
                 </p>
               )}
@@ -332,7 +332,7 @@ export function TagsView({ initialTags, companies }: Props) {
           <Card>
             <CardContent className="p-0">
               <table className="w-full text-sm">
-                <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
+                <thead className="bg-ink-50 text-ink-secondary text-xs uppercase">
                   <tr>
                     <th className="px-4 py-3 text-left">Tag</th>
                     <th className="px-4 py-3 text-left">Description</th>
@@ -345,7 +345,7 @@ export function TagsView({ initialTags, companies }: Props) {
                     <tr>
                       <td
                         colSpan={4}
-                        className="px-4 py-12 text-center text-ink-500"
+                        className="px-4 py-12 text-center text-ink-secondary"
                       >
                         {globalTags.length === 0
                           ? "No global tags yet. Create one above."
@@ -359,7 +359,7 @@ export function TagsView({ initialTags, companies }: Props) {
                     return (
                       <tr
                         key={t.id}
-                        className="border-t border-ink-100 hover:bg-ink-50/50"
+                        className="border-t border-border-subtle hover:bg-ink-50/50"
                       >
                         <td className="px-4 py-3">
                           <span
@@ -368,7 +368,7 @@ export function TagsView({ initialTags, companies }: Props) {
                             <TagIcon className="h-3 w-3" /> {t.name}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-ink-600">
+                        <td className="px-4 py-3 text-ink-secondary">
                           {t.description || "—"}
                         </td>
                         <td className="px-4 py-3 text-right text-ink-800">
@@ -402,7 +402,7 @@ export function TagsView({ initialTags, companies }: Props) {
       {tab === "cadence" && (
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <p className="flex-1 text-xs text-ink-500">
+            <p className="flex-1 text-xs text-ink-secondary">
               Cadence tags are auto-generated when charts are uploaded — one tag
               per (company, billing period). Read-only.
             </p>
@@ -421,7 +421,7 @@ export function TagsView({ initialTags, companies }: Props) {
           {/* Create Company Tag form */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-ink-900">Create Company Tag</CardTitle>
+              <CardTitle className="text-ink-primary">Create Company Tag</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-4">
@@ -467,7 +467,7 @@ export function TagsView({ initialTags, companies }: Props) {
                 </div>
               </div>
               {companyTagErr && (
-                <p className="text-sm text-critical-700 bg-critical-50 px-3 py-2 rounded">
+                <p className="text-sm text-status-danger-fg bg-critical-50 px-3 py-2 rounded">
                   {companyTagErr}
                 </p>
               )}
@@ -488,7 +488,7 @@ export function TagsView({ initialTags, companies }: Props) {
 
           {cadenceByCompany.length === 0 && (
             <Card>
-              <CardContent className="px-4 py-12 text-center text-sm text-ink-500">
+              <CardContent className="px-4 py-12 text-center text-sm text-ink-secondary">
                 {cadenceTags.length === 0
                   ? "No cadence tags yet. They'll appear here as charts are uploaded."
                   : "No cadence tags match your search."}
@@ -500,22 +500,22 @@ export function TagsView({ initialTags, companies }: Props) {
             return (
             <Card key={companyName}>
               <CardHeader>
-                <CardTitle className="text-base text-ink-900">
+                <CardTitle className="text-base text-ink-primary">
                   {companyId ? (
-                    <Link href={`/companies/${companyId}`} className="text-cobalt-700 hover:underline">
+                    <Link href={`/companies/${companyId}`} className="text-status-info-fg hover:underline">
                       {companyName}
                     </Link>
                   ) : (
                     companyName
                   )}
-                  <span className="ml-2 text-xs font-normal text-ink-500">
+                  <span className="ml-2 text-xs font-normal text-ink-secondary">
                     ({list.length})
                   </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <table className="w-full text-sm">
-                  <thead className="bg-ink-50 text-ink-600 text-xs uppercase">
+                  <thead className="bg-ink-50 text-ink-secondary text-xs uppercase">
                     <tr>
                       <th className="px-4 py-2 text-left">Period</th>
                       <th className="px-4 py-2 text-right">Cases tagged</th>
@@ -528,7 +528,7 @@ export function TagsView({ initialTags, companies }: Props) {
                       return (
                         <tr
                           key={t.id}
-                          className="border-t border-ink-100 hover:bg-ink-50/50"
+                          className="border-t border-border-subtle hover:bg-ink-50/50"
                         >
                           <td className="px-4 py-2">
                             <span
