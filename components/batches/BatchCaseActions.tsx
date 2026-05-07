@@ -80,6 +80,15 @@ export function BatchCaseActions({ caseId, status, peerId, specialty }: Props) {
   return (
     <>
       <div className="inline-flex gap-1.5">
+        {status === "unassigned" && (
+          <button
+            onClick={() => setPickerOpen(true)}
+            disabled={busy}
+            className="rounded border border-blue-300 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+          >
+            Assign
+          </button>
+        )}
         {status === "pending_approval" && (
           <button
             onClick={handleApprove}

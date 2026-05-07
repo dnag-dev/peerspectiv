@@ -315,6 +315,15 @@ export function AssignmentsTable({
                   </td>
                   <td className="px-3 py-2 text-right">
                     <div className="inline-flex gap-1.5">
+                      {r.status === "unassigned" && (
+                        <button
+                          onClick={() => setPickerCase(r)}
+                          disabled={busyId === r.id}
+                          className="rounded border border-status-info-dot bg-status-info-bg px-2 py-0.5 text-xs font-medium text-status-info-fg hover:bg-blue-100 disabled:opacity-50"
+                        >
+                          Assign
+                        </button>
+                      )}
                       {r.status === "pending_approval" && (
                         <button
                           onClick={() => handleApprove(r)}
