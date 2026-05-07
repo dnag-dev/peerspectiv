@@ -222,7 +222,7 @@ export function AssignmentQueue({
               </header>
 
               {/* Match score panel */}
-              <div className="bg-cobalt-soft rounded-lg px-4 py-3.5 mb-3.5 flex justify-between items-center flex-shrink-0">
+              <div className="bg-brand/5 rounded-lg px-4 py-3.5 mb-3.5 flex justify-between items-center flex-shrink-0">
                 <div>
                   <div className="text-eyebrow text-status-info-fg mb-1">
                     Match score
@@ -368,13 +368,13 @@ function MatchRing({ value }: { value: number }) {
   const offset = c - (value / 100) * c;
   return (
     <svg width="64" height="64" viewBox="0 0 64 64" className="flex-shrink-0">
-      <circle cx="32" cy="32" r={r} fill="none" stroke="var(--cobalt-200)" strokeWidth="6" />
+      <circle cx="32" cy="32" r={r} fill="none" stroke="#E1F5EE" strokeWidth="6" />
       <circle
         cx="32"
         cy="32"
         r={r}
         fill="none"
-        stroke="var(--cobalt-700)"
+        stroke="#0F6E56"
         strokeWidth="6"
         strokeDasharray={c}
         strokeDashoffset={offset}

@@ -52,8 +52,8 @@ function formatRelativeTime(dateStr: string): string {
 const STATUS_COLORS: Record<string, string> = {
   unassigned:       "#64748B", // ink-500
   pending_approval: "#F59E0B", // amber-500
-  assigned:         "#3B82F6", // cobalt-500
-  in_progress:      "#2563EB", // cobalt-600
+  assigned:         "#0F6E56", // brand (was cobalt-500)
+  in_progress:      "#085041", // brand-hover (was cobalt-600)
   completed:        "#00B582", // mint-600
   past_due:         "#EF4444", // critical-500
 };

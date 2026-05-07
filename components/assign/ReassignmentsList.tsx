@@ -128,7 +128,7 @@ export function ReassignmentsList({ rows }: Props) {
                     </span>
                     <span className="ml-3 text-ink-tertiary">Requested {created}</span>
                   </div>
-                  <div className="mt-2 rounded-md border-l-2 border-status-info-fg/40 bg-cobalt-soft px-3 py-2 text-sm text-ink-800">
+                  <div className="mt-2 rounded-md border-l-2 border-status-info-fg/40 bg-brand/5 px-3 py-2 text-sm text-ink-800">
                     {r.reason}
                   </div>
                 </div>

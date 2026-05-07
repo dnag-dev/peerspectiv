@@ -52,7 +52,7 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
 
   const strokeColor =
     score >= 80
-      ? "stroke-cobalt-500"
+      ? "stroke-brand"
       : score >= 60
         ? "stroke-amber-600"
         : "stroke-critical-600";

@@ -271,7 +271,7 @@ export function MatchScorePanel({
   return (
     <div
       className={cn(
-        "rounded-lg bg-cobalt-soft p-3.5",
+        "rounded-lg bg-brand/5 p-3.5",
         className
       )}
     >
@@ -284,13 +284,13 @@ export function MatchScorePanel({
           </div>
         </div>
         <svg viewBox="0 0 60 60" className="h-15 w-15" style={{ width: 60, height: 60 }}>
-          <circle cx="30" cy="30" r={r} fill="none" stroke="var(--cobalt-200)" strokeWidth="6" />
+          <circle cx="30" cy="30" r={r} fill="none" stroke="#E1F5EE" strokeWidth="6" />
           <circle
             cx="30"
             cy="30"
             r={r}
             fill="none"
-            stroke="var(--cobalt-700)"
+            stroke="#0F6E56"
             strokeWidth="6"
             strokeLinecap="round"
             strokeDasharray={`${dash} ${c}`}
@@ -306,7 +306,7 @@ export function MatchScorePanel({
 
 export function Sparkline({
   data,
-  color = "var(--cobalt-500)",
+  color = "#0F6E56",
   fill = true,
   className,
   height = 28,
@@ -361,7 +361,7 @@ export function KPISparklineCard({
   value,
   delta,
   trend,
-  semanticColor = "var(--cobalt-500)",
+  semanticColor = "#0F6E56",
   className,
 }: {
   label: string;
