@@ -357,3 +357,137 @@
 **Expected Result:** Filters trigger server-side queries (URL updates with params). Text inputs apply on blur/Enter (not as-you-type). Date pickers apply immediately. Scales to large datasets.
 
 ---
+
+
+## Client Portal — Batches (replaces Submit Records + My Files)
+
+### CLA-024 — Sidebar shows Batches instead of Submit Records and My Files
+
+**Module:** Client Portal — Navigation | **Priority:** High
+
+**Pre-conditions:** Logged in as client.
+
+**Steps:**
+1. Check the sidebar under "Overview" group.
+
+**Expected Result:** "Batches" link is shown. No "Submit Records" or "My Files" links. Clicking "Batches" navigates to /portal/batches.
+
+---
+
+### CLA-025A — Client Batches page shows only company batches
+
+**Module:** Client Portal — Batches | **Priority:** High
+
+**Pre-conditions:** Batches exist for the client's company and other companies.
+
+**Steps:**
+1. Navigate to /portal/batches.
+
+**Expected Result:** Only batches belonging to the client's company are shown. Columns: Batch Name (clickable), Specialty, Upload Date, Cases, Completed, Status. Batches from other companies are NOT visible.
+
+---
+
+### CLA-026 — Client can create new batch (4-step wizard)
+
+**Module:** Client Portal — Batches | **Priority:** High
+
+**Pre-conditions:** Company has forms and providers configured.
+
+**Steps:**
+1. Click "New Batch" on the Batches page.
+2. Observe the wizard steps.
+
+**Expected Result:** Wizard has 4 steps (not 5 — company step is skipped, auto-set to client's company). Steps: 1) Specialty, 2) Form selection, 3) Batch details + upload PDFs, 4) Review & submit. Step counter shows "Step N of 4".
+
+---
+
+### CLA-027 — Batch name links to batch detail
+
+**Module:** Client Portal — Batches | **Priority:** Medium
+
+**Pre-conditions:** Batches exist.
+
+**Steps:**
+1. Click a batch name on the Batches list page.
+
+**Expected Result:** Navigates to batch detail page showing cases, status, and upload info.
+
+---
+
+
+## Client Portal — Forms Management
+
+### CLA-028 — Client can edit forms
+
+**Module:** Client Portal — Forms | **Priority:** High
+
+**Pre-conditions:** Forms exist for the client's company.
+
+**Steps:**
+1. Navigate to Forms page.
+2. Click "Edit" on a form.
+
+**Expected Result:** FormBuilderModal opens in edit mode. Company is auto-set (not editable). Mode selector (Upload PDF/Clone/From scratch), AI narrative checkbox, and Draft with AI button are hidden. Client sees only: Specialty, Form Identifier, Form Name preview, and Fields editor.
+
+---
+
+### CLA-029 — Client can clone forms
+
+**Module:** Client Portal — Forms | **Priority:** Medium
+
+**Pre-conditions:** Forms exist.
+
+**Steps:**
+1. Click "Clone" on a form.
+
+**Expected Result:** FormBuilderModal opens pre-filled with the form's data. Form Identifier shows "(Copy)" suffix. Client can modify and save as a new form.
+
+---
+
+### CLA-030 — Client can create new form (simplified modal)
+
+**Module:** Client Portal — Forms | **Priority:** High
+
+**Pre-conditions:** None.
+
+**Steps:**
+1. Click "New Form" button on Forms page.
+2. Fill in Specialty and Form Identifier.
+3. Add questions.
+4. Click "Create form".
+
+**Expected Result:** Form created for the client's company. No mode tabs, AI narrative, Draft with AI, or company picker shown. Form appears in the list after creation.
+
+---
+
+
+## Case Detail — Returned by Peer Status
+
+### CLA-031 — Case detail shows "Returned by Peer" (not "Unassigned")
+
+**Module:** Cases | **Priority:** High
+
+**Pre-conditions:** A case has been returned by a peer.
+
+**Steps:**
+1. Navigate to the case detail page for a returned case.
+
+**Expected Result:** Status badge shows "Returned by Peer" in red. Does NOT show "Unassigned" (previous bug where returned_by_peer was missing from badge config).
+
+---
+
+
+## Admin Reviews — Batch Column
+
+### CLA-032 — Admin Reviews shows Batch column instead of Notes
+
+**Module:** Admin Reviews | **Priority:** Medium
+
+**Pre-conditions:** Cases exist with batch associations.
+
+**Steps:**
+1. As admin, navigate to Reviews page.
+
+**Expected Result:** Table shows "Batch" column (batch name like "Q4 2025") instead of "Notes". Returned by peer reason appears as small red text under the status badge, not in a separate column.
+
+---
