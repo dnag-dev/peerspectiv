@@ -234,3 +234,124 @@
 **Expected Result:** `active_cases_count` = number of assigned + in_progress cases. `total_reviews_completed` = number of completed cases. No stale seed values (e.g., a peer with 2 completed cases should not show `total_reviews_completed = 467`).
 
 ---
+
+
+## Review Form — Field Types & Validation
+
+### PRA-015 — Yes/No/NA questions render as radio buttons (not text fields)
+
+**Module:** Conduct Review | **Priority:** Critical
+
+**Pre-conditions:** A form has questions with field_type = yes_no_na (e.g., "Was documentation complete?").
+
+**Steps:**
+1. Open a case review as a peer.
+2. Inspect each question.
+
+**Expected Result:** Every Yes/No/NA question renders as three radio-style buttons (Yes, No, N/A). No question that should be Yes/No/NA renders as a text input. Only "Comments and Recommendations" and similar freeform fields render as textareas.
+
+---
+
+### PRA-016 — No "DEFAULT — PLEASE VERIFY" badge on form questions
+
+**Module:** Conduct Review | **Priority:** Medium
+
+**Pre-conditions:** A form has questions with default answers configured.
+
+**Steps:**
+1. Open a case review.
+2. Inspect all questions for badge labels.
+
+**Expected Result:** No "DEFAULT — PLEASE VERIFY" badge appears on any question. Default answers silently pre-select the button (e.g., "Yes" highlighted). AI prefill badges (high/medium/low confidence) still appear when AI provides values.
+
+---
+
+### PRA-017 — Comment required when answer differs from default
+
+**Module:** Conduct Review | **Priority:** High
+
+**Pre-conditions:** A form question has default_answer = "yes" and required_text_on_non_default = true.
+
+**Steps:**
+1. Open a case review.
+2. On a question with default "Yes", click "No".
+3. Observe the comment textarea.
+4. Try to submit without entering a comment.
+
+**Expected Result:** When "No" is selected (differs from default "Yes"), the comment textarea highlights with an amber border and placeholder changes to "Required: explain why your answer differs from the expected default". Submit is blocked with a validation error until the comment is filled in. Selecting "N/A" does NOT require a comment.
+
+---
+
+### PRA-018 — Save & Next Chart button in multi-chart reviews
+
+**Module:** Conduct Review | **Priority:** High
+
+**Pre-conditions:** Peer has 2+ charts for the same provider in the same batch period (multi-chart group review).
+
+**Steps:**
+1. Open the grouped review (e.g., "Julia Adee · Q4 2025 (2 charts)").
+2. On Chart 1, answer some questions.
+3. Click "Save & Next Chart →" in the footer.
+4. Observe what happens.
+
+**Expected Result:** Draft is saved. View switches to Chart 2 tab. Page scrolls to top. Chart 1 answers are preserved (can switch back to verify). The "Save & Next Chart →" button only appears in multi-chart mode — not on single-chart reviews.
+
+---
+
+### PRA-019 — Return case clears saved draft
+
+**Module:** Conduct Review | **Priority:** High
+
+**Pre-conditions:** Peer has a case with partial answers saved (draft exists in localStorage).
+
+**Steps:**
+1. Open the case and verify answers are loaded from draft.
+2. Click "Return case".
+3. Enter a reason (min 10 chars) and confirm.
+4. Check localStorage in browser DevTools.
+
+**Expected Result:** After returning the case, `peerspectiv.draft.{caseId}` is removed from localStorage. Peer is redirected to My Queue. The case no longer appears in the peer's queue. If the case is reassigned to the same peer later, they start with a clean form.
+
+---
+
+### PRA-020 — Return case decrements peer active count
+
+**Module:** Conduct Review | **Priority:** Medium
+
+**Pre-conditions:** Peer has active_cases_count = 5 with one in_progress case.
+
+**Steps:**
+1. Return the in_progress case.
+2. Check the peer's active_cases_count.
+
+**Expected Result:** active_cases_count decremented to 4. The returned case no longer counts toward the peer's capacity.
+
+---
+
+### PRA-021 — Return case and Request reassignment hidden on completed reviews
+
+**Module:** Conduct Review | **Priority:** High
+
+**Pre-conditions:** A completed review exists with a submitted result.
+
+**Steps:**
+1. Open the completed review as the peer (via "View review" on Completed tab).
+2. Check the top-right action buttons.
+
+**Expected Result:** No "Return case" button shown. Completed reviews are immutable — the peer cannot return or request reassignment after submission.
+
+---
+
+### PRA-022 — Only Return Case action available (no Request Reassignment)
+
+**Module:** Conduct Review | **Priority:** Medium
+
+**Pre-conditions:** Peer has an assigned or in_progress case.
+
+**Steps:**
+1. Open the case review.
+2. Check the top-right action buttons.
+
+**Expected Result:** Only "Return case" button shown (red outline with undo icon). No "Request reassignment" button. Return case is the single canonical action for declining a case (PR-030).
+
+---

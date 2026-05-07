@@ -240,3 +240,21 @@
 **Expected Result:** Chart filenames are clickable blue links that open the PDF in a new tab.
 
 ---
+
+
+## Client Reviews — Returned by Peer Status
+
+### CLA-017 — Client Reviews page shows "Returned by peer" status chip
+
+**Module:** Client Portal — Reviews | **Priority:** Medium
+
+**Pre-conditions:** A case has been returned by a peer.
+
+**Steps:**
+1. Login as client.
+2. Navigate to Reviews page.
+3. Toggle the "Returned by peer" status chip.
+
+**Expected Result:** "Returned by peer" chip is available in the status chip bar. When selected, cases with status `returned_by_peer` are shown. The chip follows the same multi-select toggle behavior as other status chips.
+
+---

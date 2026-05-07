@@ -1483,3 +1483,52 @@
 **Expected Result:** Incomplete count shows only `past_due` cases for this peer. Description reads "Past due — deadline passed". Does NOT include unassigned or pending_approval cases (those don't belong to the peer).
 
 ---
+
+
+## Reviews Table — Batch Column & Returned Reason
+
+### SAA-096A — Reviews table shows Batch column instead of Notes
+
+**Module:** Reviews | **Priority:** Medium
+
+**Pre-conditions:** Cases exist with batch associations.
+
+**Steps:**
+1. Navigate to Reviews page (admin).
+2. Check the table columns.
+
+**Expected Result:** Columns include "Batch" showing the batch name (e.g., "Q4 2025"). No "Notes" column. Batch name sourced from the associated batch record.
+
+---
+
+### SAA-097A — Returned by peer cases show returned reason under status
+
+**Module:** Reviews | **Priority:** High
+
+**Pre-conditions:** A case has been returned by a peer with a reason.
+
+**Steps:**
+1. Navigate to Reviews page.
+2. Filter to find the returned case (or select all statuses).
+
+**Expected Result:** The status badge shows "returned by peer". Below the badge, the peer's return reason is shown in italic muted text (truncated if long). Admin can see why the peer returned the case without drilling into the case detail.
+
+---
+
+
+## Batch Status — Sync After Return
+
+### SAA-098A — Batch status syncs when peer returns a case
+
+**Module:** Batches | **Priority:** High
+
+**Pre-conditions:** A batch has 2 cases: 1 assigned, 1 in_progress. Batch status = in_progress.
+
+**Steps:**
+1. As the peer, return one case.
+2. Have the admin unassign the other case.
+3. Check the batch status.
+
+**Expected Result:** Batch status reverts from `in_progress` to `pending` when all cases are unassigned/returned. The syncBatchStatus function is called after every case return.
+
+---
