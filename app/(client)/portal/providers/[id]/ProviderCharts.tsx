@@ -22,13 +22,13 @@ export function ProviderCharts({
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={last6}>
-            <CartesianGrid stroke="#2A3F5F" strokeDasharray="3 3" />
-            <XAxis dataKey="label" stroke="#94A3B8" fontSize={11} />
-            <YAxis domain={[0, 100]} stroke="#94A3B8" fontSize={11} />
+            <CartesianGrid stroke="#E5E5E0" strokeDasharray="3 3" />
+            <XAxis dataKey="label" stroke="#4D4C48" fontSize={11} />
+            <YAxis domain={[0, 100]} stroke="#4D4C48" fontSize={11} />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'var(--color-card)',
-                border: "1px solid #2A3F5F",
+                border: "1px solid #E5E5E0",
                 color: "white",
               }}
             />

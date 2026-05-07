@@ -63,9 +63,9 @@ export function QualityInsights({
             className="rounded-lg p-5 animate-pulse"
             style={{ backgroundColor: 'var(--color-card)' }}
           >
-            <div className="h-4 w-1/2 rounded mb-3" style={{ backgroundColor: "#2A3F5F" }} />
-            <div className="h-3 w-full rounded mb-2" style={{ backgroundColor: "#2A3F5F" }} />
-            <div className="h-3 w-4/5 rounded" style={{ backgroundColor: "#2A3F5F" }} />
+            <div className="h-4 w-1/2 rounded mb-3" style={{ backgroundColor: "#E5E5E0" }} />
+            <div className="h-3 w-full rounded mb-2" style={{ backgroundColor: "#E5E5E0" }} />
+            <div className="h-3 w-4/5 rounded" style={{ backgroundColor: "#E5E5E0" }} />
           </div>
         ))}
       </div>

@@ -28,9 +28,9 @@ interface Props {
 }
 
 function color(score: number) {
-  if (score >= 85) return "#22C55E";
-  if (score >= 70) return "#F59E0B";
-  return "#EF4444";
+  if (score >= 85) return '#1D9E75';
+  if (score >= 70) return '#BA7517';
+  return '#A32D2D';
 }
 
 export function TrendsCharts({ monthly, topMissed }: Props) {
@@ -57,14 +57,14 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
                 if (p?.key) router.push(`/portal/reviews?month=${p.key}`);
               }}
             >
-              <CartesianGrid stroke="#2A3F5F" strokeDasharray="3 3" />
-              <XAxis dataKey="label" stroke="#94A3B8" fontSize={11} />
-              <YAxis domain={[0, 100]} stroke="#94A3B8" fontSize={11} />
+              <CartesianGrid stroke="#E5E5E0" strokeDasharray="3 3" />
+              <XAxis dataKey="label" stroke="#4D4C48" fontSize={11} />
+              <YAxis domain={[0, 100]} stroke="#4D4C48" fontSize={11} />
               <Tooltip
-                cursor={{ fill: "#ffffff10" }}
+                cursor={{ fill: "#0000000A" }}
                 contentStyle={{
                   backgroundColor: 'var(--color-card)',
-                  border: "1px solid #2A3F5F",
+                  border: "1px solid #E5E5E0",
                   color: "white",
                 }}
               />
@@ -129,24 +129,24 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
                               <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={t.quarters}>
                                   <CartesianGrid
-                                    stroke="#2A3F5F"
+                                    stroke="#E5E5E0"
                                     strokeDasharray="3 3"
                                   />
                                   <XAxis
                                     dataKey="quarter"
-                                    stroke="#94A3B8"
+                                    stroke="#4D4C48"
                                     fontSize={10}
                                   />
                                   <YAxis
                                     domain={[0, 100]}
-                                    stroke="#94A3B8"
+                                    stroke="#4D4C48"
                                     fontSize={10}
                                     tickFormatter={(v: number) => `${v}%`}
                                   />
                                   <Tooltip
                                     contentStyle={{
                                       backgroundColor: 'var(--color-card)',
-                                      border: "1px solid #2A3F5F",
+                                      border: "1px solid #E5E5E0",
                                       color: "white",
                                       fontSize: 11,
                                     }}
@@ -155,7 +155,7 @@ export function TrendsCharts({ monthly, topMissed }: Props) {
                                   <Line
                                     type="monotone"
                                     dataKey="noPct"
-                                    stroke="#EF4444"
+                                    stroke='#A32D2D'
                                     strokeWidth={2}
                                     dot
                                   />
