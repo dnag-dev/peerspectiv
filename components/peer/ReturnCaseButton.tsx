@@ -40,6 +40,8 @@ export function ReturnCaseButton({ caseId }: Props) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.error || "Failed to return case");
       }
+      // Clear the saved draft so the next peer (or this peer if re-assigned) starts fresh.
+      try { localStorage.removeItem(`peerspectiv.draft.${caseId}`); } catch {}
       setOpen(false);
       // Bounce back to the inbox — the case is no longer the peer's.
       router.push("/peer/portal");

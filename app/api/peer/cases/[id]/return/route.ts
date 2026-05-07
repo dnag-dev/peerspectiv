@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { reviewCases, peers } from '@/lib/db/schema';
+import { sql } from 'drizzle-orm';
 import { auditLog } from '@/lib/utils/audit';
 
 export const dynamic = 'force-dynamic';
@@ -87,6 +88,17 @@ export async function POST(
         updatedAt: now,
       })
       .where(eq(reviewCases.id, caseId));
+
+    // Decrement the peer's active case count
+    if (previousPeerId) {
+      await db
+        .update(peers)
+        .set({
+          activeCasesCount: sql`greatest(${peers.activeCasesCount} - 1, 0)`,
+          updatedAt: now,
+        })
+        .where(eq(peers.id, previousPeerId));
+    }
 
     await auditLog({
       action: 'case_returned_by_peer',
