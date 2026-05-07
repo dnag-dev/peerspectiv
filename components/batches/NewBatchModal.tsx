@@ -27,15 +27,6 @@ export type BatchWizardForm = {
   is_active: boolean;
 };
 
-// Valid FQHC specialties only — keep in sync with scripts/fix-specialty-seed.mjs
-const CORE_SPECIALTIES = [
-  "Family Medicine",
-  "Internal Medicine",
-  "Pediatrics",
-  "OB/GYN",
-  "Behavioral Health",
-  "Dental",
-];
 
 /** Parse filename to guess {providerLast, specialty} — best-effort. */
 function parseFilename(name: string): { lastName: string | null; specialty: string | null } {
@@ -198,10 +189,13 @@ export function NewBatchModal({
     () => allForms.filter((f) => f.company_id === companyId && f.specialty === specialty),
     [allForms, companyId, specialty]
   );
-  // Specialties with an approved form for this client
+  // Specialties with an approved form for this client (derived from actual forms, not hardcoded)
   const availableSpecialties = useMemo(() => {
-    const hasForm = new Set(allForms.filter((f) => f.company_id === companyId).map((f) => f.specialty));
-    return CORE_SPECIALTIES.filter((s) => hasForm.has(s));
+    const specs = new Set<string>();
+    for (const f of allForms) {
+      if (f.company_id === companyId && f.is_active) specs.add(f.specialty);
+    }
+    return Array.from(specs).sort();
   }, [allForms, companyId]);
   const isMixed = specialty === "Mixed";
 
