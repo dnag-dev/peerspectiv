@@ -44,6 +44,7 @@ const STATUS_OPTIONS = [
   "assigned",
   "in_progress",
   "completed",
+  "past_due",
   "returned_by_peer",
 ] as const;
 
