@@ -23,7 +23,7 @@ async function resolvePeerId(): Promise<string | null> {
 const STATUS_GROUPS: Record<string, string[]> = {
   in_progress: ["assigned", "in_progress"],
   completed: ["completed"],
-  incomplete: ["unassigned", "past_due", "pending_approval"],
+  incomplete: ["past_due"],
   // Default open queue (when no filter): assigned + in_progress.
   all: ["assigned", "in_progress"],
 };
@@ -78,10 +78,7 @@ export default async function PeerPortalPage({
   for (const r of counts) countMap[r.status ?? ""] = Number(r.c ?? 0);
   const inProgressCount = (countMap.assigned ?? 0) + (countMap.in_progress ?? 0);
   const completedCount = countMap.completed ?? 0;
-  const incompleteCount =
-    (countMap.unassigned ?? 0) +
-    (countMap.past_due ?? 0) +
-    (countMap.pending_approval ?? 0);
+  const incompleteCount = countMap.past_due ?? 0;
 
   return (
     <PeerPortalClient

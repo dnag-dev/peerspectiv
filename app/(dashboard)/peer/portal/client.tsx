@@ -138,7 +138,7 @@ export function PeerPortalClient({
         href="/peer/portal?status=incomplete"
         active={activeStatus === "incomplete"}
         tone="info"
-        sub="Unassigned, past due, or pending approval"
+        sub="Past due — deadline passed"
       />
       {activeStatus !== "all" && (
         <Link
