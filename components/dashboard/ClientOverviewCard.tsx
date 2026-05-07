@@ -26,6 +26,7 @@ export function ClientOverviewCard({
   const total = totalCases ?? 0;
   const completed = completedCases ?? 0;
   const progressPct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const isEmpty = total === 0;
 
   // Determine status indicator based on projected completion
   const now = new Date();
@@ -52,13 +53,21 @@ export function ClientOverviewCard({
           </span>
         )}
       </div>
-      <div className="mt-2.5">
-        <ProgressBar value={progressPct} />
-      </div>
-      <div className="mt-auto flex items-center justify-between pt-2.5">
-        <p className="text-xs text-ink-secondary">{completed} of {total} cases</p>
-        <StatusPill variant={statusVariant}>{statusLabel}</StatusPill>
-      </div>
+      {isEmpty ? (
+        <div className="mt-auto pt-3">
+          <p className="text-xs text-ink-tertiary">No active cases this period</p>
+        </div>
+      ) : (
+        <>
+          <div className="mt-2.5">
+            <ProgressBar value={progressPct} />
+          </div>
+          <div className="mt-auto flex items-center justify-between pt-2.5">
+            <p className="text-xs text-ink-secondary">{completed} of {total} cases</p>
+            <StatusPill variant={statusVariant}>{statusLabel}</StatusPill>
+          </div>
+        </>
+      )}
     </Link>
   );
 }

@@ -149,8 +149,10 @@ export default async function DashboardPage({
   };
   const hasStaleContracts = Number(oldestContractRow[0]?.c ?? 0) > 0;
 
-  // Client Review Progress — batch progress per active company
-  const batchProgress = await db.select({
+  // Client Review Progress — aggregate batches PER COMPANY so each card
+  // represents one company (not one batch). Without this the grid blows
+  // up with 3-4 empty rows per company, all "0 of 0 cases · On track".
+  const batchRowsRaw = await db.select({
     companyId: batches.companyId,
     companyName: companies.name,
     state: companies.state,
@@ -163,6 +165,47 @@ export default async function DashboardPage({
     .innerJoin(companies, eq(companies.id, batches.companyId))
     .where(eq(companies.status, 'active'))
     .orderBy(companies.name);
+
+  const aggMap = new Map<string, {
+    companyId: string | null;
+    companyName: string | null;
+    state: string | null;
+    totalCases: number;
+    completedCases: number;
+    projectedCompletion: Date | null;
+    batchStatus: string | null;
+    batchName: string | null;
+  }>();
+  for (const r of batchRowsRaw) {
+    if (!r.companyId) continue;
+    const existing = aggMap.get(r.companyId);
+    const total = Number(r.totalCases ?? 0);
+    const completed = Number(r.completedCases ?? 0);
+    const projected = r.projectedCompletion ? new Date(r.projectedCompletion as any) : null;
+    if (!existing) {
+      aggMap.set(r.companyId, {
+        companyId: r.companyId,
+        companyName: r.companyName,
+        state: r.state,
+        totalCases: total,
+        completedCases: completed,
+        projectedCompletion: projected,
+        batchStatus: r.batchStatus,
+        batchName: r.batchName,
+      });
+    } else {
+      existing.totalCases += total;
+      existing.completedCases += completed;
+      // Keep the LATEST projected completion across batches.
+      if (projected && (!existing.projectedCompletion || projected > existing.projectedCompletion)) {
+        existing.projectedCompletion = projected;
+      }
+    }
+  }
+  // Show only companies with at least one case in flight; drop empty rows.
+  const batchProgress = Array.from(aggMap.values())
+    .filter((r) => r.totalCases > 0)
+    .sort((a, b) => (a.companyName ?? '').localeCompare(b.companyName ?? ''));
 
   // Fetch all KPI data in parallel
   const withCompanyFilter = (where: any) =>
@@ -346,7 +389,7 @@ export default async function DashboardPage({
           <p className="mb-2 text-sm font-medium text-ink-primary">Client review progress</p>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
             {batchProgress.map((bp) => (
-              <ClientOverviewCard key={`${bp.companyId}-${bp.batchName}`} {...bp} />
+              <ClientOverviewCard key={bp.companyId ?? bp.companyName ?? Math.random()} {...bp} />
             ))}
           </div>
         </div>
