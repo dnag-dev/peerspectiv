@@ -670,20 +670,6 @@ export function ReviewForm({
                 </label>
                 {/* TODO Section F8: gate this prefill block behind
                     allow_ai_prefill when company.tier !== 'white_glove'. */}
-                {/* Phase 6.2 — when there's no AI prefill but the form supplies a
-                    default_answer, show a low-confidence "default" badge so the
-                    peer knows the value is a placeholder to verify. */}
-                {!prefill && initialSources[field.fieldKey] === "default" && (
-                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                    <span
-                      data-testid="default-badge"
-                      className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-ink-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-ink-secondary"
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full bg-ink-400" />
-                      default — please verify
-                    </span>
-                  </div>
-                )}
                 {prefill && (
                   <div className="mt-1.5 flex flex-wrap items-center gap-2">
                     <span
