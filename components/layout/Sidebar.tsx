@@ -161,7 +161,7 @@ export function SidebarShell({
   };
 
   const aside = (
-    <aside className={`flex h-full ${collapsed ? "w-16" : "w-64"} flex-shrink-0 flex-col bg-surface-sidebar transition-[width] duration-150`}>
+    <aside className={`flex h-full ${collapsed ? "w-[52px]" : "w-[220px]"} flex-shrink-0 flex-col bg-surface-sidebar transition-[width] duration-150`}>
       {/* Logo lockup */}
       <div className={`flex h-20 items-center ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
         {!collapsed && (

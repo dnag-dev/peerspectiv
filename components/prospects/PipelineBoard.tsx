@@ -7,36 +7,38 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { ProspectCard, type ProspectCardCompany } from './ProspectCard';
 
+// Sentence-case titles + semantic stripe tones. Each column becomes a
+// light muted track with a coloured top stripe + count pill.
 const STAGES = [
   {
     key: 'lead',
     title: 'Lead',
-    accent: 'border-l-4 border-[#94A3B8]',
-    badgeClass: 'bg-[#94A3B8] text-[#172554]',
+    stripe: 'bg-status-neutral-dot',
+    badgeClass: 'bg-status-neutral-bg text-status-neutral-fg',
   },
   {
     key: 'prospect',
     title: 'Prospect',
-    accent: 'border-l-4 border-[#0F6E56]',
-    badgeClass: 'bg-[#0F6E56] text-white',
+    stripe: 'bg-status-info-dot',
+    badgeClass: 'bg-status-info-bg text-status-info-fg',
   },
   {
     key: 'contract_sent',
-    title: 'Contract Sent',
-    accent: 'border-l-4 border-[#F59E0B]',
-    badgeClass: 'bg-[#F59E0B] text-[#172554]',
+    title: 'Contract sent',
+    stripe: 'bg-status-warning-dot',
+    badgeClass: 'bg-status-warning-bg text-status-warning-fg',
   },
   {
     key: 'contract_signed',
-    title: 'Contract Signed',
-    accent: 'border-l-4 border-[#22C55E]',
-    badgeClass: 'bg-[#22C55E] text-[#172554]',
+    title: 'Contract signed',
+    stripe: 'bg-status-success-dot',
+    badgeClass: 'bg-status-success-bg text-status-success-fg',
   },
   {
     key: 'active_client',
-    title: 'Active Client',
-    accent: 'border-l-4 border-brand',
-    badgeClass: 'bg-brand text-white',
+    title: 'Active client',
+    stripe: 'bg-brand',
+    badgeClass: 'bg-brand/15 text-brand',
   },
 ] as const;
 
@@ -127,25 +129,24 @@ export function PipelineBoard({ initialPipeline }: PipelineBoardProps) {
               const id = e.dataTransfer.getData('text/plain');
               if (id) promoteCompany(id, stage.key);
             }}
-            className={`flex min-h-[400px] flex-col rounded-lg p-3 ${stage.accent} ${
-              isOver ? 'bg-status-info-bg/10 ring-2 ring-brand' : 'bg-[#085041]'
+            className={`flex min-h-[400px] flex-col overflow-hidden rounded-md border border-border-subtle bg-surface-muted ${
+              isOver ? 'ring-2 ring-brand' : ''
             }`}
           >
-            <div className="mb-3 flex items-center justify-between px-1">
-              <h2 className="text-sm font-medium uppercase tracking-wide text-white">
-                {stage.title}
-              </h2>
-              <Badge className={`${stage.badgeClass} ml-2`}>
-                {items.length}
-              </Badge>
-            </div>
-            <div className="flex-1 space-y-2">
-              {items.length === 0 ? (
-                <Card className="border-dashed border-ink-700 bg-transparent">
-                  <CardContent className="py-6 text-center text-xs text-ink-secondary">
+            {/* Top tone stripe — 3px coloured ribbon */}
+            <div className={`h-1 w-full ${stage.stripe}`} />
+            <div className="flex flex-col p-3">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="eyebrow">{stage.title}</p>
+                <span className={`inline-flex min-w-[24px] items-center justify-center rounded-full px-2 py-0.5 text-2xs font-medium ${stage.badgeClass}`}>
+                  {items.length}
+                </span>
+              </div>
+              <div className="flex-1 space-y-2">
+                {items.length === 0 ? (
+                  <div className="rounded-md border border-dashed border-border-default bg-surface-card py-6 text-center text-xs text-ink-tertiary">
                     No {stage.title.toLowerCase()}
-                  </CardContent>
-                </Card>
+                  </div>
               ) : (
                 items.map((company) => (
                   <div
@@ -161,6 +162,7 @@ export function PipelineBoard({ initialPipeline }: PipelineBoardProps) {
                   </div>
                 ))
               )}
+              </div>
             </div>
           </div>
         );

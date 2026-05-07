@@ -88,44 +88,44 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
   return (
     <Card
       data-testid="prospect-card"
-      className={`bg-[#172554] text-white shadow-md transition hover:shadow-lg ${
-        overdueContract ? 'border border-[#F59E0B]' : 'border border-ink-800'
+      className={`flex flex-col bg-surface-card transition hover:shadow-sm ${
+        overdueContract ? 'border border-status-warning-dot' : 'border border-border-subtle'
       }`}
     >
-      <CardContent className="space-y-2 p-3">
+      <CardContent className="flex flex-col gap-2 p-3">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <Link href={`/companies/${company.id}`} className="text-base font-medium leading-tight text-white hover:underline">
+          <div className="min-w-0 flex-1">
+            <Link href={`/companies/${company.id}`} className="block text-sm font-medium leading-tight text-ink-primary hover:underline">
               {company.name}
             </Link>
             {company.contactPerson && (
-              <p className="text-xs text-ink-tertiary">{company.contactPerson}</p>
+              <p className="mt-0.5 truncate text-xs text-ink-secondary">{company.contactPerson}</p>
             )}
           </div>
           {company.state && (
-            <span className="rounded bg-ink-800 px-2 py-0.5 text-[10px] font-medium text-ink-tertiary">
+            <span className="shrink-0 rounded-full bg-status-info-bg px-2 py-0.5 text-2xs font-medium text-status-info-fg">
               {company.state}
             </span>
           )}
         </div>
 
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ink-tertiary">
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-2xs text-ink-tertiary">
           {company.annualReviewCount != null && (
             <span>{company.annualReviewCount} reviews/yr</span>
           )}
           {createdDays !== null && <span>Added {createdDays}d ago</span>}
           {company.status === 'contract_sent' && sentDays !== null && (
-            <span className={overdueContract ? 'font-medium text-[#F59E0B]' : ''}>
+            <span className={overdueContract ? 'font-medium text-status-warning-fg' : ''}>
               Sent {sentDays}d ago
             </span>
           )}
         </div>
 
-        <div className="pt-1">
+        <div className="mt-auto pt-1">
           {company.status === 'prospect' && (
             <Button
               size="sm"
-              className="w-full bg-[#0F6E56] text-white hover:bg-[#2558bb]"
+              className="w-full bg-brand text-white hover:bg-brand-hover"
               onClick={handleGenerateContract}
               disabled={loading}
             >
@@ -134,22 +134,22 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
               ) : (
                 <FileText className="mr-2 h-3 w-3" />
               )}
-              Generate Contract
+              Generate contract
             </Button>
           )}
           {company.status === 'contract_sent' && (
             <Link
               href={`/companies/${company.id}`}
-              className="inline-flex w-full items-center justify-center rounded-md border border-[#F59E0B] px-2 py-1.5 text-xs font-medium text-[#F59E0B] hover:bg-[#F59E0B]/10"
+              className="inline-flex w-full items-center justify-center rounded-md border border-status-warning-dot px-2 py-1.5 text-xs font-medium text-status-warning-fg hover:bg-status-warning-bg"
             >
               <ExternalLink className="mr-2 h-3 w-3" />
-              Resend / View
+              Resend / view
             </Link>
           )}
           {company.status === 'contract_signed' && (
             <Button
               size="sm"
-              className="w-full bg-[#22C55E] text-[#172554] hover:bg-[#16a34a]"
+              className="w-full bg-status-success-dot text-white hover:bg-brand-hover"
               onClick={handleActivate}
               disabled={loading}
             >
@@ -158,13 +158,13 @@ export function ProspectCard({ company }: { company: ProspectCardCompany }) {
               ) : (
                 <KeyRound className="mr-2 h-3 w-3" />
               )}
-              Grant Portal Access
+              Grant portal access
             </Button>
           )}
           {company.status === 'active' && (
             <Link
               href={`/companies/${company.id}`}
-              className="inline-flex w-full items-center justify-center rounded-md border border-brand px-2 py-1.5 text-xs font-medium text-status-info-dot hover:bg-status-info-bg"
+              className="inline-flex w-full items-center justify-center rounded-md border border-border-default bg-surface-card px-2 py-1.5 text-xs font-medium text-ink-primary hover:bg-surface-muted"
             >
               <ExternalLink className="mr-2 h-3 w-3" />
               View

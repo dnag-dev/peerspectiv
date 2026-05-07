@@ -63,8 +63,9 @@ export default async function ProspectsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-medium tracking-tight text-white">Prospect Pipeline</h1>
-          <p className="text-sm text-ink-tertiary">
+          <p className="eyebrow">Workspace · admin</p>
+          <h1 className="mt-0.5 text-xl font-medium tracking-tight text-ink-primary">Prospect pipeline</h1>
+          <p className="mt-0.5 text-sm text-ink-secondary">
             Track potential FQHC clients from first contact through contract signing, activation, and active review cycles.
           </p>
         </div>
