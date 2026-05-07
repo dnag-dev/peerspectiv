@@ -8,8 +8,8 @@ export default function UploadStub() {
         <p className="text-sm text-ink-400">Upload medical records for peer review</p>
       </div>
       <EmptyState
-        title="Submit Records — Coming in Phase 6"
-        message="Drag-and-drop chart upload with provider mapping is in design. Use Submit Records (legacy) under Reviews while this lands."
+        title="Submit records — drag and drop coming soon"
+        message="Drag-and-drop chart upload with provider mapping is on the roadmap. Use Submit Records (legacy) under Reviews while this lands."
         backHref="/portal"
       />
     </div>

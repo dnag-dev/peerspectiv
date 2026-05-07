@@ -130,7 +130,7 @@ export default async function CredentialerEarningsPage() {
             <div className="text-3xl font-semibold text-ink-900">
               ${Number(credUser.perPeerRate ?? 0).toFixed(2)}
             </div>
-            <div className="text-sm text-ink-500">Locked-in for prior peers via rate_at_action snapshot</div>
+            <div className="text-sm text-ink-500">Locked in for prior credentialings at the rate active when work was completed</div>
           </CardContent>
         </Card>
       </div>

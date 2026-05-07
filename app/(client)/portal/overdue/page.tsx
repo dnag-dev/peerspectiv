@@ -32,8 +32,8 @@ export default async function OverduePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Overdue</h1>
-        <p className="text-sm text-ink-400">Past-due cases requiring attention ({rows.length})</p>
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">Overdue</h1>
+        <p className="text-sm text-ink-secondary">Past-due cases requiring attention ({rows.length})</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -22,7 +22,7 @@ export default async function OnboardingQueuePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink-900">Path A Onboarding Queue</h1>
+        <h1 className="text-2xl font-bold text-ink-900">Onboarding queue</h1>
         <p className="text-sm text-ink-500">
           Submitted peer applications awaiting admin review.
         </p>

@@ -114,10 +114,20 @@ export function SidebarShell({
     });
   }
 
+  // Root-of-section hrefs require EXACT match — otherwise visiting a
+  // child page (e.g. /dashboard/peers) would also light up /dashboard,
+  // making two nav items appear active. (Phase 3 dup-active fix.)
+  const ROOT_HREFS = new Set([
+    "/",
+    "/dashboard",
+    "/portal",
+    "/peer",
+    "/credentialing",
+  ]);
   const renderItem = (item: SidebarNavItem) => {
     const isActive =
       item.href === pathname ||
-      (item.href !== "/" && pathname.startsWith(item.href + "/"));
+      (!ROOT_HREFS.has(item.href) && pathname.startsWith(item.href + "/"));
     const Icon = item.icon;
     return (
       <Link

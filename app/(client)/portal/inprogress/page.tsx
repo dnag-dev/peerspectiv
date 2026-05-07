@@ -33,8 +33,8 @@ export default async function InProgressPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">In Progress</h1>
-        <p className="text-sm text-ink-400">
+        <h1 className="text-2xl font-medium tracking-tight text-ink-primary">In progress</h1>
+        <p className="text-sm text-ink-secondary">
           Cases currently being reviewed ({rows.length})
         </p>
       </div>

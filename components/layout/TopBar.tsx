@@ -5,32 +5,61 @@ import { Menu, User } from "lucide-react";
 import { useMobileNav } from "./MobileNavContext";
 import { NotificationBell } from "./NotificationBell";
 
+// Order matters for the prefix loop below: most-specific first so
+// /peers/onboarding-queue beats /peers, etc.
 const pageTitles: Record<string, string> = {
+  "/peers/onboarding-queue": "Onboarding queue",
   "/dashboard":   "Dashboard",
   "/cases":       "Reviews",
   "/companies":   "Companies",
   "/prospects":   "Prospects",
   "/batches":     "Batches",
-  "/assign":      "AI Assignment Queue",
+  "/assign":      "AI assignment queue",
   "/assignments": "Assignments",
   "/peers":       "Peers",
   "/forms":       "Forms",
   "/tags":        "Tags",
   "/settings":    "Settings",
-  "/peer/portal":   "My Queue",
-  "/peer/profile":  "Profile",
-  "/peer/earnings": "Earnings",
+  "/credentials": "Credentials",
+  "/invoices":    "Invoices",
+  "/peer/portal":     "My queue",
+  "/peer/profile":    "Profile",
+  "/peer/earnings":   "Earnings",
+  "/peer/cases":      "Cases",
   "/payouts":   "Payouts",
   "/reports":   "Reports",
-  "/command":   "Command Center",
+  "/command":   "Command center",
+  "/portal":          "Compliance dashboard",
+  "/portal/quality":  "Quality",
+  "/portal/reviews":  "All reviews",
+  "/portal/inprogress": "In progress",
+  "/portal/overdue":  "Overdue",
+  "/portal/trends":   "Trends",
+  "/portal/providers": "Providers",
+  "/portal/invoices": "Invoices",
+  "/portal/forms":    "Forms",
+  "/portal/upload":   "Submit records",
+  "/portal/feedback": "Share feedback",
+  "/portal/reports":  "Reports",
+  "/portal/profile":  "Profile",
+  "/portal/export":   "Export",
+  "/portal/corrective": "Corrective actions",
+  "/credentialing":            "Credentialing",
+  "/credentialing/inbox":      "Inbox",
+  "/credentialing/peers":      "Peers",
+  "/credentialing/credentials":"Credentials",
+  "/credentialing/profile":    "Profile",
+  "/credentialing/earnings":   "Earnings",
 };
 
 function getPageTitle(pathname: string): string {
   if (pageTitles[pathname]) return pageTitles[pathname];
-  for (const [route, title] of Object.entries(pageTitles)) {
-    if (pathname.startsWith(route + "/")) return title;
+  // Iterate longest-key-first so deeper prefixes win over their parents.
+  const sortedRoutes = Object.keys(pageTitles).sort((a, b) => b.length - a.length);
+  for (const route of sortedRoutes) {
+    if (pathname.startsWith(route + "/")) return pageTitles[route];
   }
-  return "Peerspectiv";
+  return "Dashboard";
 }
 
 export function TopBar() {
