@@ -492,9 +492,20 @@ export default async function CaseDetailPage({
             <div className="flex items-center gap-4 text-sm">
               <div>
                 <p className="text-xs text-muted-foreground">Filename</p>
-                <p className="font-medium">
-                  {reviewCase.chart_file_name || "Unnamed file"}
-                </p>
+                {reviewCase.chart_file_path ? (
+                  <a
+                    href={reviewCase.chart_file_path}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-blue-600 hover:underline"
+                  >
+                    {reviewCase.chart_file_name || "Unnamed file"}
+                  </a>
+                ) : (
+                  <p className="font-medium">
+                    {reviewCase.chart_file_name || "Unnamed file"}
+                  </p>
+                )}
               </div>
               {reviewCase.chart_pages && (
                 <div>
