@@ -94,6 +94,13 @@ export async function POST(request: NextRequest) {
           { form_fields: formFields },
           responses
         );
+        // Enrich scoring breakdown with per-question comments from form_responses
+        if (scoringResult.per_question) {
+          for (const pq of scoringResult.per_question) {
+            const comment = form_responses[pq.field_key]?.comment;
+            if (comment) (pq as unknown as Record<string, unknown>).comment = comment;
+          }
+        }
         if (scoringResult.total_measures_met_pct != null) {
           if (typeof overall_score_in === 'number' && criteria_scores?.length) {
             overall_score = Math.round(((overall_score_in + scoringResult.total_measures_met_pct) / 2) * 100) / 100;

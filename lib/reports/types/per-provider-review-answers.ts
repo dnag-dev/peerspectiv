@@ -52,6 +52,7 @@ interface BreakdownItem {
   excluded: boolean;
   normalized_value?: string;
   raw_value?: unknown;
+  comment?: string;
 }
 
 interface CriterionItem {
@@ -92,6 +93,7 @@ function asBreakdown(raw: unknown): BreakdownItem[] | null {
       normalized_value:
         typeof x.normalized_value === 'string' ? x.normalized_value : undefined,
       raw_value: x.raw_value,
+      comment: typeof x.comment === 'string' ? x.comment : undefined,
     }))
     .filter((x) => x.field_key);
 }
@@ -190,7 +192,7 @@ export function buildQuestionsFromResult(
       peer_answer: peerAnswer,
       score,
       excluded,
-      comment: c?.rationale ?? null,
+      comment: b?.comment ?? c?.rationale ?? null,
     };
   });
 
