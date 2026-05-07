@@ -139,6 +139,8 @@ export function ReviewForm({
   allowAiNarrative,
   onFieldHover,
 }: ReviewFormProps) {
+  // Detect multi-chart group mode from the URL path.
+  const isMultiChart = typeof window !== "undefined" && window.location.pathname.includes("/cases/group/");
   // Section F5: hover-to-jump toggle, persisted in localStorage. Default ON.
   const [hoverJumpEnabled, setHoverJumpEnabled] = useState<boolean>(true);
   useEffect(() => {
@@ -934,6 +936,19 @@ export function ReviewForm({
             >
               {draftSaved ? "Saved!" : "Save & Exit"}
             </button>
+            {isMultiChart && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDraftSaved(true);
+                  setTimeout(() => setDraftSaved(false), 2000);
+                  window.dispatchEvent(new CustomEvent("peerspectiv:save-and-next"));
+                }}
+                className="rounded-md border border-brand bg-brand/10 px-3 py-1.5 text-sm font-medium text-brand hover:bg-brand/20"
+              >
+                {draftSaved ? "Saved!" : "Save & Next Chart →"}
+              </button>
+            )}
             <span className="text-code text-ink-secondary">
               Case: {caseId.slice(0, 8)}…
             </span>

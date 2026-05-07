@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useState, useEffect, useCallback } from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cn } from "@/lib/utils";
 
@@ -18,11 +19,30 @@ interface Props {
 // Section F1: Radix-tabs strip + per-tab content. Each tab renders the full
 // case detail server-rendered upstream — submission flows are unchanged
 // because each tab embeds the standard per-case PeerCaseSplit form.
+//
+// Listens for "peerspectiv:save-and-next" custom events dispatched by
+// ReviewForm's "Save & Next Chart" button to advance to the next tab.
 export function GroupCaseTabs({ tabs }: Props) {
-  const defaultValue = tabs[0]?.id ?? "";
+  const [activeTab, setActiveTab] = useState(tabs[0]?.id ?? "");
+
+  const goToNext = useCallback(() => {
+    const currentIdx = tabs.findIndex((t) => t.id === activeTab);
+    if (currentIdx >= 0 && currentIdx < tabs.length - 1) {
+      setActiveTab(tabs[currentIdx + 1].id);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [activeTab, tabs]);
+
+  useEffect(() => {
+    const handler = () => goToNext();
+    window.addEventListener("peerspectiv:save-and-next", handler);
+    return () => window.removeEventListener("peerspectiv:save-and-next", handler);
+  }, [goToNext]);
+
   return (
     <TabsPrimitive.Root
-      defaultValue={defaultValue}
+      value={activeTab}
+      onValueChange={setActiveTab}
       className="flex min-h-0 flex-1 flex-col"
     >
       <div className="flex-shrink-0 border-b border-border-subtle px-4 pt-3 lg:px-6">
