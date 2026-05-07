@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus, Pencil, Copy, Loader2 } from "lucide-react";
+import { FileText, Plus, Pencil, Copy, Loader2, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 import { FormBuilderModal } from "@/components/forms/FormBuilderModal";
 
 interface FormRow {
@@ -85,6 +85,30 @@ export function ClientFormsView({ forms, companyId, companyName }: Props) {
     }
   }
 
+  async function handleToggleActive(formId: string, currentActive: boolean | null) {
+    const res = await fetch(`/api/company-forms/${formId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_active: !currentActive }),
+    });
+    if (res.ok) startTransition(() => router.refresh());
+  }
+
+  async function handleDelete(form: FormRow) {
+    if (!confirm(`Delete "${form.formName}"? This cannot be undone.`)) return;
+    setLoadingId(form.id);
+    try {
+      const res = await fetch(`/api/company-forms/${form.id}`, { method: "DELETE" });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(j.error || "Delete failed");
+      startTransition(() => router.refresh());
+    } catch (e) {
+      alert(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -156,6 +180,24 @@ export function ClientFormsView({ forms, companyId, companyName }: Props) {
                           className="rounded border border-border-subtle px-2 py-0.5 text-xs hover:border-blue-400 hover:text-blue-600 disabled:opacity-50"
                         >
                           <Copy className="h-3 w-3 mr-1 inline" />Clone
+                        </button>
+                        <button
+                          onClick={() => handleToggleActive(form.id, form.isActive)}
+                          disabled={isPending}
+                          className="rounded border border-border-subtle px-2 py-0.5 text-xs hover:border-blue-400 hover:text-blue-600 disabled:opacity-50"
+                        >
+                          {form.isActive ? (
+                            <><ToggleRight className="h-3 w-3 mr-1 inline" />Disable</>
+                          ) : (
+                            <><ToggleLeft className="h-3 w-3 mr-1 inline" />Enable</>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(form)}
+                          disabled={loadingId === form.id}
+                          className="rounded border border-border-subtle px-2 py-0.5 text-xs text-red-500 hover:border-red-400 hover:text-red-600 disabled:opacity-50"
+                        >
+                          <Trash2 className="h-3 w-3 inline" />
                         </button>
                       </div>
                     </td>
