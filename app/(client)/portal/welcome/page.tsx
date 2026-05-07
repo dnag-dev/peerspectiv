@@ -100,7 +100,7 @@ export default function ClientWelcomePage() {
   if (loading) {
     return (
       <div style={shellStyle}>
-        <p style={{ color: '#94A3B8' }}>Loading your portal…</p>
+        <p style={{ color: '#6A6964' }}>Loading your portal…</p>
       </div>
     );
   }
@@ -118,7 +118,7 @@ export default function ClientWelcomePage() {
             style={{
               background: 'rgba(239,68,68,0.1)',
               border: '1px solid rgba(239,68,68,0.4)',
-              color: '#FCA5A5',
+              color: '#A32D2D',
               padding: 12,
               borderRadius: 8,
               marginBottom: 16,
@@ -147,7 +147,7 @@ export default function ClientWelcomePage() {
               Your portal for <strong>{company?.name ?? 'your organization'}</strong>{' '}
               is ready.
             </p>
-            <p style={{ color: '#CBD5E1', marginTop: 16, marginBottom: 12 }}>
+            <p style={{ color: '#4D4C48', marginTop: 16, marginBottom: 12 }}>
               From here you&apos;ll be able to:
             </p>
             <ul style={bulletListStyle}>
@@ -158,10 +158,10 @@ export default function ClientWelcomePage() {
             </ul>
 
             <div style={meetAshBoxStyle}>
-              <div style={{ fontWeight: 700, color: '#F8FAFC', marginBottom: 4 }}>
+              <div style={{ fontWeight: 700, color: '#1A1A1A', marginBottom: 4 }}>
                 Meet Ash
               </div>
-              <div style={{ color: '#94A3B8', fontSize: 14 }}>
+              <div style={{ color: '#6A6964', fontSize: 14 }}>
                 Your AI copilot for peer review. Ask Ash anything about your data,
                 compliance, or next steps — she&apos;s available from any screen in
                 the portal.
@@ -292,7 +292,7 @@ function ProgressDots({ current, total }: { current: number; total: number }) {
               flex: 1,
               height: 4,
               borderRadius: 2,
-              background: active || done ? '#0F6E56' : 'rgba(255,255,255,0.08)',
+              background: active || done ? '#0F6E56' : 'rgba(0,0,0,0.10)',
               transition: 'background 180ms ease',
             }}
           />
@@ -316,7 +316,7 @@ function Field(props: {
           display: 'block',
           fontSize: 12,
           letterSpacing: 1,
-          color: '#94A3B8',
+          color: '#6A6964',
           marginBottom: 6,
           textTransform: 'uppercase',
         }}
@@ -331,9 +331,9 @@ function Field(props: {
         style={{
           width: '100%',
           background: 'var(--color-card)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid rgba(0,0,0,0.10)',
           borderRadius: 8,
-          color: '#F8FAFC',
+          color: '#1A1A1A',
           padding: '10px 12px',
           fontSize: 14,
           outline: 'none',
@@ -378,10 +378,10 @@ function SecondaryButton(props: {
       onClick={props.onClick}
       style={{
         background: 'transparent',
-        color: '#CBD5E1',
+        color: '#4D4C48',
         padding: '12px 20px',
         borderRadius: 8,
-        border: '1px solid rgba(255,255,255,0.12)',
+        border: '1px solid rgba(0,0,0,0.14)',
         cursor: 'pointer',
         fontWeight: 500,
         fontSize: 14,
@@ -399,7 +399,7 @@ function TimelineItem(props: { num: string; title: string; body: string }) {
         display: 'flex',
         gap: 16,
         padding: '16px 0',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid rgba(0,0,0,0.08)',
       }}
     >
       <div
@@ -418,10 +418,10 @@ function TimelineItem(props: { num: string; title: string; body: string }) {
         {props.num}
       </div>
       <div>
-        <div style={{ fontWeight: 600, color: '#F8FAFC', marginBottom: 2 }}>
+        <div style={{ fontWeight: 600, color: '#1A1A1A', marginBottom: 2 }}>
           {props.title}
         </div>
-        <div style={{ color: '#94A3B8', fontSize: 14 }}>{props.body}</div>
+        <div style={{ color: '#6A6964', fontSize: 14 }}>{props.body}</div>
       </div>
     </li>
   );
@@ -441,10 +441,10 @@ const cardStyle: React.CSSProperties = {
   width: '100%',
   maxWidth: 640,
   background: 'var(--color-card)',
-  border: '1px solid rgba(255,255,255,0.06)',
+  border: '1px solid rgba(0,0,0,0.08)',
   borderRadius: 16,
   padding: 40,
-  color: '#F8FAFC',
+  color: '#1A1A1A',
 };
 
 const h1Style: React.CSSProperties = {
@@ -452,11 +452,11 @@ const h1Style: React.CSSProperties = {
   fontWeight: 700,
   margin: 0,
   marginBottom: 8,
-  color: '#F8FAFC',
+  color: '#1A1A1A',
 };
 
 const leadStyle: React.CSSProperties = {
-  color: '#CBD5E1',
+  color: '#4D4C48',
   margin: 0,
   fontSize: 16,
   lineHeight: 1.5,
@@ -465,7 +465,7 @@ const leadStyle: React.CSSProperties = {
 const bulletListStyle: React.CSSProperties = {
   paddingLeft: 20,
   margin: 0,
-  color: '#CBD5E1',
+  color: '#4D4C48',
   lineHeight: 1.8,
 };
 

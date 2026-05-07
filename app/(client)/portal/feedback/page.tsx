@@ -14,7 +14,7 @@ function StarRating({
 }) {
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-ink-200">{label}</p>
+      <p className="text-sm font-medium text-ink-primary">{label}</p>
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
@@ -90,17 +90,15 @@ export default function FeedbackPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-medium text-ink-primary">Help us improve</h1>
-        <p className="mt-1 text-sm text-ink-tertiary">
+        <p className="eyebrow">Hunter Health · client portal</p>
+        <h1 className="mt-0.5 text-xl font-medium tracking-tight text-ink-primary">Help us improve</h1>
+        <p className="mt-0.5 text-sm text-ink-secondary">
           Your feedback helps Peerspectiv serve you better.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div
-          className="space-y-6 rounded-xl p-6"
-          style={{ backgroundColor: 'var(--color-card)' }}
-        >
+        <div className="space-y-6 rounded-md border border-border-subtle bg-surface-card p-6">
           <StarRating
             label="How satisfied are you with our turnaround time?"
             value={ratingTurnaround}
@@ -123,12 +121,9 @@ export default function FeedbackPage() {
           />
         </div>
 
-        <div
-          className="space-y-4 rounded-xl p-6"
-          style={{ backgroundColor: 'var(--color-card)' }}
-        >
+        <div className="space-y-4 rounded-md border border-border-subtle bg-surface-card p-6">
           <div>
-            <p className="text-sm font-medium text-ink-200">
+            <p className="text-sm font-medium text-ink-primary">
               Would you recommend Peerspectiv to other FQHCs?
             </p>
             <div className="mt-3 flex gap-3">
@@ -138,7 +133,7 @@ export default function FeedbackPage() {
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition-colors ${
                   wouldRecommend === 'true'
                     ? 'bg-brand text-white'
-                    : 'bg-white/10 text-ink-tertiary hover:bg-white/20'
+                    : 'border border-border-default bg-surface-card text-ink-primary hover:bg-surface-muted'
                 }`}
               >
                 Yes
@@ -149,7 +144,7 @@ export default function FeedbackPage() {
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition-colors ${
                   wouldRecommend === 'false'
                     ? 'bg-brand text-white'
-                    : 'bg-white/10 text-ink-tertiary hover:bg-white/20'
+                    : 'border border-border-default bg-surface-card text-ink-primary hover:bg-surface-muted'
                 }`}
               >
                 Not sure
@@ -160,7 +155,7 @@ export default function FeedbackPage() {
           <div>
             <label
               htmlFor="open-feedback"
-              className="block text-sm font-medium text-ink-200"
+              className="block text-sm font-medium text-ink-primary"
             >
               Anything else you&apos;d like us to know?
             </label>
@@ -178,10 +173,9 @@ export default function FeedbackPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-lg py-3 text-sm font-medium text-ink-primary transition-colors disabled:opacity-50"
-          style={{ backgroundColor: '#0F6E56' }}
+          className="w-full rounded-lg bg-brand py-3 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
         >
-          {submitting ? 'Submitting...' : 'Submit Feedback'}
+          {submitting ? 'Submitting...' : 'Submit feedback'}
         </button>
       </form>
     </div>
