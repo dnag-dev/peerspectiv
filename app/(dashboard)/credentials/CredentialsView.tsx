@@ -137,15 +137,19 @@ export function CredentialsView({ peers: initial }: { peers: Peer[] }) {
         </div>
       )}
 
-      <div className="relative max-w-sm">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-tertiary" />
-        <Input
-          value={searchQ}
-          onChange={(e) => setSearchQ(e.target.value)}
-          placeholder="Search name, email, specialty, license…"
-          className="pl-9"
-        />
-      </div>
+      <Card>
+        <CardContent className="p-4">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-tertiary" />
+            <Input
+              value={searchQ}
+              onChange={(e) => setSearchQ(e.target.value)}
+              placeholder="Search name, email, specialty, license…"
+              className="pl-9"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <BucketCard
         title="Missing credential"
