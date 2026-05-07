@@ -386,35 +386,38 @@ export function NewBatchModal({
       }
       return {
         file: f,
-        providerId: match?.id ?? companyProviders[0]?.id ?? "",
+        providerId: match?.id ?? "",
         encounterDate: "",
         rowSpecialty: rowSpec,
         companyFormId: rowFormId,
         status: "pending" as const,
-        extracting: true, // always extract — need encounter date even if provider matched
+        extracting: true,
       };
     });
     setRows((prev) => [...prev, ...next]);
 
-    // Call AI extraction for all files to get encounter date (and provider if filename didn't match)
-    next.forEach((row, i) => {
-      const rowIndex = startIdx + i;
+    // Call AI extraction for all files to get encounter date (and provider if not matched by filename)
+    for (const row of next) {
       const parsed = parseFilename(row.file.name);
       const providerFoundByFilename = !!parsed.lastName && !!companyProviders.find(
         (p) => p.last_name?.toLowerCase() === parsed.lastName!.toLowerCase()
       );
-      extractMetadataFromPdf(row.file, rowIndex, providerFoundByFilename);
-    });
+      extractMetadataFromPdf(row.file, providerFoundByFilename);
+    }
   }
 
-  async function extractMetadataFromPdf(file: File, rowIndex: number, providerAlreadyMatched = false) {
+  function updateRowByFile(file: File, patch: Partial<Row>) {
+    setRows((prev) => prev.map((r) => (r.file === file ? { ...r, ...patch } : r)));
+  }
+
+  async function extractMetadataFromPdf(file: File, providerAlreadyMatched = false) {
     try {
       const fd = new FormData();
       fd.append('file', file);
       fd.append('filename', file.name);
       const res = await fetch('/api/upload/extract-metadata', { method: 'POST', body: fd });
       if (!res.ok) {
-        updateRow(rowIndex, { extracting: false });
+        updateRowByFile(file, { extracting: false });
         return;
       }
       const data = await res.json();
@@ -445,9 +448,9 @@ export function NewBatchModal({
         if (candidates.length === 1) patch.companyFormId = candidates[0].id;
       }
 
-      updateRow(rowIndex, patch);
+      updateRowByFile(file, patch);
     } catch {
-      updateRow(rowIndex, { extracting: false });
+      updateRowByFile(file, { extracting: false });
     }
   }
 
