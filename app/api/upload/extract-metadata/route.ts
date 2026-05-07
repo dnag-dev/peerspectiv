@@ -7,11 +7,18 @@ export const dynamic = 'force-dynamic';
 /**
  * POST /api/upload/extract-metadata
  *
- * Accepts a PDF file upload, extracts text from the first page using pdf-parse,
+ * Accepts a PDF file upload, extracts text using pdfjs-dist (Node.js build),
  * then uses Claude to identify provider name, encounter date, and specialty.
- *
- * Used by the batch wizard when filename parsing can't determine the provider.
  */
+
+async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+  const { extractText } = await import('unpdf');
+  const { text } = await extractText(new Uint8Array(buffer));
+  // unpdf returns an array of page strings
+  if (Array.isArray(text)) return text.slice(0, 2).join('\n');
+  return String(text);
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -22,26 +29,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'file is required' }, { status: 400 });
     }
 
-    // Read PDF bytes
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Extract text using pdf-parse
     let text = '';
     try {
-      const pdfParseModule = await import('pdf-parse');
-      const pdfParse = (pdfParseModule as any).default ?? pdfParseModule;
-      const data = await pdfParse(buffer, { max: 2 }); // first 2 pages max
-      text = data.text || '';
+      text = await extractTextFromPdf(buffer);
     } catch (err: any) {
-      console.error('[extract-metadata] pdf-parse error:', err?.message);
-      return NextResponse.json(
-        { error: 'Failed to parse PDF', detail: err?.message },
-        { status: 422 }
-      );
+      console.error('[extract-metadata] PDF text extraction error:', err?.message);
+      return NextResponse.json({
+        provider_name: null,
+        encounter_date: null,
+        specialty: null,
+        _note: 'Failed to extract text from PDF',
+      });
     }
 
     if (text.trim().length < 20) {
-      // Likely a scanned/image PDF — no extractable text
       return NextResponse.json({
         provider_name: null,
         encounter_date: null,
@@ -50,7 +53,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Truncate to ~3000 chars (first page is usually enough)
     const truncated = text.slice(0, 3000);
 
     const system = `You extract metadata from medical chart documents. Return ONLY valid JSON — no prose, no markdown fences.`;
