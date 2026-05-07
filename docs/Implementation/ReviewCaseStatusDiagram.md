@@ -204,10 +204,40 @@ Separate from admin reassignment — this is when a peer asks to be taken off a 
 | Past Due | Reassign, Unassign |
 | Returned by Peer | Reassign |
 
+## Past Due — How It Works
+
+The `past_due` status is set by a **daily cron job** (`/api/cron/flag-past-due`):
+
+1. Runs daily (registered in vercel.json)
+2. Queries: `status IN ('assigned', 'in_progress') AND due_date < now() AND due_date IS NOT NULL`
+3. Updates matching cases: `status → 'past_due'`
+4. The peer can still submit a review for a past_due case — it transitions to `completed` normally
+5. Admin can also reassign or unassign past_due cases
+
+**Due date is set to 7 days from approval** — so a case becomes past_due if the peer doesn't submit within a week.
+
+## In Progress — Semantic Only
+
+The `in_progress` status is defined in the TypeScript `CaseStatus` type but is **never explicitly set** anywhere in the code. The DB value stays `assigned` when a peer opens and starts working on a review.
+
+The peer portal counts both `assigned` and `in_progress` together as "In Progress" for display purposes. The cron job also checks both statuses for past_due detection.
+
+**Recommendation**: Either remove `in_progress` from the type definition, or set it when a peer first opens/saves a draft of the review form.
+
+## Peer Portal — Case Visibility
+
+Cases appear on a peer's dashboard based on their `peerId`:
+- **In Progress**: Cases with `status = 'assigned'` where `peer_id = current peer`
+- **Completed**: Cases with `status = 'completed'` where `peer_id = current peer`
+- **Incomplete**: Should NOT show on peer's view — these are `unassigned`, `past_due`, or `pending_approval` cases that may not belong to the peer
+
+**Note**: Unassigned cases have no `peerId` and should never appear on a peer's list. They only appear in the admin's Reviews page for assignment.
+
 ## Notes
 
-1. **`in_progress` is semantic only** — defined in the CaseStatus type but never explicitly set in code. It's used in cron queries alongside `assigned` but the DB value stays `assigned`.
+1. **`in_progress` is semantic only** — defined in the CaseStatus type but never explicitly set in code. The DB value stays `assigned`. Peer portal groups both as "In Progress".
 2. **`returned_by_peer` exists in DB** but is not in the CaseStatus TypeScript type. Should be added for type safety.
 3. **Completed is terminal** — once a review is submitted, the case cannot be modified, reassigned, or unassigned.
 4. **Past due doesn't block submission** — the peer can still submit after the due date. It's a warning flag, not a hard block.
 5. **7-day due date** is set at approval time, not at AI suggestion time. Pending approval cases have no due date.
+6. **Unassigned cases drop off peer's list** — when a case is unassigned (peerId cleared), it disappears from the peer's dashboard and goes back to the admin's unassigned queue.
