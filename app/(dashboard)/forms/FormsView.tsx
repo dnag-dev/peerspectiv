@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -411,15 +412,9 @@ export function FormsView({ forms, companies }: Props) {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex rounded px-2 py-0.5 text-xs font-medium ${
-                          f.isActive
-                            ? "bg-mint-50 text-status-success-fg"
-                            : "bg-ink-100 text-ink-secondary"
-                        }`}
-                      >
+                      <Badge variant={f.isActive ? "success" : "pending"}>
                         {f.isActive ? "active" : "inactive"}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-4 py-3 text-right space-x-1 whitespace-nowrap">
                       <Button

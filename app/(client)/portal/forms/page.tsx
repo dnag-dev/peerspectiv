@@ -85,15 +85,8 @@ export default async function ClientFormsPage() {
                       <td className="px-4 py-3 text-ink-tertiary">{form.specialty}</td>
                       <td className="px-4 py-3 text-center text-ink-tertiary">{fieldCount}</td>
                       <td className="px-4 py-3">
-                        <Badge
-                          variant="outline"
-                          className={
-                            form.isActive
-                              ? "border-mint-500/50 text-mint-400 bg-mint-500/10"
-                              : "border-ink-600 text-ink-tertiary"
-                          }
-                        >
-                          {form.isActive ? "Active" : "Inactive"}
+                        <Badge variant={form.isActive ? "success" : "pending"}>
+                          {form.isActive ? "active" : "inactive"}
                         </Badge>
                       </td>
                     </tr>
