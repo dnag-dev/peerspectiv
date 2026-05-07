@@ -297,24 +297,18 @@ export function SidebarShell({
 
 function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
   return [
-    // Overview
-    { label: "Dashboard",        href: "/dashboard",              icon: LayoutDashboard, group: "Overview" },
-    // Pipeline — client acquisition
-    { label: "Prospects",        href: "/prospects",              icon: Building2,       group: "Pipeline" },
-    { label: "Companies",        href: "/companies",              icon: Building2,       group: "Pipeline" },
-    // Review Workflow — the core work
-    { label: "Batches",          href: "/batches",                icon: FolderOpen,      group: "Review Workflow" },
-    { label: "Reviews",          href: "/assignments",            icon: ClipboardCheck,  group: "Review Workflow" },
-    { label: "AI Assignments",   href: "/assign",                 icon: ArrowUpDown,     group: "Review Workflow", badge: openReassignmentCount },
-    // Team — peer management
-    { label: "Peers",            href: "/peers",                  icon: UserCheck,       group: "Team" },
-    { label: "Onboarding Queue", href: "/peers/onboarding-queue", icon: UserCheck,       group: "Team" },
-    { label: "Credentials",      href: "/credentials",            icon: ShieldCheck,     group: "Team" },
-    // Output — results & billing
-    { label: "Reports",          href: "/reports",                icon: BarChart3,       group: "Output" },
-    { label: "Invoices",         href: "/invoices",               icon: Receipt,         group: "Output" },
-    { label: "Payouts",          href: "/payouts",                icon: DollarSign,      group: "Output" },
-    // Configuration
+    { label: "Dashboard",        href: "/dashboard",              icon: LayoutDashboard, group: "Workspace" },
+    { label: "Prospects",        href: "/prospects",              icon: Building2,       group: "Workspace" },
+    { label: "Companies",        href: "/companies",              icon: Building2,       group: "Workspace" },
+    { label: "Batches",          href: "/batches",                icon: FolderOpen,      group: "Workspace" },
+    { label: "Reviews",          href: "/assignments",            icon: ClipboardCheck,  group: "Workspace" },
+    { label: "AI Assignments",   href: "/assign",                 icon: ArrowUpDown,     group: "Workspace", badge: openReassignmentCount },
+    { label: "Peers",            href: "/peers",                  icon: UserCheck,       group: "Team & Output" },
+    { label: "Onboarding Queue", href: "/peers/onboarding-queue", icon: UserCheck,       group: "Team & Output" },
+    { label: "Credentials",      href: "/credentials",            icon: ShieldCheck,     group: "Team & Output" },
+    { label: "Reports",          href: "/reports",                icon: BarChart3,       group: "Team & Output" },
+    { label: "Invoices",         href: "/invoices",               icon: Receipt,         group: "Team & Output" },
+    { label: "Payouts",          href: "/payouts",                icon: DollarSign,      group: "Team & Output" },
     { label: "Forms",            href: "/forms",                  icon: FileText,        group: "Configuration" },
     { label: "Tags",             href: "/tags",                   icon: Tag,             group: "Configuration" },
     { label: "Settings",         href: "/settings",               icon: Settings,        group: "Configuration" },
@@ -322,7 +316,7 @@ function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
   ];
 }
 
-const ADMIN_GROUPS = ["Overview", "Pipeline", "Review Workflow", "Team", "Output", "Configuration"];
+const ADMIN_GROUPS = ["Workspace", "Team & Output", "Configuration"];
 
 const peerNavItems: SidebarNavItem[] = [
   { label: "Dashboard", href: "/peer/portal",   icon: LayoutDashboard },
