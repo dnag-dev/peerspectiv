@@ -52,7 +52,6 @@ export function CredentialerSidebar() {
           onSignOut={handleLogout}
           onCloseMobile={() => {}}
           mobileOpen={false}
-          contextLabel="Credentialing"
         />
       </div>
 

@@ -1,4 +1,5 @@
 import { CredentialerSidebar } from '@/components/layout/CredentialerSidebar';
+import { CredentialerTopBar } from '@/components/layout/CredentialerTopBar';
 import { AshChat } from '@/components/ash/AshChat';
 import { BfcacheGuard } from '@/components/auth/BfcacheGuard';
 
@@ -18,9 +19,12 @@ export default function CredentialingLayout({
     <div className="flex h-screen overflow-hidden">
       <BfcacheGuard />
       <CredentialerSidebar />
-      <main className="flex-1 overflow-y-auto bg-surface-canvas p-4 md:p-6">
-        {children}
-      </main>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <CredentialerTopBar />
+        <main className="flex-1 overflow-y-auto bg-surface-canvas p-4 md:p-6">
+          {children}
+        </main>
+      </div>
       <AshChat
         portal="credentialer"
         context={{}}
