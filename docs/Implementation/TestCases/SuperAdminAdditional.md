@@ -1532,3 +1532,64 @@
 **Expected Result:** Batch status reverts from `in_progress` to `pending` when all cases are unassigned/returned. The syncBatchStatus function is called after every case return.
 
 ---
+
+
+## Returned by Peer — Status Display
+
+### SAA-099A — Case detail page shows "Returned by Peer" status (not Unassigned)
+
+**Module:** Cases | **Priority:** High
+
+**Pre-conditions:** A case has been returned by a peer (status = returned_by_peer in DB).
+
+**Steps:**
+1. Navigate to the case detail page for a returned case.
+2. Check the status badge next to the provider name.
+
+**Expected Result:** Status badge shows "Returned by Peer" in red. Does NOT show "Unassigned" (which was the previous fallback when returned_by_peer was missing from the badge config).
+
+---
+
+### SAA-100 — Returned by peer shows red in admin Reviews, neutral in client Reviews
+
+**Module:** Reviews | **Priority:** Medium
+
+**Pre-conditions:** A case has been returned by a peer.
+
+**Steps:**
+1. As admin, navigate to Reviews page and filter by "Returned by peer".
+2. As client, navigate to Reviews page and filter by "Returned by peer".
+
+**Expected Result:** Admin: status badge is red (bg-critical-100) with return reason shown in small red text below. Client: status badge is neutral gray/slate (not attention-grabbing — client doesn't need to act on it).
+
+---
+
+### SAA-101 — Admin Reviews shows Batch column instead of Notes
+
+**Module:** Reviews | **Priority:** Medium
+
+**Pre-conditions:** Cases exist with batch associations.
+
+**Steps:**
+1. Navigate to admin Reviews page.
+2. Check the table columns.
+
+**Expected Result:** Columns include "Batch" (showing batch name like "Q4 2025"). No "Notes" column. Returned reason appears as small text under the status badge, not in a separate column.
+
+---
+
+### SAA-102 — Client Reviews uses server-side filtering
+
+**Module:** Client Portal — Reviews | **Priority:** High
+
+**Pre-conditions:** Cases exist for the client's company.
+
+**Steps:**
+1. Login as client.
+2. Navigate to Reviews page.
+3. Type in Provider filter and press Enter or click outside.
+4. Toggle status chips.
+
+**Expected Result:** Filters trigger server-side queries (URL updates with params). Text inputs apply on blur/Enter (not as-you-type). Date pickers apply immediately. Same pattern as admin Reviews page. Scales to large datasets.
+
+---
