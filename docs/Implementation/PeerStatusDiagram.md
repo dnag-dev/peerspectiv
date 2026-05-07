@@ -120,6 +120,54 @@ Peer fills public form at /onboard (/api/onboard/peer POST)
 
 \* Active: Archive blocked if peer has assigned or in_progress cases. Must complete or reassign all cases first.
 
+## Specialty Verification (per-specialty, independent of peer status)
+
+Specialty verification is tracked separately from the peer's lifecycle status. Each peer can have multiple specialties, and each specialty has its own verification status.
+
+### Verification Statuses
+
+| Verified Status | Badge Color | Icon | Meaning |
+|---|---|---|---|
+| **Verified** | Green | Checkmark | Credentialer confirmed peer is qualified for this specialty |
+| **Pending** | Amber | Clock | Specialty added but not yet verified by credentialer |
+| **Not Verified** | Red | X | Credentialer reviewed and rejected this specialty |
+
+### How It Works
+
+1. **Specialties are added** when a peer is created (via onboarding form or admin) — they start as `pending`
+2. **Credentialer reviews** each specialty at `/credentialing/peers/[id]` and sets verification status
+3. **Peer can be marked Active** once the license is verified — specialty verification is independent
+4. A peer with status `active` may still have some specialties `pending` or `not_verified`
+
+### Relationship to Peer Status
+
+| Scenario | Peer Status | Specialty Verification | Can Be Assigned? |
+|---|---|---|---|
+| License verified, all specialties verified | Active | All verified | Yes — any specialty |
+| License verified, some specialties pending | Active | Mixed | Yes — cases should match verified specialties |
+| License verified, no specialties verified | Active | All pending | Yes — but ideally wait for verification |
+| License not yet verified | Pending Credentialing | Any | No — peer status blocks assignment |
+| License expired | License Expired | Any | No — peer status blocks assignment |
+
+### Assignment Engine Behavior
+
+The AI assignment engine filters by:
+1. **Peer status = active** (hard requirement)
+2. **Specialty match** — peer must have the required specialty in `peer_specialties`
+3. **Capacity** — `active_cases_count < max_case_load`
+
+Note: The current assignment engine checks for specialty presence but does not filter by `verified_status`. This means a peer with a `pending` specialty could still receive assignments for that specialty if their status is `active`. Tightening this to require `verified` is a potential future enhancement.
+
+### UI Display
+
+**Peers List Table:**
+- Specialty badges are color-coded by verification status (green/amber/red with icons)
+- "Verification" filter: Any / All Verified / Has Unverified
+
+**Credentialer Detail Page:**
+- Each specialty shows current verification status
+- Credentialer can change status to verified/not_verified/pending
+
 ## License Expiry Automation
 
 ### Daily Cron Job (`/api/cron/license-expiry` — runs 6am UTC)
@@ -177,22 +225,33 @@ All destructive actions (Suspend, Archive) require a confirmation dialog with a 
 | Column | Description |
 |---|---|
 | Name | Clickable link to peer detail page |
-| Status | Lifecycle state badge (active, suspended, etc.) |
+| Status | Lifecycle status badge (active, suspended, etc.) |
 | Email | Peer email address |
-| Specialties | Badges from peer_specialties join table |
+| Specialties | Badges with verification icons (checkmark=verified, clock=pending, X=rejected) |
 | License | License number + expiry date (warns if < 60 days) |
-| State | US state of license (TX, CA, etc.) |
+| License State | US state of license (TX, CA, etc.) |
 | Active | Current active case count |
 | Total | Total reviews completed |
 | Availability | Available/Vacation/On Leave badge + rate |
 | Actions | Edit, Set Unavailable/Mark Available |
 
+### Peers List Filters
+
+| Filter | Options | Default |
+|---|---|---|
+| Search | Free text (name, email, specialty) | — |
+| Status | All / Active / Invited / Pending Admin Review / Pending Credentialing / License Expired / Suspended / Archived | Active |
+| Specialty | All / (from taxonomy) | All |
+| Verification | Any / All Verified / Has Unverified | Any |
+| Availability | Any / Available / Vacation / On Leave / Inactive | Any |
+| License State | Any / (US state codes) | Any |
+
 ## Case Assignment Guards
 
 Only **Active** peers can receive case assignments. Enforced at:
 
-1. **AI assignment engine** — filters to `state='active'` peers only
-2. **Manual assignment approval** — blocks if peer not in active state
+1. **AI assignment engine** — filters to `status='active'` peers only
+2. **Manual assignment approval** — blocks if peer not in active status
 3. **Auto-reassignment on license expiry** — picks from active peers only
 4. **Capacity check** — `active_cases_count < max_case_load` (default 75)
 
@@ -201,34 +260,44 @@ Only **Active** peers can receive case assignments. Enforced at:
 The Credentialer persona manages peer credentials from `/credentialing`:
 
 ### Inbox (`/credentialing/inbox`)
-- Shows peers in `pending_credentialing` state
+- Shows peers in `pending_credentialing` status
 - Click to open credential review
 
 ### Peer Detail (`/credentialing/peers/[id]`)
 - **Specialties section**: Add/remove, set verification status (pending/verified/not_verified)
 - **License section**: Update license number, state, document URL, expiry date
 - **Mark Credentialed button**: Requires license document on file. Transitions peer to Active.
-- **Save License button**: Updates metadata without state change (or renews license_expired → active)
+- **Save License button**: Updates metadata without status change (or renews license_expired → active)
 - **Audit log**: Shows all credentialing actions with timestamps
+
+### Credentialing vs Specialty Verification
+
+| What | Scope | Who Does It | Effect on Status |
+|---|---|---|---|
+| **Credentialing** (Mark Credentialed) | Peer-level | Credentialer | Transitions pending_credentialing → active |
+| **Specialty Verification** | Per-specialty | Credentialer | Updates verified_status on peer_specialties row. No status change. |
+| **License Renewal** | Peer-level | Credentialer | Transitions license_expired → active |
 
 ## Audit Trail
 
-Three audit mechanisms track peer state changes:
+Three audit mechanisms track peer changes:
 
 | Table | What's Logged | Written By |
 |---|---|---|
-| `peer_state_audit` | from_state, to_state, changed_by, reason | `transitionPeer()` function |
-| `audit_logs` | action, resource_type, resource_id, metadata | All state transitions + cron |
+| `peer_state_audit` | from_status, to_status, changed_by, reason | `transitionPeer()` function |
+| `audit_logs` | action, resource_type, resource_id, metadata | All status transitions + cron |
 | `peer_credentialing_log` | action, valid_until changes, document_url, notes | Credentialing endpoints |
 
 Visible at:
-- **Admin**: `/peers/{id}` → State History section
+- **Admin**: `/peers/{id}` → Status History section
 - **Credentialer**: `/credentialing/peers/{id}` → Audit Log card
 
 ## Notes
 
 1. **License is per-peer, not per-specialty**: One medical license covers all specialties a peer reviews. Specialties are tracked separately in the `peer_specialties` table.
-2. **Availability vs State**: `availability_status` (available/vacation/on_leave) is separate from the lifecycle `state`. A peer can be Active but on vacation — they won't receive new assignments but their state doesn't change.
-3. **Max case load**: Default 75 cases. Configurable per peer. Enforced during assignment, not during state transitions.
-4. **Archived is terminal**: No way back from archived. If a peer needs to return, create a new record.
-5. **Email notifications**: Require `CREDENTIALING_EMAIL` and `ADMIN_EMAIL` env vars. Falls back to `admin@peerspectiv.com` in demo mode.
+2. **Specialty verification is independent of peer status**: A peer can be Active with unverified specialties. Verification is informational — the assignment engine currently doesn't enforce it (potential enhancement).
+3. **Availability vs Status**: `availability_status` (available/vacation/on_leave) is separate from the lifecycle `status`. A peer can be Active but on vacation — they won't receive new assignments but their status doesn't change.
+4. **Max case load**: Default 75 cases. Configurable per peer. Enforced during assignment, not during status transitions.
+5. **Archived is terminal**: No way back from archived. If a peer needs to return, create a new record.
+6. **Email notifications**: Require `CREDENTIALING_EMAIL` and `ADMIN_EMAIL` env vars. Falls back to `admin@peerspectiv.com` in demo mode.
+7. **Column naming**: Peers use `status` for lifecycle (consistent with companies table). The legacy `state` column has been removed.
