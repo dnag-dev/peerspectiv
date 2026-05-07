@@ -6,7 +6,8 @@
  */
 
 import { db } from '@/lib/db';
-import { sql } from 'drizzle-orm';
+import { companies } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import {
   buildCadencePeriods,
   findPeriodForDate,
@@ -24,21 +25,17 @@ export {
   type CadenceConfig,
 };
 
-interface CompanyCadenceRow extends Record<string, unknown> {
-  fiscal_year_start_month: number | null;
-  cadence_period_type: string | null;
-  cadence_period_months: number | null;
-}
-
-async function readCompanyCadence(companyId: string): Promise<CompanyCadenceRow | null> {
-  const result = await db.execute<CompanyCadenceRow>(sql`
-    SELECT fiscal_year_start_month, cadence_period_type, cadence_period_months
-    FROM companies WHERE id = ${companyId} LIMIT 1
-  `);
-  const rows =
-    ((result as unknown as { rows?: CompanyCadenceRow[] }).rows as CompanyCadenceRow[] | undefined) ??
-    (result as unknown as CompanyCadenceRow[]);
-  return rows?.[0] ?? null;
+async function readCompanyCadence(companyId: string) {
+  const [row] = await db
+    .select({
+      fiscalYearStartMonth: companies.fiscalYearStartMonth,
+      cadencePeriodType: companies.cadencePeriodType,
+      cadencePeriodMonths: companies.cadencePeriodMonths,
+    })
+    .from(companies)
+    .where(eq(companies.id, companyId))
+    .limit(1);
+  return row ?? null;
 }
 
 /**
@@ -52,9 +49,9 @@ export async function getCompanyCadencePeriods(
   const row = await readCompanyCadence(companyId);
   return buildCadencePeriods(
     {
-      fiscalYearStartMonth: row?.fiscal_year_start_month ?? 1,
-      type: (row?.cadence_period_type ?? 'quarterly') as CadencePeriod['type'],
-      customMonths: row?.cadence_period_months ?? undefined,
+      fiscalYearStartMonth: row?.fiscalYearStartMonth ?? 1,
+      type: (row?.cadencePeriodType ?? 'quarterly') as CadencePeriod['type'],
+      customMonths: row?.cadencePeriodMonths ?? undefined,
     },
     new Date(),
     lookbackYears

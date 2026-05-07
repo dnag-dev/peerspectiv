@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { sql } from 'drizzle-orm';
+import { companies } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { buildCadencePeriods } from '@/lib/cadence/core';
 
 export const dynamic = 'force-dynamic';
@@ -8,17 +9,20 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   const companyId = new URL(req.url).searchParams.get('id') || '166423d0-54e7-4b94-8c3e-0b86abbc3d0e';
 
-  const result = await db.execute(sql`
-    SELECT fiscal_year_start_month, cadence_period_type, cadence_period_months
-    FROM companies WHERE id = ${companyId} LIMIT 1
-  `);
-  const rows = ((result as any).rows ?? result) as any[];
-  const row = rows?.[0];
+  const [row] = await db
+    .select({
+      fiscalYearStartMonth: companies.fiscalYearStartMonth,
+      cadencePeriodType: companies.cadencePeriodType,
+      cadencePeriodMonths: companies.cadencePeriodMonths,
+    })
+    .from(companies)
+    .where(eq(companies.id, companyId))
+    .limit(1);
 
   const config = {
-    fiscalYearStartMonth: row?.fiscal_year_start_month ?? 1,
-    type: (row?.cadence_period_type ?? 'quarterly') as any,
-    customMonths: row?.cadence_period_months ?? undefined,
+    fiscalYearStartMonth: row?.fiscalYearStartMonth ?? 1,
+    type: (row?.cadencePeriodType ?? 'quarterly') as any,
+    customMonths: row?.cadencePeriodMonths ?? undefined,
   };
 
   const now = new Date();
