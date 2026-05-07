@@ -136,17 +136,16 @@ export function ExportGrid({
 
   return (
     <div className="space-y-4">
-      {/* Bulk download row */}
-      <div
-        className="rounded-lg p-4 flex flex-col md:flex-row md:items-center gap-3"
-        style={{ backgroundColor: "#0F2040" }}
-      >
-        <Package className="h-6 w-6 text-ink-primary shrink-0" />
-        <div className="flex-1">
+      {/* Bulk download row — brand-tinted callout on light canvas */}
+      <div className="flex flex-col gap-3 rounded-md border border-brand/20 bg-brand/5 p-4 md:flex-row md:items-center">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand/15">
+          <Package className="h-5 w-5 text-brand" />
+        </div>
+        <div className="min-w-0 flex-1">
           <div className="text-sm font-medium text-ink-primary">
             Download everything for one quarter
           </div>
-          <div className="text-xs text-ink-tertiary">
+          <div className="mt-0.5 text-xs text-ink-secondary">
             Provider highlights, specialty highlights, question analytics, and the quality certificate — one click.
           </div>
         </div>
@@ -154,7 +153,7 @@ export function ExportGrid({
           value={quarter}
           onChange={(e) => setQuarter(Number(e.target.value))}
           disabled={bulkBusy}
-          className="rounded-md bg-white/10 text-ink-primary text-sm px-2 py-1.5 border border-white/20"
+          className="rounded-md border border-border-default bg-surface-card px-2 py-1.5 text-sm text-ink-primary"
         >
           <option value={1}>Q1</option>
           <option value={2}>Q2</option>
@@ -166,13 +165,12 @@ export function ExportGrid({
           value={year}
           onChange={(e) => setYear(Number(e.target.value))}
           disabled={bulkBusy}
-          className="w-24 rounded-md bg-white/10 text-ink-primary text-sm px-2 py-1.5 border border-white/20"
+          className="w-24 rounded-md border border-border-default bg-surface-card px-2 py-1.5 text-sm text-ink-primary"
         />
         <button
           onClick={handleDownloadAll}
           disabled={bulkBusy}
-          className="inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-ink-primary disabled:opacity-50"
-          style={{ backgroundColor: "#0F6E56" }}
+          className="inline-flex items-center justify-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
         >
           {bulkBusy ? (
             <>
@@ -191,27 +189,25 @@ export function ExportGrid({
         <div className="text-xs text-ink-tertiary">{bulkStatus}</div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {REPORTS.map((r) => (
         <div
           key={r.key}
-          className="rounded-lg p-5 flex flex-col"
-          style={{ backgroundColor: 'var(--color-card)' }}
+          className="flex flex-col rounded-md border border-border-subtle bg-surface-card p-4"
         >
-          <div className="flex items-center gap-3 mb-3">
+          <div className="mb-3 flex items-center gap-3">
             {r.icon === "csv" ? (
-              <FileSpreadsheet className="h-8 w-8" style={{ color: "#22C55E" }} />
+              <FileSpreadsheet className="h-7 w-7 text-status-success-dot" />
             ) : (
-              <FileText className="h-8 w-8" style={{ color: "#0F6E56" }} />
+              <FileText className="h-7 w-7 text-brand" />
             )}
-            <h3 className="text-sm font-medium text-ink-primary flex-1">{r.title}</h3>
+            <h3 className="flex-1 text-sm font-medium text-ink-primary">{r.title}</h3>
           </div>
-          <p className="text-xs text-ink-tertiary flex-1">{r.description}</p>
+          <p className="flex-1 text-xs text-ink-secondary">{r.description}</p>
           <button
             onClick={() => handleDownload(r.key, r.title)}
             disabled={busy === r.key}
-            className="mt-4 inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-ink-primary disabled:opacity-50"
-            style={{ backgroundColor: "#0F6E56" }}
+            className="mt-auto inline-flex items-center justify-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
           >
             {busy === r.key ? (
               <>
