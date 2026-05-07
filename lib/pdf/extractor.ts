@@ -1,11 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { PDFParse } from 'pdf-parse';
 import { callClaude } from '@/lib/ai/anthropic';
 
 const MAX_CHARS = 80000;
 const TEXT_LAYER_THRESHOLD = 200; // < 200 chars => probably scanned
 
-export type ExtractionMethod = 'pdf-parse' | 'claude-native' | 'failed';
+export type ExtractionMethod = 'unpdf' | 'claude-native' | 'failed';
 
 export interface ExtractedPDF {
   text: string;
@@ -25,24 +24,30 @@ function getAnthropic(): Anthropic {
 }
 
 /**
+ * Extract text from PDF pages using unpdf (pure JS, works in Node.js serverless).
+ */
+async function extractWithUnpdf(buffer: Buffer): Promise<{ text: string; pages: string[]; pageCount: number }> {
+  const { extractText } = await import('unpdf');
+  const result = await extractText(new Uint8Array(buffer));
+  const pages = Array.isArray(result.text) ? result.text : [String(result.text)];
+  const fullText = pages.join('\n');
+  return { text: fullText, pages, pageCount: pages.length };
+}
+
+/**
  * Two-attempt PDF extraction:
- *   1. pdf-parse  — instant, free. Wins for native text PDFs.
+ *   1. unpdf — instant, free, pure JS. Wins for native text PDFs.
  *   2. claude-native — fallback for scanned/image PDFs. Sends raw PDF
  *      bytes as base64 to claude-sonnet-4-5 via the document content block.
- *
- * The result includes `method` so the caller can persist which path was used
- * (saved to ai_analyses.extraction_method).
  */
 export async function extractTextFromPDF(buffer: Buffer): Promise<ExtractedPDF> {
-  // ── ATTEMPT 1: pdf-parse ────────────────────────────────────────────────
   let pageCount = 0;
+
+  // ── ATTEMPT 1: unpdf ────────────────────────────────────────────────
   try {
-    const parser = new PDFParse({ data: buffer });
-    const data = await parser.getText();
-    const rawText = data.text || '';
-    // pdf-parse v2 inserts synthetic "-- N of M --" page markers; strip them
-    const cleanText = rawText.replace(/-- \d+ of \d+ --/g, '').trim();
-    pageCount = Array.isArray(data.pages) ? data.pages.length : (data.total ?? 0);
+    const result = await extractWithUnpdf(buffer);
+    pageCount = result.pageCount;
+    const cleanText = result.text.trim();
 
     if (cleanText.length > TEXT_LAYER_THRESHOLD) {
       const truncated = cleanText.length > MAX_CHARS;
@@ -52,16 +57,15 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<ExtractedPDF> 
           : cleanText,
         pageCount,
         truncated,
-        method: 'pdf-parse',
+        method: 'unpdf',
         isScanned: false,
       };
     }
   } catch (err) {
-    // pdf-parse failed entirely — fall through to claude-native
-    console.warn('[pdf] pdf-parse failed, will try claude-native:', (err as Error).message);
+    console.warn('[pdf] unpdf failed, will try claude-native:', (err as Error).message);
   }
 
-  // ── ATTEMPT 2: claude-native PDF extraction ────────────────────────────
+  // ── ATTEMPT 2: claude-native PDF extraction ────────────────────────
   try {
     const client = getAnthropic();
     const base64 = buffer.toString('base64');
@@ -151,7 +155,7 @@ Return ONLY valid JSON (no prose) matching this exact schema:
   "mrn": string|null,
   "is_pediatric": boolean
 }
-specialty_guess must be one of: "Family Medicine", "Internal Medicine", "Pediatrics", "OB/GYN", "Behavioral Health", "Dental", or null.
+specialty_guess must be one of: "Family Medicine", "Internal Medicine", "Pediatrics", "OB/GYN", "Behavioral Health", "Dental", "Cardiology", "HIV", "Mental Health", "Primary Care", "Urgent Care", or null.
 is_pediatric is true only when the patient is clearly under 18 (DOB or stated age). If unclear, false.
 Use null for any field you cannot confidently extract. Do not guess.`;
 
@@ -159,21 +163,13 @@ Use null for any field you cannot confidently extract. Do not guess.`;
 export async function extractChartMetadata(buffer: Buffer): Promise<ChartMetadataGuess> {
   let firstPagesText = '';
   try {
-    const parser = new PDFParse({ data: buffer });
-    const data = await parser.getText();
-    if (Array.isArray(data.pages) && data.pages.length > 0) {
-      firstPagesText = data.pages
-        .slice(0, 3)
-        .map((p: any) => (typeof p === 'string' ? p : p?.text ?? ''))
-        .join('\n')
-        .replace(/-- \d+ of \d+ --/g, '')
-        .trim();
-    } else {
-      // Fallback: take a slice of the full text
-      firstPagesText = (data.text || '').slice(0, 12000).replace(/-- \d+ of \d+ --/g, '').trim();
-    }
+    const result = await extractWithUnpdf(buffer);
+    firstPagesText = result.pages
+      .slice(0, 3)
+      .join('\n')
+      .trim();
   } catch (err) {
-    console.warn('[pdf] metadata extraction pdf-parse failed:', (err as Error).message);
+    console.warn('[pdf] metadata extraction unpdf failed:', (err as Error).message);
     return EMPTY_METADATA;
   }
 
