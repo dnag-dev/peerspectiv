@@ -655,7 +655,7 @@ export function NewBatchModal({
 
             {/* Progress bar */}
             <div className="flex gap-1 border-b bg-ink-50 px-5 py-2">
-              {[1, 2, 3, 4, 5].map((n) => (
+              {(skipCompanyStep ? [2, 3, 4, 5] : [1, 2, 3, 4, 5]).map((n) => (
                 <div
                   key={n}
                   className={`h-1 flex-1 rounded-full ${
