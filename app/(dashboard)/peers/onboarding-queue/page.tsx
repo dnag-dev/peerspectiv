@@ -31,7 +31,7 @@ export default async function OnboardingQueuePage() {
       {rows.length === 0 ? (
         <EmptyState
           title="Nothing in the queue"
-          message="No path-A applications are pending review."
+          message="No applications are pending review."
           backHref="/peers"
         />
       ) : (
