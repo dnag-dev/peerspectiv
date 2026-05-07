@@ -6,6 +6,43 @@ import { cn } from "@/lib/utils";
 import type { ReviewCase } from "@/types";
 import StatusPill from "@/components/ui/StatusPill";
 import KPICard from "@/components/ui/KPICard";
+import { Download, Loader2 } from "lucide-react";
+
+function DownloadPdfButton({ resultId }: { resultId: string }) {
+  const [downloading, setDownloading] = useState(false);
+  async function handleClick() {
+    setDownloading(true);
+    try {
+      const res = await fetch("/api/reports/generate/per_provider", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ result_id: resultId }),
+      });
+      if (!res.ok) throw new Error(`PDF failed (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `review-report-${resultId.slice(0, 8)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF download failed:", err);
+    } finally {
+      setDownloading(false);
+    }
+  }
+  return (
+    <button
+      onClick={handleClick}
+      disabled={downloading}
+      className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border-subtle px-3 py-1.5 text-xs font-medium text-ink-secondary transition hover:bg-surface-muted disabled:opacity-50"
+    >
+      {downloading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+      Download PDF Report
+    </button>
+  );
+}
 
 function daysUntilDue(date: string): number {
   return Math.ceil(
@@ -246,6 +283,7 @@ export function PeerPortalClient({
                 <th className="px-4 py-3 text-left">Due</th>
                 <th className="px-4 py-3 text-left">AI</th>
                 <th className="px-4 py-3 text-left">Chart</th>
+                <th className="px-4 py-3 text-left">Report</th>
               </tr>
             </thead>
             <tbody>
@@ -284,8 +322,21 @@ export function PeerPortalClient({
                       <td className="px-4 py-3 text-xs text-ink-secondary">
                         {c.ai_analysis_status === "complete" ? "✓" : c.ai_analysis_status === "processing" ? "…" : "—"}
                       </td>
-                      <td className="px-4 py-3 text-xs text-ink-secondary truncate max-w-[150px]">
-                        {c.chart_file_name || "—"}
+                      <td className="px-4 py-3 text-xs truncate max-w-[150px]">
+                        {c.chart_file_path ? (
+                          <a href={c.chart_file_path} target="_blank" rel="noreferrer" className="text-brand hover:underline">
+                            {c.chart_file_name || "View chart"}
+                          </a>
+                        ) : (
+                          <span className="text-ink-secondary">{c.chart_file_name || "—"}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-xs">
+                        {c.status === "completed" && c.review_result?.id ? (
+                          <DownloadPdfButton resultId={c.review_result.id} />
+                        ) : (
+                          <span className="text-ink-tertiary">—</span>
+                        )}
                       </td>
                     </tr>
                   );
@@ -432,7 +483,7 @@ export function PeerPortalClient({
               </div>
 
               {/* mt-auto pins button to bottom — alignment fix across cards in a row */}
-              <div className="mt-auto pt-4">
+              <div className="mt-auto pt-4 space-y-2">
                 <Link
                   href={href}
                   className={cn(
@@ -461,6 +512,9 @@ export function PeerPortalClient({
                     />
                   </svg>
                 </Link>
+                {c.status === "completed" && c.review_result?.id && (
+                  <DownloadPdfButton resultId={c.review_result.id} />
+                )}
               </div>
             </div>
           );
