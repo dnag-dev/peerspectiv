@@ -9,6 +9,8 @@ interface Row {
   specialty: string;
   providerName: string;
   chartFileName: string;
+  chartFilePath: string | null;
+  batchName: string | null;
   assignedAt: string | null;
   dueDate: string | null;
   createdAt: string | null;
@@ -148,114 +150,111 @@ export function ReviewsTable({
         </div>
       )}
 
-      {/* Status chips */}
-      <div className="flex flex-wrap gap-2">
-        {[
-          { key: "all", label: "All" },
-          { key: "assigned", label: "Assigned" },
-          { key: "in_progress", label: "In Progress" },
-          { key: "completed", label: "Completed" },
-          { key: "past_due", label: "Overdue" },
-          { key: "unassigned", label: "Unassigned" },
-        ].map((s) => (
-          <button
-            key={s.key}
-            onClick={() => setStatus(s.key)}
-            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-              status === s.key
-                ? "border-brand bg-brand/10 text-brand"
-                : "border-border-subtle text-ink-secondary hover:border-brand"
-            }`}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <input
-          value={providerSearch}
-          onChange={(e) => setProviderSearch(e.target.value)}
-          placeholder="Provider"
-          className="rounded-md border border-border-subtle bg-white px-3 py-1.5 text-sm text-ink-primary placeholder:text-ink-tertiary"
-        />
-        <input
-          value={specialty === "all" ? "" : specialty}
-          onChange={(e) => setSpecialty(e.target.value || "all")}
-          placeholder="Specialty"
-          className="rounded-md border border-border-subtle bg-white px-3 py-1.5 text-sm text-ink-primary placeholder:text-ink-tertiary"
-        />
-        <input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
-          className="rounded-md border border-border-subtle bg-white px-3 py-1.5 text-sm text-ink-primary"
-        />
-        <input
-          type="date"
-          value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
-          className="rounded-md border border-border-subtle bg-white px-3 py-1.5 text-sm text-ink-primary"
-        />
-      </div>
-
-      <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--color-card)' }}>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr
-                className="text-left text-xs uppercase text-ink-secondary border-b"
-                style={{ borderColor: "#2A3F5F" }}
-              >
-                <th className="py-2 pr-3">Case</th>
-                <th className="py-2 pr-3">Provider</th>
-                <th className="py-2 pr-3">Specialty</th>
-                <th className="py-2 pr-3">Status</th>
-                <th className="py-2 pr-3">Due</th>
-                <th className="py-2 pr-3">Quarter</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="py-4 text-center text-ink-tertiary">
-                    No matching reviews.
-                  </td>
-                </tr>
-              )}
-              {filtered.map((r) => (
-                <tr
-                  key={r.id}
-                  className="border-b"
-                  style={{ borderColor: "#2A3F5F" }}
-                >
-                  <td className="py-3 pr-3 text-ink-primary truncate max-w-xs">
-                    {r.chartFileName}
-                  </td>
-                  <td className="py-3 pr-3 text-ink-tertiary">{r.providerName}</td>
-                  <td className="py-3 pr-3 text-ink-tertiary">{r.specialty}</td>
-                  <td className="py-3 pr-3">
-                    <span
-                      className="rounded px-2 py-0.5 text-xs font-medium"
-                      style={{
-                        backgroundColor: `${statusColor(r.status)}22`,
-                        color: statusColor(r.status),
-                      }}
-                    >
-                      {r.status}
-                    </span>
-                  </td>
-                  <td className="py-3 pr-3 text-ink-tertiary">
-                    {r.dueDate ? new Date(r.dueDate).toLocaleDateString() : "—"}
-                  </td>
-                  <td className="py-3 pr-3 text-ink-tertiary">
-                    {quarterOf(r.createdAt)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Filters card — matches admin Reviews style */}
+      <div className="space-y-3 rounded-lg border border-border-subtle bg-white p-4 shadow-sm">
+        <div className="flex flex-wrap gap-2">
+          {[
+            { key: "unassigned", label: "Unassigned" },
+            { key: "pending_approval", label: "Pending approval" },
+            { key: "assigned", label: "Assigned" },
+            { key: "in_progress", label: "In progress" },
+            { key: "completed", label: "Completed" },
+            { key: "past_due", label: "Past due" },
+          ].map((s) => (
+            <button
+              key={s.key}
+              onClick={() => setStatus(status === s.key ? "all" : s.key)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                status === s.key
+                  ? "border-blue-500 bg-blue-50 text-blue-700"
+                  : "border-border-subtle text-ink-primary hover:border-blue-500"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
         </div>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <input
+            value={providerSearch}
+            onChange={(e) => setProviderSearch(e.target.value)}
+            placeholder="Provider"
+            className="rounded-md border border-border-subtle px-3 py-1.5 text-sm"
+          />
+          <input
+            value={specialty === "all" ? "" : specialty}
+            onChange={(e) => setSpecialty(e.target.value || "all")}
+            placeholder="Specialty"
+            className="rounded-md border border-border-subtle px-3 py-1.5 text-sm"
+          />
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="rounded-md border border-border-subtle px-3 py-1.5 text-sm"
+          />
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="rounded-md border border-border-subtle px-3 py-1.5 text-sm"
+          />
+        </div>
+      </div>
+
+      {/* Table — matches admin style */}
+      <div className="overflow-x-auto rounded-lg border border-border-subtle bg-white">
+        <table className="w-full text-sm">
+          <thead className="border-b border-border-subtle bg-gray-50 text-left">
+            <tr className="text-xs uppercase tracking-wider text-gray-500">
+              <th className="px-4 py-3">Chart</th>
+              <th className="px-4 py-3">Provider</th>
+              <th className="px-4 py-3">Specialty</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Due</th>
+              <th className="px-4 py-3">Batch</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-4 py-12 text-center text-sm text-gray-500">
+                  No matching reviews.
+                </td>
+              </tr>
+            )}
+            {filtered.map((r) => (
+              <tr key={r.id} className="border-b border-border-subtle hover:bg-gray-50">
+                <td className="px-4 py-3">
+                  {r.chartFilePath ? (
+                    <a href={r.chartFilePath} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline truncate max-w-[200px] block">
+                      {r.chartFileName}
+                    </a>
+                  ) : (
+                    <span className="text-ink-primary truncate max-w-[200px] block">{r.chartFileName}</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-ink-primary">{r.providerName}</td>
+                <td className="px-4 py-3 text-gray-500">{r.specialty}</td>
+                <td className="px-4 py-3">
+                  <span
+                    className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+                    style={{
+                      backgroundColor: `${statusColor(r.status)}18`,
+                      color: statusColor(r.status),
+                    }}
+                  >
+                    {r.status.replace(/_/g, " ")}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-gray-500">
+                  {r.dueDate ? new Date(r.dueDate).toLocaleDateString() : "—"}
+                </td>
+                <td className="px-4 py-3 text-gray-500">{r.batchName ?? "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

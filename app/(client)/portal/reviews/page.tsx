@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { reviewCases, providers, reviewResults } from "@/lib/db/schema";
+import { reviewCases, providers, reviewResults, batches } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { getDemoCompany } from "@/lib/portal/queries";
 import { ReviewsTable } from "./ReviewsTable";
@@ -42,6 +42,7 @@ export default async function AllReviewsPage({
       status: reviewCases.status,
       specialty: reviewCases.specialtyRequired,
       chartFileName: reviewCases.chartFileName,
+      chartFilePath: reviewCases.chartFilePath,
       assignedAt: reviewCases.assignedAt,
       dueDate: reviewCases.dueDate,
       createdAt: reviewCases.createdAt,
@@ -50,10 +51,12 @@ export default async function AllReviewsPage({
       providerFirst: providers.firstName,
       providerLast: providers.lastName,
       providerSpecialty: providers.specialty,
+      batchName: batches.batchName,
     })
     .from(reviewCases)
     .leftJoin(providers, eq(providers.id, reviewCases.providerId))
     .leftJoin(reviewResults, eq(reviewResults.caseId, reviewCases.id))
+    .leftJoin(batches, eq(batches.id, reviewCases.batchId))
     .where(eq(reviewCases.companyId, company.id))
     .orderBy(desc(reviewCases.createdAt));
 
@@ -86,6 +89,8 @@ export default async function AllReviewsPage({
             providerName:
               `${r.providerFirst ?? ""} ${r.providerLast ?? ""}`.trim() || "—",
             chartFileName: r.chartFileName ?? "—",
+            chartFilePath: r.chartFilePath ?? null,
+            batchName: r.batchName ?? null,
             assignedAt: r.assignedAt ? new Date(r.assignedAt as any).toISOString() : null,
             dueDate: r.dueDate ? new Date(r.dueDate as any).toISOString() : null,
             createdAt: r.createdAt ? new Date(r.createdAt as any).toISOString() : null,
