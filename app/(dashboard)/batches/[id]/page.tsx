@@ -227,6 +227,7 @@ export default async function BatchDetailPage({
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Case Ref</TableHead>
                   <TableHead>Provider</TableHead>
                   <TableHead>Specialty</TableHead>
                   <TableHead>Peer</TableHead>
@@ -240,6 +241,11 @@ export default async function BatchDetailPage({
               <TableBody>
                 {batch.cases.map((reviewCase) => (
                   <TableRow key={reviewCase.id}>
+                    <TableCell className="font-mono text-xs">
+                      <Link href={`/cases/${reviewCase.id}`} className="text-blue-600 hover:underline">
+                        #{reviewCase.id.slice(0, 8)}
+                      </Link>
+                    </TableCell>
                     <TableCell className="font-medium">
                       {reviewCase.provider
                         ? `${reviewCase.provider.first_name} ${reviewCase.provider.last_name}`

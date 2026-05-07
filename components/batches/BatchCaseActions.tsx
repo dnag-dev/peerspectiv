@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 interface Props {
   caseId: string;
@@ -31,6 +30,11 @@ export function BatchCaseActions({ caseId, status, peerId }: Props) {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function handleReassign() {
+    // Navigate to the case detail where they can use the full reassignment flow
+    router.push(`/cases/${caseId}`);
   }
 
   async function handleUnassign() {
@@ -67,12 +71,13 @@ export function BatchCaseActions({ caseId, status, peerId }: Props) {
         </button>
       )}
       {status !== "completed" && status !== "unassigned" && (
-        <Link
-          href={`/cases/${caseId}`}
-          className="rounded border border-gray-200 px-2 py-0.5 text-xs text-gray-600 hover:border-blue-400 hover:text-blue-600"
+        <button
+          onClick={handleReassign}
+          disabled={busy}
+          className="rounded border border-gray-200 px-2 py-0.5 text-xs text-gray-600 hover:border-blue-400 hover:text-blue-600 disabled:opacity-50"
         >
-          View
-        </Link>
+          Reassign
+        </button>
       )}
       {peerId && status !== "completed" && (
         <button
