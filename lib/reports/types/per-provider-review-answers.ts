@@ -35,6 +35,7 @@ interface RowShape {
   provider_last: string | null;
   provider_specialty: string | null;
   mrn: string | null;
+  encounter_date: string | null;
   peer_name_snapshot: string | null;
   peer_license_snapshot: string | null;
   peer_license_state_snapshot: string | null;
@@ -225,6 +226,7 @@ export async function generate(input: GenerateInput): Promise<Buffer> {
         p.last_name AS provider_last,
         p.specialty AS provider_specialty,
         rr.mrn_number AS mrn,
+        rc.encounter_date,
         rr.reviewer_name_snapshot AS peer_name_snapshot,
         rr.reviewer_license_snapshot AS peer_license_snapshot,
         rr.reviewer_license_state_snapshot AS peer_license_state_snapshot,
@@ -258,6 +260,7 @@ export async function generate(input: GenerateInput): Promise<Buffer> {
     providerSpecialty: row.provider_specialty,
     reviewType: row.form_name ?? 'Review',
     mrn: row.mrn,
+    encounterDate: row.encounter_date ? new Date(row.encounter_date).toLocaleDateString() : null,
     peerName: row.peer_name_snapshot,
     peerLicense: row.peer_license_snapshot,
     peerLicenseState: row.peer_license_state_snapshot,

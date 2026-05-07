@@ -34,6 +34,8 @@ interface SubmitBody {
   mrn_number?: string;
   /** PR-036 — 'manual' | 'ai_extracted' | 'corrected' */
   mrn_source?: string;
+  /** Date of encounter — editable by reviewer, pre-populated from AI extraction. */
+  encounter_date?: string | null;
   peer_signature_text?: string;
   // Section C.3 — full yes_no answers used for NA-aware scoring.
   form_responses?: Record<string, { value: unknown; comment?: string }>;
@@ -320,7 +322,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update review_cases status to completed (and snapshot MRN — Section C.4)
+    // Update review_cases status to completed (and snapshot MRN + encounter date)
+    const encounterDateVal = body.encounter_date ? String(body.encounter_date).slice(0, 10) : null;
     await db
       .update(reviewCases)
       .set({
@@ -328,6 +331,7 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date(),
         ...(mrnSnapshot ? { mrnNumber: mrnSnapshot } : {}),
         ...(mrnSourceClean ? { mrnSource: mrnSourceClean } : {}),
+        ...(encounterDateVal ? { encounterDate: encounterDateVal } : {}),
       })
       .where(eq(reviewCases.id, case_id));
 

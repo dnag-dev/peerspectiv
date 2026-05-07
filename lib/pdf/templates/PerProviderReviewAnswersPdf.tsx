@@ -8,6 +8,7 @@ export interface PerProviderReviewAnswersData {
   providerSpecialty: string | null;
   reviewType: string;
   mrn: string | null;
+  encounterDate: string | null;
   peerName: string | null;
   peerLicense: string | null;
   peerLicenseState: string | null;
@@ -72,6 +73,7 @@ export function PerProviderReviewAnswersPdf({ data }: { data: PerProviderReviewA
           </Text>
           <Text style={{ fontSize: 9, color: colors.ink600, marginTop: 2 }}>
             MRN: {data.mrn ?? '—'}
+            {data.encounterDate ? `    Date of Encounter: ${data.encounterDate}` : ''}
           </Text>
           <Text style={{ fontSize: 9, color: colors.ink600, marginTop: 8 }}>
             Reviewed by: {data.peerName ?? '—'}

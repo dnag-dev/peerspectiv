@@ -512,6 +512,7 @@ export async function renderPeerCaseDetail(caseId: string) {
               | "corrected"
               | null
           }
+          initialEncounterDate={reviewCase.encounterDate ?? null}
           allowAiNarrative={allowAiNarrative}
           chartTextExtracted={analysisRow?.chartTextExtracted ?? null}
         />

@@ -8,6 +8,9 @@ interface Props {
   onMrnChange: (next: string) => void;
   /** Source of the MRN — drives the "AI-extracted, edit to correct" hint. */
   mrnSource: "manual" | "ai_extracted" | "corrected" | null;
+  /** Date of encounter, editable. Pre-populated from AI extraction. */
+  encounterDate: string;
+  onEncounterDateChange: (next: string) => void;
   /** Peer name (locked, from session). */
   peerName: string;
   /** Peer license number (locked, from session). */
@@ -27,6 +30,8 @@ export function AttestationBlock({
   mrn,
   onMrnChange,
   mrnSource,
+  encounterDate,
+  onEncounterDateChange,
   peerName,
   licenseNumber,
   licenseState,
@@ -44,7 +49,7 @@ export function AttestationBlock({
         <div className="text-eyebrow text-status-info-fg">SYSTEM ATTESTATION</div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {/* MRN — editable */}
         <div>
           <label className="mb-1 block text-xs font-medium text-ink-primary">
@@ -65,6 +70,25 @@ export function AttestationBlock({
           )}
           {showCorrectedHint && (
             <p className="mt-1 text-[11px] text-status-warning-fg">Corrected by peer.</p>
+          )}
+        </div>
+
+        {/* Date of Encounter — editable, pre-populated from AI extraction */}
+        <div>
+          <label className="mb-1 block text-xs font-medium text-ink-primary">
+            Date of Encounter <span className="text-status-danger-dot">*</span>
+          </label>
+          <input
+            type="date"
+            data-testid="attestation-encounter-date"
+            value={encounterDate}
+            onChange={(e) => onEncounterDateChange(e.target.value)}
+            className="w-full rounded-lg border border-border-subtle bg-surface-card px-3 py-2 text-sm text-ink-primary outline-none focus:border-status-info-fg focus:ring-1 focus:ring-brand/30"
+          />
+          {encounterDate && (
+            <p className="mt-1 text-[11px] text-status-info-fg">
+              Pre-populated from chart — edit if incorrect.
+            </p>
           )}
         </div>
 

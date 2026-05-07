@@ -78,6 +78,8 @@ interface ReviewFormProps {
   /** mrn_source from review_cases (Phase 2). When 'ai_extracted', edits flip
    *  to 'corrected' on submit per PR-036. */
   initialMrnSource?: "manual" | "ai_extracted" | "corrected" | null;
+  /** Date of encounter from review_cases, pre-populated by AI extraction. */
+  initialEncounterDate?: string | null;
   /** company_forms.allow_ai_generated_recommendations (Section C.5). */
   allowAiNarrative?: boolean;
   /** Section F5: hover-to-jump callback wired up by PeerCaseSplit so
@@ -136,6 +138,7 @@ export function ReviewForm({
   peerLicense,
   initialMrnNumber,
   initialMrnSource,
+  initialEncounterDate,
   allowAiNarrative,
   onFieldHover,
 }: ReviewFormProps) {
@@ -165,6 +168,10 @@ export function ReviewForm({
 
   // ── MRN (Section C.4) ──
   const [mrnNumber, setMrnNumber] = useState<string>(initialMrnNumber ?? "");
+  // ── Date of Encounter ──
+  const [encounterDate, setEncounterDate] = useState<string>(
+    initialEncounterDate ? String(initialEncounterDate).slice(0, 10) : ""
+  );
   // PR-036: track edits against the AI-extracted value. If the peer changes
   // an AI-extracted MRN, source flips to 'corrected' at submit time.
   const initialMrnRef = useRef<string>(initialMrnNumber ?? "");
@@ -460,6 +467,7 @@ export function ReviewForm({
             license_snapshot: licenseSnapshot,
             mrn_number: mrnNumber.trim(),
             mrn_source: effectiveMrnSource ?? "manual",
+            encounter_date: encounterDate || null,
             peer_signature_text: peerSignatureText,
             form_responses,
           }),
@@ -550,6 +558,8 @@ export function ReviewForm({
         mrn={mrnNumber}
         onMrnChange={setMrnNumber}
         mrnSource={effectiveMrnSource}
+        encounterDate={encounterDate}
+        onEncounterDateChange={setEncounterDate}
         peerName={peerLicense?.fullName ?? ""}
         licenseNumber={peerLicense?.licenseNumber ?? ""}
         licenseState={peerLicense?.licenseState ?? ""}

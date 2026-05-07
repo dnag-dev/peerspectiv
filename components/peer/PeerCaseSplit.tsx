@@ -76,6 +76,7 @@ interface Props {
   peerLicense?: PeerLicense;
   initialMrnNumber?: string | null;
   initialMrnSource?: "manual" | "ai_extracted" | "corrected" | null;
+  initialEncounterDate?: string | null;
   allowAiNarrative?: boolean;
   /** Section F5: extracted chart text used to estimate the page a hovered
    *  question maps to so the iframe can be scrolled to roughly that page. */
@@ -142,6 +143,7 @@ export function PeerCaseSplit({
   peerLicense,
   initialMrnNumber,
   initialMrnSource,
+  initialEncounterDate,
   allowAiNarrative,
   chartTextExtracted,
 }: Props) {
@@ -420,6 +422,7 @@ export function PeerCaseSplit({
                 peerLicense={peerLicense}
                 initialMrnNumber={initialMrnNumber}
                 initialMrnSource={initialMrnSource}
+                initialEncounterDate={initialEncounterDate}
                 allowAiNarrative={allowAiNarrative}
                 onFieldHover={chartViewUrl ? handleFieldHover : undefined}
               />
