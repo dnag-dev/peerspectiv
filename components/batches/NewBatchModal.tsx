@@ -28,19 +28,45 @@ export type BatchWizardForm = {
 };
 
 
-/** Parse filename to guess {providerLast, specialty} — best-effort. */
+/** Parse filename to guess {lastName, specialty} — best-effort.
+ *
+ * Handles many naming patterns seen in FQHC chart files:
+ *   "Family Coicou 1.pdf"              → { lastName: "Coicou", specialty: "Family Medicine" }
+ *   "Family. Adee. Q4.1.pdf"           → { lastName: "Adee", specialty: "Family Medicine" }
+ *   "100190770_OB_Fielder.pdf"          → { lastName: "Fielder", specialty: "OB/GYN" }
+ *   "BH Smith 1.pdf"                   → { lastName: "Smith", specialty: "Behavioral Health" }
+ *   "Mental Health. Concepcion. Q4.2"  → { lastName: "Concepcion", specialty: "Mental Health" }
+ *   "GILMORE 4.pdf"                    → { lastName: "Gilmore", specialty: null }
+ *   "HIV BRIMMER 3.pdf"               → { lastName: "Brimmer", specialty: "HIV" }
+ *   "OB. Blackham. Q1.2combined.pdf"   → { lastName: "Blackham", specialty: "OB/GYN" }
+ *   "Counselor. Albright. Q4.1.pdf"    → { lastName: "Albright", specialty: "Behavioral Health" }
+ */
 function parseFilename(name: string): { lastName: string | null; specialty: string | null } {
-  const base = name.replace(/\.pdf$/i, "");
+  const base = name.replace(/\.pdf$/i, "").replace(/combined$/i, "");
   const tokens = base.split(/[\s_.\-]+/).filter(Boolean);
 
-  const specialtyHits: Record<string, string> = {
+  // Multi-word specialty detection (must check before single-word)
+  const MULTI_WORD_SPECIALTIES: [RegExp, string][] = [
+    [/^mental\s*health$/i, "Mental Health"],
+    [/^behavioral\s*health$/i, "Behavioral Health"],
+    [/^family\s*medicine$/i, "Family Medicine"],
+    [/^internal\s*medicine$/i, "Internal Medicine"],
+    [/^primary\s*care$/i, "Primary Care"],
+    [/^emergency\s*medicine$/i, "Emergency Medicine"],
+  ];
+
+  const SPECIALTY_MAP: Record<string, string> = {
     ob: "OB/GYN",
     obgyn: "OB/GYN",
     gyn: "OB/GYN",
-    hiv: "Internal Medicine",
-    mental: "Behavioral Health",
+    gynecology: "OB/GYN",
+    obstetrics: "OB/GYN",
+    hiv: "HIV",
+    mental: "Mental Health",
     behavioral: "Behavioral Health",
+    bh: "Behavioral Health",
     psych: "Behavioral Health",
+    counselor: "Behavioral Health",
     pediatrics: "Pediatrics",
     pediatric: "Pediatrics",
     peds: "Pediatrics",
@@ -49,27 +75,93 @@ function parseFilename(name: string): { lastName: string | null; specialty: stri
     internal: "Internal Medicine",
     im: "Internal Medicine",
     dental: "Dental",
+    cardiology: "Cardiology",
+    cardio: "Cardiology",
+    dermatology: "Dermatology",
+    derm: "Dermatology",
+    podiatry: "Podiatry",
+    chiropractic: "Chiropractic",
+    chiro: "Chiropractic",
+    acupuncture: "Acupuncture",
+    optometry: "Optometry",
+    pharmacy: "Pharmacy",
+    neurology: "Neurology",
+    orthopedics: "Orthopedics",
+    ortho: "Orthopedics",
+    urology: "Urology",
+    gastroenterology: "Gastroenterology",
+    gi: "Gastroenterology",
+    primary: "Primary Care",
+    emergency: "Emergency Medicine",
   };
 
+  // Noise words to skip when looking for last name
+  const NOISE = new Set([
+    ...Object.keys(SPECIALTY_MAP),
+    "health", "medicine", "care",
+  ]);
+
+  // Check multi-word specialties first (join consecutive tokens)
   let specialty: string | null = null;
-  for (const t of tokens) {
-    const lc = t.toLowerCase();
-    if (specialtyHits[lc]) {
-      specialty = specialtyHits[lc];
+  const joined = base.replace(/[_.\-]+/g, " ");
+  for (const [re, spec] of MULTI_WORD_SPECIALTIES) {
+    if (re.test(joined)) {
+      specialty = spec;
       break;
     }
   }
 
-  // last-name guess: a Capitalized token that isn't a specialty/number/quarter
+  // Single-word specialty
+  if (!specialty) {
+    for (const t of tokens) {
+      const lc = t.toLowerCase();
+      if (SPECIALTY_MAP[lc]) {
+        specialty = SPECIALTY_MAP[lc];
+        break;
+      }
+    }
+  }
+
+  // Last name: find first token that is alphabetic, not a specialty/noise/number/quarter
   let lastName: string | null = null;
   for (const t of tokens) {
-    if (/^\d+$/.test(t)) continue;
-    if (/^Q\d/i.test(t)) continue;
-    if (specialtyHits[t.toLowerCase()]) continue;
-    if (t.length < 3) continue;
-    if (/^[A-Z][a-z]+$/.test(t) || /^[A-Z]+$/.test(t)) {
+    if (/^\d+$/.test(t)) continue;                          // pure number
+    if (/^Q\d/i.test(t)) continue;                          // quarter label
+    if (/^\d+[A-Za-z]*$/.test(t)) continue;                 // ID like "100190770" or "M6"
+    if (NOISE.has(t.toLowerCase())) continue;                // specialty or noise word
+    if (SPECIALTY_MAP[t.toLowerCase()]) continue;            // mapped specialty
+    if (t.length < 2) continue;                              // too short
+    if (/^[A-Za-z]/.test(t)) {                              // starts with a letter
+      // Normalize: "GILMORE" → "Gilmore", "Coicou" → "Coicou"
       lastName = t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
       break;
+    }
+  }
+
+  // Handle hyphenated last names: "Zamora-Duprey" comes through as separate tokens
+  // If the next token after lastName is also alpha and not noise, join them
+  if (lastName) {
+    const idx = tokens.findIndex(
+      (t) => t.toLowerCase() === lastName!.toLowerCase()
+    );
+    if (idx >= 0 && idx + 1 < tokens.length) {
+      const next = tokens[idx + 1];
+      if (
+        /^[A-Za-z]+$/.test(next) &&
+        !NOISE.has(next.toLowerCase()) &&
+        !SPECIALTY_MAP[next.toLowerCase()] &&
+        !/^\d+$/.test(next) &&
+        !/^Q\d/i.test(next)
+      ) {
+        // Check if original filename had a hyphen between them
+        const hyphenPattern = new RegExp(
+          `${tokens[idx]}[\\s]*-[\\s]*${next}`,
+          "i"
+        );
+        if (hyphenPattern.test(base)) {
+          lastName = `${lastName}-${next.charAt(0).toUpperCase() + next.slice(1).toLowerCase()}`;
+        }
+      }
     }
   }
 
@@ -80,6 +172,8 @@ interface Row {
   file: File;
   providerId: string;
   encounterDate: string;
+  /** True while AI is extracting metadata from the PDF */
+  extracting?: boolean;
   // D6 — only consulted when batch specialty === "Mixed"
   rowSpecialty?: string;
   // D3 — per-row form override (used in Mixed mode, or when multiple forms exist)
@@ -274,19 +368,17 @@ export function NewBatchModal({
   function handleFiles(files: FileList | null) {
     if (!files) return;
     const pdfs = Array.from(files).filter((f) => f.name.toLowerCase().endsWith(".pdf"));
+    const startIdx = rows.length;
     const next: Row[] = pdfs.map((f) => {
       const parsed = parseFilename(f.name);
-      // find best provider match within companyProviders
       const match = parsed.lastName
         ? companyProviders.find(
             (p) => p.last_name?.toLowerCase() === parsed.lastName!.toLowerCase()
           )
         : null;
-      // D6 — seed per-row specialty from filename guess (Mixed mode only)
       const rowSpec = isMixed
         ? parsed.specialty ?? match?.specialty ?? ""
         : undefined;
-      // D3 — auto-attach a row-level form if exactly one matches the row's specialty
       let rowFormId: string | undefined = undefined;
       if (isMixed && rowSpec) {
         const candidates = formsFor(rowSpec);
@@ -298,10 +390,65 @@ export function NewBatchModal({
         encounterDate: "",
         rowSpecialty: rowSpec,
         companyFormId: rowFormId,
-        status: "pending",
+        status: "pending" as const,
+        extracting: true, // always extract — need encounter date even if provider matched
       };
     });
     setRows((prev) => [...prev, ...next]);
+
+    // Call AI extraction for all files to get encounter date (and provider if filename didn't match)
+    next.forEach((row, i) => {
+      const rowIndex = startIdx + i;
+      const parsed = parseFilename(row.file.name);
+      const providerFoundByFilename = !!parsed.lastName && !!companyProviders.find(
+        (p) => p.last_name?.toLowerCase() === parsed.lastName!.toLowerCase()
+      );
+      extractMetadataFromPdf(row.file, rowIndex, providerFoundByFilename);
+    });
+  }
+
+  async function extractMetadataFromPdf(file: File, rowIndex: number, providerAlreadyMatched = false) {
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('filename', file.name);
+      const res = await fetch('/api/upload/extract-metadata', { method: 'POST', body: fd });
+      if (!res.ok) {
+        updateRow(rowIndex, { extracting: false });
+        return;
+      }
+      const data = await res.json();
+
+      const patch: Partial<Row> = { extracting: false };
+
+      // Match provider by extracted name (only if filename didn't already match)
+      if (data.provider_name && !providerAlreadyMatched) {
+        const nameParts = data.provider_name.trim().split(/\s+/);
+        const extractedLast = nameParts[nameParts.length - 1]?.toLowerCase();
+        if (extractedLast) {
+          const match = companyProviders.find(
+            (p) => p.last_name?.toLowerCase() === extractedLast
+          );
+          if (match) patch.providerId = match.id;
+        }
+      }
+
+      // Set encounter date
+      if (data.encounter_date) {
+        patch.encounterDate = data.encounter_date;
+      }
+
+      // Set specialty for mixed mode
+      if (isMixed && data.specialty) {
+        patch.rowSpecialty = data.specialty;
+        const candidates = formsFor(data.specialty);
+        if (candidates.length === 1) patch.companyFormId = candidates[0].id;
+      }
+
+      updateRow(rowIndex, patch);
+    } catch {
+      updateRow(rowIndex, { extracting: false });
+    }
   }
 
   function updateRow(index: number, patch: Partial<Row>) {
@@ -711,6 +858,12 @@ export function NewBatchModal({
                               </div>
                               <div className="text-xs text-ink-secondary">
                                 {(row.file.size / 1024).toFixed(0)} KB
+                                {row.extracting && (
+                                  <span className="ml-2 inline-flex items-center gap-1 text-brand">
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    AI extracting...
+                                  </span>
+                                )}
                               </div>
                             </div>
 
