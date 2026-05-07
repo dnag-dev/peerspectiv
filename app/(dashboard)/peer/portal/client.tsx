@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { ReviewCase } from "@/types";
@@ -110,6 +111,9 @@ export function PeerPortalClient({
   activeStatus = "all",
   counts = { in_progress: 0, completed: 0, incomplete: 0 },
 }: PeerPortalClientProps) {
+  const [searchQ, setSearchQ] = useState("");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
   const statusCircles = (
     <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
       <KPITile
@@ -118,6 +122,7 @@ export function PeerPortalClient({
         href="/peer/portal?status=in_progress"
         active={activeStatus === "in_progress" || activeStatus === "all"}
         tone="warning"
+        sub="Assigned & actively reviewing"
       />
       <KPITile
         label="Completed"
@@ -125,7 +130,7 @@ export function PeerPortalClient({
         href="/peer/portal?status=completed"
         active={activeStatus === "completed"}
         tone="success"
-        sub="Lifetime · all clinics"
+        sub="Reviews submitted"
       />
       <KPITile
         label="Incomplete"
@@ -133,6 +138,7 @@ export function PeerPortalClient({
         href="/peer/portal?status=incomplete"
         active={activeStatus === "incomplete"}
         tone="info"
+        sub="Unassigned, past due, or pending approval"
       />
       {activeStatus !== "all" && (
         <Link
@@ -198,8 +204,106 @@ export function PeerPortalClient({
 
       {statusCircles}
 
+      {/* Search + view toggle */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-tertiary" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <input
+            value={searchQ}
+            onChange={(e) => setSearchQ(e.target.value)}
+            placeholder="Search provider, company, specialty..."
+            className="w-full rounded-md border border-border-subtle bg-white py-2 pl-9 pr-3 text-sm text-ink-primary placeholder:text-ink-tertiary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+        <div className="flex rounded-md border border-border-subtle">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`px-3 py-2 text-xs font-medium ${viewMode === "grid" ? "bg-brand text-white" : "text-ink-secondary hover:bg-ink-50"} rounded-l-md`}
+          >
+            Cards
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={`px-3 py-2 text-xs font-medium ${viewMode === "list" ? "bg-brand text-white" : "text-ink-secondary hover:bg-ink-50"} rounded-r-md`}
+          >
+            List
+          </button>
+        </div>
+      </div>
+
+      {viewMode === "list" ? (
+        <div className="overflow-x-auto rounded-lg border border-border-subtle bg-white">
+          <table className="w-full text-sm">
+            <thead className="border-b border-border-subtle bg-ink-50 text-xs uppercase text-ink-secondary">
+              <tr>
+                <th className="px-4 py-3 text-left">Provider</th>
+                <th className="px-4 py-3 text-left">Company</th>
+                <th className="px-4 py-3 text-left">Specialty</th>
+                <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-left">Due</th>
+                <th className="px-4 py-3 text-left">AI</th>
+                <th className="px-4 py-3 text-left">Chart</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cases
+                .filter((c) => {
+                  if (!searchQ.trim()) return true;
+                  const q = searchQ.toLowerCase();
+                  const provider = c.provider ? `${c.provider.first_name} ${c.provider.last_name}`.toLowerCase() : "";
+                  const company = c.company?.name?.toLowerCase() || "";
+                  const spec = (c.specialty_required || "").toLowerCase();
+                  return provider.includes(q) || company.includes(q) || spec.includes(q);
+                })
+                .map((c) => {
+                  const provider = c.provider ? `${c.provider.first_name} ${c.provider.last_name}` : "—";
+                  const days = c.due_date ? daysUntilDue(c.due_date) : null;
+                  return (
+                    <tr key={c.id} className="border-b border-border-subtle hover:bg-ink-50">
+                      <td className="px-4 py-3 font-medium">
+                        <Link href={`/peer/cases/${c.id}`} className="text-brand hover:underline">{provider}</Link>
+                      </td>
+                      <td className="px-4 py-3 text-ink-secondary">{c.company?.name || "—"}</td>
+                      <td className="px-4 py-3 text-ink-secondary">{c.specialty_required || "—"}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                          c.status === "completed" ? "bg-green-100 text-green-700" :
+                          c.status === "past_due" ? "bg-red-100 text-red-700" :
+                          c.status === "assigned" || c.status === "in_progress" ? "bg-amber-100 text-amber-700" :
+                          "bg-gray-100 text-gray-700"
+                        }`}>
+                          {(c.status || "").replace(/_/g, " ")}
+                        </span>
+                      </td>
+                      <td className={`px-4 py-3 text-xs ${days != null && days < 0 ? "text-red-600 font-medium" : "text-ink-secondary"}`}>
+                        {days != null ? (days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? "Today" : `${days}d`) : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-ink-secondary">
+                        {c.ai_analysis_status === "complete" ? "✓" : c.ai_analysis_status === "processing" ? "…" : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-ink-secondary truncate max-w-[150px]">
+                        {c.chart_file_name || "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {groups.map((group) => {
+        {groups.filter((group) => {
+          if (!searchQ.trim()) return true;
+          const q = searchQ.toLowerCase();
+          return group.cases.some((c) => {
+            const provider = c.provider ? `${c.provider.first_name} ${c.provider.last_name}`.toLowerCase() : "";
+            const company = c.company?.name?.toLowerCase() || "";
+            const spec = (c.specialty_required || "").toLowerCase();
+            return provider.includes(q) || company.includes(q) || spec.includes(q);
+          });
+        }).map((group) => {
           const isMulti = group.cases.length > 1;
           // Use the earliest due date for the group.
           const sortedByDue = [...group.cases].sort((a, b) => {
@@ -334,6 +438,7 @@ export function PeerPortalClient({
           );
         })}
       </div>
+      )}
     </div>
   );
 }
