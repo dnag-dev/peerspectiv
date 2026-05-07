@@ -110,8 +110,15 @@ export default async function AssignmentsPage({
   searchParams: SearchParams;
 }) {
   noStore();
-  const rows = await loadRows(searchParams);
-  const activeStatuses = parseStatusList(searchParams.status);
+  // Default to unassigned + pending_approval when no status filter specified
+  const hasStatusFilter = !!searchParams.status;
+  const effectiveParams = hasStatusFilter
+    ? searchParams
+    : { ...searchParams, status: ['unassigned', 'pending_approval'] };
+  const rows = await loadRows(effectiveParams);
+  const activeStatuses = hasStatusFilter
+    ? parseStatusList(searchParams.status)
+    : ['unassigned', 'pending_approval'];
 
   return (
     <div className="space-y-5">
