@@ -36,6 +36,7 @@ function statusColor(s: string) {
     case "completed":
       return "#22C55E";
     case "past_due":
+    case "returned_by_peer":
       return "#EF4444";
     case "in_progress":
     case "assigned":
@@ -162,6 +163,7 @@ export function ReviewsTable({
             { key: "in_progress", label: "In progress" },
             { key: "completed", label: "Completed" },
             { key: "past_due", label: "Past due" },
+            { key: "returned_by_peer", label: "Returned by peer" },
           ].map((s) => {
             const on = statusFilters.includes(s.key);
             return (
