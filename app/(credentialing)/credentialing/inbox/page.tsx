@@ -22,7 +22,7 @@ export default async function NewPeerInboxPage() {
       board_certification: peers.boardCertification,
     })
     .from(peers)
-    .where(eq(peers.status, 'inactive'))
+    .where(eq(peers.state, 'pending_credentialing'))
     .orderBy(desc(peers.createdAt));
 
   return (
