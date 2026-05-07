@@ -1,7 +1,37 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { ClientSidebar, ClientRole } from "./ClientSidebar";
+
+const PAGE_TITLES: Record<string, string> = {
+  "/portal":             "Compliance dashboard",
+  "/portal/quality":     "Quality reports",
+  "/portal/reviews":     "All reviews",
+  "/portal/inprogress":  "In progress",
+  "/portal/overdue":     "Overdue",
+  "/portal/trends":      "Trends",
+  "/portal/providers":   "Providers",
+  "/portal/invoices":    "Invoices",
+  "/portal/forms":       "Forms",
+  "/portal/upload":      "Submit records",
+  "/portal/feedback":    "Share feedback",
+  "/portal/reports":     "Reports",
+  "/portal/profile":     "Profile",
+  "/portal/export":      "Export & reports",
+  "/portal/corrective":  "Corrective actions",
+  "/portal/welcome":     "Welcome",
+  "/portal/submit":      "Submit a batch",
+};
+
+function resolveTitle(pathname: string): string {
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
+  const sorted = Object.keys(PAGE_TITLES).sort((a, b) => b.length - a.length);
+  for (const route of sorted) {
+    if (pathname.startsWith(route + "/")) return PAGE_TITLES[route];
+  }
+  return "Compliance dashboard";
+}
 
 interface RoleContextValue {
   role: ClientRole;
@@ -45,12 +75,14 @@ export function ClientPortalShell({
 }
 
 function ClientTopBar({ companyName }: { companyName: string }) {
+  const pathname = usePathname();
+  const title = resolveTitle(pathname);
   return (
     <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border-subtle bg-surface-card px-6">
       <div className="min-w-0">
         <p className="eyebrow">{companyName} · client portal</p>
         <p className="mt-0.5 truncate text-lg font-medium tracking-tight text-ink-primary">
-          Compliance dashboard
+          {title}
         </p>
       </div>
       <div className="flex items-center gap-3">

@@ -175,52 +175,65 @@ export default async function TrendsPage({ searchParams }: PageProps) {
     .slice(0, 10);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-medium text-ink-primary">Trends</h1>
-        <p className="text-sm text-ink-tertiary">
+        <p className="eyebrow">Hunter Health · client portal</p>
+        <h1 className="mt-0.5 text-xl font-medium tracking-tight text-ink-primary">Trends</h1>
+        <p className="mt-0.5 text-sm text-ink-secondary">
           Compliance and deficiency trends over time
         </p>
       </div>
 
       <form
         method="get"
-        className="flex flex-wrap items-end gap-3 rounded-lg p-3"
-        style={{ backgroundColor: 'var(--color-card)' }}
+        className="rounded-md border border-border-subtle bg-surface-card p-4"
       >
-        <div className="flex flex-col">
-          <label className="text-xs text-ink-tertiary mb-1">
-            Filter by specialty (Cmd/Ctrl-click for multi)
-          </label>
-          <select
-            name="specialty"
-            multiple
-            defaultValue={selectedSpecialties}
-            className="rounded-md px-3 py-2 text-sm text-ink-primary min-w-[220px]"
-            size={Math.min(6, Math.max(3, specialtyOptions.length))}
-          >
-            {specialtyOptions.map((s) => (
-              <option key={s} value={s}>
+        <p className="eyebrow mb-2">Filter by specialty</p>
+        <div className="flex flex-wrap items-center gap-2">
+          {specialtyOptions.map((s) => {
+            const on = selectedSpecialties.includes(s);
+            return (
+              <label
+                key={s}
+                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition ${
+                  on
+                    ? "border-brand bg-brand/10 text-status-success-fg"
+                    : "border-border-subtle bg-surface-card text-ink-primary hover:bg-surface-muted"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  name="specialty"
+                  value={s}
+                  defaultChecked={on}
+                  className="sr-only"
+                />
+                {on && (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
                 {s}
-              </option>
-            ))}
-          </select>
+              </label>
+            );
+          })}
         </div>
-        <button
-          type="submit"
-          className="rounded-md px-4 py-2 text-sm font-medium text-ink-primary"
-          style={{ backgroundColor: "#0F6E56" }}
-        >
-          Apply
-        </button>
-        {selectedSpecialties.length > 0 && (
-          <a
-            href="/portal/trends"
-            className="rounded-md px-4 py-2 text-sm text-ink-tertiary hover:text-ink-primary"
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="submit"
+            className="inline-flex items-center gap-1.5 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brand-hover"
           >
-            Clear
-          </a>
-        )}
+            Apply
+          </button>
+          {selectedSpecialties.length > 0 && (
+            <a
+              href="/portal/trends"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border-default bg-surface-card px-3 py-1.5 text-sm font-medium text-ink-primary transition hover:bg-surface-muted"
+            >
+              Clear
+            </a>
+          )}
+        </div>
       </form>
 
       <TrendsCharts monthly={monthly} topMissed={topMissed} />
