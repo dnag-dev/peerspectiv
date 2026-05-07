@@ -372,7 +372,7 @@ export function PeerPortalClient({
                 </div>
               </div>
 
-              {c.due_date && (
+              {c.status !== "completed" && c.due_date && (
                 <div
                   className={cn(
                     "mt-3 text-xs font-medium",
@@ -397,10 +397,20 @@ export function PeerPortalClient({
               )}
 
               <div className="mt-2 flex items-center gap-1.5">
-                <StatusPill variant={anyInProgress ? "warning" : "neutral"}>
-                  {anyInProgress ? "In progress" : "Assigned"}
+                <StatusPill
+                  variant={
+                    c.status === "completed" ? "success"
+                    : c.status === "past_due" ? "danger"
+                    : anyInProgress ? "warning"
+                    : "neutral"
+                  }
+                >
+                  {c.status === "completed" ? "Completed"
+                    : c.status === "past_due" ? "Past due"
+                    : anyInProgress ? "In progress"
+                    : "Assigned"}
                 </StatusPill>
-                {anyAiReady && (
+                {anyAiReady && c.status !== "completed" && (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EEEDFE] px-2 py-0.5 text-2xs font-medium text-[#3C3489]">
                     AI ready
                   </span>
@@ -413,12 +423,16 @@ export function PeerPortalClient({
                   href={href}
                   className={cn(
                     "inline-flex w-full items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition",
-                    anyAiReady
-                      ? "bg-brand text-white hover:bg-brand-hover"
-                      : "border border-border-default bg-surface-card text-ink-primary hover:bg-surface-muted"
+                    c.status === "completed"
+                      ? "border border-border-default bg-surface-card text-ink-primary hover:bg-surface-muted"
+                      : anyAiReady
+                        ? "bg-brand text-white hover:bg-brand-hover"
+                        : "border border-border-default bg-surface-card text-ink-primary hover:bg-surface-muted"
                   )}
                 >
-                  {isMulti ? "Open charts" : anyAiReady ? "Open prefilled review" : "Start review"}
+                  {c.status === "completed"
+                    ? "View review"
+                    : isMulti ? "Open charts" : anyAiReady ? "Open prefilled review" : "Start review"}
                   <svg
                     className="h-3.5 w-3.5"
                     fill="none"
