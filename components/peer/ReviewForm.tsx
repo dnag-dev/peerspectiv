@@ -5,6 +5,7 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { AttestationBlock } from "@/components/peer/AttestationBlock";
+import { useToast } from "@/components/ui/use-toast";
 
 /* ──────────────────────── Types ──────────────────────── */
 
@@ -142,6 +143,7 @@ export function ReviewForm({
   allowAiNarrative,
   onFieldHover,
 }: ReviewFormProps) {
+  const { toast } = useToast();
   // Detect multi-chart group mode from the URL path.
   const isMultiChart = typeof window !== "undefined" && window.location.pathname.includes("/cases/group/");
   // Section F5: hover-to-jump toggle, persisted in localStorage. Default ON.
@@ -331,17 +333,17 @@ export function ReviewForm({
 
     // License attestation gate — must be filled and attested before submit.
     if (!licenseNumber.trim() || !licenseState.trim()) {
-      setError("License number and state are required for HRSA audit.");
+      toast({ variant: "destructive", title: "Submission blocked", description: "License number and state are required for HRSA audit." });
       return;
     }
     if (!attested) {
-      setError("You must attest to your license before submitting.");
+      toast({ variant: "destructive", title: "Submission blocked", description: "You must attest to your license before submitting." });
       return;
     }
 
     // MRN gate (Section C.4) — required, but accepts "redacted"/"N/A" verbatim.
     if (!mrnNumber.trim()) {
-      setError("MRN Number is required (enter 'redacted' or 'N/A' if unavailable).");
+      toast({ variant: "destructive", title: "Submission blocked", description: "MRN Number is required (enter 'redacted' or 'N/A' if unavailable)." });
       return;
     }
 
@@ -368,9 +370,11 @@ export function ReviewForm({
     }
     if (missing.size > 0) {
       setMissingKeys(missing);
-      setError(
-        `Please complete ${missing.size} required field${missing.size === 1 ? "" : "s"} before submitting.`
-      );
+      toast({
+        variant: "destructive",
+        title: "Submission blocked",
+        description: `Please complete ${missing.size} required field${missing.size === 1 ? "" : "s"} before submitting.`,
+      });
       return;
     }
 
@@ -482,7 +486,7 @@ export function ReviewForm({
       // PR-014: Clear draft on successful submit
       try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Submit failed");
+      toast({ variant: "destructive", title: "Submit failed", description: err instanceof Error ? err.message : "An unexpected error occurred." });
     } finally {
       setSubmitting(false);
     }
@@ -925,11 +929,7 @@ export function ReviewForm({
         )}
       </div>
 
-      {error && (
-        <div className="rounded-lg border border-status-danger-fg/20 bg-critical-50 p-3 text-sm text-status-danger-fg">
-          {error}
-        </div>
-      )}
+      {/* Validation errors now shown as toast notifications */}
 
       {/* Submit footer — relative + z-30 keeps it above the floating Ask Ash bubble */}
       <div className="sticky bottom-4 relative z-30 rounded-xl border border-border-subtle bg-surface-card/95 p-4 shadow-sm backdrop-blur">
