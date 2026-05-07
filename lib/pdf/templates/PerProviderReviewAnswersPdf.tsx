@@ -28,13 +28,10 @@ export interface PerProviderReviewAnswersData {
 
 function fmtAnswer(v: string | null): string {
   if (v == null || v === '') return '—';
+  if (v === 'true' || v === 'yes') return 'Yes';
+  if (v === 'false' || v === 'no') return 'No';
+  if (v === 'na' || v === 'NA') return 'N/A';
   return String(v);
-}
-
-function scoreCell(score: 100 | 0 | null, excluded: boolean): { label: string; color: string } {
-  if (excluded) return { label: 'Excluded', color: colors.ink500 };
-  if (score === 100) return { label: '100', color: colors.mint700 };
-  return { label: '0', color: colors.critical700 };
 }
 
 export function PerProviderReviewAnswersPdf({ data }: { data: PerProviderReviewAnswersData }) {
@@ -84,69 +81,31 @@ export function PerProviderReviewAnswersPdf({ data }: { data: PerProviderReviewA
           </Text>
         </View>
 
-        {/* Questions table */}
+        {/* Questions — numbered list matching the legacy report format */}
         <View>
-          {/* Header */}
-          <View
-            style={{
-              flexDirection: 'row',
-              backgroundColor: colors.ink100,
-              paddingVertical: 6,
-              paddingHorizontal: 6,
-            }}
-          >
-            <Text style={{ flex: 4, fontSize: 9, fontWeight: 700, color: colors.ink700 }}>Question</Text>
-            <Text style={{ flex: 1.5, fontSize: 9, fontWeight: 700, color: colors.ink700 }}>Default</Text>
-            <Text style={{ flex: 1.5, fontSize: 9, fontWeight: 700, color: colors.ink700 }}>Answer</Text>
-            <Text
-              style={{
-                flex: 1,
-                fontSize: 9,
-                fontWeight: 700,
-                color: colors.ink700,
-                textAlign: 'right',
-              }}
-            >
-              Score
-            </Text>
-          </View>
-
           {data.questions.map((q, i) => {
-            const sc = scoreCell(q.score, q.excluded);
+            const answer = fmtAnswer(q.peer_answer);
+            const isNo = answer === 'No';
             return (
               <View
                 key={i}
                 style={{
-                  flexDirection: 'row',
-                  paddingVertical: 5,
+                  paddingVertical: 4,
                   paddingHorizontal: 6,
-                  borderBottom: `0.5pt solid ${colors.ink100}`,
                 }}
                 wrap={false}
               >
-                <View style={{ flex: 4 }}>
-                  <Text style={{ fontSize: 10 }}>{q.field_label}</Text>
-                  {q.comment ? (
-                    <Text style={{ fontSize: 8, color: colors.ink500, marginTop: 2 }}>
-                      Comment: {q.comment}
-                    </Text>
-                  ) : null}
-                </View>
-                <Text style={{ flex: 1.5, fontSize: 10, color: colors.ink600 }}>
-                  {fmtAnswer(q.default_answer)}
+                <Text style={{ fontSize: 10, color: colors.ink900 }}>
+                  {i + 1}. {q.field_label}{q.field_label.trimEnd().endsWith('?') ? '' : '?'}{' '}
+                  <Text style={{ fontWeight: 700, color: isNo ? colors.critical700 : colors.ink900 }}>
+                    {answer}
+                  </Text>
                 </Text>
-                <Text style={{ flex: 1.5, fontSize: 10 }}>{fmtAnswer(q.peer_answer)}</Text>
-                <Text
-                  style={{
-                    flex: 1,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    color: sc.color,
-                    textAlign: 'right',
-                  }}
-                >
-                  {sc.label}
-                </Text>
+                {q.comment && isNo && (
+                  <Text style={{ fontSize: 9, color: colors.ink600, marginTop: 2, marginLeft: 12 }}>
+                    Additional Response: {q.comment}
+                  </Text>
+                )}
               </View>
             );
           })}
