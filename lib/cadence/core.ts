@@ -134,7 +134,10 @@ export function buildCadencePeriods(
       const em = ((endMonthCursor % 12) + 12) % 12;
       const start = isoDate(sy, sm, 1);
       const end = isoDate(ey, em, lastDayOfMonth(ey, em));
-      const labelYear = sy;
+      // Label year = the calendar year when this fiscal year started.
+      // If the period start month is before the fiscal start month,
+      // this period belongs to the FY that began the previous calendar year.
+      const labelYear = sm < fiscalStart ? sy - 1 : sy;
       periods.push({
         label: `Q${qNum} ${labelYear}`,
         start_date: start,
