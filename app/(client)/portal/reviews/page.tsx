@@ -1,41 +1,54 @@
 import { db } from "@/lib/db";
 import { reviewCases, providers, reviewResults, batches } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { and, eq, gte, ilike, inArray, lte, desc } from "drizzle-orm";
 import { getDemoCompany } from "@/lib/portal/queries";
 import { ReviewsTable } from "./ReviewsTable";
 import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
-function labelize(item: any): string | null {
-  if (!item) return null;
-  if (typeof item === "string") return item;
-  if (typeof item === "object") {
-    return (
-      item.criterion ??
-      item.note ??
-      item.description ??
-      item.label ??
-      item.name ??
-      null
-    );
-  }
-  return null;
+interface SearchParams {
+  status?: string;
+  provider?: string;
+  specialty?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 export default async function AllReviewsPage({
   searchParams,
 }: {
-  searchParams: {
-    month?: string;
-    criterion?: string;
-    status?: string;
-    specialty?: string;
-    quarter?: string;
-  };
+  searchParams: SearchParams;
 }) {
   noStore();
   const company = await getDemoCompany();
+
+  // Build server-side filters
+  const conditions: any[] = [eq(reviewCases.companyId, company.id)];
+
+  // Status filter — comma-separated list or single value
+  const statusParam = searchParams.status;
+  if (statusParam) {
+    const statuses = statusParam.split(",").map((s) => s.trim()).filter(Boolean);
+    if (statuses.length > 0) conditions.push(inArray(reviewCases.status, statuses));
+  } else {
+    // Default: unassigned + pending_approval
+    conditions.push(inArray(reviewCases.status, ["unassigned", "pending_approval"]));
+  }
+
+  if (searchParams.provider) {
+    conditions.push(ilike(providers.firstName, `%${searchParams.provider}%`));
+  }
+  if (searchParams.specialty) {
+    conditions.push(ilike(reviewCases.specialtyRequired, `%${searchParams.specialty}%`));
+  }
+  if (searchParams.dateFrom) {
+    conditions.push(gte(reviewCases.createdAt, new Date(`${searchParams.dateFrom}T00:00:00Z`)));
+  }
+  if (searchParams.dateTo) {
+    conditions.push(lte(reviewCases.createdAt, new Date(`${searchParams.dateTo}T23:59:59Z`)));
+  }
+
   const rows = await db
     .select({
       id: reviewCases.id,
@@ -47,7 +60,6 @@ export default async function AllReviewsPage({
       dueDate: reviewCases.dueDate,
       createdAt: reviewCases.createdAt,
       submittedAt: reviewResults.submittedAt,
-      deficiencies: reviewResults.deficiencies,
       providerFirst: providers.firstName,
       providerLast: providers.lastName,
       providerSpecialty: providers.specialty,
@@ -57,8 +69,13 @@ export default async function AllReviewsPage({
     .leftJoin(providers, eq(providers.id, reviewCases.providerId))
     .leftJoin(reviewResults, eq(reviewResults.caseId, reviewCases.id))
     .leftJoin(batches, eq(batches.id, reviewCases.batchId))
-    .where(eq(reviewCases.companyId, company.id))
-    .orderBy(desc(reviewCases.createdAt));
+    .where(and(...conditions))
+    .orderBy(desc(reviewCases.createdAt))
+    .limit(500);
+
+  const activeStatuses = statusParam
+    ? statusParam.split(",").map((s) => s.trim()).filter(Boolean)
+    : ["unassigned", "pending_approval"];
 
   return (
     <div className="space-y-6">
@@ -69,37 +86,24 @@ export default async function AllReviewsPage({
         </p>
       </div>
       <ReviewsTable
-        initialMonth={searchParams.month ?? null}
-        initialCriterion={searchParams.criterion ?? null}
-        initialStatus={searchParams.status ?? "all"}
-        initialSpecialty={searchParams.specialty ?? "all"}
-        initialQuarter={
-          searchParams.quarter === "current"
-            ? `Q${Math.floor(new Date().getMonth() / 3) + 1} ${new Date().getFullYear()}`
-            : (searchParams.quarter ?? "all")
-        }
-        rows={rows.map((r) => {
-          const defs = Array.isArray(r.deficiencies)
-            ? (r.deficiencies as any[]).map(labelize).filter(Boolean) as string[]
-            : [];
-          return {
-            id: r.id,
-            status: r.status ?? "unassigned",
-            specialty: r.specialty ?? r.providerSpecialty ?? "—",
-            providerName:
-              `${r.providerFirst ?? ""} ${r.providerLast ?? ""}`.trim() || "—",
-            chartFileName: r.chartFileName ?? "—",
-            chartFilePath: r.chartFilePath ?? null,
-            batchName: r.batchName ?? null,
-            assignedAt: r.assignedAt ? new Date(r.assignedAt as any).toISOString() : null,
-            dueDate: r.dueDate ? new Date(r.dueDate as any).toISOString() : null,
-            createdAt: r.createdAt ? new Date(r.createdAt as any).toISOString() : null,
-            submittedAt: r.submittedAt
-              ? new Date(r.submittedAt as any).toISOString()
-              : null,
-            deficiencies: defs,
-          };
-        })}
+        rows={rows.map((r) => ({
+          id: r.id,
+          status: r.status ?? "unassigned",
+          specialty: r.specialty ?? r.providerSpecialty ?? "—",
+          providerName: `${r.providerFirst ?? ""} ${r.providerLast ?? ""}`.trim() || "—",
+          chartFileName: r.chartFileName ?? "—",
+          chartFilePath: r.chartFilePath ?? null,
+          batchName: r.batchName ?? null,
+          dueDate: r.dueDate ? new Date(r.dueDate as any).toISOString() : null,
+          createdAt: r.createdAt ? new Date(r.createdAt as any).toISOString() : null,
+        }))}
+        initialFilters={{
+          status: activeStatuses,
+          provider: searchParams.provider ?? "",
+          specialty: searchParams.specialty ?? "",
+          dateFrom: searchParams.dateFrom ?? "",
+          dateTo: searchParams.dateTo ?? "",
+        }}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 interface Row {
   id: string;
@@ -11,168 +11,86 @@ interface Row {
   chartFileName: string;
   chartFilePath: string | null;
   batchName: string | null;
-  assignedAt: string | null;
   dueDate: string | null;
   createdAt: string | null;
-  submittedAt: string | null;
-  deficiencies: string[];
 }
 
-function quarterOf(iso: string | null) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  const q = Math.floor(d.getMonth() / 3) + 1;
-  return `Q${q} ${d.getFullYear()}`;
+interface Filters {
+  status: string[];
+  provider: string;
+  specialty: string;
+  dateFrom: string;
+  dateTo: string;
 }
 
-function monthKeyOf(iso: string | null) {
-  if (!iso) return null;
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}`;
-}
+const STATUS_OPTIONS = [
+  { key: "unassigned", label: "Unassigned" },
+  { key: "pending_approval", label: "Pending approval" },
+  { key: "assigned", label: "Assigned" },
+  { key: "in_progress", label: "In progress" },
+  { key: "completed", label: "Completed" },
+  { key: "past_due", label: "Past due" },
+  { key: "returned_by_peer", label: "Returned by peer" },
+];
 
-function statusColor(s: string) {
-  switch (s) {
-    case "completed":
-      return "#22C55E";
-    case "past_due":
-    case "returned_by_peer":
-      return "#EF4444";
-    case "in_progress":
-    case "assigned":
-      return "#F59E0B";
-    default:
-      return "#94A3B8";
-  }
-}
+const STATUS_COLOR: Record<string, string> = {
+  completed: "#22C55E",
+  past_due: "#EF4444",
+  returned_by_peer: "#EF4444",
+  in_progress: "#F59E0B",
+  assigned: "#F59E0B",
+  pending_approval: "#F59E0B",
+  unassigned: "#94A3B8",
+};
 
 export function ReviewsTable({
   rows,
-  initialMonth = null,
-  initialCriterion = null,
-  initialStatus = "all",
-  initialSpecialty = "all",
-  initialQuarter = "all",
+  initialFilters,
 }: {
   rows: Row[];
-  initialMonth?: string | null;
-  initialCriterion?: string | null;
-  initialStatus?: string;
-  initialSpecialty?: string;
-  initialQuarter?: string;
+  initialFilters: Filters;
 }) {
-  const [statusFilters, setStatusFilters] = useState<string[]>(
-    initialStatus === "all" ? ["unassigned", "pending_approval"] : [initialStatus]
-  );
-  const [specialty, setSpecialty] = useState<string>(initialSpecialty);
-  const [quarter, setQuarter] = useState<string>(initialQuarter);
-  const [month, setMonth] = useState<string | null>(initialMonth);
-  const [criterion, setCriterion] = useState<string | null>(initialCriterion);
-  const [providerSearch, setProviderSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const [pending, startTransition] = useTransition();
+  const [filters, setFilters] = useState<Filters>(initialFilters);
 
-  const specialties = useMemo(
-    () => Array.from(new Set(rows.map((r) => r.specialty).filter(Boolean))),
-    [rows]
-  );
-  const quarters = useMemo(
-    () =>
-      Array.from(new Set(rows.map((r) => quarterOf(r.createdAt)).filter(Boolean))),
-    [rows]
-  );
+  useEffect(() => {
+    setFilters(initialFilters);
+  }, [initialFilters]);
 
-  const filtered = rows.filter((r) => {
-    if (statusFilters.length > 0 && !statusFilters.includes(r.status)) return false;
-    if (specialty !== "all" && !r.specialty.toLowerCase().includes(specialty.toLowerCase())) return false;
-    if (quarter !== "all" && quarterOf(r.createdAt) !== quarter) return false;
-    if (providerSearch.trim()) {
-      if (!r.providerName.toLowerCase().includes(providerSearch.toLowerCase())) return false;
-    }
-    if (dateFrom) {
-      const caseDate = r.createdAt || r.assignedAt;
-      if (!caseDate || caseDate < dateFrom) return false;
-    }
-    if (dateTo) {
-      const caseDate = r.createdAt || r.assignedAt;
-      if (!caseDate || caseDate > dateTo + "T23:59:59") return false;
-    }
-    if (month) {
-      if (monthKeyOf(r.submittedAt) !== month) return false;
-    }
-    if (criterion) {
-      const needle = criterion.toLowerCase();
-      const hit = r.deficiencies.some((d) => d.toLowerCase().includes(needle));
-      if (!hit) return false;
-    }
-    return true;
-  });
+  function applyFilters(next: Filters) {
+    const sp = new URLSearchParams();
+    if (next.status.length) sp.set("status", next.status.join(","));
+    if (next.provider) sp.set("provider", next.provider);
+    if (next.specialty) sp.set("specialty", next.specialty);
+    if (next.dateFrom) sp.set("dateFrom", next.dateFrom);
+    if (next.dateTo) sp.set("dateTo", next.dateTo);
+    startTransition(() => {
+      router.push(`${pathname}?${sp.toString()}`);
+    });
+  }
 
-  const monthLabel = month
-    ? new Date(`${month}-01T00:00:00`).toLocaleDateString(undefined, {
-        month: "short",
-        year: "numeric",
-      })
-    : null;
+  function toggleStatus(key: string) {
+    const next = filters.status.includes(key)
+      ? filters.status.filter((s) => s !== key)
+      : [...filters.status, key];
+    const updated = { ...filters, status: next };
+    setFilters(updated);
+    applyFilters(updated);
+  }
 
   return (
     <div className="space-y-4">
-      {(month || criterion) && (
-        <div
-          className="flex flex-wrap items-center gap-2 rounded-lg p-3"
-          style={{ backgroundColor: 'var(--color-card)', border: "1px solid #00C896" }}
-        >
-          <span className="text-xs uppercase tracking-wider text-mint-200">
-            Drilled down from Trends
-          </span>
-          {month && (
-            <button
-              onClick={() => setMonth(null)}
-              className="flex items-center gap-1 rounded-full bg-brand/15 px-2.5 py-1 text-xs text-mint-200 hover:bg-brand/20"
-            >
-              Month: {monthLabel} <X className="h-3 w-3" />
-            </button>
-          )}
-          {criterion && (
-            <button
-              onClick={() => setCriterion(null)}
-              className="flex items-center gap-1 rounded-full bg-brand/15 px-2.5 py-1 text-xs text-mint-200 hover:bg-brand/20"
-            >
-              Criterion: {criterion} <X className="h-3 w-3" />
-            </button>
-          )}
-          <button
-            onClick={() => {
-              setMonth(null);
-              setCriterion(null);
-            }}
-            className="ml-auto text-xs text-ink-tertiary hover:text-ink-primary"
-          >
-            Clear all
-          </button>
-        </div>
-      )}
-
-      {/* Filters card — matches admin Reviews style */}
+      {/* Filters card */}
       <div className="space-y-3 rounded-lg border border-border-subtle bg-white p-4 shadow-sm">
         <div className="flex flex-wrap gap-2">
-          {[
-            { key: "unassigned", label: "Unassigned" },
-            { key: "pending_approval", label: "Pending approval" },
-            { key: "assigned", label: "Assigned" },
-            { key: "in_progress", label: "In progress" },
-            { key: "completed", label: "Completed" },
-            { key: "past_due", label: "Past due" },
-            { key: "returned_by_peer", label: "Returned by peer" },
-          ].map((s) => {
-            const on = statusFilters.includes(s.key);
+          {STATUS_OPTIONS.map((s) => {
+            const on = filters.status.includes(s.key);
             return (
               <button
                 key={s.key}
-                onClick={() => setStatusFilters(on
-                  ? statusFilters.filter((f) => f !== s.key)
-                  : [...statusFilters, s.key]
-                )}
+                onClick={() => toggleStatus(s.key)}
                 className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                   on
                     ? "border-blue-500 bg-blue-50 text-blue-700"
@@ -186,33 +104,45 @@ export function ReviewsTable({
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <input
-            value={providerSearch}
-            onChange={(e) => setProviderSearch(e.target.value)}
+            value={filters.provider}
+            onChange={(e) => setFilters({ ...filters, provider: e.target.value })}
+            onBlur={() => applyFilters(filters)}
+            onKeyDown={(e) => e.key === "Enter" && applyFilters(filters)}
             placeholder="Provider"
             className="rounded-md border border-border-subtle px-3 py-1.5 text-sm"
           />
           <input
-            value={specialty === "all" ? "" : specialty}
-            onChange={(e) => setSpecialty(e.target.value || "all")}
+            value={filters.specialty}
+            onChange={(e) => setFilters({ ...filters, specialty: e.target.value })}
+            onBlur={() => applyFilters(filters)}
+            onKeyDown={(e) => e.key === "Enter" && applyFilters(filters)}
             placeholder="Specialty"
             className="rounded-md border border-border-subtle px-3 py-1.5 text-sm"
           />
           <input
             type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
+            value={filters.dateFrom}
+            onChange={(e) => {
+              const v = { ...filters, dateFrom: e.target.value };
+              setFilters(v);
+              applyFilters(v);
+            }}
             className="rounded-md border border-border-subtle px-3 py-1.5 text-sm"
           />
           <input
             type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
+            value={filters.dateTo}
+            onChange={(e) => {
+              const v = { ...filters, dateTo: e.target.value };
+              setFilters(v);
+              applyFilters(v);
+            }}
             className="rounded-md border border-border-subtle px-3 py-1.5 text-sm"
           />
         </div>
       </div>
 
-      {/* Table — matches admin style */}
+      {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-border-subtle bg-white">
         <table className="w-full text-sm">
           <thead className="border-b border-border-subtle bg-gray-50 text-left">
@@ -226,14 +156,14 @@ export function ReviewsTable({
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && (
+            {rows.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-12 text-center text-sm text-gray-500">
                   No matching reviews.
                 </td>
               </tr>
             )}
-            {filtered.map((r) => (
+            {rows.map((r) => (
               <tr key={r.id} className="border-b border-border-subtle hover:bg-gray-50">
                 <td className="px-4 py-3">
                   {r.chartFilePath ? (
@@ -250,8 +180,8 @@ export function ReviewsTable({
                   <span
                     className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
                     style={{
-                      backgroundColor: `${statusColor(r.status)}18`,
-                      color: statusColor(r.status),
+                      backgroundColor: `${STATUS_COLOR[r.status] ?? "#94A3B8"}18`,
+                      color: STATUS_COLOR[r.status] ?? "#94A3B8",
                     }}
                   >
                     {r.status.replace(/_/g, " ")}
@@ -269,4 +199,3 @@ export function ReviewsTable({
     </div>
   );
 }
-
