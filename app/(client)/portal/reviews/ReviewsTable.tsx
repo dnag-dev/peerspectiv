@@ -36,7 +36,7 @@ const STATUS_OPTIONS = [
 const STATUS_COLOR: Record<string, string> = {
   completed: "#22C55E",
   past_due: "#EF4444",
-  returned_by_peer: "#EF4444",
+  returned_by_peer: "#64748B",
   in_progress: "#F59E0B",
   assigned: "#F59E0B",
   pending_approval: "#F59E0B",

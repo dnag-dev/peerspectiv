@@ -7,6 +7,7 @@ const caseStatusVariants: Record<string, string> = {
   in_progress: "bg-mint-100 text-status-info-fg",
   completed: "bg-mint-100 text-status-info-fg",
   past_due: "bg-critical-100 text-status-danger-fg ring-2 ring-critical-600",
+  returned_by_peer: "bg-critical-100 text-status-danger-fg",
 };
 
 const aiStatusVariants: Record<string, string> = {
