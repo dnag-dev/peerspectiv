@@ -297,28 +297,32 @@ export function SidebarShell({
 
 function buildAdminNavItems(openReassignmentCount = 0): SidebarNavItem[] {
   return [
-    // Primary tier
-    { label: "Dashboard",       href: "/dashboard",  icon: LayoutDashboard,  group: "Workspace" },
-    { label: "Reviews",         href: "/assignments", icon: ClipboardCheck,  group: "Workspace" },
-    { label: "Reports",         href: "/reports",    icon: BarChart3,        group: "Workspace" },
-    { label: "Peers",           href: "/peers",      icon: UserCheck,        group: "Workspace" },
-    { label: "Onboarding Queue",href: "/peers/onboarding-queue", icon: UserCheck, group: "Workspace" },
-    { label: "Companies",       href: "/companies",  icon: Building2,        group: "Workspace" },
-    { label: "Prospects",       href: "/prospects",  icon: Building2,        group: "Workspace" },
-    { label: "Forms",           href: "/forms",      icon: FileText,         group: "Workspace" },
-    { label: "Tags",            href: "/tags",       icon: Tag,              group: "Workspace" },
-    { label: "Settings",        href: "/settings",   icon: Settings,         group: "Workspace" },
-    // Second-tier admin tools
-    { label: "Batches",         href: "/batches",    icon: FolderOpen,       group: "Admin Tools" },
-    { label: "AI Assignments",  href: "/assign",     icon: ArrowUpDown,      group: "Admin Tools", badge: openReassignmentCount },
-    { label: "Credentials",     href: "/credentials", icon: ShieldCheck,     group: "Admin Tools" },
-    { label: "Payouts",         href: "/payouts",    icon: DollarSign,       group: "Admin Tools" },
-    { label: "Invoices",        href: "/invoices",   icon: Receipt,          group: "Admin Tools" },
-    { label: "Command Center",  href: "/command",    icon: Terminal,         group: "Admin Tools" },
+    // Overview
+    { label: "Dashboard",        href: "/dashboard",              icon: LayoutDashboard, group: "Overview" },
+    // Pipeline — client acquisition
+    { label: "Prospects",        href: "/prospects",              icon: Building2,       group: "Pipeline" },
+    { label: "Companies",        href: "/companies",              icon: Building2,       group: "Pipeline" },
+    // Review Workflow — the core work
+    { label: "Batches",          href: "/batches",                icon: FolderOpen,      group: "Review Workflow" },
+    { label: "Reviews",          href: "/assignments",            icon: ClipboardCheck,  group: "Review Workflow" },
+    { label: "AI Assignments",   href: "/assign",                 icon: ArrowUpDown,     group: "Review Workflow", badge: openReassignmentCount },
+    // Team — peer management
+    { label: "Peers",            href: "/peers",                  icon: UserCheck,       group: "Team" },
+    { label: "Onboarding Queue", href: "/peers/onboarding-queue", icon: UserCheck,       group: "Team" },
+    { label: "Credentials",      href: "/credentials",            icon: ShieldCheck,     group: "Team" },
+    // Output — results & billing
+    { label: "Reports",          href: "/reports",                icon: BarChart3,       group: "Output" },
+    { label: "Invoices",         href: "/invoices",               icon: Receipt,         group: "Output" },
+    { label: "Payouts",          href: "/payouts",                icon: DollarSign,      group: "Output" },
+    // Configuration
+    { label: "Forms",            href: "/forms",                  icon: FileText,        group: "Configuration" },
+    { label: "Tags",             href: "/tags",                   icon: Tag,             group: "Configuration" },
+    { label: "Settings",         href: "/settings",               icon: Settings,        group: "Configuration" },
+    { label: "Command Center",   href: "/command",                icon: Terminal,        group: "Configuration" },
   ];
 }
 
-const ADMIN_GROUPS = ["Workspace", "Admin Tools"];
+const ADMIN_GROUPS = ["Overview", "Pipeline", "Review Workflow", "Team", "Output", "Configuration"];
 
 const peerNavItems: SidebarNavItem[] = [
   { label: "Dashboard", href: "/peer/portal",   icon: LayoutDashboard },
