@@ -4,7 +4,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { anthropic, AI_MODEL } from "@/lib/ai/anthropic";
 
 
-const pdfParse = require("pdf-parse");
+// pdf-parse loaded dynamically to avoid DOMMatrix error at build time
+let pdfParse: any = null;
+async function getPdfParse() {
+  if (!pdfParse) {
+    try { const m = await import('pdf-parse'); pdfParse = (m as any).default ?? m; } catch { pdfParse = null; }
+  }
+  return pdfParse;
+}
 
 const MAX_CHARS = 80_000;
 
@@ -68,7 +75,9 @@ export async function POST(req: NextRequest) {
 
     let extractedText: string;
     try {
-      const parsed = await pdfParse(buffer);
+      const parser = await getPdfParse();
+      if (!parser) throw new Error('PDF parser not available');
+      const parsed = await parser(buffer);
       extractedText = parsed.text ?? "";
     } catch (err) {
       console.error("[clients/onboard] pdf-parse failed", err);

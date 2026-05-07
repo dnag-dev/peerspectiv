@@ -3,7 +3,13 @@ export const maxDuration = 60;
 import { NextRequest, NextResponse } from "next/server";
 import { callClaude } from "@/lib/ai/anthropic";
 
-const pdfParse = require("pdf-parse");
+let pdfParse: any = null;
+async function getPdfParse() {
+  if (!pdfParse) {
+    try { const m = await import('pdf-parse'); pdfParse = (m as any).default ?? m; } catch { pdfParse = null; }
+  }
+  return pdfParse;
+}
 
 const MAX_CHARS = 80_000;
 
@@ -235,7 +241,9 @@ export async function POST(req: NextRequest) {
     if (ext === "pdf" || file.type === "application/pdf") {
       let extractedText: string;
       try {
-        const parsed = await pdfParse(buffer);
+        const parser = await getPdfParse();
+        if (!parser) throw new Error('PDF parser not available');
+        const parsed = await parser(buffer);
         extractedText = parsed.text ?? "";
       } catch (err) {
         console.error("[providers/import] pdf-parse failed", err);

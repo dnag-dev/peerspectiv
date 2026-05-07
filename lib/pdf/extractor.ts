@@ -65,7 +65,7 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<ExtractedPDF> 
 
     return {
       text: truncated ? visionText.slice(0, MAX_CHARS) : visionText,
-      pageCount,
+      pageCount: 0,
       truncated,
       method: 'claude-native',
       isScanned: true,
@@ -74,7 +74,7 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<ExtractedPDF> 
     console.error('[pdf] claude-native extraction failed:', (err as Error).message);
     return {
       text: '',
-      pageCount,
+      pageCount: 0,
       truncated: false,
       method: 'failed',
       isScanned: true,
