@@ -82,3 +82,161 @@
 **Expected Result:** Specialties column shows assigned specialties for each peer (not "—"). Same data as admin Credentials page.
 
 ---
+
+
+## Client Portal — Reviews Page Consolidation
+
+### CLA-006 — Single "Reviews" link replaces three sidebar items
+
+**Module:** Client Portal — Navigation | **Priority:** High
+
+**Pre-conditions:** Logged in as client.
+
+**Steps:**
+1. Check the sidebar under "Reviews" group.
+
+**Expected Result:** Single "Reviews" link (no separate "All Reviews", "In Progress", "Overdue"). All status filtering happens via chips on the Reviews page.
+
+---
+
+### CLA-007 — Reviews page defaults to Unassigned + Pending approval selected
+
+**Module:** Client Portal — Reviews | **Priority:** High
+
+**Pre-conditions:** Cases exist in various statuses for this company.
+
+**Steps:**
+1. Click "Reviews" in the sidebar.
+2. Observe the status chips and displayed cases.
+
+**Expected Result:** "Unassigned" and "Pending approval" chips are pre-selected (highlighted blue). Only cases in those statuses are shown. Other chips can be toggled on/off.
+
+---
+
+### CLA-008 — Status chips support multi-select toggle
+
+**Module:** Client Portal — Reviews | **Priority:** Medium
+
+**Pre-conditions:** None.
+
+**Steps:**
+1. Click "Completed" chip to add it.
+2. Click "Unassigned" chip to remove it.
+3. Click "Assigned" chip to add it.
+
+**Expected Result:** Multiple chips can be selected simultaneously. Clicking a selected chip deselects it. Table shows cases matching ANY selected status. No chips selected = all cases shown.
+
+---
+
+### CLA-009A — Status chips match admin order
+
+**Module:** Client Portal — Reviews | **Priority:** Medium
+
+**Pre-conditions:** None.
+
+**Steps:**
+1. Check the order of status chips on the client Reviews page.
+
+**Expected Result:** Chips in order: Unassigned, Pending approval, Assigned, In progress, Completed, Past due. Same order as admin Reviews page. No "All" chip.
+
+---
+
+### CLA-010 — Reviews table shows Batch column instead of Quarter
+
+**Module:** Client Portal — Reviews | **Priority:** Medium
+
+**Pre-conditions:** Cases exist with batch associations.
+
+**Steps:**
+1. Navigate to client Reviews page.
+2. Check the table columns.
+
+**Expected Result:** Columns: Chart, Provider, Specialty, Status, Due, Batch. "Batch" shows the batch name (e.g., "Q4 2025"). No "Quarter" column.
+
+---
+
+### CLA-011 — Chart filename is clickable link
+
+**Module:** Client Portal — Reviews | **Priority:** Medium
+
+**Pre-conditions:** Cases have uploaded chart files with file paths.
+
+**Steps:**
+1. Navigate to client Reviews page.
+2. Click a chart filename in the Chart column.
+
+**Expected Result:** PDF opens in a new browser tab. Filename is blue and shows hover underline. Files without a URL show as plain text.
+
+---
+
+### CLA-012A — Text input filters match admin style
+
+**Module:** Client Portal — Reviews | **Priority:** Medium
+
+**Pre-conditions:** None.
+
+**Steps:**
+1. Navigate to client Reviews page.
+2. Check the filter area below the chips.
+
+**Expected Result:** Four text/date inputs in a row: Provider (text), Specialty (text), Start date (date picker), End date (date picker). White card background with subtle border. Matches admin Reviews page styling.
+
+---
+
+### CLA-013B — Provider filter searches by partial name
+
+**Module:** Client Portal — Reviews | **Priority:** Medium
+
+**Pre-conditions:** Cases exist for multiple providers.
+
+**Steps:**
+1. Type "Coicou" in the Provider filter.
+
+**Expected Result:** Only cases for providers matching "Coicou" are shown. Partial match, case-insensitive.
+
+---
+
+### CLA-014A — Date range filter works
+
+**Module:** Client Portal — Reviews | **Priority:** Medium
+
+**Pre-conditions:** Cases exist with various created dates.
+
+**Steps:**
+1. Set start date to 2026-05-01.
+2. Set end date to 2026-05-07.
+
+**Expected Result:** Only cases created between May 1-7, 2026 are shown.
+
+---
+
+
+## Charts — Clickable Links
+
+### CLA-015 — Chart file clickable on case detail page
+
+**Module:** Cases | **Priority:** Medium
+
+**Pre-conditions:** A case has an uploaded chart with a file path.
+
+**Steps:**
+1. Navigate to a case detail page (admin or client).
+2. Look at the "Chart File" section.
+
+**Expected Result:** Filename is a clickable blue link. Clicking opens the PDF in a new tab. Files without a stored URL show as plain text.
+
+---
+
+### CLA-016 — Chart file clickable on batch detail page
+
+**Module:** Batches | **Priority:** Medium
+
+**Pre-conditions:** A batch has cases with uploaded charts.
+
+**Steps:**
+1. Navigate to a batch detail page.
+2. Look at the "Chart" column in the cases table.
+
+**Expected Result:** Chart filenames are clickable blue links that open the PDF in a new tab.
+
+---
