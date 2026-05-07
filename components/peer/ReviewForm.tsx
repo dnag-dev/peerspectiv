@@ -342,13 +342,14 @@ export function ReviewForm({
         missing.add(f.fieldKey);
       }
       // Section C.2: if required_text_on_non_default fires, comment must be present.
-      if (f.fieldType === "yes_no" && f.requiredTextOnNonDefault && f.defaultValue) {
+      const effectiveDefault = f.defaultValue ?? f.defaultAnswer;
+      if (f.fieldType === "yes_no" && f.requiredTextOnNonDefault && effectiveDefault) {
         const v = state[f.fieldKey]?.value;
         const answered = v === true || v === false || v === "na";
         const isDefault =
-          (v === true && f.defaultValue === "yes") ||
-          (v === false && f.defaultValue === "no") ||
-          (v === "na" && f.defaultValue === "na");
+          (v === true && effectiveDefault === "yes") ||
+          (v === false && effectiveDefault === "no") ||
+          (v === "na" && effectiveDefault === "na");
         // NA always exempts.
         if (answered && v !== "na" && !isDefault) {
           const comment = state[f.fieldKey]?.comment ?? "";
@@ -829,14 +830,15 @@ export function ReviewForm({
             {/* Field-level comment — required when answer != default and != NA (Section C.2) */}
             {(() => {
               const v = fieldState.value;
+              const effDef = field.defaultValue ?? field.defaultAnswer;
               const commentRequired =
                 field.fieldType === "yes_no" &&
                 !!field.requiredTextOnNonDefault &&
-                !!field.defaultValue &&
+                !!effDef &&
                 (v === true || v === false) &&
                 !(
-                  (v === true && field.defaultValue === "yes") ||
-                  (v === false && field.defaultValue === "no")
+                  (v === true && effDef === "yes") ||
+                  (v === false && effDef === "no")
                 );
               const placeholder = commentRequired
                 ? "Required: explain why your answer differs from the expected default"
