@@ -1,11 +1,23 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { reviewCases, providers } from "@/lib/db/schema";
+import { peers, reviewCases, providers } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { renderPeerCaseDetail } from "../../../[id]/page";
 import { GroupCaseTabs } from "./tabs-client";
 
 export const dynamic = "force-dynamic";
+
+// Demo peer — same as peer/portal/page.tsx. Replaced by Clerk session in prod.
+const DEMO_PEER_EMAIL = "rjohnson@peerspectiv.com";
+
+async function resolvePeerId(): Promise<string | null> {
+  const found = await db
+    .select({ id: peers.id })
+    .from(peers)
+    .where(eq(peers.email, DEMO_PEER_EMAIL))
+    .limit(1);
+  return found[0]?.id ?? null;
+}
 
 interface GroupParams {
   params: Promise<{ providerId: string; batchPeriod: string }>;
@@ -18,8 +30,15 @@ interface GroupParams {
 export default async function PeerCaseGroupPage({ params }: GroupParams) {
   const { providerId, batchPeriod: batchPeriodRaw } = await params;
   const batchPeriod = decodeURIComponent(batchPeriodRaw);
+  const peerId = await resolvePeerId();
 
-  // Pull all sibling cases for this provider + batch_period.
+  // Pull only cases assigned to this peer for the provider + batch_period.
+  const conditions = [
+    eq(reviewCases.providerId, providerId),
+    eq(reviewCases.batchPeriod, batchPeriod),
+  ];
+  if (peerId) conditions.push(eq(reviewCases.peerId, peerId));
+
   const cases = await db
     .select({
       id: reviewCases.id,
@@ -29,12 +48,7 @@ export default async function PeerCaseGroupPage({ params }: GroupParams) {
       createdAt: reviewCases.createdAt,
     })
     .from(reviewCases)
-    .where(
-      and(
-        eq(reviewCases.providerId, providerId),
-        eq(reviewCases.batchPeriod, batchPeriod)
-      )
-    )
+    .where(and(...conditions))
     .orderBy(reviewCases.encounterDate);
 
   if (cases.length === 0) {
