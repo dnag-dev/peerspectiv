@@ -78,19 +78,18 @@ function ClientTopBar({ companyName }: { companyName: string }) {
   const pathname = usePathname();
   const title = resolveTitle(pathname);
   return (
-    <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border-subtle bg-surface-card px-6">
-      <div className="min-w-0">
-        <p className="eyebrow">{companyName} · client portal</p>
-        <p className="mt-0.5 truncate text-lg font-medium tracking-tight text-ink-primary">
-          {title}
-        </p>
+    // Slim utility strip — pages render their own eyebrow + h1 as the
+    // primary header. This row carries breadcrumb context + cadence pill.
+    <header className="flex h-12 flex-shrink-0 items-center justify-between border-b border-border-subtle bg-surface-card px-6">
+      <div className="flex min-w-0 items-center gap-2 text-sm">
+        <span className="font-medium text-ink-primary">{companyName}</span>
+        <span className="text-ink-tertiary">/</span>
+        <span className="text-ink-secondary">{title}</span>
       </div>
-      <div className="flex items-center gap-3">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-status-info-bg px-2 py-0.5 text-2xs font-medium text-status-info-fg">
-          <span className="h-1.5 w-1.5 rounded-full bg-status-info-dot" />
-          Q1 2026
-        </span>
-      </div>
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-status-info-bg px-2 py-0.5 text-2xs font-medium text-status-info-fg">
+        <span className="h-1.5 w-1.5 rounded-full bg-status-info-dot" />
+        Q1 2026
+      </span>
     </header>
   );
 }
