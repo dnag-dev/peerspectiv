@@ -71,7 +71,7 @@ export function BatchActions({ batchId, hasUnassigned, hasPendingApproval }: Bat
           title={hasUnassigned ? "Run AI assignment suggestions" : "All cases already assigned or pending approval"}
         >
           <Sparkles className="mr-2 h-4 w-4" />
-          {hasUnassigned ? "Run AI Assignment" : "All Assigned"}
+          Run AI Assignment
         </Button>
       </div>
 
