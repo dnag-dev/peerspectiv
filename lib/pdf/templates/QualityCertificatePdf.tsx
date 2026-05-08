@@ -63,10 +63,10 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
           <Text
             style={{
               fontFamily: 'Times-Roman',
-              fontSize: 46,
+              fontSize: 48,
               color: DARK_NAVY,
               textAlign: 'center',
-              letterSpacing: 2,
+              letterSpacing: 1,
               marginBottom: 6,
             }}
           >
