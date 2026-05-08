@@ -121,6 +121,14 @@ export default async function PeerProfilePage() {
               <Mail className="h-3.5 w-3.5 text-ink-tertiary" /> {peer.email ?? "—"}
             </div>
           </div>
+          <div>
+            <div className="text-eyebrow text-ink-secondary">Agreed Rate</div>
+            <div className="text-sm text-ink-primary">
+              {peer.rateAmount
+                ? `$${Number(peer.rateAmount).toFixed(2)} / ${peer.rateType === "per_review" ? "review" : peer.rateType === "per_minute" ? "minute" : peer.rateType ?? "review"}`
+                : "—"}
+            </div>
+          </div>
           <div className="pt-2">
             <div className="text-eyebrow text-ink-secondary mb-1">Account Security</div>
             <TwoFactorLink />
