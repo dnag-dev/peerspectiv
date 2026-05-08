@@ -136,12 +136,12 @@ export default async function PeerProfilePage() {
           <div>
             <div className="text-eyebrow text-ink-secondary">Rate Type</div>
             <div className="text-ink-primary">
-              {peer.rateType === "per_review" ? "Per review" : peer.rateType === "per_minute" ? "Per minute" : peer.rateType ?? "—"}
+              {({ per_minute: "Per minute", per_review: "Per review", per_report: "Per report", per_hour: "Per hour" } as Record<string, string>)[peer.rateType ?? ""] ?? peer.rateType?.replace(/_/g, " ") ?? "—"}
             </div>
           </div>
           <div>
             <div className="text-eyebrow text-ink-secondary">
-              Amount {peer.rateType === "per_minute" ? "($/min)" : "($/review)"}
+              Amount ({({ per_minute: "$/min", per_hour: "$/hr", per_review: "$/review", per_report: "$/report" } as Record<string, string>)[peer.rateType ?? ""] ?? "$/review"})
             </div>
             <div className="text-ink-primary">
               {peer.rateAmount ? `$${Number(peer.rateAmount).toFixed(2)}` : "—"}
