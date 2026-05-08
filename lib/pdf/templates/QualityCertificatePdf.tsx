@@ -136,7 +136,7 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
                 lineHeight: 1.7,
               }}
             >
-              The organization's providers were reviewed and certified as clinically competent,
+              {"The organization's providers were reviewed and certified as clinically competent,"}
             </Text>
             <Text
               style={{
