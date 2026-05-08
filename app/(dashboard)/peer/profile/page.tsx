@@ -121,18 +121,43 @@ export default async function PeerProfilePage() {
               <Mail className="h-3.5 w-3.5 text-ink-tertiary" /> {peer.email ?? "—"}
             </div>
           </div>
-          <div>
-            <div className="text-eyebrow text-ink-secondary">Agreed Rate</div>
-            <div className="text-sm text-ink-primary">
-              {peer.rateAmount
-                ? `$${Number(peer.rateAmount).toFixed(2)} / ${peer.rateType === "per_review" ? "review" : peer.rateType === "per_minute" ? "minute" : peer.rateType ?? "review"}`
-                : "—"}
-            </div>
-          </div>
           <div className="pt-2">
             <div className="text-eyebrow text-ink-secondary mb-1">Account Security</div>
             <TwoFactorLink />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Compensation</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <div className="text-eyebrow text-ink-secondary">Rate Type</div>
+            <div className="text-ink-primary">
+              {peer.rateType === "per_review" ? "Per review" : peer.rateType === "per_minute" ? "Per minute" : peer.rateType ?? "—"}
+            </div>
+          </div>
+          <div>
+            <div className="text-eyebrow text-ink-secondary">
+              Amount {peer.rateType === "per_minute" ? "($/min)" : "($/review)"}
+            </div>
+            <div className="text-ink-primary">
+              {peer.rateAmount ? `$${Number(peer.rateAmount).toFixed(2)}` : "—"}
+            </div>
+          </div>
+          <div>
+            <div className="text-eyebrow text-ink-secondary">Credential Valid Until</div>
+            <div className="text-ink-primary">{formatDate(peer.credentialValidUntil)}</div>
+          </div>
+          <div>
+            <div className="text-eyebrow text-ink-secondary">Max Case Load</div>
+            <div className="text-ink-primary">{peer.maxCaseLoad ?? "—"}</div>
+          </div>
+          <p className="col-span-2 text-xs text-ink-secondary">
+            Compensation and capacity are managed by Peerspectiv admin.
+          </p>
         </CardContent>
       </Card>
 
