@@ -512,9 +512,6 @@ export function PeerPortalClient({
                     />
                   </svg>
                 </Link>
-                {c.status === "completed" && c.review_result?.id && (
-                  <DownloadPdfButton resultId={c.review_result.id} />
-                )}
               </div>
             </div>
           );
