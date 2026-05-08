@@ -28,7 +28,8 @@ interface Props {
 }
 
 export function DownloadAllPanel({ companies }: Props) {
-  const [companyId, setCompanyId] = useState('');
+  const singleCompany = companies.length === 1;
+  const [companyId, setCompanyId] = useState(singleCompany ? companies[0].id : '');
   const [period, setPeriod] = useState<string | null>(null);
   const [periodObj, setPeriodObj] = useState<CadencePeriodOption | null>(null);
   const [busy, setBusy] = useState(false);
@@ -76,21 +77,23 @@ export function DownloadAllPanel({ companies }: Props) {
         <CardTitle>Download All (ZIP)</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label>Company</Label>
-          <Select value={companyId || undefined} onValueChange={setCompanyId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select company" />
-            </SelectTrigger>
-            <SelectContent>
-              {companies.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {!singleCompany && (
+          <div className="space-y-2">
+            <Label>Company</Label>
+            <Select value={companyId || undefined} onValueChange={setCompanyId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select company" />
+              </SelectTrigger>
+              <SelectContent>
+                {companies.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <div className="space-y-2">
           <Label>Cadence period</Label>
           <CadencePeriodPicker
