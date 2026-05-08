@@ -116,6 +116,7 @@ export default async function BatchesPage() {
           batch_name: b.batch_name,
           company_id: b.company_id ?? null,
           company_name: b.company_name,
+          specialty: (b as any).specialty ?? null,
           date_uploaded: b.date_uploaded,
           total_cases: b.total_cases,
           assigned_cases: b.assigned_cases,
