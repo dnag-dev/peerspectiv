@@ -13,6 +13,7 @@ interface SearchParams {
   specialty?: string;
   dateFrom?: string;
   dateTo?: string;
+  cadence?: string;
 }
 
 export default async function AllReviewsPage({
@@ -26,13 +27,18 @@ export default async function AllReviewsPage({
   // Build server-side filters
   const conditions: any[] = [eq(reviewCases.companyId, company.id)];
 
+  // Cadence period filter
+  if (searchParams.cadence) {
+    conditions.push(ilike(reviewCases.cadencePeriodLabel, `%${searchParams.cadence}%`));
+  }
+
   // Status filter — comma-separated list or single value
   const statusParam = searchParams.status;
   if (statusParam) {
     const statuses = statusParam.split(",").map((s) => s.trim()).filter(Boolean);
     if (statuses.length > 0) conditions.push(inArray(reviewCases.status, statuses));
-  } else {
-    // Default: unassigned + pending_approval
+  } else if (!searchParams.cadence) {
+    // Default: unassigned + pending_approval (unless viewing a cadence period — show all)
     conditions.push(inArray(reviewCases.status, ["unassigned", "pending_approval"]));
   }
 
@@ -75,7 +81,9 @@ export default async function AllReviewsPage({
 
   const activeStatuses = statusParam
     ? statusParam.split(",").map((s) => s.trim()).filter(Boolean)
-    : ["unassigned", "pending_approval"];
+    : searchParams.cadence
+      ? [] // Show all statuses when viewing a cadence period
+      : ["unassigned", "pending_approval"];
 
   return (
     <div className="space-y-6">
