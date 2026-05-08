@@ -575,13 +575,18 @@ export async function fetchQualityCertificateData(input: {
     }));
   }
 
+  // Build address string from company fields
+  const addressParts = [company?.address, company?.city, company?.state].filter(Boolean);
+  const organizationAddress = addressParts.length > 0 ? addressParts.join(', ') : null;
+
   return {
     organizationName: company?.name ?? 'Unknown Organization',
+    organizationAddress,
     period: input.period,
     hrsaRegistration: undefined, // future: pull from company_settings
-    signedByName: input.signedByName ?? 'Quality Director',
-    signedByTitle: input.signedByTitle ?? 'Independent Peer Review Network',
-    signedDate: new Date().toISOString().slice(0, 10),
+    signedByName: input.signedByName ?? 'Ashton Prejean',
+    signedByTitle: input.signedByTitle ?? 'President, Peerspectiv™',
+    signedDate: new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }),
     providers,
     scoreThreshold: input.scoreThreshold,
   };
