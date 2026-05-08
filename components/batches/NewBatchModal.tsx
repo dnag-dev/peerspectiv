@@ -327,10 +327,7 @@ export function NewBatchModal({
     if (suggestedName) setBatchName(suggestedName);
   }, [suggestedName]);
 
-  // Phase 6.6 (CL-017) — when a company is picked, prefill batch name from the
-  // company's current cadence period label. Honors the user's manual edits via
-  // batchNameTouched. Cadence label takes precedence over suggestBatchName(),
-  // because it's the system-of-record for billing-period names.
+  // Auto-fill tag name from cadence period + specialty
   useEffect(() => {
     if (!companyId) return;
     if (batchNameTouched.current) return;
@@ -346,16 +343,13 @@ export function NewBatchModal({
           periods.find((p) => p.start_date <= today && today <= p.end_date) ??
           periods[periods.length - 1];
         if (current?.label && !batchNameTouched.current) {
-          setBatchName(current.label);
+          const specLabel = specialty && specialty !== "Mixed" ? ` - ${specialty}` : "";
+          setBatchName(`${current.label}${specLabel}`);
         }
       })
-      .catch(() => {
-        /* silent — fall back to suggestBatchName */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [companyId]);
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [companyId, specialty]);
 
   function reset() {
     setStep(skipCompanyStep ? 2 : 1);
@@ -823,7 +817,7 @@ export function NewBatchModal({
 
                   <div>
                     <label className="mb-1 block text-xs font-medium text-ink-primary">
-                      Batch name
+                      Tag name
                     </label>
                     <input
                       value={batchName}
@@ -831,12 +825,12 @@ export function NewBatchModal({
                         batchNameTouched.current = true;
                         setBatchName(e.target.value);
                       }}
-                      placeholder="e.g. Q2 2026 — OB/GYN charts"
+                      placeholder="e.g. Q1 2026 - Family Medicine"
                       className="w-full rounded-lg border border-border-default px-4 py-2.5 text-sm focus:border-status-info-dot focus:outline-none"
                     />
                     {batchName && !batchNameTouched.current && (
                       <p className="mt-1 text-xs text-ink-secondary">
-                        Auto-filled from current cadence period. Edit to override.
+                        Auto-filled from cadence period + specialty. Edit to override.
                       </p>
                     )}
                   </div>
@@ -1011,7 +1005,7 @@ export function NewBatchModal({
                       </dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-ink-secondary">Batch name</dt>
+                      <dt className="text-ink-secondary">Tag name</dt>
                       <dd className="font-medium text-ink-primary">{batchName}</dd>
                     </div>
                     <div className="flex justify-between">

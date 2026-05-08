@@ -204,7 +204,7 @@ export function BatchesView({ batches }: Props) {
               <Input
                 value={searchQ}
                 onChange={(e) => setSearchQ(e.target.value)}
-                placeholder="Search batch name, company…"
+                placeholder="Search tag name, company…"
                 className="pl-9"
               />
             </div>
@@ -246,7 +246,7 @@ export function BatchesView({ batches }: Props) {
           <table className="w-full text-sm">
             <thead className="bg-ink-50 text-ink-secondary text-xs uppercase">
               <tr>
-                <SortHead label="Batch Name" k="batch_name" />
+                <SortHead label="Tag Name" k="batch_name" />
                 <SortHead label="Company" k="company_name" />
                 <SortHead label="Upload Date" k="date_uploaded" />
                 <SortHead label="Total Cases" k="total_cases" align="center" />

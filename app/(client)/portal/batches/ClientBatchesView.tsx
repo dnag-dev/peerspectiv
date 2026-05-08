@@ -81,7 +81,7 @@ export function ClientBatchesView({
           <table className="w-full text-sm">
             <thead className="border-b border-border-subtle bg-gray-50 text-left">
               <tr className="text-xs uppercase tracking-wider text-gray-500">
-                <th className="px-4 py-3">Batch Name</th>
+                <th className="px-4 py-3">Tag Name</th>
                 <th className="px-4 py-3">Specialty</th>
                 <th className="px-4 py-3">Upload Date</th>
                 <th className="px-4 py-3 text-center">Cases</th>

@@ -281,7 +281,7 @@ export function AssignmentsTable({
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Days</th>
               <th className="px-3 py-2">Due</th>
-              <th className="px-3 py-2">Batch</th>
+              <th className="px-3 py-2">Tag</th>
               <th className="px-3 py-2 text-right">Actions</th>
             </tr>
           </thead>

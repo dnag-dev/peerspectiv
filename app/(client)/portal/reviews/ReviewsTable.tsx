@@ -152,7 +152,7 @@ export function ReviewsTable({
               <th className="px-4 py-3">Specialty</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Due</th>
-              <th className="px-4 py-3">Batch</th>
+              <th className="px-4 py-3">Tag</th>
             </tr>
           </thead>
           <tbody>
