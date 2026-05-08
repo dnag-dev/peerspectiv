@@ -654,7 +654,10 @@ export function NewBatchModal({
               <div>
                 <h2 className="text-base font-medium text-ink-primary">New Batch</h2>
                 <p className="text-xs text-ink-secondary">
-                  {`Step ${displayStep}`}
+                  {(() => {
+                    const total = (skipCompanyStep ? 0 : 1) + 1 + (skipFormStep ? 0 : 1) + 1 + 1;
+                    return `Step ${displayStep} of ${total}`;
+                  })()}
                 </p>
               </div>
               <button
@@ -665,14 +668,19 @@ export function NewBatchModal({
               </button>
             </div>
 
-            {/* Progress bar — proportional fill */}
-            <div className="border-b bg-ink-50 px-5 py-2">
-              <div className="h-1 w-full rounded-full bg-ink-200 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-brand transition-all duration-300"
-                  style={{ width: `${(step / 5) * 100}%` }}
-                />
-              </div>
+            {/* Progress bar */}
+            <div className="flex gap-1 border-b bg-ink-50 px-5 py-2">
+              {(() => {
+                const total = (skipCompanyStep ? 0 : 1) + 1 + (skipFormStep ? 0 : 1) + 1 + 1;
+                return Array.from({ length: total }, (_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1 flex-1 rounded-full ${
+                      i < displayStep ? "bg-brand" : "bg-ink-200"
+                    }`}
+                  />
+                ));
+              })()}
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-5">
