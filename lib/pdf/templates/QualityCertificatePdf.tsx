@@ -115,7 +115,7 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
           )}
 
           {/* ── Body text ── */}
-          <View style={{ maxWidth: 500, marginTop: 6, marginBottom: 28 }}>
+          <View style={{ maxWidth: 500, marginTop: 6, marginBottom: 28, alignSelf: 'center', alignItems: 'center' }}>
             <Text
               style={{
                 fontFamily: 'Helvetica',
