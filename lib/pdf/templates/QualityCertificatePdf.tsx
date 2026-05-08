@@ -44,13 +44,13 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
         >
           <Image src={LOGO_PATH} style={{ width: 200, height: 40 }} />
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={{ fontFamily: 'Helvetica', fontSize: 14, fontWeight: 700, color: '#FFFFFF', lineHeight: 1.4 }}>
+            <Text style={{ fontFamily: 'Helvetica', fontSize: 16, color: '#FFFFFF', lineHeight: 1.4 }}>
               Independent
             </Text>
-            <Text style={{ fontFamily: 'Helvetica', fontSize: 14, fontWeight: 700, color: '#FFFFFF', lineHeight: 1.4 }}>
+            <Text style={{ fontFamily: 'Helvetica', fontSize: 16, color: '#FFFFFF', lineHeight: 1.4 }}>
               FQHC Peer Reviews
             </Text>
-            <Text style={{ fontFamily: 'Helvetica', fontSize: 14, fontWeight: 700, color: '#FFFFFF', lineHeight: 1.4 }}>
+            <Text style={{ fontFamily: 'Helvetica', fontSize: 16, color: '#FFFFFF', lineHeight: 1.4 }}>
               Certification Network
             </Text>
           </View>
@@ -63,7 +63,7 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
           <Text
             style={{
               fontFamily: 'Times-Roman',
-              fontSize: 48,
+              fontSize: 56,
               color: DARK_NAVY,
               textAlign: 'center',
               letterSpacing: 4,
@@ -90,7 +90,7 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
           <Text
             style={{
               fontFamily: 'Helvetica-Bold',
-              fontSize: 24,
+              fontSize: 28,
               color: DARK_NAVY,
               textAlign: 'center',
               marginBottom: 6,
