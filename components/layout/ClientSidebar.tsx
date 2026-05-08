@@ -29,7 +29,8 @@ export type ClientRole = "cmo" | "quality" | "operations";
 const NAV: SidebarNavItem[] = [
   { label: "Dashboard",          href: "/portal",            icon: LayoutDashboard,  group: "Overview" },
   { label: "Batches",            href: "/portal/batches",    icon: FolderOpen,       group: "Overview" },
-  { label: "Reviews",             href: "/portal/reviews",    icon: ClipboardList,    group: "Reviews" },
+  { label: "Current Period",      href: "/portal/current-period", icon: Clock,         group: "Reviews" },
+  { label: "All Reviews",         href: "/portal/reviews",    icon: ClipboardList,    group: "Reviews" },
   { label: "Trends",             href: "/portal/trends",     icon: TrendingUp,       group: "Analytics" },
   { label: "Quality Reports",    href: "/portal/quality",    icon: FileBarChart,     group: "Analytics" },
   { label: "Providers",          href: "/portal/providers",  icon: Users,            group: "Analytics" },

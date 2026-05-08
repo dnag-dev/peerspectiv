@@ -175,7 +175,7 @@ export function DashboardView(props: Props) {
       {/* KPI cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
-          label={`Reviews this period (${currentPeriodLabel})`}
+          label={`Reviews current period (${currentPeriodLabel})`}
           value={reviewsThisPeriod.toString()}
           href="/portal/current-period"
         />
