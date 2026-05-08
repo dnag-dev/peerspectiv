@@ -134,7 +134,7 @@ export function CanonicalReportPanel({ companies, type, lockedCompanyId }: Props
           body.range_end = periodObj.end_date;
         }
         body.cadence_period_label = period;
-        if (type === 'question_analytics' && specialty) {
+        if (type === 'question_analytics' && specialty && specialty !== '__all__') {
           body.specialty = specialty;
         }
       }
@@ -197,7 +197,7 @@ export function CanonicalReportPanel({ companies, type, lockedCompanyId }: Props
                 <SelectValue placeholder="All specialties" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All specialties</SelectItem>
+                <SelectItem value="__all__">All specialties</SelectItem>
                 {specialties.map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
