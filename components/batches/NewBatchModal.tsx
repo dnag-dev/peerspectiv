@@ -269,6 +269,7 @@ export function NewBatchModal({
   const setOpen = onOpenChange ?? setInternalOpen;
   const skipCompanyStep = !!defaultCompanyId;
   const [step, setStep] = useState(skipCompanyStep ? 2 : 1);
+  const [displayStep, setDisplayStep] = useState(1);
   const [companyId, setCompanyId] = useState(defaultCompanyId ?? "");
   const [specialty, setSpecialty] = useState("");
   const [companyFormId, setCompanyFormId] = useState("");
@@ -358,6 +359,7 @@ export function NewBatchModal({
 
   function reset() {
     setStep(skipCompanyStep ? 2 : 1);
+    setDisplayStep(1);
     setCompanyId(defaultCompanyId ?? "");
     setSpecialty("");
     setCompanyFormId("");
@@ -599,21 +601,25 @@ export function NewBatchModal({
     if (step === 2 && skipFormStep) {
       if (!isMixed && !companyFormId) setCompanyFormId(autoAttachedFormId);
       setStep(4);
-      return;
+    } else {
+      setStep(step + 1);
     }
-    setStep(step + 1);
+    setDisplayStep((d) => d + 1);
   }
   function goBack() {
-    if (step === 4 && skipFormStep) {
-      setStep(2);
-      return;
-    }
     if (skipCompanyStep && step <= 2) {
       handleClose();
       return;
     }
-    if (step > 1) setStep(step - 1);
-    else handleClose();
+    if (step === 4 && skipFormStep) {
+      setStep(2);
+    } else if (step > 1) {
+      setStep(step - 1);
+    } else {
+      handleClose();
+      return;
+    }
+    setDisplayStep((d) => Math.max(1, d - 1));
   }
 
   const canNext1 = !!companyId;
@@ -648,24 +654,7 @@ export function NewBatchModal({
               <div>
                 <h2 className="text-base font-medium text-ink-primary">New Batch</h2>
                 <p className="text-xs text-ink-secondary">
-                  {(() => {
-                    // Map internal step (1-5) to display step, accounting for skips
-                    const allSteps = [1, 2, 3, 4, 5];
-                    const visible = allSteps.filter((s) => {
-                      if (s === 1 && skipCompanyStep) return false;
-                      if (s === 3 && skipFormStep) return false;
-                      return true;
-                    });
-                    // Find where current step falls in visible list
-                    // If current step was skipped (e.g. step 3), find next visible
-                    let displayIdx = visible.indexOf(step);
-                    if (displayIdx === -1) {
-                      // Step was skipped — find the closest visible step <= current
-                      displayIdx = visible.filter((s) => s <= step).length - 1;
-                      if (displayIdx < 0) displayIdx = 0;
-                    }
-                    return `Step ${displayIdx + 1} of ${visible.length}`;
-                  })()}
+                  {`Step ${displayStep} of ${skipCompanyStep ? 4 : 5}`}
                 </p>
               </div>
               <button
@@ -676,19 +665,13 @@ export function NewBatchModal({
               </button>
             </div>
 
-            {/* Progress bar — only visible steps, fills based on position */}
+            {/* Progress bar */}
             <div className="flex gap-1 border-b bg-ink-50 px-5 py-2">
-              {[1, 2, 3, 4, 5]
-                .filter((s) => {
-                  if (s === 1 && skipCompanyStep) return false;
-                  if (s === 3 && skipFormStep) return false;
-                  return true;
-                })
-                .map((n) => (
+              {Array.from({ length: skipCompanyStep ? 4 : 5 }, (_, i) => (
                 <div
-                  key={n}
+                  key={i}
                   className={`h-1 flex-1 rounded-full ${
-                    n <= step ? "bg-brand" : "bg-ink-200"
+                    i < displayStep ? "bg-brand" : "bg-ink-200"
                   }`}
                 />
               ))}
