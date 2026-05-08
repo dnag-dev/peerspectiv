@@ -57,13 +57,13 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
         </View>
 
         {/* ═══════════ CERTIFICATE BODY ═══════════ */}
-        <View style={{ paddingHorizontal: 40, paddingTop: 50, alignItems: 'center', flex: 1 }}>
+        <View style={{ paddingHorizontal: 20, paddingTop: 50, alignItems: 'center', flex: 1 }}>
 
           {/* ── QUALITY CERTIFICATE title ── */}
           <Text
             style={{
               fontFamily: 'Times-Roman',
-              fontSize: 50,
+              fontSize: 58,
               color: DARK_NAVY,
               textAlign: 'center',
               letterSpacing: 2,
