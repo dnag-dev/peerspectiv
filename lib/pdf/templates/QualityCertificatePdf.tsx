@@ -63,10 +63,10 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
           <Text
             style={{
               fontFamily: 'Times-Roman',
-              fontSize: 48,
+              fontSize: 49,
               color: DARK_NAVY,
               textAlign: 'center',
-              letterSpacing: 1,
+              letterSpacing: 0.5,
               marginBottom: 6,
             }}
           >
@@ -107,7 +107,7 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
                 fontSize: 12,
                 color: BODY_TEXT,
                 textAlign: 'center',
-                marginBottom: 24,
+                marginBottom: 14,
               }}
             >
               {data.organizationAddress}
@@ -115,14 +115,14 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
           )}
 
           {/* ── Body text ── */}
-          <View style={{ maxWidth: 500, marginTop: 6, marginBottom: 28, alignSelf: 'center', alignItems: 'center' }}>
+          <View style={{ maxWidth: 500, marginTop: 4, marginBottom: 14, alignSelf: 'center', alignItems: 'center' }}>
             <Text
               style={{
                 fontFamily: 'Helvetica',
                 fontSize: 11,
                 color: BODY_TEXT,
                 textAlign: 'center',
-                lineHeight: 1.7,
+                lineHeight: 1.4,
               }}
             >
               Has had licensed health care professionals conduct QI/QA assessments on their providers.
@@ -133,7 +133,7 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
                 fontSize: 11,
                 color: BODY_TEXT,
                 textAlign: 'center',
-                lineHeight: 1.7,
+                lineHeight: 1.4,
               }}
             >
               {"The organization's providers were reviewed and certified as clinically competent,"}
@@ -144,7 +144,7 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
                 fontSize: 11,
                 color: BODY_TEXT,
                 textAlign: 'center',
-                lineHeight: 1.7,
+                lineHeight: 1.4,
               }}
             >
               fulfilling HRSA compliance manual requirements.
@@ -153,14 +153,14 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
 
           {/* ── Registration Number ── */}
           {data.hrsaRegistration && (
-            <Text style={{ fontFamily: 'Helvetica', fontSize: 12, color: BODY_TEXT, textAlign: 'center', marginBottom: 4 }}>
+            <Text style={{ fontFamily: 'Helvetica', fontSize: 12, color: BODY_TEXT, textAlign: 'center', marginBottom: 2 }}>
               Registration Number:{'  '}
               <Text style={{ fontFamily: 'Helvetica-Bold', color: DARK_NAVY }}>{data.hrsaRegistration}</Text>
             </Text>
           )}
 
           {/* ── Assessment Period ── */}
-          <Text style={{ fontFamily: 'Helvetica', fontSize: 12, color: BODY_TEXT, textAlign: 'center', marginBottom: 6 }}>
+          <Text style={{ fontFamily: 'Helvetica', fontSize: 12, color: BODY_TEXT, textAlign: 'center', marginBottom: 2 }}>
             Assessment Period:{'  '}
             <Text style={{ fontFamily: 'Helvetica-Bold', color: DARK_NAVY }}>{data.period}</Text>
           </Text>
@@ -172,8 +172,8 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
               fontSize: 10,
               color: MUTED_TEXT,
               textAlign: 'center',
-              marginTop: 6,
-              marginBottom: 20,
+              marginTop: 4,
+              marginBottom: 24,
             }}
           >
             Signed: {data.signedDate}
