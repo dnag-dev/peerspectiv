@@ -16,8 +16,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CaseStatusBadge, AIStatusBadge } from "@/components/batches/CaseStatusBadge";
 import { BatchActions } from "@/components/batches/BatchActions";
 import { PDFUploader } from "@/components/batches/PDFUploader";
-import { BatchFormSection } from "@/components/batches/BatchFormSection";
 import { BatchCaseActions } from "@/components/batches/BatchCaseActions";
+import { BatchSpecialtyFormEditor } from "@/components/batches/BatchSpecialtyFormEditor";
+import { DeleteCaseButton } from "@/components/batches/DeleteCaseButton";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, FileStack, Calendar, Building2, Hash } from "lucide-react";
 import type { Batch, ReviewCase, Provider, Peer } from "@/types";
@@ -188,12 +189,12 @@ export default async function BatchDetailPage({
         </Card>
       </div>
 
-      {/* Attached form */}
-      {batch.company_id && (batch as unknown as { specialty?: string }).specialty && (
-        <BatchFormSection
+      {/* Specialty & Form */}
+      {batch.company_id && (
+        <BatchSpecialtyFormEditor
           batchId={batch.id}
           companyId={batch.company_id}
-          specialty={(batch as unknown as { specialty: string }).specialty}
+          currentSpecialty={(batch as any).specialty ?? ""}
           currentFormId={
             batch.attached_form?.id ??
             (batch as unknown as { company_form_id?: string | null }).company_form_id ??
@@ -280,12 +281,19 @@ export default async function BatchDetailPage({
                       />
                     </TableCell>
                     <TableCell className="text-right">
-                      <BatchCaseActions
-                        caseId={reviewCase.id}
-                        status={reviewCase.status}
-                        peerId={reviewCase.peer?.id ?? null}
-                        specialty={reviewCase.specialty_required ?? null}
-                      />
+                      <div className="inline-flex items-center gap-1.5">
+                        <BatchCaseActions
+                          caseId={reviewCase.id}
+                          status={reviewCase.status}
+                          peerId={reviewCase.peer?.id ?? null}
+                          specialty={reviewCase.specialty_required ?? null}
+                        />
+                        <DeleteCaseButton
+                          caseId={reviewCase.id}
+                          chartFileName={reviewCase.chart_file_name}
+                          isCompleted={reviewCase.status === "completed"}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, toSnake, getCallerScope } from '@/lib/db';
-import { reviewCases, peers } from '@/lib/db/schema';
+import { reviewCases, peers, aiAnalyses, reviewResults, batches } from '@/lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { isAssignable, type PeerStatus } from '@/lib/peers/state-machine';
 import { auditLog } from '@/lib/utils/audit';
@@ -255,6 +255,92 @@ export async function PATCH(
     return NextResponse.json({ ok: true, manual_overrides_added: newOverrides });
   } catch (err) {
     console.error('[API] PATCH /api/cases/[id] error:', err);
+    return NextResponse.json(
+      { error: 'Internal server error', code: 'INTERNAL_ERROR' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/cases/[id]
+ * Remove a chart/case from a batch. Blocks deletion of completed reviews.
+ * Cleans up related ai_analyses and review_results, then syncs batch counts.
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    // Fetch the case to check status and get batch ID
+    const [caseRow] = await db
+      .select({
+        status: reviewCases.status,
+        batchId: reviewCases.batchId,
+        chartFileName: reviewCases.chartFileName,
+      })
+      .from(reviewCases)
+      .where(eq(reviewCases.id, id))
+      .limit(1);
+
+    if (!caseRow) {
+      return NextResponse.json(
+        { error: 'Case not found', code: 'NOT_FOUND' },
+        { status: 404 }
+      );
+    }
+
+    if (caseRow.status === 'completed') {
+      return NextResponse.json(
+        { error: 'Cannot delete a completed review.', code: 'COMPLETED_IMMUTABLE' },
+        { status: 409 }
+      );
+    }
+
+    // Delete related records that don't have ON DELETE CASCADE
+    await db.delete(aiAnalyses).where(eq(aiAnalyses.caseId, id));
+    await db.delete(reviewResults).where(eq(reviewResults.caseId, id));
+
+    // Delete the case (case_tags, case_status_history have ON DELETE CASCADE)
+    await db.delete(reviewCases).where(eq(reviewCases.id, id));
+
+    // Update batch counts
+    if (caseRow.batchId) {
+      const counts = await db
+        .select({
+          total: sql<number>`count(*)::int`,
+          completed: sql<number>`count(*) filter (where status = 'completed')::int`,
+          assigned: sql<number>`count(*) filter (where status in ('assigned', 'in_progress', 'pending_approval'))::int`,
+        })
+        .from(reviewCases)
+        .where(eq(reviewCases.batchId, caseRow.batchId));
+
+      const { total, completed, assigned } = counts[0] ?? { total: 0, completed: 0, assigned: 0 };
+      await db
+        .update(batches)
+        .set({
+          totalCases: total,
+          completedCases: completed,
+          assignedCases: assigned,
+        })
+        .where(eq(batches.id, caseRow.batchId));
+
+      await syncBatchStatus(caseRow.batchId);
+    }
+
+    await auditLog({
+      action: 'case_deleted',
+      resourceType: 'review_case',
+      resourceId: id,
+      metadata: { batch_id: caseRow.batchId, chart_file_name: caseRow.chartFileName },
+      request,
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('[API] DELETE /api/cases/[id] error:', err);
     return NextResponse.json(
       { error: 'Internal server error', code: 'INTERNAL_ERROR' },
       { status: 500 }

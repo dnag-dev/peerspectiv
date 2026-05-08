@@ -73,7 +73,7 @@ export function TagsView({ initialTags, companies }: Props) {
   const [isPending, startTransition] = useTransition();
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("global");
+  const [tab, setTab] = useState<Tab>("cadence");
 
   const [name, setName] = useState("");
   const [color, setColor] = useState<string>("cobalt");
@@ -243,8 +243,8 @@ export function TagsView({ initialTags, companies }: Props) {
         <div className="flex gap-2">
           {(
             [
-              ["global", `Global Tags (${globalTags.length})`],
               ["cadence", `Cadence Tags (${cadenceTags.length})`],
+              ["global", `Global Tags (${globalTags.length})`],
             ] as Array<[Tab, string]>
           ).map(([t, label]) => (
             <button
@@ -253,7 +253,7 @@ export function TagsView({ initialTags, companies }: Props) {
               onClick={() => setTab(t)}
               className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
                 tab === t
-                  ? "border-status-info-dot text-status-info-fg"
+                  ? "border-brand text-brand"
                   : "border-transparent text-ink-secondary hover:text-ink-primary"
               }`}
             >

@@ -10,8 +10,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CaseStatusBadge } from "@/components/batches/CaseStatusBadge";
 import { PDFUploader } from "@/components/batches/PDFUploader";
+import { BatchSpecialtyFormEditor } from "@/components/batches/BatchSpecialtyFormEditor";
+import { DeleteCaseButton } from "@/components/batches/DeleteCaseButton";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, FileStack, Calendar, Building2, Hash } from "lucide-react";
+import { ArrowLeft, FileStack, Calendar, Hash } from "lucide-react";
 import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +73,7 @@ export default async function ClientBatchDetailPage({
 
   const totalCases = batch.totalCases ?? 0;
   const completedCases = batch.completedCases ?? 0;
+  const assignedCases = batch.assignedCases ?? 0;
 
   return (
     <div className="space-y-6">
@@ -86,7 +89,7 @@ export default async function ClientBatchDetailPage({
       </div>
 
       {/* Batch Info */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
             <Calendar className="h-5 w-5 text-gray-400" />
@@ -109,24 +112,25 @@ export default async function ClientBatchDetailPage({
           <CardContent className="flex items-center gap-3 pt-6">
             <FileStack className="h-5 w-5 text-gray-400" />
             <div>
-              <p className="text-xs text-gray-500">Specialty</p>
-              <p className="text-sm font-medium">{batch.specialty || formSpecialty || "—"}</p>
+              <p className="text-xs text-gray-500">Assigned</p>
+              <p className="text-sm font-medium">{assignedCases}/{totalCases}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Attached form */}
-      {formName && (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-xs text-gray-500">Attached review form</p>
-            <p className="text-sm font-medium">{formName}</p>
-          </CardContent>
-        </Card>
+      {/* Specialty & Form */}
+      {batch.companyId && (
+        <BatchSpecialtyFormEditor
+          batchId={batch.id}
+          companyId={batch.companyId}
+          currentSpecialty={batch.specialty || formSpecialty || ""}
+          currentFormId={batch.companyFormId ?? null}
+          currentFormName={formName}
+        />
       )}
 
-      {/* Cases Table — no Case Ref, no Actions */}
+      {/* Cases Table */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -151,6 +155,7 @@ export default async function ClientBatchDetailPage({
                   <TableHead>Status</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead>Chart</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -173,6 +178,13 @@ export default async function ClientBatchDetailPage({
                         caseId={rc.id}
                         existingFileName={rc.chart_file_name}
                         existingFileUrl={rc.chart_file_path}
+                      />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DeleteCaseButton
+                        caseId={rc.id}
+                        chartFileName={rc.chart_file_name}
+                        isCompleted={rc.status === "completed"}
                       />
                     </TableCell>
                   </TableRow>
