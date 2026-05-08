@@ -16,5 +16,22 @@ export default async function PortalInvoicesPage() {
     .where(eq(invoices.companyId, company.id))
     .orderBy(desc(invoices.createdAt));
 
-  return <ClientInvoicesView companyName={company.name} invoices={rows} />;
+  return (
+    <ClientInvoicesView
+      companyName={company.name}
+      invoices={rows.map((r) => ({
+        id: r.id,
+        invoiceNumber: r.invoiceNumber,
+        rangeStart: r.rangeStart,
+        rangeEnd: r.rangeEnd,
+        reviewCount: r.reviewCount ?? 0,
+        unitPrice: String(r.unitPrice ?? "0"),
+        totalAmount: String(r.totalAmount ?? "0"),
+        status: r.status,
+        pdfUrl: r.pdfUrl ?? null,
+        paymentLinkUrl: r.paymentLinkUrl ?? null,
+        dueDate: r.dueDate ?? null,
+      }))}
+    />
+  );
 }
