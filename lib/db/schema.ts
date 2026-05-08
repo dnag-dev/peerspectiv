@@ -55,6 +55,8 @@ export const companies = pgTable('companies', {
   deliveryMethod: text('delivery_method').notNull().default('portal'),
   // Phase 7: per-specialty vs flat pricing mode (drives invoice generator)
   pricingMode: text('pricing_mode').notNull().default('flat'),
+  // HRSA registration number (shown on Quality Certificate)
+  hrsaRegistration: text('hrsa_registration'),
   createdAt: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
   updatedAt: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
 });

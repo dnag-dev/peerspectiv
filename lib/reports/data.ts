@@ -36,12 +36,13 @@ interface CompanyRow {
   city: string | null;
   state: string | null;
   per_review_rate: string | null;
+  hrsa_registration: string | null;
 }
 
 async function getCompany(companyId: string): Promise<CompanyRow | null> {
   const rows = rowsOf<CompanyRow>(
     await db.execute(sql`
-      SELECT id, name, contact_person, contact_email, address, city, state, per_review_rate
+      SELECT id, name, contact_person, contact_email, address, city, state, per_review_rate, hrsa_registration
       FROM companies WHERE id = ${companyId} LIMIT 1
     `)
   );
@@ -583,7 +584,7 @@ export async function fetchQualityCertificateData(input: {
     organizationName: company?.name ?? 'Unknown Organization',
     organizationAddress,
     period: input.period,
-    hrsaRegistration: undefined, // future: pull from company_settings
+    hrsaRegistration: company?.hrsa_registration ?? undefined,
     signedByName: input.signedByName ?? 'Ashton Prejean',
     signedByTitle: input.signedByTitle ?? 'President, Peerspectiv™',
     signedDate: new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }),
