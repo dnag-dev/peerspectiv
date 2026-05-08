@@ -649,10 +649,22 @@ export function NewBatchModal({
                 <h2 className="text-base font-medium text-ink-primary">New Batch</h2>
                 <p className="text-xs text-ink-secondary">
                   {(() => {
-                    // Stable step count — doesn't change mid-flow
-                    const totalSteps = skipCompanyStep ? 4 : 5;
-                    const displayStep = skipCompanyStep ? step - 1 : step;
-                    return `Step ${displayStep} of ${totalSteps}`;
+                    // Map internal step (1-5) to display step, accounting for skips
+                    const allSteps = [1, 2, 3, 4, 5];
+                    const visible = allSteps.filter((s) => {
+                      if (s === 1 && skipCompanyStep) return false;
+                      if (s === 3 && skipFormStep) return false;
+                      return true;
+                    });
+                    // Find where current step falls in visible list
+                    // If current step was skipped (e.g. step 3), find next visible
+                    let displayIdx = visible.indexOf(step);
+                    if (displayIdx === -1) {
+                      // Step was skipped — find the closest visible step <= current
+                      displayIdx = visible.filter((s) => s <= step).length - 1;
+                      if (displayIdx < 0) displayIdx = 0;
+                    }
+                    return `Step ${displayIdx + 1} of ${visible.length}`;
                   })()}
                 </p>
               </div>
@@ -664,9 +676,15 @@ export function NewBatchModal({
               </button>
             </div>
 
-            {/* Progress bar — stable count, skipped steps still fill */}
+            {/* Progress bar — only visible steps, fills based on position */}
             <div className="flex gap-1 border-b bg-ink-50 px-5 py-2">
-              {(skipCompanyStep ? [2, 3, 4, 5] : [1, 2, 3, 4, 5]).map((n) => (
+              {[1, 2, 3, 4, 5]
+                .filter((s) => {
+                  if (s === 1 && skipCompanyStep) return false;
+                  if (s === 3 && skipFormStep) return false;
+                  return true;
+                })
+                .map((n) => (
                 <div
                   key={n}
                   className={`h-1 flex-1 rounded-full ${
