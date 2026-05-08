@@ -63,7 +63,7 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
           <Text
             style={{
               fontFamily: 'Times-Roman',
-              fontSize: 49,
+              fontSize: 51,
               color: DARK_NAVY,
               textAlign: 'center',
               letterSpacing: 0.5,
@@ -173,18 +173,20 @@ export function QualityCertificatePdf({ data }: { data: QualityCertificateData }
               color: MUTED_TEXT,
               textAlign: 'center',
               marginTop: 4,
-              marginBottom: 24,
+              marginBottom: 6,
             }}
           >
             Signed: {data.signedDate}
           </Text>
 
-          {/* ── Signature image ── */}
-          {data.signatureImageUrl && (
+          {/* ── Signature area — space for handwritten signature ── */}
+          {data.signatureImageUrl ? (
             <Image
               src={data.signatureImageUrl}
-              style={{ width: 130, height: 55, marginBottom: 8 }}
+              style={{ width: 130, height: 55, marginBottom: 4 }}
             />
+          ) : (
+            <View style={{ height: 50, marginBottom: 4 }} />
           )}
 
           {/* ── Signatory ── */}
