@@ -177,7 +177,7 @@ export function DashboardView(props: Props) {
         <KpiCard
           label={`Reviews this period (${currentPeriodLabel})`}
           value={reviewsThisPeriod.toString()}
-          href={`/portal/reviews?cadence=${encodeURIComponent(currentPeriodLabel)}`}
+          href="/portal/current-period"
         />
         <KpiCard
           label="Avg turnaround"

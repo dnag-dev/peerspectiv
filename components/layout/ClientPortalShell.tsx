@@ -8,6 +8,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/portal":             "Compliance dashboard",
   "/portal/quality":     "Quality reports",
   "/portal/batches":     "Batches",
+  "/portal/current-period": "Current period reviews",
   "/portal/reviews":     "Reviews",
   "/portal/trends":      "Trends",
   "/portal/providers":   "Providers",
