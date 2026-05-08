@@ -25,6 +25,7 @@ interface BatchRow {
   batch_name: string;
   company_id: string | null;
   company_name: string | null;
+  specialty: string | null;
   date_uploaded: string;
   total_cases: number;
   assigned_cases: number;
@@ -248,6 +249,7 @@ export function BatchesView({ batches }: Props) {
               <tr>
                 <SortHead label="Tag Name" k="batch_name" />
                 <SortHead label="Company" k="company_name" />
+                <th className="px-4 py-3 text-left">Specialty</th>
                 <SortHead label="Upload Date" k="date_uploaded" />
                 <SortHead label="Total Cases" k="total_cases" align="center" />
                 <SortHead label="Completed" k="completed_cases" align="center" />
@@ -257,7 +259,7 @@ export function BatchesView({ batches }: Props) {
             <tbody>
               {visible.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-ink-secondary">
+                  <td colSpan={7} className="px-4 py-12 text-center text-ink-secondary">
                     No batches match your filters.
                   </td>
                 </tr>
@@ -273,6 +275,7 @@ export function BatchesView({ batches }: Props) {
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-ink-secondary">{batch.company_name || "—"}</td>
+                  <td className="px-4 py-3 text-ink-secondary">{batch.specialty || "—"}</td>
                   <td className="px-4 py-3 text-ink-secondary">{formatDate(batch.date_uploaded)}</td>
                   <td className="px-4 py-3 text-center text-ink-primary">{batch.total_cases}</td>
                   <td className="px-4 py-3 text-center text-ink-primary">{batch.completed_cases}</td>
