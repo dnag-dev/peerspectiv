@@ -46,7 +46,7 @@ async function getAdminUserId(req: NextRequest): Promise<string | null> {
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import {
   getComplianceScore,
-  getReviewsThisQuarter,
+  getReviewsThisPeriod,
   getAvgTurnaroundDays,
   getDocumentationRiskRate,
   getRepeatDeficiencyCount,
@@ -259,10 +259,10 @@ export async function POST(request: NextRequest) {
 
     // New flow: AI insights for client portal
     if (type === 'insights') {
-      const [compliance, reviews, avgTurnaround, riskRate, repeats, specialty, risk] =
+      const [compliance, reviewsPeriod, avgTurnaround, riskRate, repeats, specialty, risk] =
         await Promise.all([
           getComplianceScore(company_id),
-          getReviewsThisQuarter(company_id),
+          getReviewsThisPeriod(company_id),
           getAvgTurnaroundDays(company_id),
           getDocumentationRiskRate(company_id),
           getRepeatDeficiencyCount(company_id),
@@ -311,7 +311,7 @@ Quarter: Q1 2026
 
 Metrics:
 - Overall compliance score: ${compliance}%
-- Reviews completed this quarter: ${reviews}
+- Reviews this period: ${reviewsPeriod.count}
 - Average turnaround: ${avgTurnaround} days
 - Documentation risk rate (cases with flags): ${riskRate}%
 - Providers with repeat deficiencies (<75% more than once): ${repeats}

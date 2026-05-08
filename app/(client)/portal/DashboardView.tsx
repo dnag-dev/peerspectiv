@@ -18,7 +18,8 @@ interface Props {
   companyName: string;
   projectedCompletion: string | null;
   compliance: number;
-  reviewsThisQuarter: number;
+  reviewsThisPeriod: number;
+  currentPeriodLabel: string;
   avgTurnaround: number;
   riskRate: number;
   repeatCount: number;
@@ -85,7 +86,8 @@ export function DashboardView(props: Props) {
     companyName,
     projectedCompletion,
     compliance,
-    reviewsThisQuarter,
+    reviewsThisPeriod,
+    currentPeriodLabel,
     avgTurnaround,
     riskRate,
     repeatCount,
@@ -173,9 +175,9 @@ export function DashboardView(props: Props) {
       {/* KPI cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
-          label="Reviews this quarter"
-          value={reviewsThisQuarter.toString()}
-          href="/portal/reviews?quarter=current"
+          label={`Reviews this period (${currentPeriodLabel})`}
+          value={reviewsThisPeriod.toString()}
+          href="/portal/reviews"
         />
         <KpiCard
           label="Avg turnaround"

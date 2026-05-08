@@ -1,7 +1,7 @@
 import {
   getDemoCompany,
   getComplianceScore,
-  getReviewsThisQuarter,
+  getReviewsThisPeriod,
   getAvgTurnaroundDays,
   getDocumentationRiskRate,
   getRepeatDeficiencyCount,
@@ -25,7 +25,7 @@ export default async function ClientDashboardPage() {
 
   const [
     compliance,
-    reviewsThisQuarter,
+    reviewsThisPeriod,
     avgTurnaround,
     riskRate,
     repeatCount,
@@ -35,7 +35,7 @@ export default async function ClientDashboardPage() {
     providersPerf,
   ] = await Promise.all([
     getComplianceScore(companyId),
-    getReviewsThisQuarter(companyId),
+    getReviewsThisPeriod(companyId),
     getAvgTurnaroundDays(companyId),
     getDocumentationRiskRate(companyId),
     getRepeatDeficiencyCount(companyId),
@@ -67,7 +67,8 @@ export default async function ClientDashboardPage() {
       companyName={company.name}
       projectedCompletion={projectedCompletion}
       compliance={compliance}
-      reviewsThisQuarter={reviewsThisQuarter}
+      reviewsThisPeriod={reviewsThisPeriod.count}
+      currentPeriodLabel={reviewsThisPeriod.periodLabel}
       avgTurnaround={avgTurnaround}
       riskRate={riskRate}
       repeatCount={repeatCount}

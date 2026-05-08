@@ -9,7 +9,7 @@ import {
 import { eq, desc, sql } from "drizzle-orm";
 import {
   getComplianceScore,
-  getReviewsThisQuarter,
+  getReviewsThisPeriod,
   getAvgTurnaroundDays,
   getDocumentationRiskRate,
   getRepeatDeficiencyCount,
@@ -30,17 +30,17 @@ export async function GET(request: NextRequest) {
     }
 
     if (kind === "exec_summary") {
-      const [compliance, reviews, avgTurnaround, riskRate, repeats] =
+      const [compliance, reviewsPeriod, avgTurnaround, riskRate, repeats] =
         await Promise.all([
           getComplianceScore(companyId),
-          getReviewsThisQuarter(companyId),
+          getReviewsThisPeriod(companyId),
           getAvgTurnaroundDays(companyId),
           getDocumentationRiskRate(companyId),
           getRepeatDeficiencyCount(companyId),
         ]);
       return NextResponse.json({
         compliance,
-        reviews,
+        reviews: reviewsPeriod.count,
         avgTurnaround,
         riskRate,
         repeats,
@@ -92,11 +92,12 @@ export async function GET(request: NextRequest) {
     }
 
     if (kind === "hrsa_summary") {
-      const [compliance, reviews, specialty] = await Promise.all([
+      const [compliance, reviewsPeriod2, specialty] = await Promise.all([
         getComplianceScore(companyId),
-        getReviewsThisQuarter(companyId),
+        getReviewsThisPeriod(companyId),
         getSpecialtyCompliance(companyId),
       ]);
+      const reviews = reviewsPeriod2.count;
 
       const results = await db
         .select({ deficiencies: reviewResults.deficiencies })

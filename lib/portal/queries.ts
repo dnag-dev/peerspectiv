@@ -49,13 +49,35 @@ export async function getReviewCasesForCompany(companyId: string) {
     .orderBy(desc(reviewCases.createdAt));
 }
 
-export async function getReviewsThisQuarter(companyId: string) {
+export async function getReviewsThisPeriod(companyId: string): Promise<{ count: number; periodLabel: string }> {
+  // Get the company's current cadence period
+  const { getCurrentCadencePeriod } = await import('@/lib/cadence/periods');
+  let periodLabel = '';
+  try {
+    const period = await getCurrentCadencePeriod(companyId);
+    periodLabel = period?.label ?? '';
+  } catch {
+    periodLabel = '';
+  }
+
+  if (!periodLabel) {
+    const rows = await db
+      .select({ c: sql<number>`count(*)::int` })
+      .from(reviewCases)
+      .where(eq(reviewCases.companyId, companyId));
+    return { count: Number(rows[0]?.c ?? 0), periodLabel: 'All time' };
+  }
+
   const rows = await db
-    .select({ id: reviewResults.id, submittedAt: reviewResults.submittedAt })
-    .from(reviewResults)
-    .innerJoin(reviewCases, eq(reviewCases.id, reviewResults.caseId))
-    .where(eq(reviewCases.companyId, companyId));
-  return rows.length;
+    .select({ c: sql<number>`count(*)::int` })
+    .from(reviewCases)
+    .where(
+      and(
+        eq(reviewCases.companyId, companyId),
+        eq(reviewCases.cadencePeriodLabel, periodLabel)
+      )
+    );
+  return { count: Number(rows[0]?.c ?? 0), periodLabel };
 }
 
 export async function getAvgTurnaroundDays(companyId: string) {
