@@ -1,6 +1,9 @@
 /* eslint-disable react/no-unknown-property */
-import { Document, Page, View, Text } from '@react-pdf/renderer';
+import { Document, Page, View, Text, Image } from '@react-pdf/renderer';
+import path from 'path';
 import { styles, colors } from '../theme';
+
+const LOGO_PATH = path.join(process.cwd(), 'public', 'peerspectiv-logo.png');
 
 export interface PerProviderReviewAnswersData {
   companyName: string;
@@ -43,7 +46,7 @@ export function PerProviderReviewAnswersPdf({ data }: { data: PerProviderReviewA
         {/* Header */}
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.brand}>Peerspectiv</Text>
+            <Image src={LOGO_PATH} style={{ width: 150, height: 30, marginBottom: 6 }} />
             <Text style={styles.reportTitle}>Per-Provider Review</Text>
             <Text style={styles.reportSubtitle}>{data.companyName}</Text>
             <Text style={styles.dateRange}>
